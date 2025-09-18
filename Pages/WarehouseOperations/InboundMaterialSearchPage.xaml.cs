@@ -4,14 +4,14 @@ namespace IndustrialControlMAUI.Pages;
 public partial class InboundMaterialSearchPage : ContentPage
 {
 
-    private readonly ScanService _scanSvc;
+    //private readonly ScanService _scanSvc;
     private readonly InboundMaterialSearchViewModel _vm;
-    public InboundMaterialSearchPage(InboundMaterialSearchViewModel vm, ScanService scanSvc)
+    public InboundMaterialSearchPage(InboundMaterialSearchViewModel vm)
     {
         _vm = vm;
 
         BindingContext = vm;
-        _scanSvc = scanSvc;
+        //_scanSvc = scanSvc;
         InitializeComponent();
         // 可选：配置前后缀与防抖
        // _scanSvc.Prefix = null;     // 例如 "}q" 之类的前缀；没有就留 null

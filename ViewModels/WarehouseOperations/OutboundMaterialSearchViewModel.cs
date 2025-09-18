@@ -33,10 +33,12 @@ public partial class OutboundMaterialSearchViewModel : ObservableObject
         try
         {
             var orderTypeList = new[] { "out_return", "out_requisition", "out_other" };
+            var outstockStatusList = new[] { "0", "1" };
             var list = await _dataSvc.ListOutboundOrdersAsync(
             searchOrderNo,           // 单号/条码
             startDate,               // 开始日期
             endDate,                 // 结束日期（Service 内会扩到 23:59:59）
+            outstockStatusList,
             null,                    // 不传单值 orderType，用 null 更清晰
             orderTypeList,           // 多类型数组
             ct                       // ← 新增：取消令牌

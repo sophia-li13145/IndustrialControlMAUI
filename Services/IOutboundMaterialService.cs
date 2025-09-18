@@ -11,6 +11,7 @@ public interface IOutboundMaterialService
    string? orderNoOrBarcode,
    DateTime startDate,
    DateTime endDate,
+   string[] outstockStatusList,
    string orderType,
    string[] orderTypeList,
    CancellationToken ct = default);

@@ -4,9 +4,9 @@ namespace IndustrialControlMAUI.Pages;
 public partial class OutboundFinishedSearchPage : ContentPage
 {
 
-    private readonly ScanService _scanSvc;
+    //private readonly ScanService _scanSvc;
     private readonly OutboundFinishedSearchViewModel _vm;
-    public OutboundFinishedSearchPage(OutboundFinishedSearchViewModel vm, ScanService scanSvc)
+    public OutboundFinishedSearchPage(OutboundFinishedSearchViewModel vm)
     {
         _vm = vm;
 

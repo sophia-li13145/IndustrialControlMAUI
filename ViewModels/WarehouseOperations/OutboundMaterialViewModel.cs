@@ -260,11 +260,12 @@ namespace IndustrialControlMAUI.ViewModels
             // ② 服务端权威校验：是否全部扫码确认，后端接口
             bool serverAllOk = await _api.JudgeOutstockDetailScanAllAsync(OutstockId!);
 
-            // 任意一处不一致 → 提示是否继续
+            //不一致，提示并不入库
             if (!serverAllOk)
             {
-                bool goOn = await AskAsync("提示", "已扫描列表与待入库数量不一致，是否继续入库？");
-                if (!goOn) return false;
+                // 直接提示，不再让用户选择
+                await ShowTip("已扫描列表与待入库数量不一致，无法继续入库。");
+                return false;   // 直接结束方法
             }
 
             // ③ 调用确认入库接口

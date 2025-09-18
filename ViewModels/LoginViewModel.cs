@@ -13,12 +13,18 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty] private string password = string.Empty;
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool showPassword; // false=默认隐藏
+    [ObservableProperty] private bool rememberPassword; // 新增：记住密码
 
     private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
     public LoginViewModel(IConfigLoader cfg)
     {
         _cfg = cfg;
+
+        // 启动时加载保存的账号
+        UserName = Preferences.Get("UserName", string.Empty);
+        Password = Preferences.Get("Password", string.Empty);
+        RememberPassword = Preferences.Get("RememberPassword", false);
     }
 
     [RelayCommand]
@@ -29,7 +35,6 @@ public partial class LoginViewModel : ObservableObject
 
         try
         {
-            // 读取配置（App 启动时如果已 EnsureLatestAsync，这里 Load() 就够了）
             var cfg = _cfg.Load();
             var scheme = cfg["server"]?["scheme"]?.GetValue<string>() ?? "http";
             var host = cfg["server"]?["ipAddress"]?.GetValue<string>() ?? "127.0.0.1";
@@ -50,7 +55,6 @@ public partial class LoginViewModel : ObservableObject
             var payload = new { username = UserName, password = Password };
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
-            // 登录接口不需要带 Bearer；我们仍用 ApiClient 调
             var resp = await ApiClient.Instance.PostAsJsonAsync(fullUrl, payload, cts.Token);
             var raw = await resp.Content.ReadAsStringAsync(cts.Token);
 
@@ -72,9 +76,22 @@ public partial class LoginViewModel : ObservableObject
                 return;
             }
 
-            // ★ 只需保存；后续所有经 DI 的 HttpClient 都会由 AuthHeaderHandler 自动加 Authorization 头
+            // 保存 token
             await TokenStorage.SaveAsync(token!);
-            System.Diagnostics.Debug.WriteLine("saved token len=" + token?.Length);
+
+            // 如果勾选了记住密码，就保存账号信息
+            if (RememberPassword)
+            {
+                Preferences.Set("UserName", UserName ?? "");
+                Preferences.Set("Password", Password ?? "");
+                Preferences.Set("RememberPassword", true);
+            }
+            else
+            {
+                Preferences.Remove("UserName");
+                Preferences.Remove("Password");
+                Preferences.Set("RememberPassword", false);
+            }
 
             // 进入主壳
             App.SwitchToLoggedInShell();
@@ -93,10 +110,20 @@ public partial class LoginViewModel : ObservableObject
         }
     }
 
-
-
     [RelayCommand]
     private void TogglePassword() => ShowPassword = !ShowPassword;
+
+    [RelayCommand]
+    private void ClearHistory()
+    {
+        UserName = string.Empty;
+        Password = string.Empty;
+        RememberPassword = false;
+
+        Preferences.Remove("UserName");
+        Preferences.Remove("Password");
+        Preferences.Set("RememberPassword", false);
+    }
 
     private sealed class ApiResponse<T>
     {

@@ -15,7 +15,7 @@ namespace IndustrialControlMAUI.Pages;
 [QueryProperty(nameof(CreatedTime), "createdTime")]
 public partial class InboundProductionPage : ContentPage
 {
-    private readonly ScanService _scanSvc;
+    //private readonly ScanService _scanSvc;
     private readonly InboundProductionViewModel _vm;
     public string? InstockId { get; set; }
     public string? InstockNo { get; set; }
@@ -30,7 +30,7 @@ public partial class InboundProductionPage : ContentPage
 
     private readonly IDialogService _dialogs;
 
-    public InboundProductionPage(InboundProductionViewModel vm, ScanService scanSvc, IDialogService dialogs)
+    public InboundProductionPage(InboundProductionViewModel vm,  IDialogService dialogs)
     {
         InitializeComponent();
         BindingContext = vm;

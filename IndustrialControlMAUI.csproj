@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-android</TargetFrameworks>
-		<RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>
 		<!-- 将win10-x64改为win-x64 -->
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks)</TargetFrameworks>
 
@@ -31,10 +30,24 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<!-- 关键三件套：禁用共享运行时 / 禁用快速部署 / 嵌入程序集 -->
+		<AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+		<AndroidFastDeploymentType>None</AndroidFastDeploymentType>
+		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
 
+		<!-- 你已有：保持调试体验 -->
+		<RunAOTCompilation>false</RunAOTCompilation>
+		<PublishTrimmed>false</PublishTrimmed>
+		<AndroidLinkMode>None</AndroidLinkMode>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<ApplicationTitle>联创数智管家</ApplicationTitle>
+	</PropertyGroup>
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.png" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />

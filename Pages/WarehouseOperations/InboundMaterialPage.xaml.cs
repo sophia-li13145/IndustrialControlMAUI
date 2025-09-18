@@ -7,23 +7,25 @@ namespace IndustrialControlMAUI.Pages;
 [QueryProperty(nameof(InstockNo), "instockNo")]
 [QueryProperty(nameof(OrderType), "orderType")]
 [QueryProperty(nameof(OrderTypeName), "orderTypeName")]
+[QueryProperty(nameof(ArrivalNo), "arrivalNo")]
 [QueryProperty(nameof(PurchaseNo), "purchaseNo")]
 [QueryProperty(nameof(SupplierName), "supplierName")]
 [QueryProperty(nameof(CreatedTime), "createdTime")]
 public partial class InboundMaterialPage : ContentPage
 {
-    private readonly ScanService _scanSvc;
+    //private readonly ScanService _scanSvc;
     private readonly InboundMaterialViewModel _vm;
     public string? InstockId { get; set; }
     public string? InstockNo { get; set; }
     public string? OrderType { get; set; }
     public string? OrderTypeName { get; set; }
+    public string? ArrivalNo { get; set; }
     public string? PurchaseNo { get; set; }
     public string? SupplierName { get; set; }
     public string? CreatedTime { get; set; }
     private readonly IDialogService _dialogs;
 
-    public InboundMaterialPage(InboundMaterialViewModel vm, ScanService scanSvc, IDialogService dialogs)
+    public InboundMaterialPage(InboundMaterialViewModel vm,IDialogService dialogs)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -52,6 +54,7 @@ public partial class InboundMaterialPage : ContentPage
                 orderType: OrderType ?? "",
                 orderTypeName: OrderTypeName ?? "",
                 purchaseNo: PurchaseNo ?? "",
+                arrivalNo: ArrivalNo ?? "",
                 supplierName: SupplierName ?? "",
                 createdTime: CreatedTime ?? ""
             );

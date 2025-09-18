@@ -13,7 +13,7 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
 
     [ObservableProperty] private string searchOrderNo;
     [ObservableProperty] private DateTime startDate = DateTime.Today;
-    [ObservableProperty] private DateTime endDate = DateTime.Today;
+    [ObservableProperty] private DateTime endDate = DateTime.Today.AddDays(7);
     private CancellationTokenSource? _searchCts;
     // 仅用于“高亮选中”
     [ObservableProperty] private InboundOrderSummary? selectedOrder;
@@ -34,11 +34,14 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
         var ct = _searchCts.Token;
         try
         {
+            var instockStatusList = new[] { "0", "1" };
             var orderTypeList = new[] { "in_other", "in_purchase", "in_return" };
             var list = await _dataSvc.ListInboundOrdersAsync(
             searchOrderNo,           // 单号/条码
             startDate,               // 开始日期
-            endDate,                 // 结束日期（Service 内会扩到 23:59:59）
+            endDate,
+            // 结束日期（Service 内会扩到 23:59:59）
+            instockStatusList,
             null,                    // 不传单值 orderType，用 null 更清晰
             orderTypeList,           // 多类型数组
             ct                       // ← 新增：取消令牌
@@ -81,8 +84,8 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
         ["instockNo"] = o.instockNo,
         ["orderType"] = o.orderType,
         ["orderTypeName"] = o.orderTypeName,
-        ["purchaseNo"] = o.purchaseNo,
         ["supplierName"] = o.supplierName,
+        ["purchaseNo"] = o.purchaseNo,
         ["arrivalNo"] = o.arrivalNo,
         ["createdTime"] = o.createdTime
     });

@@ -1,135 +1,165 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             x:Class="IndustrialControlMAUI.Pages.HomePage"
-             Title="作业">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="退出" Clicked="OnLogoutClicked" />
-    </ContentPage.ToolbarItems>
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="IndustrialControlMAUI.Pages.HomePage"
+    BackgroundColor="#F6F7FB"
+    Title="联创云工软平台">
 
     <ContentPage.Resources>
-            <!-- 子项一行样式 -->
-            <Style TargetType="Grid" x:Key="ItemRow">
-                <Setter Property="Padding" Value="0,4"/>
-                <Setter Property="ColumnDefinitions" Value="Auto,*"/>
-            </Style>
-        </ContentPage.Resources>
+        <!-- 区块标题样式 -->
+        <Style x:Key="SectionTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="TextColor" Value="#2B2F36"/>
+            <Setter Property="Margin" Value="12,18,12,10"/>
+        </Style>
 
-        <ScrollView>
-            <VerticalStackLayout Padding="20" Spacing="12">
+        <!-- 卡片外观样式 -->
+        <Style x:Key="Card" TargetType="Frame">
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="HasShadow" Value="False"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="BackgroundColor" Value="White"/>
+            <Setter Property="BorderColor" Value="#EEF0F4"/>
+            <Setter Property="Margin" Value="8"/>
+        </Style>
+    </ContentPage.Resources>
 
-                <!-- 一级：仓储作业 -->
-                <toolkit:Expander>
-                    <toolkit:Expander.Header>
-                        <Grid Padding="12,10" BackgroundColor="#F5F7FA">
-                            <Label Text="📦 仓储作业" FontSize="18" FontAttributes="Bold"/>
-                        </Grid>
-                    </toolkit:Expander.Header>
+    <ScrollView>
+        <VerticalStackLayout>
 
-                    <VerticalStackLayout Spacing="6" Padding="16,6,0,12">
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbInMat" CheckedChanged="OnInMat"/>
-                            <Label Grid.Column="1" Text="物料入库">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbInMat}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+            <!-- 顶部蓝条 -->
+            <Grid BackgroundColor="#0C86FF" HeightRequest="56" Padding="16,0">
+                <Label Text="联创云工软平台"
+                       VerticalOptions="Center"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+            </Grid>
 
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbInProd" CheckedChanged="OnInProd"/>
-                            <Label Grid.Column="1" Text="生产入库">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbInProd}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+            <!-- 仓储作业 -->
+            <Label Text="仓储作业" Style="{StaticResource SectionTitle}"/>
 
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbOutMat" CheckedChanged="OnOutMat"/>
-                            <Label Grid.Column="1" Text="物料出库">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOutMat}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto,Auto"
+                  Padding="8,0,8,24">
 
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbOutFinished" CheckedChanged="OnOutFinished"/>
-                            <Label Grid.Column="1" Text="产成品出库接货">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOutFinished}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-
-                    <Grid Style="{StaticResource ItemRow}">
-                        <CheckBox x:Name="cbMoldOut" CheckedChanged="OnMoldOut"/>
-                        <Label Grid.Column="1" Text="模具出库管理">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbMoldOut}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-
-                    <Grid Style="{StaticResource ItemRow}">
-                        <CheckBox x:Name="cbMoldIn" CheckedChanged="OnMoldIn"/>
-                        <Label Grid.Column="1" Text="模具入库管理">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbMoldIn}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+                <!-- 物料入库 -->
+                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#00ACC1"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="pen_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="物料入库" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
                     </VerticalStackLayout>
-                </toolkit:Expander>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInMat"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
 
-                <!-- 一级：生产作业 -->
-                <toolkit:Expander>
-                    <toolkit:Expander.Header>
-                        <Grid Padding="12,10" BackgroundColor="#F5F7FA">
-                            <Label Text="🏭 生产作业" FontSize="18" FontAttributes="Bold"/>
-                        </Grid>
-                    </toolkit:Expander.Header>
-
-                    <VerticalStackLayout Spacing="6" Padding="16,6,0,12">
-                        <Grid Style="{StaticResource ItemRow}">
-                        <CheckBox x:Name="cbOrderQry" CheckedChanged="OnOrderQry" />
-                            <Label Grid.Column="1" Text="工单查询">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOrderQry}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbOpExec"/>
-                            <Label Grid.Column="1" Text="工序任务执行">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOpExec}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbParamLog"/>
-                            <Label Grid.Column="1" Text="参数登记">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbParamLog}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-
-                        <Grid Style="{StaticResource ItemRow}">
-                            <CheckBox x:Name="cbBindDevice"/>
-                            <Label Grid.Column="1" Text="设备扫描绑定">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbBindDevice}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+                <!-- 生产入库 -->
+                <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#26C6DA"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="checkmark_circle_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="生产入库" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
                     </VerticalStackLayout>
-                </toolkit:Expander>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInProd"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
 
-            </VerticalStackLayout>
-        </ScrollView>
-    </ContentPage>
+                <!-- 物料出库 -->
+                <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#00796B"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="search_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="物料出库" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOutMat"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <!-- 成品出库接货 -->
+                <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#FF7043"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="vehicle_truck_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="成品出库接货" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnOutFinished"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <!-- 模具出库管理 -->
+                <Frame Grid.Row="2" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#9E9E9E"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="wrench_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="模具出库管理" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMoldOut"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <!-- 模具入库管理 -->
+                <Frame Grid.Row="2" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#90A4AE"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="document_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="模具入库管理" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMoldIn"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

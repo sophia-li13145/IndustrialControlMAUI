@@ -99,6 +99,7 @@ public sealed class InboundMaterialService : IInboundMaterialService
     string? orderNoOrBarcode,
     DateTime startDate,
     DateTime endDate,
+    string[] instockStatusList,
     string orderType,
     string[] orderTypeList,
     CancellationToken ct = default)
@@ -113,12 +114,15 @@ public sealed class InboundMaterialService : IInboundMaterialService
         new("createdTimeBegin", begin),
         new("createdTimeEnd",   end),
         new("pageNo",  "1"),
-        new("pageSize","10")
+        new("pageSize","50")
         // 如需统计总数：new("searchCount", "true")
     };
 
         if (!string.IsNullOrWhiteSpace(orderNoOrBarcode))
             pairs.Add(new("instockNo", orderNoOrBarcode.Trim()));
+
+        if (instockStatusList is { Length: > 0 })
+            pairs.Add(new("instockStatusList", string.Join(",", instockStatusList)));
 
         if (!string.IsNullOrWhiteSpace(orderType))
             pairs.Add(new("orderType", orderType));

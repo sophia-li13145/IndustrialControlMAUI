@@ -29,13 +29,16 @@ public partial class OutboundFinishedSearchViewModel : ObservableObject
     {
         _searchCts?.Cancel();
         _searchCts = new CancellationTokenSource();
+        
         var ct = _searchCts.Token;
         try
         {
+            var outstockStatusList = new[] { "0", "1" };
             var list = await _dataSvc.ListOutboundOrdersAsync(
             searchOrderNo,           // 单号/条码
             startDate,               // 开始日期
             endDate,                 // 结束日期（Service 内会扩到 23:59:59）
+            outstockStatusList,
             "out_delivery",                    // 不传单值 orderType，用 null 更清晰
             null,           // 多类型数组
             ct                       // ← 新增：取消令牌

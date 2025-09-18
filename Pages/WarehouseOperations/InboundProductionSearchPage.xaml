@@ -51,11 +51,11 @@
                                 <Label Grid.Row="1" Grid.Column="0" Text="入库单类型：" FontAttributes="Bold"/>
                                 <Label Grid.Row="1" Grid.Column="1" Text="{Binding orderTypeName}" />
 
-                                <Label Grid.Row="2" Grid.Column="0" Text="供应商名称：" FontAttributes="Bold"/>
-                                <Label Grid.Row="2" Grid.Column="1" Text="{Binding supplierName}" />
+                                <Label Grid.Row="2" Grid.Column="0" Text="产品名称：" FontAttributes="Bold"/>
+                                <Label Grid.Row="2" Grid.Column="1" Text="{Binding materialName}" />
 
-                                <Label Grid.Row="3" Grid.Column="0" Text="关联到货单号：" FontAttributes="Bold"/>
-                                <Label Grid.Row="3" Grid.Column="1" Text="{Binding arrivalNo}" />
+                                <Label Grid.Row="3" Grid.Column="0" Text="关工单号：" FontAttributes="Bold"/>
+                                <Label Grid.Row="3" Grid.Column="1" Text="{Binding workOrderNo}" />
 
                                 <Label Grid.Row="4" Grid.Column="0" Text="创建日期：" FontAttributes="Bold"/>
                                 <Label Grid.Row="4" Grid.Column="1" Text="{Binding createdTime}" />

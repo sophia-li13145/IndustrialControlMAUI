@@ -97,6 +97,7 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
     string? orderNoOrBarcode,
     DateTime startDate,
     DateTime endDate,
+    string[] outstockStatusList,
     string orderType,
     string[] orderTypeList,
     CancellationToken ct = default)
@@ -111,12 +112,15 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
         new("createdTimeBegin", begin),
         new("createdTimeEnd",   end),
         new("pageNo",  "1"),
-        new("pageSize","10")
+        new("pageSize","50")
         // 如需统计总数：new("searchCount", "true")
     };
 
         if (!string.IsNullOrWhiteSpace(orderNoOrBarcode))
             pairs.Add(new("outstockNo", orderNoOrBarcode.Trim()));
+
+        if (outstockStatusList is { Length: > 0 })
+            pairs.Add(new("outstockStatusList", string.Join(",", outstockStatusList)));
 
         if (!string.IsNullOrWhiteSpace(orderType))
             pairs.Add(new("orderType", orderType));

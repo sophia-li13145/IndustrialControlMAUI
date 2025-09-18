@@ -18,6 +18,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string? orderType;
         [ObservableProperty] private string? orderTypeName;
         [ObservableProperty] private string? purchaseNo;
+        [ObservableProperty] private string? arrivalNo;
         [ObservableProperty] private string? supplierName;
         [ObservableProperty] private string? createdTime;
 
@@ -54,8 +55,8 @@ namespace IndustrialControlMAUI.ViewModels
 
         // ================ 初始化入口（页面 OnAppearing 调用） ================
         public async Task InitializeFromSearchAsync(
-            string instockId, string instockNo, string orderType, string orderTypeName,
-            string purchaseNo, string supplierName, string createdTime)
+            string instockId, string instockNo, string orderType, string orderTypeName,string purchaseNo,
+            string arrivalNo, string supplierName, string createdTime)
         {
             // 1) 基础信息
             InstockId = instockId;
@@ -63,6 +64,7 @@ namespace IndustrialControlMAUI.ViewModels
             OrderType = orderType;
             OrderTypeName = orderTypeName;
             PurchaseNo = purchaseNo;
+            ArrivalNo = arrivalNo;
             SupplierName = supplierName;
             CreatedTime = createdTime;
 
@@ -262,12 +264,12 @@ namespace IndustrialControlMAUI.ViewModels
 
             // ② 服务端权威校验：是否全部扫码确认，后端接口
             bool serverAllOk = await _api.JudgeInstockDetailScanAllAsync(InstockId!);
-
-            // 任意一处不一致 → 提示是否继续
+            //不一致，提示并不入库
             if (!serverAllOk)
             {
-                bool goOn = await AskAsync("提示", "已扫描列表与待入库数量不一致，是否继续入库？");
-                if (!goOn) return false;
+                // 直接提示，不再让用户选择
+                await ShowTip("已扫描列表与待入库数量不一致，无法继续入库。");
+                return false;   // 直接结束方法
             }
 
             // ③ 调用确认入库接口

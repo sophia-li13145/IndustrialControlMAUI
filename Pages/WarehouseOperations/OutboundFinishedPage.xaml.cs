@@ -12,7 +12,7 @@ namespace IndustrialControlMAUI.Pages;
 [QueryProperty(nameof(DeliveryMemo), "deliveryMemo")]
 public partial class OutboundFinishedPage : ContentPage
 {
-    private readonly ScanService _scanSvc;
+    //private readonly ScanService _scanSvc;
     private readonly OutboundFinishedViewModel _vm;
     public string? OutstockId { get; set; }
     public string? OutstockNo { get; set; }
@@ -23,7 +23,7 @@ public partial class OutboundFinishedPage : ContentPage
     public string? DeliveryMemo { get; set; }
     private readonly IDialogService _dialogs;
 
-    public OutboundFinishedPage(OutboundFinishedViewModel vm, ScanService scanSvc, IDialogService dialogs)
+    public OutboundFinishedPage(OutboundFinishedViewModel vm,IDialogService dialogs)
     {
         InitializeComponent();
         BindingContext = vm;

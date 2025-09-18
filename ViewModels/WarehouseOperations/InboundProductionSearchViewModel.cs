@@ -11,7 +11,7 @@ public partial class InboundProductionSearchViewModel : ObservableObject
 
     [ObservableProperty] private string searchOrderNo;
     [ObservableProperty] private DateTime startDate = DateTime.Today;
-    [ObservableProperty] private DateTime endDate = DateTime.Today;
+    [ObservableProperty] private DateTime endDate = DateTime.Today.AddDays(7);
     private CancellationTokenSource? _searchCts;
     // 仅用于“高亮选中”
     [ObservableProperty] private InboundOrderSummary? selectedOrder;
@@ -28,6 +28,7 @@ public partial class InboundProductionSearchViewModel : ObservableObject
     private async Task SearchAsync()
     {
         _searchCts?.Cancel();
+        var instockStatusList = new[] { "0", "1" };
         _searchCts = new CancellationTokenSource();
         var ct = _searchCts.Token;
         try
@@ -35,7 +36,8 @@ public partial class InboundProductionSearchViewModel : ObservableObject
             var list = await _dataSvc.ListInboundOrdersAsync(
             searchOrderNo,           // 单号/条码
             startDate,               // 开始日期
-            endDate,                 // 结束日期（Service 内会扩到 23:59:59）
+            endDate,// 结束日期（Service 内会扩到 23:59:59）
+            instockStatusList,
             "in_production",         // 不传单值 orderType，用 null 更清晰
             null,
             ct                       // ← 新增：取消令牌

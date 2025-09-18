@@ -11,6 +11,7 @@ public interface IInboundMaterialService
    string? orderNoOrBarcode,
    DateTime startDate,
    DateTime endDate,
+   string[] instockStatusList,
    string orderType,
    string[] orderTypeList,
    CancellationToken ct = default);

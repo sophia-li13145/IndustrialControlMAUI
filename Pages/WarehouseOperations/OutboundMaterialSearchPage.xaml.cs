@@ -4,30 +4,30 @@ namespace IndustrialControlMAUI.Pages;
 public partial class OutboundMaterialSearchPage : ContentPage
 {
 
-    private readonly ScanService _scanSvc;
+    //private readonly ScanService _scanSvc;
     private readonly OutboundMaterialSearchViewModel _vm;
     public OutboundMaterialSearchPage(OutboundMaterialSearchViewModel vm, ScanService scanSvc)
     {
         _vm = vm;
 
         BindingContext = vm;
-        _scanSvc = scanSvc;
+        //_scanSvc = scanSvc;
         InitializeComponent();
         // 可选：配置前后缀与防抖
-        _scanSvc.Prefix = null;     // 例如 "}q" 之类的前缀；没有就留 null
+        //_scanSvc.Prefix = null;     // 例如 "}q" 之类的前缀；没有就留 null
                                     // _scanSvc.Suffix = "\n";     // 如果设备会附带换行，可去掉；没有就设 null
                                     //_scanSvc.DebounceMs = 250;
-        _scanSvc.Suffix = null;   // 先关掉
-        _scanSvc.DebounceMs = 0;  // 先关掉
+        //_scanSvc.Suffix = null;   // 先关掉
+        //_scanSvc.DebounceMs = 0;  // 先关掉
     }
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         // 动态注册广播接收器（只在当前页面前台时生效）
-        _scanSvc.Scanned += OnScanned;
-        _scanSvc.StartListening();
+        //_scanSvc.Scanned += OnScanned;
+        //_scanSvc.StartListening();
         //键盘输入
-        _scanSvc.Attach(OrderEntry);
+       // _scanSvc.Attach(OrderEntry);
         OrderEntry.Focus();
 
 
@@ -45,8 +45,8 @@ public partial class OutboundMaterialSearchPage : ContentPage
     protected override void OnDisappearing()
     {
         // 退出页面即注销（防止多个程序/页面抢处理）
-        _scanSvc.Scanned -= OnScanned;
-        _scanSvc.StopListening();
+        //_scanSvc.Scanned -= OnScanned;
+        //_scanSvc.StopListening();
 
         base.OnDisappearing();
     }
