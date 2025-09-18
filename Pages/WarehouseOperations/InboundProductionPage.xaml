@@ -1,0 +1,230 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.InboundProductionPage"
+             BackgroundColor="White" Shell.NavBarIsVisible="True">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+        <!-- 顶部蓝色标题栏 -->
+        <Grid BackgroundColor="#007BFF" HeightRequest="60" Padding="16,0">
+            <Label Text="仓储管理系统" 
+                   VerticalOptions="Center" 
+                   TextColor="White"
+                   FontSize="18" 
+                   FontAttributes="Bold"/>
+        </Grid>
+
+        <!-- 入库单/条码扫描 -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,60" Padding="16,8">
+            <Entry x:Name="ScanEntry" 
+                   Placeholder="请扫描产品/包装条码" 
+                   FontSize="14"
+                   VerticalOptions="Center"
+                   BackgroundColor="White"
+                   HeightRequest="40"
+                   Text="{Binding ScanCode}" />
+
+        </Grid>
+
+        <!-- 基础信息 -->
+        <Frame Grid.Row="2" Margin="8,0" Padding="8" BorderColor="#CCCCCC" BackgroundColor="White">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="16" RowSpacing="6">
+
+                <!-- 第一行左：入库单号 -->
+                <Label Grid.Row="0" Grid.Column="0" FontSize="13" LineBreakMode="TailTruncation" MaxLines="1">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="入库单号：" FontAttributes="Bold"/>
+                            <Span Text="{Binding InstockNo}"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <!-- 第一行右：关联到货单号 -->
+                <Label Grid.Row="0" Grid.Column="1" FontSize="13" LineBreakMode="TailTruncation" MaxLines="1">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="工单号：" FontAttributes="Bold"/>
+                            <Span Text="{Binding WorkOrderNo}"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <!-- 第二行左：关联采购单 -->
+                <Label Grid.Row="1" Grid.Column="0" FontSize="13" LineBreakMode="TailTruncation" MaxLines="1">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="产品名称：" FontAttributes="Bold"/>
+                            <Span Text="{Binding MaterialName}"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <!-- 第二行右：供应商 -->
+                <Label Grid.Row="1" Grid.Column="1" FontSize="13" LineBreakMode="TailTruncation" MaxLines="1">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="待入库数：" FontAttributes="Bold"/>
+                            <Span Text="{Binding InstockQty}"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+            </Grid>
+        </Frame>
+        <!-- 扫描明细 -->
+        <Grid Grid.Row="3" RowDefinitions="Auto,*" Margin="0">
+            <!-- 扫描明细列表 -->
+            <!-- 扫描明细列表（替换原有 CollectionView） -->
+            <CollectionView Grid.Row="1"
+                ItemsSource="{Binding ScannedList}"
+                IsVisible="{Binding IsScannedVisible}"
+                SelectionMode="Single"
+                SelectedItem="{Binding SelectedScanItem, Mode=TwoWay}"
+                Margin="0,8,0,0">
+                <!-- 列表上方留空白 -->
+
+                <!-- 表头：与行完全同列宽，保证对齐 -->
+                <CollectionView.Header>
+                    <Grid Padding="8,6"
+              BackgroundColor="#F2F2F2"
+              ColumnDefinitions="40,*,*,80">
+                        <Label Text="选择" />
+                        <Label Grid.Column="1" Text="条码" />
+                        <Label Grid.Column="2" Text="入库库位" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="3" Text="数量" HorizontalTextAlignment="Center" />
+                    </Grid>
+                </CollectionView.Header>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- 行与表头同列定义：保证列完美对齐 -->
+                        <Grid Padding="8,6"
+                  BackgroundColor="White"
+                  ColumnDefinitions="40,*,*,80">
+
+                            <!-- 只看 ScanStatus 着色（选中不变色） -->
+                            <Grid.Triggers>
+                                <DataTrigger TargetType="Grid" Binding="{Binding ScanStatus}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="#E6FFE6" />
+                                </DataTrigger>
+                            </Grid.Triggers>
+
+                            <!-- 0：选择 -->
+                            <CheckBox IsChecked="{Binding IsSelected}"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center" />
+
+                            <!-- 1：条码 -->
+                            <Label Grid.Column="1"
+                       Text="{Binding Barcode}"
+                       VerticalTextAlignment="Center" />
+
+                            <!-- 2：入库库位（ScanStatus=false 禁止点击并置灰） -->
+                            <Label Grid.Column="2"
+                       Text="{Binding Location}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       TextColor="#007BFF"
+                       FontAttributes="Bold">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ScanStatus}" Value="False">
+                                        <Setter Property="InputTransparent" Value="True" />
+                                        <Setter Property="TextColor" Value="#999999" />
+                                        <Setter Property="FontAttributes" Value="None" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnBinTapped" />
+                                </Label.GestureRecognizers>
+                            </Label>
+
+                            <!-- 3：数量（固定列宽 80，回车提交；ScanStatus=false 禁用） -->
+                            <Entry Grid.Column="3"
+                       Keyboard="Numeric"
+                       HorizontalTextAlignment="Center"
+                       VerticalOptions="Center"
+                       WidthRequest="80"
+                       Completed="OnQtyCompleted"
+                       Text="{Binding Qty, Mode=TwoWay, Converter={StaticResource IntConverter}}">
+                                <Entry.Triggers>
+                                    <DataTrigger TargetType="Entry" Binding="{Binding ScanStatus}" Value="False">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                        <Setter Property="IsReadOnly" Value="True" />
+                                        <Setter Property="Opacity" Value="0.6" />
+                                    </DataTrigger>
+                                </Entry.Triggers>
+                            </Entry>
+
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </Grid>
+
+        <!-- 底部按钮 -->
+        <Grid Grid.Row="4" ColumnDefinitions="*,*,*" Padding="16,8" ColumnSpacing="10">
+
+            <!-- 扫描通过 -->
+            <Grid BackgroundColor="#4CAF50"
+           HorizontalOptions="Fill"
+           VerticalOptions="Fill"
+           HeightRequest="50">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PassScanCommand}" />
+                </Grid.GestureRecognizers>
+                <StackLayout Orientation="Horizontal"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+                    <Image Source="pass.png" HeightRequest="20" WidthRequest="20" />
+                    <Label Text="扫描通过"
+            Margin="5,0,0,0"
+            VerticalOptions="Center"
+            TextColor="White" />
+                </StackLayout>
+            </Grid>
+
+            <!-- 取消扫描 -->
+            <Grid Grid.Column="1"
+           BackgroundColor="#F44336"
+           HorizontalOptions="Fill"
+           VerticalOptions="Fill"
+           HeightRequest="50">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelScanCommand}" />
+                </Grid.GestureRecognizers>
+                <StackLayout Orientation="Horizontal"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+                    <Image Source="cancel.png" HeightRequest="20" WidthRequest="20" />
+                    <Label Text="取消扫描"
+            Margin="5,0,0,0"
+            VerticalOptions="Center"
+            TextColor="White" />
+                </StackLayout>
+            </Grid>
+
+            <!-- 确认入库 -->
+            <Grid Grid.Column="2"
+           BackgroundColor="#2196F3"
+           HorizontalOptions="Fill"
+           VerticalOptions="Fill"
+           HeightRequest="50">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnConfirmClicked" />
+                </Grid.GestureRecognizers>
+                <StackLayout Orientation="Horizontal"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+                    <Image Source="confirm.png" HeightRequest="20" WidthRequest="20" />
+                    <Label Text="确认入库"
+            Margin="5,0,0,0"
+            VerticalOptions="Center"
+            TextColor="White" />
+                </StackLayout>
+            </Grid>
+
+        </Grid>
+    </Grid>
+</ContentPage>

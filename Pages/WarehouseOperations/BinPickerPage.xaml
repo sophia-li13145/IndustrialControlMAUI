@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:IndustrialControlMAUI.Models"
+             x:Class="IndustrialControlMAUI.Pages.BinPickerPage"
+             x:Name="Root"
+             Title="选择库位"
+             BackgroundColor="White">
+
+    <Grid Padding="12" RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="*,Auto" Padding="0,0,0,8">
+            <Label Text="选择库位" FontSize="18" FontAttributes="Bold" />
+            <Button Text="关闭" BackgroundColor="Transparent" Clicked="OnCloseClicked"/>
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <!-- ★ 绑定可见树 -->
+            <CollectionView ItemsSource="{Binding VisibleTree}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:LocationTreeNodeVM">
+                        <Grid ColumnDefinitions="24,*" Padding="4" Margin="{Binding Indent}">
+                            <Label Grid.Column="0" Text="{Binding ToggleIcon}"
+                     HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer
+                      Command="{Binding BindingContext.ToggleCommand, Source={x:Reference Root}}"
+                      CommandParameter="{Binding .}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                            <Label Grid.Column="1" Text="{Binding Name}" VerticalTextAlignment="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer
+                      Command="{Binding BindingContext.SelectNodeCommand, Source={x:Reference Root}}"
+                      CommandParameter="{Binding .}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
+</ContentPage>

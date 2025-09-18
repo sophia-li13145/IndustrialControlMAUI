@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.InboundMoldPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Shell.NavBarIsVisible="True">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="12" RowSpacing="12">
+
+        <!-- 顶部标题栏 -->
+        <Grid Grid.Row="0" BackgroundColor="#0A73FF" Padding="12">
+            <Label Text="仓储管理系统" TextColor="White" FontAttributes="Bold"/>
+        </Grid>
+
+        <!-- 扫描输入行 -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <Label Text="模具编码" VerticalOptions="Center"/>
+            <Entry x:Name="ScanEntry"
+                   Grid.Column="1"
+                   Placeholder="请扫描模具条码"
+                   Text="{Binding ScanCode}" />
+        </Grid>
+
+        <!-- 模具状态信息（绿色卡片，仅加入“使用中”的记录） -->
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <Label Text="模具状态信息" FontAttributes="Bold"/>
+            <CollectionView ItemsSource="{Binding MoldStatusList}" SelectionMode="Single">
+                <CollectionView.SelectedItem>
+                    <Binding Path="SelectedRow" Mode="TwoWay"/>
+                </CollectionView.SelectedItem>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="10"
+                       HasShadow="False"
+                       BackgroundColor="White" 
+                       BorderColor="#18A558"
+                       CornerRadius="8">
+
+                            <!-- 勾选后整卡片变绿 -->
+                            <Frame.Triggers>
+                                <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="#18A558"/>
+                                    <Setter Property="BorderColor" Value="#18A558"/>
+                                </DataTrigger>
+                            </Frame.Triggers>
+
+                            <!-- 统一文字颜色：默认深色，勾选后变白 -->
+                            <Frame.Resources>
+                                <Style TargetType="Label">
+                                    <Setter Property="TextColor" Value="#222222"/>
+                                    <Style.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Frame.Resources>
+
+                            <Grid x:Name="CardGrid"
+                          RowDefinitions="Auto,Auto,Auto"
+                          ColumnDefinitions="Auto,70,70,80,1.6*"
+                          ColumnSpacing="10" RowSpacing="6">
+
+                                <!-- 勾选（第0列） -->
+                                <CheckBox Grid.RowSpan="3" Grid.Column="0"
+                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                  CheckedChanged="OnRowCheckedChanged"/>
+
+                                <!-- 第1行：编码 + 型号 -->
+                                <Label Grid.Column="1" Text="模具编码：" FontAttributes="Bold"/>
+                                <Label Grid.Column="2" Text="{Binding MoldCode}"/>
+
+                                <Label Grid.Column="3" Text="模具型号：" FontAttributes="Bold"/>
+                                <Label Grid.Column="4" Text="{Binding MoldModel}" 
+                               LineBreakMode="TailTruncation" MaxLines="1"/>
+
+                                <!-- 第2行：状态 + 工单号 -->
+                                <Label Grid.Row="1" Grid.Column="1" Text="使用状态：" FontAttributes="Bold"/>
+                                <Label Grid.Row="1" Grid.Column="2" Text="{Binding UseStatusText}"/>
+
+                                <Label Grid.Row="1" Grid.Column="3" Text="当前关联工单号：" FontAttributes="Bold"/>
+                                <Label Grid.Row="1" Grid.Column="4" Text="{Binding WorkOrderNo}" 
+                               LineBreakMode="TailTruncation" MaxLines="1"/>
+
+                                <!-- 第3行：出库日期 + 库位 -->
+                                <Label Grid.Row="2" Grid.Column="1" Text="出库日期：" FontAttributes="Bold"/>
+                                <Label Grid.Row="2" Grid.Column="2" Text="{Binding OutstockDate}"/>
+
+                                <Label Grid.Row="2" Grid.Column="3" Text="库位：" FontAttributes="Bold"/>
+                                <Label Grid.Row="2" Grid.Column="4" Text="{Binding Location}" 
+                               LineBreakMode="TailTruncation" MaxLines="1"/>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+
+        <!-- 底部操作按钮 -->
+        <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="16">
+            <Button Text="取消扫描" BackgroundColor="#FF5252" TextColor="White"
+                    Command="{Binding CancelScanCommand}" />
+            <Button Grid.Column="1" Text="确认入库" BackgroundColor="#0A73FF" TextColor="White"
+                    Command="{Binding ConfirmInboundCommand}" />
+        </Grid>
+
+    </Grid>
+</ContentPage>

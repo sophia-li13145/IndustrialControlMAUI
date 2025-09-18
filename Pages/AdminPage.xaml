@@ -1,0 +1,22 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.AdminPage"
+             Title="管理员设置">
+  <ScrollView>
+    <VerticalStackLayout Padding="24" Spacing="12">
+      <Label Text="配置版本（只读）" />
+      <Entry Text="{Binding SchemaVersion}" IsReadOnly="True"/>
+      <Label Text="后端 IP 地址" />
+      <Entry Text="{Binding IpAddress}" Keyboard="Numeric"/>
+      <Label Text="端口号" />
+      <Entry Text="{Binding Port}" Keyboard="Numeric"/>
+      <Frame BackgroundColor="#eef" Padding="8">
+        <Label Text="{Binding BaseUrl}" />
+      </Frame>
+      <HorizontalStackLayout Spacing="12" Margin="0,12,0,0">
+        <Button Text="保存" Command="{Binding SaveCommand}"/>
+        <Button Text="从包内默认重载" Command="{Binding ResetToPackageCommand}"/>
+      </HorizontalStackLayout>
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

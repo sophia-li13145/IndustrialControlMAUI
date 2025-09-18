@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="IndustrialControlMAUI.Pages.InboundMaterialSearchPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Name="Page"
+    Shell.NavBarIsVisible="True">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="12">
+
+            <!-- 查询区域 -->
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Entry x:Name="OrderEntry"
+                       Grid.Row="0" Grid.Column="0"
+                       Placeholder="请输入入库单号/条码"
+                       Text="{Binding SearchOrderNo}" />
+
+                <Button Grid.Row="0" Grid.Column="1"
+                        Text="查询"
+                        Command="{Binding SearchCommand}" />
+
+                <Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="开始：" VerticalTextAlignment="Center"/>
+                    <DatePicker Grid.Column="1" Date="{Binding StartDate}" />
+                    <Label Grid.Column="2" Text="结束：" VerticalTextAlignment="Center"/>
+                    <DatePicker Grid.Column="3" Date="{Binding EndDate}" />
+                </Grid>
+            </Grid>
+
+            <!-- 列表区域 -->
+            <CollectionView Grid.Row="1"
+                            ItemsSource="{Binding Orders}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedOrder, Mode=TwoWay}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,8,0,0" Padding="12" HasShadow="True" CornerRadius="10">
+                            <!-- 点击整卡片：直接调用 VM 的 GoInboundCommand，并把当前项作为参数 -->
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding BindingContext.GoInboundCommand, Source={x:Reference Page}}"
+                                    CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                  ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Label Grid.Row="0" Grid.Column="0" Text="入库单号：" FontAttributes="Bold"/>
+                                <Label Grid.Row="0" Grid.Column="1" Text="{Binding instockNo}"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Text="入库单类型：" FontAttributes="Bold"/>
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding orderTypeName}" />
+
+                                <Label Grid.Row="2" Grid.Column="0" Text="供应商名称：" FontAttributes="Bold"/>
+                                <Label Grid.Row="2" Grid.Column="1" Text="{Binding supplierName}" />
+
+                                <Label Grid.Row="3" Grid.Column="0" Text="关联到货单号：" FontAttributes="Bold"/>
+                                <Label Grid.Row="3" Grid.Column="1" Text="{Binding arrivalNo}" />
+
+                                <Label Grid.Row="4" Grid.Column="0" Text="创建日期：" FontAttributes="Bold"/>
+                                <Label Grid.Row="4" Grid.Column="1" Text="{Binding createdTime}" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,157 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0-android</TargetFrameworks>
+		<RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>
+		<!-- 将win10-x64改为win-x64 -->
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks)</TargetFrameworks>
+
+		<OutputType>Exe</OutputType>
+		<RootNamespace>IndustrialControl</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- Display name -->
+		<ApplicationTitle>IndustrialControlMAUI</ApplicationTitle>
+
+		<!-- App Identifier -->
+		<ApplicationId>com.ty.industrialcontrol</ApplicationId>
+
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+		<SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<AndroidResource Remove="Platforms\Android\Resources\xml\network_security_config.xml" />
+
+		<!-- 确保 appconfig.json 被打包到应用包，逻辑名=文件名 -->
+		<MauiAsset Include="Resources\Raw\appconfig.json" LogicalName="appconfig.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiAsset>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui" Version="8.0.1" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
+		<PackageReference Include="Serilog" Version="4.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Pages\MoldOperations\OutboundMoldPage.xaml.cs">
+			<DependentUpon>OutboundMoldPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\MoldOperations\InboundMoldPage.xaml.cs">
+			<DependentUpon>InboundMoldPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\MoldOperations\OutboundMoldSearchPage.xaml.cs">
+			<DependentUpon>OutboundMoldSearchPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\WarehouseOperations\OutboundMaterialSearchPage.xaml.cs">
+			<DependentUpon>OutboundMaterialSearchPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\WarehouseOperations\OutboundFinishedSearchPage.xaml.cs">
+			<DependentUpon>OutboundFinishedSearchPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\WarehouseOperations\InboundProductionSearchPage.xaml.cs">
+			<DependentUpon>InboundProductionSearchPage.xaml</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiXaml Update="App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\AdminPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\MoldOperations\OutboundMoldPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\MoldOperations\InboundMoldPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\MoldOperations\OutboundMoldSearchPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\ProductionOperations\MoldOutboundExecutePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\ProductionOperations\WorkOrderSearchPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\BinListPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\BinPickerPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\HomePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\InboundMaterialPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\OutboundMaterialSearchPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\OutboundFinishedSearchPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\InboundProductionSearchPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\InboundMaterialSearchPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\InboundProductionPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\LoginPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\LogsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\OutboundFinishedPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\WarehouseOperations\OutboundMaterialPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+	</ItemGroup>
+
+</Project>
+

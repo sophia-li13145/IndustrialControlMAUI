@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.WorkOrderSearchPage"
+             Shell.NavBarIsVisible="True">
+
+    <!-- 根布局：顶部（蓝条） / 条件区 / 列表 -->
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- 顶部蓝条 -->
+        <Grid Grid.Row="0" BackgroundColor="#007BFF" HeightRequest="56" Padding="16,0">
+            <Label Text="仓储管理系统"
+                   VerticalOptions="Center"
+                   TextColor="White"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+        </Grid>
+
+        <!-- 条件区 -->
+        <VerticalStackLayout Grid.Row="1" Padding="12" Spacing="10">
+            <!-- 第一行：工单号 + 查询 + 扫码图标按钮 -->
+            <Grid ColumnDefinitions="*,Auto,44">
+                <Entry x:Name="OrderEntry"
+                       Placeholder="请输入/扫描工单号"
+                       Text="{Binding Keyword}"
+                       HeightRequest="40" />
+
+                <Button Grid.Column="1"
+                        Text="查询"
+                        HeightRequest="40"
+                        Command="{Binding SearchCommand}" />
+
+                <!-- 图标按钮：避免 Button 内嵌 <Image> 的限制 -->
+                <ImageButton Grid.Column="2"
+                             HeightRequest="40"
+                             WidthRequest="44"
+                             BackgroundColor="Transparent"
+                             Source="scan.png"
+                             Clicked="OnScanHintClicked" />
+            </Grid>
+
+            <!-- 第二行：时间 + 状态 -->
+            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                <DatePicker Date="{Binding StartDate}" />
+                <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
+                <Picker Grid.Column="2"
+                        Title="状态"
+                        WidthRequest="120"
+                        ItemsSource="{Binding StatusOptions}"
+                        ItemDisplayBinding="{Binding Text}"
+                        SelectedItem="{Binding SelectedStatusOption}" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- 列表（自身可滚动，外面不要再套 ScrollView） -->
+        <CollectionView Grid.Row="2"
+                        x:Name="OrderList"
+                        ItemsSource="{Binding Orders}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,6,0,0"
+                           Padding="10"
+                           HasShadow="False"
+                           BorderColor="#E0E6EF">
+                        <!-- 点整卡片就跳转 -->
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer
+        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoExecuteCommand}"
+        CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+
+                        <!-- 列表项内容 -->
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                            <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                                <Label Text="工单编号：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding OrderNo}" />
+                            </Grid>
+                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+                                <Label Text="工单名称：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding OrderName}" />
+                            </Grid>
+                            <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                                <Label Text="状态：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding Status}" />
+                            </Grid>
+                            <Grid Grid.Row="3" ColumnDefinitions="Auto,*">
+                                <Label Text="优先级：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding Urgent}" />
+                            </Grid>
+                            <Grid Grid.Row="4" ColumnDefinitions="Auto,*">
+                                <Label Text="产品名称：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding MaterialName}" />
+                            </Grid>
+                            <Grid Grid.Row="5" ColumnDefinitions="Auto,*">
+                                <Label Text="生产量：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding CurQty}" />
+                            </Grid>
+                            <Grid Grid.Row="6" ColumnDefinitions="Auto,*">
+                                <Label Text="创建时间：" FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding CreateDate, StringFormat='{0:yyyy-M-d}'}" />
+                            </Grid>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

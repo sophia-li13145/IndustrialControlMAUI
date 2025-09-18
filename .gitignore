@@ -1,0 +1,74 @@
+## 忽略编译输出
+bin/
+obj/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio 相关
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## MAUI 平台输出
+# Android
+*.apk
+*.aab
+platforms/android/
+**/bin/Debug/
+**/bin/Release/
+
+# iOS / MacCatalyst
+*.app
+*.ipa
+*.dSYM
+platforms/ios/
+platforms/maccatalyst/
+
+# Windows
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+AppPackages/
+
+## 日志文件
+*.log
+
+## 临时文件
+~*
+*.tmp
+*.temp
+
+## 备份文件
+*.bak
+*.backup
+
+## NuGet
+*.nupkg
+*.snupkg
+# 包缓存目录
+packages/
+# NuGet 本地源
+.nuget/
+
+## 发布/打包文件
+publish/
+artifacts/
+
+## 配置文件（用户环境相关）
+appsettings.Development.json
+appsettings.Local.json
+local.settings.json
+
+## 其他
+# macOS
+.DS_Store
+# Windows 缩略图
+Thumbs.db

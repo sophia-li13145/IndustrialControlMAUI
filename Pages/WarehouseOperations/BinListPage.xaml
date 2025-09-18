@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:dto="clr-namespace:IndustrialControlMAUI.Models"
+             x:Class="IndustrialControlMAUI.Pages.BinListPage"
+             xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
+             Title="选择库位"
+             BackgroundColor="White">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:InventoryStatusToTextConverter x:Key="InvStatusText" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+            <Grid RowDefinitions="Auto,Auto,*" Padding="12">
+        <!-- 标题行 -->
+        <Grid ColumnDefinitions="*,Auto" Padding="0,0,0,8">
+            <Label Text="选择库位" FontSize="18" FontAttributes="Bold" />
+            <Button Text="关闭" Clicked="OnCloseClicked" BackgroundColor="Transparent" />
+        </Grid>
+
+        <!-- 表头 -->
+        <Grid BackgroundColor="#F5F6F7" Padding="8" ColumnDefinitions="*,*,*,*,*,*,*,80">
+            <Label Text="库位编号" FontAttributes="Bold"/>
+            <Label Grid.Column="1" Text="仓库名称" FontAttributes="Bold"/>
+            <Label Grid.Column="2" Text="仓库编码" FontAttributes="Bold"/>
+            <Label Grid.Column="3" Text="层数" FontAttributes="Bold"/>
+            <Label Grid.Column="4" Text="货架" FontAttributes="Bold"/>
+            <Label Grid.Column="5" Text="分区" FontAttributes="Bold"/>
+            <Label Grid.Column="6" Text="存货状态" FontAttributes="Bold"/>
+            <Label Grid.Column="7" Text="操作" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+        </Grid>
+
+        <!-- 列表 -->
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Bins}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="该货架下暂无库位" TextColor="#999" Margin="12"/>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <!-- 绑定 BinInfo -->
+                <DataTemplate x:DataType="dto:BinInfo">
+                    <Grid Padding="8" ColumnDefinitions="*,*,*,*,*,*,*,80" BackgroundColor="White">
+                        <!-- 8列：库位编号/仓库名称/仓库编码/层数/货架/分区/存货状态/操作 -->
+                        <Label Grid.Column="0" Text="{Binding Location}" />
+                        <Label Grid.Column="1" Text="{Binding WarehouseName}" />
+                        <Label Grid.Column="2" Text="{Binding WarehouseCode}" />
+                        <Label Grid.Column="3" Text="{Binding LayerName}" />
+                        <Label Grid.Column="4" Text="{Binding RackName}" />
+                        <Label Grid.Column="5" Text="{Binding ZoneName}" />
+                        <!-- 使用 Converter 把 InventoryStatus 显示为文字 -->
+                        <Label Grid.Column="6"
+                       Text="{Binding InventoryStatus, Converter={StaticResource InvStatusText}}" />
+                        <Button Grid.Column="7"
+                        Text="选择"
+                        Clicked="OnPickClicked"
+                        CommandParameter="{Binding .}" 
+                                 FontSize="12" 
+                            HeightRequest="24"
+                            WidthRequest="50"
+                            Padding="0" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

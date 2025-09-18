@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="IndustrialControlMAUI.Pages.MoldOutboundExecutePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
+    Shell.NavBarIsVisible="True">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- 转换器 -->
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
+
+            <!-- 颜色 -->
+            <Color x:Key="ClrBlue">#3F88F7</Color>
+            <Color x:Key="ClrGreen">#4CAF50</Color>
+            <Color x:Key="ClrGray">#BFC6D4</Color>
+            <Color x:Key="ClrLine">#E0E6EF</Color>
+            <Color x:Key="ClrTextSub">#718096</Color>
+
+            <!-- 卡片样式 -->
+            <Style TargetType="Frame" x:Key="Card">
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="BorderColor" Value="#E5EAF2" />
+                <Setter Property="Padding" Value="12" />
+                <Setter Property="Margin" Value="0,10,0,0" />
+            </Style>
+
+            <Style TargetType="Label" x:Key="SectionTitle">
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="TextColor" Value="#1F2D3D" />
+                <Setter Property="Margin" Value="0,0,0,8" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <Grid Padding="14" RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+            <!-- 工单基础信息（标题 + 顶部流程进度） -->
+            <Frame Grid.Row="0" Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="工单基础信息" Style="{StaticResource SectionTitle}" />
+
+                    <!-- 顶部流程进度：按 VM 的 IsActive/IsDone 高亮；Time 显示日期 -->
+                    <CollectionView ItemsSource="{Binding WorkflowSteps}" SelectionMode="None">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Horizontal" ItemSpacing="26"/>
+                        </CollectionView.ItemsLayout>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <!-- 三列：左连线 | 圆点块 | 右连线；三行：圆点/标题/日期 -->
+                                <Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto,Auto,Auto" Padding="0,0,8,0" WidthRequest="120">
+
+                                    <!-- 左侧连接线（首节点隐藏；颜色随状态变） -->
+                                    <BoxView x:Name="leftLine" Grid.Column="0" Grid.Row="0"
+                 HeightRequest="2" VerticalOptions="Center" Margin="0,13,8,0"
+                 Color="#E0E6EF" IsVisible="{Binding IsFirst, Converter={StaticResource InverseBoolConverter}}">
+                                        <BoxView.Triggers>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsDone}" Value="True">
+                                                <Setter Property="Color" Value="#4CAF50"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="Color" Value="#3F88F7"/>
+                                            </DataTrigger>
+                                        </BoxView.Triggers>
+                                    </BoxView>
+
+                                    <!-- 圆点（中列） -->
+                                    <Grid Grid.Column="1" Grid.Row="0" WidthRequest="26" HeightRequest="26">
+                                        <Ellipse Fill="#BFC6D4" Stroke="#E0E6EF" StrokeThickness="2"/>
+                                        <Ellipse StrokeThickness="0">
+                                            <Ellipse.Triggers>
+                                                <DataTrigger TargetType="Ellipse" Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Fill" Value="#3F88F7"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Ellipse" Binding="{Binding IsDone}" Value="True">
+                                                    <Setter Property="Fill" Value="#4CAF50"/>
+                                                </DataTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                        <!-- 圆内文本：已完成=✔；其余显示序号 -->
+                                        <Label FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" TextColor="White">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsDone}" Value="True">
+                                                    <Setter Property="Text" Value="✔"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsDone}" Value="False">
+                                                    <Setter Property="Text" Value="{Binding Index}"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Grid>
+
+                                    <!-- 右侧连接线（末节点隐藏，保持灰色） -->
+                                    <BoxView Grid.Column="2" Grid.Row="0"
+                 HeightRequest="2" VerticalOptions="Center" Margin="8,13,0,0"
+                 Color="#E0E6EF" IsVisible="{Binding IsLast, Converter={StaticResource InverseBoolConverter}}"/>
+
+                                    <!-- 标题 -->
+                                    <Label Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1"
+               Margin="0,6,0,0"
+               FontSize="12"
+               HorizontalTextAlignment="Center"
+               Text="{Binding Title}" />
+
+                                    <!-- 日期（确保用 StringFormat；Time 为 null 时自然不显示文字） -->
+                                    <Label Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2"
+               FontSize="11"
+               HorizontalTextAlignment="Center"
+               Text="{Binding Time}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 工单基础信息表格（来自搜索页 BaseInfos） -->
+            <!-- 工单基础信息表格（固定字段） -->
+            <Frame Grid.Row="1" Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="80,100,80,80"
+        RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+        RowSpacing="6" ColumnSpacing="8">
+
+                    <!-- 第1行 -->
+                    <Label Grid.Row="0" Grid.Column="0" Text="工单编号：" FontAttributes="Bold"/>
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding OrderNo}" LineBreakMode="TailTruncation"/>
+
+                    <Label Grid.Row="0" Grid.Column="2" Text="状态：" FontAttributes="Bold"/>
+                    <Label Grid.Row="0" Grid.Column="3" Text="{Binding StatusText}" LineBreakMode="TailTruncation"/>
+
+                    <!-- 第2行 -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="工单名称：" FontAttributes="Bold"/>
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding OrderName}" LineBreakMode="TailTruncation"/>
+
+                    <Label Grid.Row="1" Grid.Column="2" Text="优先级：" FontAttributes="Bold"/>
+                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding Urgent}" LineBreakMode="TailTruncation"/>
+
+                    <!-- 第3行 -->
+                    <Label Grid.Row="2" Grid.Column="0" Text="产品名称：" FontAttributes="Bold"/>
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding ProductName}" LineBreakMode="TailTruncation"/>
+
+                    <Label Grid.Row="2" Grid.Column="2" Text="生产数量：" FontAttributes="Bold"/>
+                    <Label Grid.Row="2" Grid.Column="3" Text="{Binding PlanQtyText}" />
+
+                    <!-- 第4行 -->
+                    <Label Grid.Row="3" Grid.Column="0" Text="计划开始日期：" FontAttributes="Bold"/>
+                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding PlanStartText}" />
+
+                    <Label Grid.Row="3" Grid.Column="2" Text="创建日期：" FontAttributes="Bold"/>
+                    <Label Grid.Row="3" Grid.Column="3" Text="{Binding CreateDateText}" />
+
+                    <!-- 第5行 -->
+                    <Label Grid.Row="4" Grid.Column="0" Text="BOM编号：" FontAttributes="Bold"/>
+                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding BomCode}" LineBreakMode="TailTruncation"/>
+
+                    <Label Grid.Row="4" Grid.Column="2" Text="工艺路线名称：" FontAttributes="Bold"/>
+                    <Label Grid.Row="4" Grid.Column="3" Text="{Binding RouteName}" LineBreakMode="TailTruncation"/>
+
+                </Grid>
+            </Frame>
+
+
+            <!-- 工序任务进度（竖向时间轴） -->
+            <Frame Grid.Row="3" Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="工序任务进度" Style="{StaticResource SectionTitle}" />
+
+                    <CollectionView ItemsSource="{Binding ProcessTasks}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <!-- 左 40：圆点 + 竖线；右：名称 + 时间 + 状态 -->
+                                <Grid ColumnDefinitions="40,*" Padding="0,8">
+
+                                    <!-- 左侧：圆点 + 竖线 -->
+                                    <Grid RowDefinitions="Auto,Auto" WidthRequest="40">
+                                        <Grid WidthRequest="26" HeightRequest="26" HorizontalOptions="Center">
+                                            <Ellipse Stroke="{StaticResource ClrLine}" StrokeThickness="2" />
+                                            <Ellipse StrokeThickness="0" x:Name="dotFill" Fill="{StaticResource ClrGray}"/>
+                                            <Label Text="{Binding Index}" FontSize="12" TextColor="White"
+                                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Grid>
+                                        <BoxView Grid.Row="1" WidthRequest="2" HorizontalOptions="Center"
+                                                 Color="{StaticResource ClrLine}" HeightRequest="36"/>
+                                    </Grid>
+
+                                    <!-- 右侧内容 -->
+                                    <Grid Grid.Column="1" RowDefinitions="Auto,Auto">
+                                        <Label Grid.Row="0" Text="{Binding Name}" FontAttributes="Bold" FontSize="14"/>
+
+                                        <HorizontalStackLayout Grid.Row="1" Spacing="12">
+                                            <Label Text="{Binding Start, StringFormat='{}{0:yyyy-MM-dd}'}" FontSize="12" TextColor="{StaticResource ClrTextSub}"/>
+                                            <Label Text="→" FontSize="12" TextColor="{StaticResource ClrTextSub}"/>
+                                            <Label Text="{Binding End,   StringFormat='{}{0:yyyy-MM-dd}'}"   FontSize="12" TextColor="{StaticResource ClrTextSub}"/>
+                                            <Label x:Name="statusLabel" Text="{Binding StatusText}" FontSize="12" />
+                                        </HorizontalStackLayout>
+                                    </Grid>
+
+                                    <!-- 根据 StatusText 着色：完成=绿，进行中=蓝，其它=灰 -->
+                                    <Grid.Triggers>
+                                        <DataTrigger TargetType="Grid" Binding="{Binding StatusText}" Value="完成">
+                                            <Setter TargetName="dotFill" Property="Ellipse.Fill" Value="{StaticResource ClrGreen}" />
+                                            <Setter TargetName="statusLabel" Property="Label.TextColor" Value="{StaticResource ClrGreen}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Grid" Binding="{Binding StatusText}" Value="进行中">
+                                            <Setter TargetName="dotFill" Property="Ellipse.Fill" Value="{StaticResource ClrBlue}" />
+                                            <Setter TargetName="statusLabel" Property="Label.TextColor" Value="{StaticResource ClrBlue}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Grid" Binding="{Binding StatusText}" Value="未开始">
+                                            <Setter TargetName="dotFill" Property="Ellipse.Fill" Value="{StaticResource ClrGray}" />
+                                            <Setter TargetName="statusLabel" Property="Label.TextColor" Value="{StaticResource ClrGray}" />
+                                        </DataTrigger>
+                                    </Grid.Triggers>
+
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 底部按钮 -->
+            <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,10,0,20">
+                <Button Text="取消" Command="{Binding CancelScanCommand}" />
+                <Button Grid.Column="1" Text="确认出库" Command="{Binding ConfirmCommand}" />
+            </Grid>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

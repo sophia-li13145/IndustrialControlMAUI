@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 6,
+  "server": {
+    "ipAddress": "114.250.20.230",
+    "port": 9128
+  },
+  "apiEndpoints": {
+    "login": "/normalService/pda/auth/login",
+    "workOrder": {
+      "page": "/normalService/pda/pmsWorkOrder/pageWorkOrders",
+      "workflow": "/normalService/pda/pmsWorkOrder/getWorkOrderWorkflow",
+      "processTasks": "/normalService/pda/pmsWorkOrder/pageWorkProcessTasks",
+      "dictList": "/normalService/pda/pmsMold/getMoldDictList"
+    },
+    "inbound": {
+      "list": "/normalService/pda/wmsMaterialInstock/getInStock",
+      "detail": "/normalService/pda/wmsMaterialInstock/getInStockDetail",
+      "scanDetail": "/normalService/pda/wmsMaterialInstock/getInStockScanDetail",
+      "scanByBarcode": "/normalService/pda/wmsMaterialInstock/getInStockByBarcode",
+      "scanConfirm": "/normalService/pda/wmsMaterialInstock/scanConfirm",
+      "cancelScan": "/normalService/pda/wmsMaterialInstock/cancelScan",
+      "confirm": "/normalService/pda/wmsMaterialInstock/confirm",
+      "judgeScanAll": "/normalService/pda/wmsMaterialInstock/judgeInstockDetailScanAll"
+    },
+    "mold": {
+      "inStockScanQuery": "/normalService/pda/mold/inStockScanQuery",
+      "inStock": "/normalService/pda/mold/inStock"
+    }
+  },
+  "logging": { "level": "Information" }
+}
+

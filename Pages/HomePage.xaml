@@ -1,0 +1,135 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="IndustrialControlMAUI.Pages.HomePage"
+             Title="作业">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="退出" Clicked="OnLogoutClicked" />
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
+            <!-- 子项一行样式 -->
+            <Style TargetType="Grid" x:Key="ItemRow">
+                <Setter Property="Padding" Value="0,4"/>
+                <Setter Property="ColumnDefinitions" Value="Auto,*"/>
+            </Style>
+        </ContentPage.Resources>
+
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="12">
+
+                <!-- 一级：仓储作业 -->
+                <toolkit:Expander>
+                    <toolkit:Expander.Header>
+                        <Grid Padding="12,10" BackgroundColor="#F5F7FA">
+                            <Label Text="📦 仓储作业" FontSize="18" FontAttributes="Bold"/>
+                        </Grid>
+                    </toolkit:Expander.Header>
+
+                    <VerticalStackLayout Spacing="6" Padding="16,6,0,12">
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbInMat" CheckedChanged="OnInMat"/>
+                            <Label Grid.Column="1" Text="物料入库">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbInMat}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbInProd" CheckedChanged="OnInProd"/>
+                            <Label Grid.Column="1" Text="生产入库">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbInProd}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbOutMat" CheckedChanged="OnOutMat"/>
+                            <Label Grid.Column="1" Text="物料出库">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOutMat}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbOutFinished" CheckedChanged="OnOutFinished"/>
+                            <Label Grid.Column="1" Text="产成品出库接货">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOutFinished}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                    <Grid Style="{StaticResource ItemRow}">
+                        <CheckBox x:Name="cbMoldOut" CheckedChanged="OnMoldOut"/>
+                        <Label Grid.Column="1" Text="模具出库管理">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbMoldOut}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                    <Grid Style="{StaticResource ItemRow}">
+                        <CheckBox x:Name="cbMoldIn" CheckedChanged="OnMoldIn"/>
+                        <Label Grid.Column="1" Text="模具入库管理">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbMoldIn}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </VerticalStackLayout>
+                </toolkit:Expander>
+
+                <!-- 一级：生产作业 -->
+                <toolkit:Expander>
+                    <toolkit:Expander.Header>
+                        <Grid Padding="12,10" BackgroundColor="#F5F7FA">
+                            <Label Text="🏭 生产作业" FontSize="18" FontAttributes="Bold"/>
+                        </Grid>
+                    </toolkit:Expander.Header>
+
+                    <VerticalStackLayout Spacing="6" Padding="16,6,0,12">
+                        <Grid Style="{StaticResource ItemRow}">
+                        <CheckBox x:Name="cbOrderQry" CheckedChanged="OnOrderQry" />
+                            <Label Grid.Column="1" Text="工单查询">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOrderQry}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbOpExec"/>
+                            <Label Grid.Column="1" Text="工序任务执行">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbOpExec}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbParamLog"/>
+                            <Label Grid.Column="1" Text="参数登记">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbParamLog}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+
+                        <Grid Style="{StaticResource ItemRow}">
+                            <CheckBox x:Name="cbBindDevice"/>
+                            <Label Grid.Column="1" Text="设备扫描绑定">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTapToggle" CommandParameter="{x:Reference cbBindDevice}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </VerticalStackLayout>
+                </toolkit:Expander>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>

@@ -1,0 +1,34 @@
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Style x:Key="BlueCardStyle" TargetType="Frame">
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Padding" Value="15"/>
+                <Setter Property="HasShadow" Value="True"/>
+                <Setter Property="BackgroundColor" Value="#1976D2"/>
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <Setter.Value>
+                        <VisualStateGroupList>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#1976D2"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#2196F3"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <converters:NullToBoolConverter x:Key="NullToBoolConverter" xmlns:converters="clr-namespace:IndustrialControlMAUI.Converters" />
+            <converters:IntConverter x:Key="IntConverter" xmlns:converters="clr-namespace:IndustrialControlMAUI.Converters" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
