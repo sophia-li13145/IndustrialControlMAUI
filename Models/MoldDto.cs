@@ -42,6 +42,18 @@ public class WorkOrderMoldView
     public string WorkOrderNo { get; set; } = "";
     public string MaterialName { get; set; } = "";
     public List<MoldModelView> Models { get; set; } = new();
+    public List<ScannedItemView> Scanned { get; set; } = new();
+}
+
+public class ScannedItemView
+{
+    public string MoldCode { get; set; } = "";
+    public string MoldModel { get; set; } = "";
+    public string? Location { get; set; }
+    public bool IzOutStock { get; set; }           // 是否已出库
+    public string? WarehouseCode { get; set; }
+    public string? WarehouseName { get; set; }
+    public string? OutstockDate { get; set; }
 }
 
 public class MoldGroupVm
@@ -75,23 +87,54 @@ public  class WorkOrderMoldDetail
     public string? workOrderNo { get; set; }
 
     public List<PdaBasMoldInfoDTO> pdaBasMoldInfoDTOS { get; set; } = new();
-    public List<PlanProcessRouteResourceAllocationDTO> planProcessRouteResourceAllocationDTOS { get; set; } = new();
+    public List<PlanProcessRouteResourceDemandDTO> planProcessRouteResourceDemandDTOS { get; set; } = new();
 }
 
 /// <summary>左侧：模具型号 + 基础需求数量</summary>
-public  class PdaBasMoldInfoDTO
+// 已扫描/已出库记录 DTO（来自 result.pdaBasMoldInfoDTOS）
+public class PdaBasMoldInfoDTO
 {
+    /// <summary>是否已出库（false=未出库，true=已出库）</summary>
+    public bool izOutStock { get; set; }
+
+    /// <summary>库位</summary>
+    public string? location { get; set; }
+
+    /// <summary>模具编码</summary>
     public string? moldCode { get; set; }
+
+    /// <summary>模具型号</summary>
     public string? moldModel { get; set; }
-    public int baseDemandQty { get; set; }
-    public int demandQty { get; set; }
+
+    /// <summary>出库日期（原样字符串返回）</summary>
+    public string? outstockDate { get; set; }
+
+    /// <summary>使用状态（0=未使用 / 1=使用中；有些环境返回布尔，故用可空 bool 更稳）</summary>
+    public bool? usageStatus { get; set; }
+
+    /// <summary>仓库编码</summary>
+    public string? warehouseCode { get; set; }
+
+    /// <summary>仓库名称</summary>
+    public string? warehouseName { get; set; }
+
+    /// <summary>当前使用中的工单号</summary>
+    public string? workOrderNo { get; set; }
 }
 
+public class PlanProcessRouteResourceDemandDTO
+{
+    public string? model { get; set; }
+    public decimal? demandQty { get; set; }   // 若后端是 decimal/long，请相应调整
+    public List<PlanProcessRouteResourceAllocationDTO>? planProcessRouteResourceAllocationDTOS { get; set; }
+}
+
+
 /// <summary>右侧：资源清单（设备/模具）</summary>
-public  class PlanProcessRouteResourceAllocationDTO
+public class PlanProcessRouteResourceAllocationDTO
 {
     public string? model { get; set; }         // 型号（分组依据）
-    public string? resourceCode { get; set; }  // 设备/模具编号（显示用）
+    public string? code { get; set; }  // 设备/模具编号（显示用）
     public string? resourceType { get; set; }  // dev-设备；mold-模具（如需筛选可用）
 }
 
@@ -118,7 +161,7 @@ public sealed class MoldOutScanQueryResp
 
 public sealed class MoldOutScanQueryData
 {
-    public bool? isOutStock { get; set; }
+    public bool? izOutStock { get; set; }
     public string? location { get; set; }
     public string? moldCode { get; set; }
     public string? moldModel { get; set; }
@@ -129,7 +172,7 @@ public sealed class MoldOutScanQueryData
     public string? workOrderNo { get; set; }
 }
 
-public sealed class MoldOutConfirmReq
+public class MoldOutConfirmReq
 {
     public string? memo { get; set; }              // 备注
     public string? @operator { get; set; }         // 操作人
@@ -290,7 +333,3 @@ public class QueryForWorkOrderData
     public List<PdaBasMoldInfoDTO>? pdaBasMoldInfoDTOS { get; set; } = new();
     public List<PlanProcessRouteResourceAllocationDTO>? planProcessRouteResourceAllocationDTOS { get; set; } = new();
 }
-
-
-
-

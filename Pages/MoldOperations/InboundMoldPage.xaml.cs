@@ -6,11 +6,14 @@ namespace IndustrialControlMAUI.Pages
     public partial class InboundMoldPage : ContentPage
     {
         private readonly InboundMoldViewModel _vm;
+        private readonly IServiceProvider _sp;
 
-        public InboundMoldPage(InboundMoldViewModel vm)
+        public InboundMoldPage(IServiceProvider sp, InboundMoldViewModel vm)
         {
             InitializeComponent();
             BindingContext = _vm = vm;
+            _sp = sp;
+            vm.PickLocationAsync = () => WarehouseLocationPickerPage.ShowAsync(sp, this);
         }
 
         protected override void OnAppearing()
@@ -32,6 +35,12 @@ namespace IndustrialControlMAUI.Pages
                 _vm.SelectedRow = row;  // 触发 CollectionView 的选中高亮
             }
         }
+
+        private void OnScanCompleted(object sender, EventArgs e)
+        {
+            _vm.ScanSubmitCommand.Execute(null);
+        }
+
 
     }
 }

@@ -4,20 +4,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Shell.NavBarIsVisible="True">
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="12" RowSpacing="12">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" >
 
-        <!-- 顶部标题栏 -->
-        <Grid Grid.Row="0" BackgroundColor="#0A73FF" Padding="12">
-            <Label Text="仓储管理系统" TextColor="White" FontAttributes="Bold"/>
+        <Grid Grid.Row="0" BackgroundColor="#007BFF" HeightRequest="60" Padding="16,0">
+            <Label Text="仓储管理系统"
+                   VerticalOptions="Center"
+                   TextColor="White"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
         </Grid>
 
         <!-- 扫描输入行 -->
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
-            <Label Text="模具编码" VerticalOptions="Center"/>
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="16,0">
             <Entry x:Name="ScanEntry"
-                   Grid.Column="1"
-                   Placeholder="请扫描模具条码"
-                   Text="{Binding ScanCode}" />
+                   Placeholder="请扫描/输入模具编码"
+                   Text="{Binding ScanCode}"
+                   ReturnType="Done"
+                   Completed="OnScanCompleted"
+                   WidthRequest="300"
+                   /> 
         </Grid>
 
         <!-- 模具状态信息（绿色卡片，仅加入“使用中”的记录） -->
@@ -98,12 +103,28 @@
 
 
         <!-- 底部操作按钮 -->
-        <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="16">
-            <Button Text="取消扫描" BackgroundColor="#FF5252" TextColor="White"
-                    Command="{Binding CancelScanCommand}" />
-            <Button Grid.Column="1" Text="确认入库" BackgroundColor="#0A73FF" TextColor="White"
-                    Command="{Binding ConfirmInboundCommand}" />
-        </Grid>
+        <Grid Grid.Row="4" ColumnDefinitions="*,*" Padding="16,8" ColumnSpacing="10">
 
+            <Grid Grid.Column="0" BackgroundColor="#F44336" HeightRequest="50">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelScanCommand}" />
+                </Grid.GestureRecognizers>
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image Source="cancel.png" HeightRequest="20" WidthRequest="20" />
+                    <Label Text="取消扫描" Margin="5,0,0,0" VerticalOptions="Center" TextColor="White" />
+                </StackLayout>
+            </Grid>
+
+            <Grid Grid.Column="1" BackgroundColor="#2196F3" HeightRequest="50">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ConfirmInboundCommand}" />
+                </Grid.GestureRecognizers>
+                <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image Source="confirm.png" HeightRequest="20" WidthRequest="20" />
+                    <Label Text="确认入库" Margin="5,0,0,0" VerticalOptions="Center" TextColor="White" />
+                </StackLayout>
+            </Grid>
+
+        </Grid>
     </Grid>
 </ContentPage>

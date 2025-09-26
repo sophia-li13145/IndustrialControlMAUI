@@ -1,8 +1,9 @@
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -25,13 +26,13 @@ namespace IndustrialControlMAUI.ViewModels
             ShowScannedCommand = new RelayCommand(() =>
             {
                 IsScannedVisible = true;
-                ScannedTabColor = "#2196F3";
-                ScannedTextColor = "White";
+                ScannedTabColor = "#CCCCCC";
+                ScannedTextColor = "Green";
             });
 
             CancelScanCommand = new AsyncRelayCommand(CancelScanAsync);
             ConfirmCommand = new AsyncRelayCommand(ConfirmAsync);
-            ScanSubmitCommand = new RelayCommand(ScanSubmit);
+            ScanSubmitCommand = new AsyncRelayCommand(ScanSubmitAsync);
         }
 
         // 无 DI 场景可用的辅助构造（可按需删除）
@@ -56,15 +57,18 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private ScannedRow? selectedScanItem;
 
         [ObservableProperty] private bool isScannedVisible = true;
-        [ObservableProperty] private string scannedTabColor = "#2196F3";
-        [ObservableProperty] private string scannedTextColor = "White";
+        [ObservableProperty] private string scannedTabColor = "#CCCCCC";
+        [ObservableProperty] private string scannedTextColor = "Green";
+
+        private CancellationToken _lifecycleToken = CancellationToken.None;
+        public void SetLifecycleToken(CancellationToken token) => _lifecycleToken = token;
         #endregion
 
         #region 命令
         public ICommand ShowScannedCommand { get; }
         public IAsyncRelayCommand CancelScanCommand { get; }
         public IAsyncRelayCommand ConfirmCommand { get; }
-        public ICommand ScanSubmitCommand { get; }
+        public IAsyncRelayCommand ScanSubmitCommand { get; }
         #endregion
 
         #region 加载
@@ -72,7 +76,7 @@ namespace IndustrialControlMAUI.ViewModels
         {
             WorkOrderNo = workOrderNo;
 
-            var view = await _api.GetViewAsync(workOrderNo);
+            var view = await _api.GetViewAsync(workOrderNo, _lifecycleToken);
             MaterialName = view.MaterialName;
 
             MoldGroups.Clear();
@@ -90,54 +94,97 @@ namespace IndustrialControlMAUI.ViewModels
             // 默认展开第一组（可按需注释）
             if (MoldGroups.Count > 0)
                 MoldGroups[0].SetExpanded(true);
+            // 2) ★ 已扫描列表（来自后端）
+            ScannedList.Clear();
+            var i = 1;
+            foreach (var s in view.Scanned)
+            {
+                ScannedList.Add(new ScannedRow
+                {
+                    Index = i++,
+                    MoldCode = s.MoldCode,
+                    MoldModel = s.MoldModel,
+                    OutQty = 1,                      // 后端若有数量字段可替换
+                    Location = s.Location ?? "",
+                    IsSelected = false
+                });
+            }
+            view.Scanned.Where(x => !x.IzOutStock);
         }
         #endregion
 
         #region 扫码加入明细（支持扫“模具编码”，或扫“型号”批量加入）
-        private void ScanSubmit()
+
+        private async Task ScanSubmitAsync()
         {
             var code = (ScanCode ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(code))
-                return;
+            if (string.IsNullOrWhiteSpace(code)) return;
 
-            // 1) 先按“模具编码”匹配二级
-            var hit = MoldGroups
-                .SelectMany(g => g.Items.Select(i => new { g, i }))
-                .FirstOrDefault(x => string.Equals(x.i.MoldNumber, code, System.StringComparison.OrdinalIgnoreCase));
 
-            if (hit != null)
+            if (string.IsNullOrWhiteSpace(WorkOrderNo))
             {
-                AddOrIncreaseScanned(hit.i.MoldNumber!, hit.g.ModelCode);
-                ScanCode = string.Empty;
+                await Application.Current.MainPage.DisplayAlert("提示", "缺少工单号，无法校验该模具编码。", "知道了");
                 return;
             }
 
-            // 2) 再按“型号”匹配一级（批量加入该型号下所有模具编码）
-            var group = MoldGroups.FirstOrDefault(g =>
-                string.Equals(g.ModelCode, code, System.StringComparison.OrdinalIgnoreCase));
-
-            if (group != null)
+            try
             {
-                foreach (var item in group.Items)
-                    AddOrIncreaseScanned(item.MoldNumber!, group.ModelCode);
+                var resp = await _api.OutStockScanQueryAsync(code, WorkOrderNo, _lifecycleToken);
+                var ok = resp?.success == true && resp.result != null;
+                if (!ok)
+                {
+                    await Application.Current.MainPage.DisplayAlert("提示", $"未查询到该模具编码：{code}", "知道了");
+                    return;
+                }
 
+                var r = resp!.result!;
+                var moldCode = (r.moldCode ?? string.Empty).Trim();
+                var moldModel = (r.moldModel ?? string.Empty).Trim();
+                var location = (r.location ?? string.Empty).Trim();
+                var warehouseCode = (r.warehouseCode ?? string.Empty).Trim();
+                var warehouseName = (r.warehouseName ?? string.Empty).Trim();
+                var isOut = r.izOutStock??false;
+
+                if (isOut)
+                {
+                    await Application.Current.MainPage.DisplayAlert("已出库", $"模具[{moldCode}] 已完成出库，不能重复出库。", "知道了");
+                    return;
+                }
+
+                // 校验型号是否在当前工单的分组中
+                var grp = MoldGroups.FirstOrDefault(g =>
+                    string.Equals(g.ModelCode?.Trim(), moldModel, StringComparison.OrdinalIgnoreCase));
+
+                if (grp == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("不在列表", $"模具型号 [{moldModel}] 不在当前工单的需求列表中。", "知道了");
+                    return;
+                }
+
+                // 加入扫描列表（或数量+1）
+                AddOrIncreaseScanned(moldCode, moldModel, location, warehouseCode, warehouseName);
+
+                // 清空输入，准备下一次
                 ScanCode = string.Empty;
-                return;
             }
-
-            // 3) 未匹配到
-            Application.Current?.MainPage?.DisplayAlert("提示", $"未在当前工单模型中找到：{code}", "知道了");
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert("错误", $"扫描校验失败：{ex.Message}", "好的");
+            }
         }
 
-        private void AddOrIncreaseScanned(string moldCode, string modelCode)
+        // 原方法保留，但增加 location 参数（旧调用点不再使用）
+        private void AddOrIncreaseScanned(string moldCode, string modelCode, string? location = null, string? warehouseCode = null, string? warehouseName = null)
         {
-            // 若已存在同编码，则数量 +1；否则新增一行
             var exist = ScannedList.FirstOrDefault(x =>
-                string.Equals(x.MoldCode, moldCode, System.StringComparison.OrdinalIgnoreCase));
+                string.Equals(x.MoldCode, moldCode, StringComparison.OrdinalIgnoreCase));
 
             if (exist != null)
             {
                 exist.OutQty += 1;
+                // 若后端返回了库位，补上
+                if (!string.IsNullOrWhiteSpace(location) && string.IsNullOrWhiteSpace(exist.Location))
+                    exist.Location = location;
                 return;
             }
 
@@ -147,10 +194,13 @@ namespace IndustrialControlMAUI.ViewModels
                 MoldCode = moldCode,
                 MoldModel = modelCode,
                 OutQty = 1,
-                Location = string.Empty,
+                Location = location ?? string.Empty,
+                OutstockWarehouse = warehouseName ?? string.Empty,
+                OutstockWarehouseCode = warehouseCode ?? string.Empty,
                 IsSelected = false
             });
         }
+       
         #endregion
 
         #region 取消扫描（支持勾选多选移除）
@@ -175,44 +225,77 @@ namespace IndustrialControlMAUI.ViewModels
         #endregion
 
         #region 确认出库
+        private bool _confirming;
+
         private async Task ConfirmAsync()
         {
+            if (_confirming) return;
+
             if (string.IsNullOrWhiteSpace(WorkOrderNo))
             {
                 await Application.Current.MainPage.DisplayAlert("错误", "缺少工单号，无法确认出库。", "OK");
                 return;
             }
-            if (ScannedList.Count == 0)
+
+            // 过滤无效行（空编码或数量<=0）
+            var validItems = ScannedList
+                .Where(x => !string.IsNullOrWhiteSpace(x.MoldCode) && x.OutQty > 0)
+                .ToList();
+
+            if (validItems.Count == 0)
             {
                 bool goOn = await Application.Current.MainPage.DisplayAlert("提示", "当前扫描明细为空，确定继续出库？", "继续", "取消");
                 if (!goOn) return;
             }
 
-            // TODO: 这里根据你项目中「出库确认」的请求模型补齐构造（字段名可能为示例）：
-            // var req = new MoldOutConfirmReq
-            // {
-            //     workOrderNo = WorkOrderNo,
-            //     // 例如：details / outStockDetailList / items
-            //     details = ScannedList.Select(x => new MoldOutDetail
-            //     {
-            //         moldCode = x.MoldCode,
-            //         model = x.MoldModel,
-            //         outQty = x.OutQty,
-            //         location = x.Location
-            //     }).ToList()
-            // };
-            //
-            // var ok = await _api.ConfirmOutStockAsync(req);
-            // if (!ok.Succeeded)
-            // {
-            //     await Application.Current.MainPage.DisplayAlert("错误", ok.Message ?? "确认出库失败。", "OK");
-            //     return;
-            // }
+            // 组装请求
+            var req = new MoldOutConfirmReq
+            {
+                workOrderNo = WorkOrderNo,
+                outstockDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                @operator = Preferences.Get("UserName", string.Empty), 
+                orderType   = "out_mold",
+                orderTypeName = "模具出库",
+                wmsMaterialOutstockDetailList = validItems.Select(x => new MoldOutDetail
+                {
+                    materialName = x.MoldCode,
+                    materialCode = x.MoldCode!,
+                    model = x.MoldModel ?? string.Empty,
+                    outstockQty = x.OutQty,
+                    location = x.Location ?? string.Empty,
+                    // 如后端需要库/库位编码，可在此补充：
+                    outstockWarehouse     = x.OutstockWarehouse,
+                    outstockWarehouseCode = x.OutstockWarehouseCode,
+                }).ToList()
+            };
 
-            // 为保证当前文件可编译运行，先给出占位成功提示：
-            await Application.Current.MainPage.DisplayAlert("成功（占位）", "已调用出库确认，请接入请求模型后提交后端。", "OK");
-            ScannedList.Clear();
+            try
+            {
+                _confirming = true;
+
+                var ok = await _api.ConfirmOutStockAsync(req);
+                if (!ok.Succeeded)
+                {
+                    await Application.Current.MainPage.DisplayAlert("错误", ok.Message ?? "确认出库失败。", "OK");
+                    return;
+                }
+
+                await Application.Current.MainPage.DisplayAlert("成功", "已确认出库。", "OK");
+
+                // 清空并刷新（把“已扫描列表”同步刷新）
+                ScannedList.Clear();
+                await LoadAsync(WorkOrderNo);
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert("错误", $"提交失败：{ex.Message}", "OK");
+            }
+            finally
+            {
+                _confirming = false;
+            }
         }
+
         #endregion
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -268,9 +351,12 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isSelected;
         [ObservableProperty] private int index;
         [ObservableProperty] private string? moldCode;
+        [ObservableProperty] private string? moldName;
         [ObservableProperty] private string? moldModel;
         [ObservableProperty] private int outQty;
         [ObservableProperty] private string? location;
+        [ObservableProperty] private string? outstockWarehouse;
+        [ObservableProperty] private string? outstockWarehouseCode;
     }
     #endregion
 }

@@ -1,11 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using IndustrialControlMAUI.Pages;   // 用于弹出 BinPickerPage / BinListPage
+using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 using ConfirmDetail = IndustrialControlMAUI.Models.InStockDetail;
 // 使用服务层 DTO，避免 VM 内重复定义
 using ConfirmReq = IndustrialControlMAUI.Models.InStockConfirmReq;
+using SharedLocationVM = IndustrialControlMAUI.ViewModels.LocationVM;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -14,6 +16,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string? scanCode;
 
         private readonly IMoldApi _api;
+        private readonly IServiceProvider _sp;
+        public Func<Task<SharedLocationVM?>>? PickLocationAsync { get; set; }
+
 
         public InboundMoldViewModel(IMoldApi api)
         {
@@ -29,50 +34,55 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand]
         private async Task ConfirmInbound()
         {
-            // 1) 选择需要提交的行：优先选中项；若无勾选则提交全部
-            var rows = MoldStatusList.Where(x => x.IsSelected).ToList();
-            if (rows.Count == 0) rows = MoldStatusList.ToList();
+            var rows = MoldStatusList.ToList();
             if (rows.Count == 0)
             {
                 await ShowTip("没有可入库的记录。");
                 return;
             }
 
-            // 2) 弹出库位选择（预选：取第一条的 Location）
-            var preselect = rows[0].Location;
-           // var pickedBin = await BinPickerPage.ShowAsync(preselect);   // 由页面加载库位并返回 BinInfo
-           // if (pickedBin is null) return; // 取消
+            // 2) 弹出库位选择
+            if (PickLocationAsync is null)
+            {
+                await ShowTip("未提供库位选择回调。");
+                return;
+            }
+            SharedLocationVM? picked = await PickLocationAsync(); // 调回页面方法
+            if (picked is null) return;
 
-            // 从 BinInfo 智能提取库位编码（兼容 Code/BinCode/Location 等命名）
-            //string? pickedCode = GetBinCode(pickedBin);
-            //if (string.IsNullOrWhiteSpace(pickedCode))
-            //{
-            //    await ShowTip("未能识别所选库位编码，请重试或检查库位数据。");
-            //    return;
-            //}
+            var mapped = new BinInfo
+            {
+                WarehouseCode = picked.WarehouseCode,
+                WarehouseName = picked.WarehouseName,
+                ZoneCode = picked.Zone,
+                RackCode = picked.Rack,
+                LayerCode = picked.Layer,
+                Location = picked.Location,
+                InventoryStatus = picked.InventoryStatus,
+                InStock = string.Equals(picked.InventoryStatus, "instock", StringComparison.OrdinalIgnoreCase)
+            };
 
             // 3) 组装请求体（/pda/mold/inStock）
             var req = new ConfirmReq
             {
                 instockDate = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                memo = null,
-                @operator = null,
-                orderType = null,
-                orderTypeName = null,
-                workOrderNo = null
+                // memo = null,
+                @operator = Preferences.Get("UserName", string.Empty),
+                orderType = "in_mold",
+                orderTypeName = "模具入库",
+                workOrderNo = MoldStatusList[0].WorkOrderNo
             };
 
             foreach (var r in rows)
             {
-                // 库位使用用户刚刚选择的 pickedCode；其余字段按当前页面能拿到的值映射
                 req.wmsMaterialInstockDetailList.Add(new ConfirmDetail
                 {
                     instockQty = 1,
-                    instockWarehouse = null,
-                    instockWarehouseCode = string.IsNullOrWhiteSpace(r.WarehouseCode) ? null : r.WarehouseCode, // 来自查询
-                   // location = pickedCode,                           // ★ 用户从 BinPicker 选的库位
-                    materialCode = r.MoldCode,                       // ★ 模具编号作为编码
-                    materialName = string.IsNullOrWhiteSpace(r.MoldModel) ? r.MoldCode : r.MoldModel,
+                    instockWarehouse = mapped.WarehouseName,
+                    instockWarehouseCode = mapped.WarehouseCode,
+                    location = mapped.Location,    
+                    materialCode = r.MoldCode,  
+                    materialName = r.MoldCode,
                     model = r.MoldModel
                 });
 
@@ -113,6 +123,14 @@ namespace IndustrialControlMAUI.ViewModels
         public void ClearScan() => MoldStatusList.Clear();
 
         // ============== 扫描回调：查询→分支处理 ==============
+        [RelayCommand]
+        private async Task ScanSubmit()
+        {
+            var text = ScanCode?.Trim();
+            if (!string.IsNullOrEmpty(text))
+                await HandleScannedAsync(text, "");
+            ScanCode = string.Empty;
+        }
         public async Task HandleScannedAsync(string data, string symbology)
         {
             var code = (data ?? string.Empty).Trim();
@@ -170,21 +188,7 @@ namespace IndustrialControlMAUI.ViewModels
             Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask;
 
         // 兼容不同 BinInfo 定义，智能取库位编码
-        private static string? GetBinCode(object? bin)
-        {
-            if (bin is null) return null;
-            var props = new[] { "Code", "BinCode", "Location", "Bin", "Id", "code", "binCode" };
-            foreach (var p in props)
-            {
-                var pi = bin.GetType().GetProperty(p);
-                if (pi != null)
-                {
-                    var v = pi.GetValue(bin)?.ToString();
-                    if (!string.IsNullOrWhiteSpace(v)) return v;
-                }
-            }
-            return null;
-        }
+
     }
 
     // 绿色卡片的数据模型

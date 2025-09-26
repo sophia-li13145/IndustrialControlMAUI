@@ -24,13 +24,14 @@
         <!-- Row 1：扫码输入（不滚动） -->
         <Grid Grid.Row="1" ColumnDefinitions="*,60" Padding="16,8">
             <Entry x:Name="ScanEntry"
-                   Placeholder="请输入/扫描单号/物料/包装条码"
+                   Placeholder="请扫描或输入模具编码"
                    FontSize="14"
                    VerticalOptions="Center"
                    BackgroundColor="White"
                    HeightRequest="40"
-                   Text="{Binding ScanCode}" />
-            <!-- 如需按钮，可在右列放一个 Button -->
+                   Text="{Binding ScanCode}"
+                   ReturnType="Done"
+                   Completed="ScanEntry_Completed" /> 
         </Grid>
 
         <!-- Row 2：主体可滚动区域 -->
