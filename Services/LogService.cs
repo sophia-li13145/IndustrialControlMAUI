@@ -34,24 +34,55 @@ namespace IndustrialControlMAUI.Services
         private async Task LoopAsync(CancellationToken token)
         {
             string last = string.Empty;
-            while (!token.IsCancellationRequested)
+
+            try
             {
-                try
+                while (!token.IsCancellationRequested)
                 {
-                    if (File.Exists(TodayLogPath))
+                    try
                     {
-                        var text = await File.ReadAllTextAsync(TodayLogPath, token);
-                        if (!string.Equals(text, last, StringComparison.Ordinal))
+                        if (File.Exists(TodayLogPath))
                         {
-                            last = text;
-                            LogTextUpdated?.Invoke(text); // 更新UI显示
+                            // 用 FileStream + 共享读，避免写入方占用时报错
+                            using var fs = new FileStream(
+                                TodayLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            using var sr = new StreamReader(fs);
+                            var text = await sr.ReadToEndAsync();
+
+                            if (!string.Equals(text, last, StringComparison.Ordinal))
+                            {
+                                last = text;
+                                // 事件尽量在主线程触发（视你的订阅者而定）
+                                MainThread.BeginInvokeOnMainThread(() => LogTextUpdated?.Invoke(text));
+                            }
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        // token 取消时会跑到这里，直接退出大循环
+                        break;
+                    }
+                    catch
+                    {
+                        // 其他 IO 等异常忽略一轮
+                    }
+
+                    try
+                    {
+                        await Task.Delay(_interval, token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break; // 被 Stop() 取消，正常退出
+                    }
                 }
-                catch { }
-                await Task.Delay(_interval, token);
+            }
+            catch (OperationCanceledException)
+            {
+                // 兜底（通常到不了这里）
             }
         }
+
 
         // 写日志
         public void WriteLog(string message)

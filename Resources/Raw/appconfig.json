@@ -40,7 +40,27 @@
       "page": "/pda/pmsWorkOrder/pageWorkOrders",
       "workflow": "/pda/pmsWorkOrder/getWorkOrderWorkflow",
       "processTasks": "/pda/pmsWorkOrder/pageWorkProcessTasks",
-      "dictList": "/pda/pmsWorkOrder/getWorkOrderDictList"
+      "dictList": "/pda/pmsWorkOrder/getWorkOrderDictList",
+      "dictProcessList": "/pda/pmsWorkOrder/getWorkProcessTaskDictList",
+      "ProcessList": "/pda/pmsWorkOrder/PmsProcessInfoList",
+      "ProcessDetail": "/pda/pmsWorkOrder/getWorkProcessTaskDetail",
+      "shift": "/pda/pmsWorkOrder/getClassesListByWorkShopLine",
+      "device": "/pda/pmsWorkOrder/getPmsEqptPointListByLineProcess",
+      "updateWorkProcess": "/pda/pmsWorkOrder/editWorkProcessTask",
+
+      "startwork": "/pda/pmsWorkOrder/workProcessTaskWorkStart",
+      "completework": "/pda/pmsWorkOrder/workProcessTaskWorkChangeComplete",
+      "pausework": "/pda/pmsWorkOrder/workProcessTaskWorkChange",
+
+      "addMaterial": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialInput",
+      "addOutput": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput",
+
+      "autMaterialList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs",
+      "autOutputList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs",
+
+      "deleteWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput",
+      "deleteWorkProcessTaskOutput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput",
+      "editWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"
     },
     "mold": {
       "inStockScanQuery": "/pda/mold/inStockScanQuery",

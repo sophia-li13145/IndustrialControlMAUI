@@ -64,7 +64,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                 StatusOptions.Clear();
                 _statusMap.Clear();
-                StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
+                //StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
                 if (auditField?.dictItems != null)
                 {
                     foreach (var d in auditField.dictItems)
@@ -74,13 +74,15 @@ namespace IndustrialControlMAUI.ViewModels
 
                         var name = d.dictItemName ?? val;
                         _statusMap[val] = name; // ★ 建立码→名映射
-
-                        StatusOptions.Add(new StatusOption
-                        {
-                            Text = name,
-                            Value = val
-                        });
+                        if (name == "待执行" || name == "执行中") {
+                            StatusOptions.Add(new StatusOption
+                            {
+                                Text = name,
+                                Value = val
+                            });
+                        } 
                     }
+                    
                 }
                 SelectedStatusOption ??= StatusOptions.FirstOrDefault();
 
@@ -115,8 +117,8 @@ namespace IndustrialControlMAUI.ViewModels
             }
             catch (Exception ex)
             {
-                if (StatusOptions.Count == 0)
-                    StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
+                //if (StatusOptions.Count == 0)
+                   // StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
                 if (ProcessOptions.Count == 0)
                     ProcessOptions.Add(new StatusOption { Text = "全部", Value = null });
                 ApplyLastProcessSelectionIfAny();
@@ -178,7 +180,7 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var t in records)
                     {
                         if (!string.IsNullOrWhiteSpace(t.AuditStatus) &&
-                        _statusMap.TryGetValue(t.AuditStatus, out var sName)) 
+                        _statusMap.TryGetValue(t.AuditStatus, out var sName))
                             t.AuditStatusName = sName;
                         if (!string.IsNullOrWhiteSpace(t.WorkOrderAuditStatus) &&
                        _orderstatusMap.TryGetValue(t.WorkOrderAuditStatus, out var sName2))
@@ -189,11 +191,15 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var t in records)
                         Orders.Add(t);
                 }
+                else {
+                    await ShowTip("未查询到任何数据");
+                }
             }
             finally { IsBusy = false; }
         }
 
-
+        private Task ShowTip(string message) =>
+           Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
         private void ClearFilters()
         {

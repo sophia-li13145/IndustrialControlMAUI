@@ -95,6 +95,12 @@
 		<Compile Update="Pages\ProductionOperations\ProcessTaskSearchPage.xaml.cs">
 		  <DependentUpon>ProcessTaskSearchPage.xaml</DependentUpon>
 		</Compile>
+		<Compile Update="Pages\Quality\ProcessQualitySearchPage.xaml.cs">
+		  <DependentUpon>ProcessQualitySearchPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\Quality\ProcessQualityDetailPage.xaml.cs">
+		  <DependentUpon>ProcessQualityDetailPage.xaml</DependentUpon>
+		</Compile>
 		<Compile Update="Pages\WarehouseOperations\OutboundFinishedSearchPage.xaml.cs">
 			<DependentUpon>OutboundFinishedSearchPage.xaml</DependentUpon>
 		</Compile>
@@ -132,6 +138,15 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\ProductionOperations\WorkProcessTaskDetailPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Quality\ProcessQualitySearchPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Quality\ProcessQualityDetailPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Shared\DateTimePickerPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Shared\WarehouseLocationPickerPage.xaml">

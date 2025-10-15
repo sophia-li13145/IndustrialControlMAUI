@@ -25,7 +25,7 @@ public class WorkOrderDto
     public string? RouteName { get; set; }
     public string? WorkShopName { get; set; }
 }
-
+public enum TaskRunState { NotStarted, Running, Paused, Finished }
 public class WorkOrderSummary
 {
     public string OrderNo { get; set; } = "";
@@ -241,6 +241,56 @@ public class ProcessTask
     public string? AuditStatus { get; set; } // 接口返回的原始值
     [JsonIgnore] // 不参与序列化
     public string? AuditStatusName { get; set; } // 页面绑定用
+}
+
+public class MaterialAuRecord
+{
+    public string? CreatedTime { get; set; }
+    public string? Creator { get; set; }
+    public bool DelStatus { get; set; }
+    public string? FactoryCode { get; set; }
+    public string? Id { get; set; }
+    public string? MaterialClassName { get; set; }
+    public string? MaterialCode { get; set; }
+    public string? MaterialName { get; set; }
+    public string? MaterialTypeName { get; set; }
+    public string? Memo { get; set; }
+    public string? ModifiedTime { get; set; }
+    public string? Modifier { get; set; }
+    public string? OperateTime { get; set; }
+    public string? PlatPlanNo { get; set; }
+    public string? ProcessCode { get; set; }
+    public string? ProcessName { get; set; }
+    public decimal Qty { get; set; }
+    public string? RawMaterialProductionDate { get; set; }
+    public string? SchemeNo { get; set; }
+    public string? Unit { get; set; }
+    public string? WorkOrderNo { get; set; }
+}
+
+public class OutputAuRecord
+{
+    public string? CreatedTime { get; set; }
+    public string? Creator { get; set; }
+    public bool DelStatus { get; set; }
+    public string? FactoryCode { get; set; }
+    public string? Id { get; set; }
+    public string? MaterialClassName { get; set; }
+    public string? MaterialCode { get; set; }
+    public string? MaterialName { get; set; }
+    public string? MaterialTypeName { get; set; }
+    public string? Memo { get; set; }
+    public string? ModifiedTime { get; set; }
+    public string? Modifier { get; set; }
+    public string? OperateTime { get; set; }
+    public string? PlatPlanNo { get; set; }
+    public string? ProcessCode { get; set; }
+    public string? ProcessName { get; set; }
+    public decimal Qty { get; set; }
+    public string? RawMaterialProductionDate { get; set; }
+    public string? SchemeNo { get; set; }
+    public string? Unit { get; set; }
+    public string? WorkOrderNo { get; set; }
 }
 public class StatusOption
 {
@@ -492,4 +542,17 @@ public class MaterialInputResult
     public string? Memo { get; set; }
     public string? Unit { get; set; }
     public DateTime? OperationTime { get; set; }
+}
+
+public class DeleteWorkProcessTaskMaterialInputReq
+{
+    public string? id { get; set; }
+}
+
+public class EditWorkProcessTaskMaterialInputReq
+{
+    public string? id { get; set; }                       // 主键
+    public string? memo { get; set; }                     // 备注
+    public decimal? qty { get; set; }                     // 数量
+    public string? rawMaterialProductionDate { get; set; } // 原料生产日期（"yyyy-MM-dd" 或 "yyyy-MM-dd HH:mm:ss"）
 }

@@ -92,7 +92,7 @@ public partial class LoginViewModel : ObservableObject
                 Preferences.Set("RememberPassword", false);
             }
 
-            App.SwitchToLoggedInShell();
+             App.SwitchToLoggedInShell();
         }
         catch (OperationCanceledException)
         {

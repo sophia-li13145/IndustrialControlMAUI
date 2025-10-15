@@ -1,5 +1,6 @@
 <ContentPage
     x:Class="IndustrialControlMAUI.Pages.WorkProcessTaskDetailPage"
+    x:Name="Root"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:IndustrialControlMAUI.ViewModels"
@@ -11,6 +12,7 @@
             <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
             <conv:ProcessBoolToColorConverter x:Key="BoolToColor" />
             <conv:IndexConverter x:Key="IndexConverter" />
+            <conv:NullOrEmptyPlaceholderConverter x:Key="PlaceholderConverter" />
             <Style x:Key="TopActionButton" TargetType="Button">
                 <Setter Property="HeightRequest" Value="36" />
                 <Setter Property="CornerRadius" Value="8" />
@@ -40,6 +42,71 @@
             </Style>
             <Style x:Key="BtnBlue" BasedOn="{StaticResource TopActionButton}" TargetType="Button">
                 <Setter Property="BackgroundColor" Value="#1E76FF" />
+            </Style>
+            <!--<Style x:Key="HyperlinkLabelStyle" TargetType="Label">
+                <Setter Property="TextDecorations" Value="Underline" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="Padding" Value="2,0" />
+                --><!-- 默认显示为“有值时”的链接颜色 --><!--
+                <Setter Property="TextColor" Value="#2D6AE3" />
+                <Style.Triggers>
+                    --><!-- 值为空：浅灰“请选择” --><!--
+                    <DataTrigger TargetType="Label" Binding="{Binding RawMaterialProductionDate}" Value="">
+                        <Setter Property="TextColor" Value="#999999" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Label" Binding="{Binding RawMaterialProductionDate}" Value="{x:Null}">
+                        <Setter Property="TextColor" Value="#999999" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>-->
+            <!-- 日期“超链接”标签样式 -->
+            <Style x:Key="DateActionLabelStyle" TargetType="Label">
+                <Setter Property="TextDecorations" Value="Underline" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="Padding" Value="2,0" />
+                <!-- 默认当有值时的“可编辑”颜色 -->
+                <Setter Property="TextColor" Value="#2D6AE3" />
+                <Style.Triggers>
+                    <!-- 正在编辑 & 没有值：浅灰（提示去选择） -->
+                    <MultiTrigger TargetType="Label">
+                        <MultiTrigger.Conditions>
+                            <BindingCondition Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}" Value="True" />
+                            <BindingCondition Binding="{Binding RawMaterialProductionDate}" Value="" />
+                        </MultiTrigger.Conditions>
+                        <Setter Property="TextColor" Value="#2D6AE3" />
+                    </MultiTrigger>
+                    <MultiTrigger TargetType="Label">
+                        <MultiTrigger.Conditions>
+                            <BindingCondition Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}" Value="True" />
+                            <BindingCondition Binding="{Binding RawMaterialProductionDate}" Value="{x:Null}" />
+                        </MultiTrigger.Conditions>
+                        <Setter Property="TextColor" Value="#2D6AE3" />
+                    </MultiTrigger>
+
+                    <!-- 不可编辑：无论是否有值，统一置灰 & 禁止点击（InputTransparent 由外层Grid控制，见下） -->
+                    <DataTrigger TargetType="Label"
+                                 Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}"
+                                 Value="False">
+                        <Setter Property="TextColor" Value="#BDBDBD" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- “删除”标签样式 -->
+            <Style x:Key="DeleteActionLabelStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="Red" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Style.Triggers>
+                    <!-- 不可编辑：置灰 -->
+                    <DataTrigger TargetType="Label"
+                                 Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}"
+                                 Value="False">
+                        <Setter Property="TextColor" Value="#BDBDBD" />
+                    </DataTrigger>
+                </Style.Triggers>
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -261,11 +328,12 @@
                 <Grid Margin="0,12,0,8" IsVisible="{Binding IsInputVisible}">
                     <Button Text="＋ 新增投料"
             HorizontalOptions="Start"
-            Command="{Binding AddMaterialInputCommand}" />
+            Command="{Binding AddMaterialInputCommand}"
+                            IsEnabled="{Binding IsEditing}"/>
                 </Grid>
 
                 <!-- ③ 投料记录表头 -->
-                <Grid ColumnDefinitions="40,60,40,60,80,60,60"
+                <Grid ColumnDefinitions="20,60,30,30,60,60,60,40"
       BackgroundColor="#E8F0FE"
       Padding="4"
       RowSpacing="1"
@@ -276,15 +344,16 @@
                     <Label Text="单位" Grid.Column="2" FontAttributes="Bold" />
                     <Label Text="投入数量" Grid.Column="3" FontAttributes="Bold" />
                     <Label Text="原料生产日期" Grid.Column="4" FontAttributes="Bold" />
-                    <Label Text="备注" Grid.Column="5" FontAttributes="Bold" />
-                    <Label Text="操作" Grid.Column="6" FontAttributes="Bold" />
+                    <Label Text="操作时间" Grid.Column="5" FontAttributes="Bold" />
+                    <Label Text="备注" Grid.Column="6" FontAttributes="Bold" />
+                    <Label Text="操作" Grid.Column="7" FontAttributes="Bold" />
                 </Grid>
 
                 <!-- ④ 投料记录列表 -->
                 <CollectionView x:Name="MaterialListView" ItemsSource="{Binding MaterialInputRecords}" IsVisible="{Binding IsInputVisible}" >
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="40,60,40,60,80,60,60"
+                            <Grid ColumnDefinitions="20,60,30,30,60,60,60,40"
                   Padding="4"
                   RowSpacing="1"
                   ColumnSpacing="1"
@@ -293,16 +362,52 @@
                                 <Label Grid.Column="1" Text="{Binding MaterialName}" />
                                 <Label Grid.Column="2" Text="{Binding Unit}" />
                                 <Label Grid.Column="3" Text="{Binding Qty, StringFormat='{0:G29}'}" />
-                                <Label Grid.Column="4" Text="{Binding RawMaterialProductionDate, StringFormat='{0:yyyy-M-d HH:mm}'}" />
-                                <Label Grid.Column="5" Text="{Binding Memo}" />
-                                <Label Grid.Column="6"
-                       Text="删除"
-                       TextColor="Red">
+                                <!-- 第4列：原料生产日期 = 超链接；不可编辑则整格禁点 -->
+                                <Grid Grid.Column="4"
+      BackgroundColor="Transparent">
+                                    <!-- 当 IsEditing=false 时，整格不接收触摸事件（彻底不能点） -->
+                                    <Grid.Triggers>
+                                        <DataTrigger TargetType="Grid"
+                     Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}"
+                     Value="False">
+                                            <Setter Property="InputTransparent" Value="True" />
+                                        </DataTrigger>
+                                    </Grid.Triggers>
+
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer
+            Command="{Binding Source={x:Reference Root}, Path=BindingContext.EditMaterialRawDateCommand}"
+            CommandParameter="{Binding .}" />
+                                    </Grid.GestureRecognizers>
+
+                                    <Label Style="{StaticResource DateActionLabelStyle}"
+           Text="{Binding RawMaterialProductionDate,
+                          Converter={StaticResource PlaceholderConverter},
+                          ConverterParameter=请选择}" />
+                                </Grid>
+
+                                <Label Grid.Column="5" 
+Text="{Binding OperateTime, StringFormat='{0:yyyy-M-d H:mm}'}" />
+                                <Label Grid.Column="6" Text="{Binding Memo}" />
+                                <Label Grid.Column="7"
+       Style="{StaticResource DeleteActionLabelStyle}"
+       Text="删除">
+                                    <!-- 当 IsEditing=false 时，禁用点击 -->
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label"
+                     Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}"
+                     Value="False">
+                                            <Setter Property="InputTransparent" Value="True" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+
                                     <Label.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteMaterialInputCommand}"
-                                              CommandParameter="{Binding .}" />
+                                        <TapGestureRecognizer
+            Command="{Binding Source={x:Reference Root}, Path=BindingContext.DeleteMaterialInputCommand}"
+            CommandParameter="{Binding .}" />
                                     </Label.GestureRecognizers>
                                 </Label>
+
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -366,7 +471,8 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                 <Grid Margin="0,12,0,8" IsVisible="{Binding IsOutputVisible}">
                     <Button Text="＋ 新增产出"
             HorizontalOptions="Start"
-            Command="{Binding AddOutputCommand}" />
+            Command="{Binding AddOutputCommand}"
+                            IsEnabled="{Binding IsEditing}"/>
                 </Grid>
 
                 <!-- 产出记录表头 -->
@@ -402,12 +508,24 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                        Text="{Binding OperateTime, StringFormat='{0:yyyy-M-d H:mm}'}" />
                                 <Label Grid.Column="5" Text="{Binding Memo}" />
                                 <Label Grid.Column="6"
-                       Text="删除" TextColor="Red">
+       Style="{StaticResource DeleteActionLabelStyle}"
+       Text="删除">
+                                    <!-- 当 IsEditing=false 时，禁用点击 -->
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label"
+                     Binding="{Binding Source={x:Reference Root}, Path=BindingContext.IsEditing}"
+                     Value="False">
+                                            <Setter Property="InputTransparent" Value="True" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+
                                     <Label.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteOutputCommand}"
-                                              CommandParameter="{Binding .}" />
+                                        <TapGestureRecognizer
+            Command="{Binding Source={x:Reference Root}, Path=BindingContext.DeleteOutputCommand}"
+            CommandParameter="{Binding .}" />
                                     </Label.GestureRecognizers>
                                 </Label>
+
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

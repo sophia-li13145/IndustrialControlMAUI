@@ -50,6 +50,39 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<bool>> AddWorkProcessTaskMaterialInputAsync(AddWorkProcessTaskMaterialInputReq req);
 
         Task<ApiResp<bool>> AddWorkProcessTaskProductOutputAsync(AddWorkProcessTaskProductOutputReq req);
+
+        Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
+                string factoryCode,          // 工厂编码（必填）
+                string processCode,          // 工序编码（必填）
+                string workOrderNo,          // 工单号（必填）
+                int pageNo = 1,              // 当前页（必填）
+                int pageSize = 50,           // 每页条数（必填）
+                string? materialCode = null, // 物料编码（可选）
+                bool? searchCount = null,    // 是否计算总记录数（可选）
+                CancellationToken ct = default);
+
+        Task<PageResp<OutputAuRecord>?> PageWorkProcessTaskOutputs(
+                string factoryCode,          // 工厂编码（必填）
+                string processCode,          // 工序编码（必填）
+                string workOrderNo,          // 工单号（必填）
+                int pageNo = 1,              // 当前页（必填）
+                int pageSize = 50,           // 每页条数（必填）
+                string? materialCode = null, // 物料编码（可选）
+                bool? searchCount = null,    // 是否计算总记录数（可选）
+                CancellationToken ct = default);
+        Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
+    string id,
+    CancellationToken ct = default);
+
+        Task<ApiResp<bool>> DeleteWorkProcessTaskOutputAsync(
+   string id,
+   CancellationToken ct = default);
+        Task<ApiResp<bool>> EditWorkProcessTaskMaterialInputAsync(
+            string id,
+            decimal? qty = null,
+            string? memo = null,
+            string? rawMaterialProductionDate = null,
+            CancellationToken ct = default);
     }
 
 
@@ -72,6 +105,12 @@ namespace IndustrialControlMAUI.Services
         private readonly string _pauseworkEndpoint;
         private readonly string _addMaterialEndpoint;
         private readonly string _addOutputEndpoint;
+        private readonly string _autMaterialListEndpoint;
+        private readonly string _autOutputListEndpoint;
+        private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
+        private readonly string _deleteWorkProcessTaskOutputEndpoint;
+        private readonly string _editWorkProcessTaskMaterialInputEndpoint;
+        private readonly string _editWorkProcessTaskOutputEndpoint;
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -120,6 +159,16 @@ namespace IndustrialControlMAUI.Services
                 configLoader.GetApiPath("workOrder.addMaterial", "/pda/pmsWorkOrder/addWorkProcessTaskMaterialInput"), servicePath);
             _addOutputEndpoint = NormalizeRelative(
                     configLoader.GetApiPath("workOrder.addOutput", "/pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput"), servicePath);
+            _autMaterialListEndpoint = NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.autMaterialList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs"), servicePath);
+            _autOutputListEndpoint = NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.autOutputList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs"), servicePath);
+            _deleteWorkProcessTaskMaterialInputEndpoint = NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.deleteWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput"), servicePath);
+            _deleteWorkProcessTaskOutputEndpoint = NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.deleteWorkProcessTaskOutput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput"), servicePath);
+            _editWorkProcessTaskMaterialInputEndpoint = NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.editWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"), servicePath);
         }
         // ===== 公共工具 =====
         private static string BuildFullUrl(Uri? baseAddress, string url)
@@ -518,6 +567,212 @@ namespace IndustrialControlMAUI.Services
             var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
             return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
         }
+
+        //实际投料列表
+        public async Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
+            string factoryCode,          // 工厂编码（必填）
+            string processCode,          // 工序编码（必填）
+            string workOrderNo,          // 工单号（必填）
+            int pageNo = 1,              // 当前页（必填）
+            int pageSize = 50,           // 每页条数（必填）
+            string? materialCode = null, // 物料编码（可选）
+            bool? searchCount = null,    // 是否计算总记录数（可选）
+            CancellationToken ct = default)
+        {
+            // 基础校验（避免发出无效请求）
+            if (string.IsNullOrWhiteSpace(factoryCode))
+                throw new ArgumentException("factoryCode 不能为空", nameof(factoryCode));
+            if (string.IsNullOrWhiteSpace(processCode))
+                throw new ArgumentException("processCode 不能为空", nameof(processCode));
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+                throw new ArgumentException("workOrderNo 不能为空", nameof(workOrderNo));
+            if (pageNo <= 0) pageNo = 1;
+            if (pageSize <= 0) pageSize = 50;
+
+            // 由于需要 application/x-www-form-urlencoded 的 query 形式，直接拼接查询串即可
+            var pairs = new List<KeyValuePair<string, string>>
+    {
+        new("factoryCode", factoryCode.Trim()),
+        new("pageNo",      pageNo.ToString()),
+        new("pageSize",    pageSize.ToString()),
+        new("processCode", processCode.Trim()),
+        new("workOrderNo", workOrderNo.Trim())
+    };
+
+            if (!string.IsNullOrWhiteSpace(materialCode))
+                pairs.Add(new("materialCode", materialCode.Trim()));
+            if (searchCount.HasValue)
+                pairs.Add(new("searchCount", searchCount.Value ? "true" : "false"));
+
+            string BuildQueryMulti(IEnumerable<KeyValuePair<string, string>> kvs)
+                => string.Join("&", kvs.Select(kv =>
+                       $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+
+            // 该 endpoint 应对应文档中的：/normalService/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs
+            var url = _autMaterialListEndpoint + "?" + BuildQueryMulti(pairs);
+            var full = BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var httpResp = await _http.SendAsync(req, ct);
+            var json = await httpResp.Content.ReadAsStringAsync(ct);
+
+            if (!httpResp.IsSuccessStatusCode)
+                return new PageResp<MaterialAuRecord> { success = false, message = $"HTTP {(int)httpResp.StatusCode}" };
+
+            // 大小写不敏感，兼容后端返回
+            return JsonSerializer.Deserialize<PageResp<MaterialAuRecord>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?? new PageResp<MaterialAuRecord>();
+        }
+        //实际产出列表
+        public async Task<PageResp<OutputAuRecord>?> PageWorkProcessTaskOutputs(
+            string factoryCode,          // 工厂编码（必填）
+            string processCode,          // 工序编码（必填）
+            string workOrderNo,          // 工单号（必填）
+            int pageNo = 1,              // 当前页（必填）
+            int pageSize = 50,           // 每页条数（必填）
+            string? materialCode = null, // 物料编码（可选）
+            bool? searchCount = null,    // 是否计算总记录数（可选）
+            CancellationToken ct = default)
+        {
+            // 基础校验（避免发出无效请求）
+            if (string.IsNullOrWhiteSpace(factoryCode))
+                throw new ArgumentException("factoryCode 不能为空", nameof(factoryCode));
+            if (string.IsNullOrWhiteSpace(processCode))
+                throw new ArgumentException("processCode 不能为空", nameof(processCode));
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+                throw new ArgumentException("workOrderNo 不能为空", nameof(workOrderNo));
+            if (pageNo <= 0) pageNo = 1;
+            if (pageSize <= 0) pageSize = 50;
+
+            // 由于需要 application/x-www-form-urlencoded 的 query 形式，直接拼接查询串即可
+            var pairs = new List<KeyValuePair<string, string>>
+    {
+        new("factoryCode", factoryCode.Trim()),
+        new("pageNo",      pageNo.ToString()),
+        new("pageSize",    pageSize.ToString()),
+        new("processCode", processCode.Trim()),
+        new("workOrderNo", workOrderNo.Trim())
+    };
+
+            if (!string.IsNullOrWhiteSpace(materialCode))
+                pairs.Add(new("materialCode", materialCode.Trim()));
+            if (searchCount.HasValue)
+                pairs.Add(new("searchCount", searchCount.Value ? "true" : "false"));
+
+            string BuildQueryMulti(IEnumerable<KeyValuePair<string, string>> kvs)
+                => string.Join("&", kvs.Select(kv =>
+                       $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+
+            // 该 endpoint 应对应文档中的：/normalService/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs
+            var url = _autOutputListEndpoint + "?" + BuildQueryMulti(pairs);
+            var full = BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var httpResp = await _http.SendAsync(req, ct);
+            var json = await httpResp.Content.ReadAsStringAsync(ct);
+
+            if (!httpResp.IsSuccessStatusCode)
+                return new PageResp<OutputAuRecord> { success = false, message = $"HTTP {(int)httpResp.StatusCode}" };
+
+            // 大小写不敏感，兼容后端返回
+            return JsonSerializer.Deserialize<PageResp<OutputAuRecord>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?? new PageResp<OutputAuRecord>();
+        }
+        //单条删除投料
+        public async Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
+    string id,
+    CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return new ApiResp<bool> { success = false, message = "id 不能为空" };
+            
+            var full = BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskMaterialInputEndpoint);
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new DeleteWorkProcessTaskMaterialInputReq { id = id }, _json),
+                    Encoding.UTF8,
+                    "application/json")
+            };
+
+            var resp = await _http.SendAsync(req, ct);
+            resp.EnsureSuccessStatusCode();
+
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<bool>>(stream, _json, ct);
+
+            return data ?? new ApiResp<bool> { success = false, message = "empty response" };
+        }
+        //单条删除产出
+        public async Task<ApiResp<bool>> DeleteWorkProcessTaskOutputAsync(
+   string id,
+   CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return new ApiResp<bool> { success = false, message = "id 不能为空" };
+
+            var full = BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskOutputEndpoint);
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new DeleteWorkProcessTaskMaterialInputReq { id = id }, _json),
+                    Encoding.UTF8,
+                    "application/json")
+            };
+
+            var resp = await _http.SendAsync(req, ct);
+            resp.EnsureSuccessStatusCode();
+
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<bool>>(stream, _json, ct);
+
+            return data ?? new ApiResp<bool> { success = false, message = "empty response" };
+        }
+
+        // 编辑投料记录
+        public async Task<ApiResp<bool>> EditWorkProcessTaskMaterialInputAsync(
+            string id,
+            decimal? qty = null,
+            string? memo = null,
+            string? rawMaterialProductionDate = null,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return new ApiResp<bool> { success = false, message = "id 不能为空" };
+
+            // 例如：_editWorkProcessTaskMaterialInputEndpoint = "/normalService/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"
+            var full = BuildFullUrl(_http.BaseAddress, _editWorkProcessTaskMaterialInputEndpoint);
+
+            var body = new EditWorkProcessTaskMaterialInputReq
+            {
+                id = id.Trim(),
+                memo = string.IsNullOrWhiteSpace(memo) ? null : memo!.Trim(),
+                qty = qty,
+                rawMaterialProductionDate = string.IsNullOrWhiteSpace(rawMaterialProductionDate)
+                    ? null
+                    : rawMaterialProductionDate!.Trim()
+            };
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                // _json 建议包含：DefaultIgnoreCondition = WhenWritingNull，避免把 null 发给后端
+                Content = new StringContent(JsonSerializer.Serialize(body, _json), Encoding.UTF8, "application/json")
+            };
+
+            var resp = await _http.SendAsync(req, ct);
+            resp.EnsureSuccessStatusCode();
+
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<bool>>(stream, _json, ct);
+
+            return data ?? new ApiResp<bool> { success = false, message = "empty response" };
+        }
+
+        
     }
 
 }

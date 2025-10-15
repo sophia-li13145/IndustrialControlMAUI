@@ -178,7 +178,7 @@
        Padding="8,0,8,24">
 
                 <!-- 工单查询 -->
-                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                <!--<Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
                      BackgroundColor="#00ACC1"
@@ -192,7 +192,7 @@
                     HorizontalTextAlignment="Center" TextColor="#333"/>
                     </VerticalStackLayout>
 
-                </Frame>
+                </Frame>-->
 
                 <!-- 工序任务执行 -->
                 <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
@@ -214,6 +214,89 @@
                 </Frame>
 
                
+
+            </Grid>
+            <!-- 仓储作业 -->
+            <Label Text="质检作业" Style="{StaticResource SectionTitle}"/>
+
+            <Grid ColumnDefinitions="*,*"
+RowDefinitions="Auto,Auto,Auto"
+Padding="8,0,8,24">
+
+                <!-- 质检单单查询 -->
+                <!--<Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+             <VerticalStackLayout HorizontalOptions="Center">
+                 <Border HeightRequest="64" WidthRequest="64"
+              BackgroundColor="#00ACC1"
+              StrokeShape="RoundRectangle 32">
+                     <Image Source="pen_24_filled.svg"
+                 HeightRequest="28" WidthRequest="28"
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center"/>
+                 </Border>
+                 <Label Text="工单查询 " FontSize="12" Margin="0,6,0,0"
+             HorizontalTextAlignment="Center" TextColor="#333"/>
+             </VerticalStackLayout>
+
+         </Frame>-->
+
+                <!-- 来料质检执行IQC -->
+                <!--<Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+              BackgroundColor="#26C6DA"
+              StrokeShape="RoundRectangle 32">
+                            <Image Source="checkmark_circle_24_filled.svg"
+                 HeightRequest="28" WidthRequest="28"
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="工序任务执行" FontSize="12" Margin="0,6,0,0"
+             HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInProcess"/>
+                    </Frame.GestureRecognizers>
+                </Frame>-->
+
+                <!-- 过程质检执行IPQC -->
+                <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#00796B"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="search_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="过程质检执行IPQC" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnIPQC"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <!-- 成品质检执行FQC -->
+                <!--<Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#FF7043"
+                                StrokeShape="RoundRectangle 32">
+                            <Image Source="vehicle_truck_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="成品质检执行FQC" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnFQC"/>
+                    </Frame.GestureRecognizers>
+                </Frame>-->
+
 
             </Grid>
         </VerticalStackLayout>

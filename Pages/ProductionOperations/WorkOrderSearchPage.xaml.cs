@@ -15,27 +15,27 @@ public partial class WorkOrderSearchPage : ContentPage
         InitializeComponent();
         BindingContext = vm;
         _vm = vm;
-        _scanSvc = scanSvc;
+        //_scanSvc = scanSvc;
 
-        // 与现有页面一致的扫码策略
-        _scanSvc.Prefix = null;
-        _scanSvc.Suffix = null;
-        _scanSvc.DebounceMs = 0;
+        //// 与现有页面一致的扫码策略
+        //_scanSvc.Prefix = null;
+        //_scanSvc.Suffix = null;
+        //_scanSvc.DebounceMs = 0;
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        _scanSvc.Scanned += OnScanned;
-        _scanSvc.StartListening();
-        _scanSvc.Attach(OrderEntry);   // 支持键盘/手持枪统一输入
+        //_scanSvc.Scanned += OnScanned;
+        //_scanSvc.StartListening();
+        //_scanSvc.Attach(OrderEntry);   // 支持键盘/手持枪统一输入
         OrderEntry.Focus();
     }
 
     protected override void OnDisappearing()
     {
-        _scanSvc.Scanned -= OnScanned;
-        _scanSvc.StopListening();
+        //_scanSvc.Scanned -= OnScanned;
+        //_scanSvc.StopListening();
         base.OnDisappearing();
     }
 

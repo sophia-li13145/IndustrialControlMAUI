@@ -3,11 +3,11 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class ProcessTaskSearchPage : ContentPage
+public partial class ProcessQualitySearchPage : ContentPage
 {
     private readonly ProcessQualitySearchViewModel _vm;
 
-    public ProcessTaskSearchPage(ProcessQualitySearchViewModel vm, ScanService scanSvc)
+    public ProcessQualitySearchPage(ProcessQualitySearchViewModel vm, ScanService scanSvc)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -17,7 +17,7 @@ public partial class ProcessTaskSearchPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        OrderEntry.Focus();
+        QualityNoEntry.Focus();
     }
 
     protected override void OnDisappearing()

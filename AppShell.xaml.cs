@@ -3,11 +3,19 @@
 public partial class AppShell : Shell
 {
     private readonly IServiceProvider _sp;
-
-    public AppShell(bool authed)
+    public const string RouteHome = "//Home";
+    public const string RouteLogin = "//Login";
+    public AppShell(IServiceProvider sp)
     {
         InitializeComponent();
-        _sp = App.Services ?? throw new InvalidOperationException("Services not ready");
+        _sp = sp;
+        RegisterRoutes();
+
+        // 构造时先放一个“未登录”的壳；真正状态由 App 调用 ApplyAuth 设置
+        BuildTabs(authed: false);
+    }
+    private void RegisterRoutes()
+    {
         Routing.RegisterRoute(nameof(Pages.InboundMaterialSearchPage), typeof(Pages.InboundMaterialSearchPage));
         Routing.RegisterRoute(nameof(Pages.InboundMaterialPage), typeof(Pages.InboundMaterialPage));
         Routing.RegisterRoute(nameof(Pages.InboundProductionSearchPage), typeof(Pages.InboundProductionSearchPage));
@@ -23,7 +31,18 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Pages.MoldOutboundExecutePage), typeof(Pages.MoldOutboundExecutePage));
         Routing.RegisterRoute(nameof(Pages.ProcessTaskSearchPage), typeof(Pages.ProcessTaskSearchPage));
         Routing.RegisterRoute(nameof(Pages.WorkProcessTaskDetailPage), typeof(Pages.WorkProcessTaskDetailPage));
-        BuildTabs(authed);
+        Routing.RegisterRoute(nameof(Pages.ProcessQualitySearchPage), typeof(Pages.ProcessQualitySearchPage));
+    }
+
+    /// <summary>根据是否登录重建 TabBar 并跳转到对应根。</summary>
+    public void ApplyAuth(bool authed) =>
+        MainThread.BeginInvokeOnMainThread(async () => await ApplyAuthAsync(authed));
+
+    public async Task ApplyAuthAsync(bool authed)
+    {
+        BuildTabs(authed);  // 重建 Items
+        var target = authed ? RouteHome : RouteLogin;
+        await GoToAsync(target);
     }
 
     private void BuildTabs(bool authed)
@@ -32,72 +51,67 @@ public partial class AppShell : Shell
 
         var bar = new TabBar();
 
-        // 公共页：日志
+        // 公共：日志
         bar.Items.Add(new Tab
         {
             Title = "日志",
             Items =
-        {
-            new ShellContent
             {
-                Route = "Logs",
-                ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.LogsPage>())
+                new ShellContent
+                {
+                    Route = "Logs",
+                    ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.LogsPage>())
+                }
             }
-        }
         });
 
-        // 公共页：管理员
+        // 公共：管理员
         bar.Items.Add(new Tab
         {
             Title = "管理员",
             Items =
-        {
-            new ShellContent
             {
-                Route = "Admin",
-                ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.AdminPage>())
+                new ShellContent
+                {
+                    Route = "Admin",
+                    ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.AdminPage>())
+                }
             }
-        }
         });
 
         if (authed)
         {
-            // 已登录：插入主页到最前
+            // 已登录：主页放在最前，并把根路由命名为 Home
             bar.Items.Insert(0, new Tab
             {
                 Title = "主页",
                 Items =
-            {
-                new ShellContent
                 {
-                    Route = "Home",
-                    ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.HomePage>())
+                    new ShellContent
+                    {
+                        Route = "Home",    // 对应 RouteHome = "//Home"
+                        ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.HomePage>())
+                    }
                 }
-            }
             });
-
-            Items.Add(bar);
-            _ = GoToAsync("//Home");
         }
         else
         {
-            // 未登录：插入登录到最前
+            // 未登录：登录页在最前，并把根路由命名为 Login
             bar.Items.Insert(0, new Tab
             {
                 Title = "登录",
                 Items =
-            {
-                new ShellContent
                 {
-                    Route = "Login",
-                    ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.LoginPage>())
+                    new ShellContent
+                    {
+                        Route = "Login",   // 对应 RouteLogin = "//Login"
+                        ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.LoginPage>())
+                    }
                 }
-            }
             });
-
-            Items.Add(bar);
-            _ = GoToAsync("//Login");
         }
-    }
 
+        Items.Add(bar);
+    }
 }

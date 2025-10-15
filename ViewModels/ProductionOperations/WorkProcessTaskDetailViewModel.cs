@@ -16,16 +16,28 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     // 状态字典（值→名），用于将 auditStatus 映射为中文
     private readonly Dictionary<string, string> _auditMap = new();
 
-    [ObservableProperty] private bool isBusy;
-    [ObservableProperty] private bool isEditing; // 点“开工”后 true
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanStart))]
+    [NotifyPropertyChangedFor(nameof(CanPauseResume))]
+    [NotifyPropertyChangedFor(nameof(CanFinish))]
+    private bool isBusy;
     [ObservableProperty] private bool isPaused;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanStart))]
+    [NotifyPropertyChangedFor(nameof(CanPauseResume))]
+    [NotifyPropertyChangedFor(nameof(CanFinish))]
+    [NotifyPropertyChangedFor(nameof(PauseResumeText))]
+    [NotifyPropertyChangedFor(nameof(IsEditing))]
+    private TaskRunState state = TaskRunState.NotStarted;
+    // ★ 只有 Running（开工/复工后）为 true，其它状态为 false
+    public bool IsEditing => State == TaskRunState.Running;
 
-    public bool CanStart => !IsBusy && !IsEditing;             // 未开工时可开工
-    public bool CanPauseResume => !IsBusy && IsEditing;              // 开工后可暂停/复工
-    public bool CanFinish => !IsBusy && IsEditing && !IsPaused; // 复工中才允许完工
+    public bool CanStart => !IsBusy && State == TaskRunState.NotStarted;
+    public bool CanPauseResume => !IsBusy && (State == TaskRunState.Running || State == TaskRunState.Paused);
+    public bool CanFinish => !IsBusy && State == TaskRunState.Running;
 
     private readonly IServiceProvider _sp;
-    public string PauseResumeText => IsPaused ? "复工" : "暂停";
+    public string PauseResumeText => State == TaskRunState.Running ? "暂停" : "复工";
 
     [ObservableProperty] private DetailTab activeTab = DetailTab.Input;
     [ObservableProperty] private bool isInputVisible = true;   // 默认显示投料
@@ -45,9 +57,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public ObservableCollection<StatusOption> DeviceOptions { get; } = new();
     [ObservableProperty] private string? currentUserName; // 进入页面时赋值实际登录人
     // 投料记录列表（表格2的数据源）
-    public ObservableCollection<MaterialInputRecord> MaterialInputRecords { get; } = new();
+    public ObservableCollection<MaterialAuRecord> MaterialInputRecords { get; } = new();
     // —— 产出记录列表（表2数据源）
-    public ObservableCollection<OutputRecord> OutputRecords { get; } = new();
+    public ObservableCollection<OutputAuRecord> OutputRecords { get; } = new();
     public event EventHandler? TabChanged;
 
     private TaskMaterialInput? _selectedMaterialItem;
@@ -119,9 +131,14 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             }
         }
     }
-    partial void OnIsBusyChanged(bool value) { NotifyCanExec(); }
-    partial void OnIsEditingChanged(bool value) { NotifyCanExec(); }
-    partial void OnIsPausedChanged(bool value) { OnPropertyChanged(nameof(PauseResumeText)); NotifyCanExec(); }
+    partial void OnIsBusyChanged(bool value) => NotifyAllCanExec();
+    partial void OnStateChanged(TaskRunState value) => NotifyAllCanExec();
+    private void NotifyAllCanExec()
+    {
+        (StartWorkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (PauseResumeCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (FinishCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+    }
     partial void OnActiveTabChanged(DetailTab value)
     {
         IsInputVisible = (value == DetailTab.Input);
@@ -147,10 +164,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(CanFinish));
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task StartWorkAsync()
     {
-        if (IsEditing) return;
         if (IsBusy) return;
         IsBusy = true;
 
@@ -159,8 +175,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             var resp = await _api.StartWorkAsync(Detail.processCode, Detail.workOrderNo, null);
             if (resp.success && resp.result)
             {
-                IsEditing = true;
-                IsPaused = false;
+                State = TaskRunState.Running;
                 await Shell.Current.DisplayAlert("提示", "开工成功！", "确定");
             }
             else
@@ -179,15 +194,15 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPauseResume))]
     private async Task PauseResumeAsync()
     {
-        if (IsBusy || !IsEditing) return;
+        if (IsBusy) return;
         IsBusy = true;
 
         try
         {
-            if (!IsPaused)
+            if (State == TaskRunState.Running)
             {
                 // 当前为“运行中”，点击 => 执行“暂停”
                 string title = "填写暂停原因";
@@ -210,7 +225,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 var resp = await _api.PauseWorkAsync(Detail.processCode, Detail.workOrderNo, reason);
                 if (resp.success && resp.result)
                 {
-                    IsPaused = !IsPaused;
+                    State = TaskRunState.Paused;
                     await Application.Current.MainPage.DisplayAlert("成功", "已暂停。", "确定");
                 }
                 else
@@ -218,7 +233,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                     await Application.Current.MainPage.DisplayAlert("失败", resp.message ?? "暂停失败", "确定");
                 }
             }
-            else
+            else if (State == TaskRunState.Paused)
             {
                 // 当前为“已暂停”，点击 => 执行“恢复”
                 bool go = await Application.Current.MainPage.DisplayAlert("确认", "确定恢复生产吗？", "恢复", "取消");
@@ -227,7 +242,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 var resp = await _api.PauseWorkAsync(Detail.processCode, Detail.workOrderNo, null);
                 if (resp.success && resp.result)
                 {
-                    IsPaused = false;
+                    State = TaskRunState.Running;
                     await Application.Current.MainPage.DisplayAlert("成功", "已恢复生产。", "确定");
                 }
                 else
@@ -246,10 +261,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanFinish))]
     private async Task FinishAsync()
     {
-        if (!IsEditing || IsPaused) return;
         if (IsBusy) return;
         IsBusy = true;
 
@@ -258,8 +272,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             var resp = await _api.CompleteWorkAsync(Detail.processCode, Detail.workOrderNo, null);
             if (resp.success && resp.result)
             {
-                IsEditing = false;
-                IsPaused = false;
+                State = TaskRunState.Finished;
                 //await Task.CompletedTask;
                 await Shell.Current.DisplayAlert("提示", "开工成功！", "确定");
             }
@@ -277,6 +290,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             IsBusy = false;
         }
     }
+
 
     [RelayCommand]
     public void ShowInput()
@@ -302,7 +316,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await LoadAuditDictAsync();
             await LoadDetailAsync(id);
             ActiveTab = DetailTab.Input; // 会同步设置 IsInputVisible/IsOutputVisible
-            CurrentUserName = Preferences.Get("UserName", string.Empty); // 进入页面时赋值实际登录人
+            CurrentUserName = Preferences.Get("UserName", string.Empty).Split('@')[0]; // 进入页面时赋值实际登录人
         }
         finally { IsBusy = false; }
     }
@@ -341,31 +355,30 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             {
                 Detail.AuditStatusName = s;
             }
-            if (Detail.periodExecute == "working")
-            {
-                IsEditing = true;
-                IsPaused = false;
-            }
-            else if (Detail.periodExecute == "pause")
-            {
-                IsEditing = false;
-                IsPaused = true;
-            }
-            else if (Detail.periodExecute == "resume")
-            {
-                IsEditing = true;
-                IsPaused = false;
-            }
-            else if (Detail.periodExecute == "complete")
-            {
-                IsEditing = false;
-                IsPaused = false;
-            }
+            var execRaw = resp.result.periodExecute;
+            var exec = execRaw?.Trim().ToLowerInvariant();
 
+            if (string.IsNullOrWhiteSpace(exec))
+            {
+                State = TaskRunState.NotStarted;     // ★ 关键：明确未开工
+            }
+            else
+            {
+                State = exec switch
+                {
+                    "working" => TaskRunState.Running,
+                    "resume" => TaskRunState.Running,
+                    "pause" => TaskRunState.Paused,
+                    "complete" => TaskRunState.Finished,
+                    _ => TaskRunState.NotStarted
+                };
 
-            // 关键：加载下拉选项
-            await LoadShiftsAsync();
+            }
+                // 关键：加载下拉选项
+                await LoadShiftsAsync();
             await LoadDevicesAsync();
+            await LoadMaterialInputsAsync();
+            await LoadOutputInputsAsync();
 
             // 关键：抑制更新 → 设定选中项
             _suppressRemoteUpdate = true;
@@ -437,7 +450,47 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    private async Task LoadMaterialInputsAsync()
+    {
+        // ② 调用接口
+        var resp = await _api.PageWorkProcessTaskMaterialInputs(
+            factoryCode: Detail.factoryCode,
+            processCode: Detail.processCode!,
+            workOrderNo: Detail.workOrderNo!,
+            pageNo: 1,
+            pageSize: 50
+        );
 
+        // ③ 判断返回是否成功并绑定
+        MaterialInputRecords.Clear();
+
+        if (resp?.result?.records != null)
+        {
+            foreach (var item in resp.result.records)
+                MaterialInputRecords.Add(item);
+        }
+    }
+
+    private async Task LoadOutputInputsAsync()
+    {
+        // ② 调用接口
+        var resp = await _api.PageWorkProcessTaskOutputs(
+            factoryCode: Detail.factoryCode,
+            processCode: Detail.processCode!,
+            workOrderNo: Detail.workOrderNo!,
+            pageNo: 1,
+            pageSize: 50
+        );
+
+        // ③ 判断返回是否成功并绑定
+        OutputRecords.Clear();
+
+        if (resp?.result?.records != null)
+        {
+            foreach (var item in resp.result.records)
+                OutputRecords.Add(item);
+        }
+    }
     private async Task UpdateShiftAsync(StatusOption? opt)
     {
         if (opt == null || string.IsNullOrWhiteSpace(Detail?.id))
@@ -571,28 +624,34 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
 
         // 成功：插入下表顶部
-        var idx = (MaterialInputRecords.Count == 0) ? 1 : (MaterialInputRecords[0].Index + 1);
-        MaterialInputRecords.Insert(0, new MaterialInputRecord
-        {
-            Index = idx,
-            MaterialName = finalName,
-            Unit = picked.Unit,
-            Qty = (double)picked.Quantity,
-            OperationDate = picked.OperationTime,
-            Memo = picked.Memo
-        });
+        //var idx = (MaterialInputRecords.Count == 0) ? 1 : (MaterialInputRecords[0].Index + 1);
+        //MaterialInputRecords.Insert(0, new MaterialAuRecord
+        //{
+        //    //Index = idx,
+        //    MaterialName = finalName,
+        //    Unit = picked.Unit,
+        //    Qty =  picked.Quantity,
+        //    OperateTime = picked.OperationTime?.ToString("yyyy-MM-dd HH:mm:ss"),
+        //    Memo = picked.Memo
+        //});
         SelectedMaterialItem = null;
+        await LoadMaterialInputsAsync();
     }
 
 
     // 删除（仅前端）
     [RelayCommand]
-    private void DeleteMaterialInput(MaterialInputRecord row)
+    private async void DeleteMaterialInput(MaterialAuRecord row)
     {
         if (row == null) return;
         MaterialInputRecords.Remove(row);
         // 如需后端删除，在此调用删除接口
-
+        var resp = await _api.DeleteWorkProcessTaskMaterialInputAsync(row.Id);
+        if (!resp.success)
+        {
+            await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
+            return;
+        }
     }
 
     // 新增产出：只用选中行 + 弹窗返回的数量/备注
@@ -644,28 +703,39 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
 
         // 成功：插入下表顶部
-        var idx = (OutputRecords.Count == 0) ? 1 : (OutputRecords[0].Index + 1);
-        OutputRecords.Insert(0, new OutputRecord
+        //var idx = (OutputRecords.Count == 0) ? 1 : (OutputRecords[0].Index + 1);
+        //OutputRecords.Insert(0, new OutputAuRecord
+        //{
+        //    //Index = idx,
+        //    MaterialName = finalName,
+        //    Unit = picked.Unit,
+        //    Qty = picked.Quantity,
+        //    OperateTime = picked.OperationTime?.ToString("yyyy-MM-dd HH:mm:ss"),
+        //    Memo = picked.Memo
+        //});
+       
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            Index = idx,
-            MaterialName = finalName,
-            Unit = picked.Unit,
-            Qty = (double)picked.Quantity,
-            OperationDate = picked.OperationTime,
-            Memo = picked.Memo
+            IsInputVisible = false;
+            IsOutputVisible = true;
         });
+        await LoadOutputInputsAsync();
         SelectedOutputItem = null;
-        IsInputVisible = false;
-        IsOutputVisible = true;
     }
 
     // 删除（前端移除；如需后端删除在此补接口）
     [RelayCommand]
-    private void DeleteOutput(OutputRecord row)
+    private async void DeleteOutput(OutputAuRecord row)
     {
         if (row == null) return;
         OutputRecords.Remove(row);
         //调用删除接口
+        var resp = await _api.DeleteWorkProcessTaskOutputAsync(row.Id);
+        if (!resp.success)
+        {
+            await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
+            return;
+        }
     }
 
     [RelayCommand]
@@ -680,5 +750,51 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     {
         if (item != null && !ReferenceEquals(SelectedOutputItem, item))
             SelectedOutputItem = item;
+    }
+
+    [RelayCommand]
+    private async Task EditMaterialRawDate(MaterialAuRecord row)
+    {
+        if (row is null || string.IsNullOrWhiteSpace(row.Id))
+        {
+            await ShowTip("缺少记录主键，无法编辑。");
+            return;
+        }
+
+        // 解析当前行已有日期作为默认值
+        DateTime? init = null;
+        if (!string.IsNullOrWhiteSpace(row.RawMaterialProductionDate)
+            && DateTime.TryParse(row.RawMaterialProductionDate, out var parsed))
+            init = parsed;
+
+        // 打开日期时间选择弹窗
+        var picked = await DateTimePickerPage.ShowAsync(init);
+        if (picked is null) return; // 用户取消
+
+        // 转为后端需要的格式
+        var rawStr = picked.Value.ToString("yyyy-MM-dd HH:mm:ss");
+
+        // 调用后端
+        var resp = await _api.EditWorkProcessTaskMaterialInputAsync(
+            id: row.Id!,
+            qty: row.Qty,              // 不改数量就把现值带回去
+            memo: row.Memo,
+            rawMaterialProductionDate: rawStr
+        );
+
+        if (resp.success)
+        {
+            // 本地更新并通知UI
+            row.RawMaterialProductionDate = rawStr;
+            // 如果 MaterialRecord 未实现 INotifyPropertyChanged，可：
+            var i = MaterialInputRecords.IndexOf(row);
+            if (i >= 0) { MaterialInputRecords[i] = row; }
+            await ShowTip("已更新原料生产日期。");
+            await LoadMaterialInputsAsync();
+        }
+        else
+        {
+            await ShowTip(string.IsNullOrWhiteSpace(resp.message) ? "更新失败" : resp.message!);
+        }
     }
 }

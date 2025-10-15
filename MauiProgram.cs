@@ -52,9 +52,11 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.OutboundMoldViewModel>();
             builder.Services.AddTransient<ViewModels.WorkOrderSearchViewModel>();
             builder.Services.AddTransient<ViewModels.MoldOutboundExecuteViewModel>();
-            builder.Services.AddTransient<ViewModels.ProcessTaskSearchViewModel>();
+            builder.Services.AddTransient<ViewModels.ProcessQualitySearchViewModel>();
             builder.Services.AddTransient<ViewModels.WarehouseLocationPickerViewModel>();
             builder.Services.AddTransient<ViewModels.WorkProcessTaskDetailViewModel>();
+            builder.Services.AddTransient<ViewModels.ProcessQualityDetailViewModel>();
+            builder.Services.AddTransient<ViewModels.ProcessQualitySearchViewModel>();
 
             // ===== 注册 Pages（DI 创建）=====
             builder.Services.AddTransient<Pages.LoginPage>();
@@ -78,6 +80,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.MoldOutboundExecutePage>();
             builder.Services.AddTransient<Pages.ProcessTaskSearchPage>();
             builder.Services.AddTransient<Pages.WorkProcessTaskDetailPage>();
+            builder.Services.AddTransient<Pages.ProcessQualitySearchPage>();
+            builder.Services.AddTransient<Pages.ProcessQualityDetailPage>();
 
             builder.Services.AddTransient<WarehouseLocationPickerPage>();
             // 先注册配置加载器
@@ -97,11 +101,12 @@ namespace IndustrialControlMAUI
              .AddHttpMessageHandler<AuthHeaderHandler>();
             builder.Services.AddHttpClient<IWarehouseService, WarehouseService>(ConfigureBaseAddress)
             .AddHttpMessageHandler<AuthHeaderHandler>();
-            
+            builder.Services.AddHttpClient<IQualityApi, QualityApi>(ConfigureBaseAddress)
+            .AddHttpMessageHandler<AuthHeaderHandler>();
 
             var app = builder.Build();
             App.Services = app.Services;
-            CrashTrap.Init();
+            //CrashTrap.Init(); //Debug
             return app;
         }
 
