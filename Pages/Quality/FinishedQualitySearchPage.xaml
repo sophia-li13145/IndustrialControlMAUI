@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.FinishedQualitySearchPage"
+             Shell.NavBarIsVisible="True">
+
+    <!-- 根布局：顶部（蓝条） / 条件区 / 列表 -->
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- 顶部蓝条 -->
+        <Grid Grid.Row="0" BackgroundColor="#007BFF" HeightRequest="56" Padding="16,0">
+            <Label Text="质量管理系统"
+                   VerticalOptions="Center"
+                   TextColor="White"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+        </Grid>
+
+        <!-- 条件区 -->
+        <VerticalStackLayout Grid.Row="1" Padding="12" Spacing="10">
+            <!-- 第一行：工单号 + 查询 + 扫码图标按钮 -->
+            <Grid ColumnDefinitions="*,40,Auto" ColumnSpacing="8">
+                <Entry x:Name="QualityNoEntry"
+                       Placeholder="请输入/扫描质检单号"
+                       Text="{Binding Keyword}"
+                       HeightRequest="40" />
+                <ImageButton  Grid.Column="1"
+                    Source="scan_button.png"      
+                    WidthRequest="36"
+                     HeightRequest="36"
+                     BackgroundColor="Transparent"
+                     Padding="0"
+                     Aspect="AspectFit"
+                     Clicked="OnScanClicked"  /> 
+                <Button Grid.Column="2"
+                        Text="查询"
+                        HeightRequest="40"
+                        Command="{Binding SearchCommand}" />
+
+            </Grid>
+
+            <!-- 第二行：时间 + 状态 -->
+            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                <DatePicker Date="{Binding StartDate}" />
+                <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
+                <Picker Grid.Column="2"
+                        Title="状态"
+                        WidthRequest="120"
+                        ItemsSource="{Binding StatusOptions}"
+                        ItemDisplayBinding="{Binding Text}"
+                        SelectedItem="{Binding SelectedStatusOption}" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- 列表（自身可滚动，外面不要再套 ScrollView） -->
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Orders}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,6,0,0" Padding="10"
+                           HasShadow="False" BorderColor="#E0E6EF">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                            <!-- 右上角蓝点 -->
+                            <BoxView Grid.Column="1" WidthRequest="8" HeightRequest="8"
+                                     HorizontalOptions="End" VerticalOptions="Start"
+                                     CornerRadius="4" Color="#2F80ED" />
+
+                            <!-- 详情按钮 -->
+                            <Button Grid.Column="1" Grid.Row="0" Text="详情"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoDetailCommand}"
+                                    CommandParameter="{Binding .}"
+                                    HeightRequest="28"
+                                    Padding="10,0"
+                                    HorizontalOptions="End"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#2F80ED"/>
+
+                            <Grid Grid.Row="0" Grid.ColumnSpan="1" ColumnDefinitions="Auto,*">
+                                <Label Text="质检单号：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding QualityNo}" />
+                            </Grid>
+
+                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+                                <Label Text="状态：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding InspectStatusText}" />
+                            </Grid>
+
+                            <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                                <Label Text="产品名称：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding MaterialName}" />
+                            </Grid>
+
+                            <Grid Grid.Row="3" ColumnDefinitions="Auto,*">
+                                <Label Text="关联工单号：" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding OrderNumber}" />
+                            </Grid>
+
+                            <Grid Grid.Row="4" ColumnDefinitions="Auto,*">
+                                <Label Text="创建日期：" FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding CreatedTime, StringFormat='{0:yyyy-M-d}'}" />
+                            </Grid>
+                        </Grid>
+
+                        <!-- 点整卡片也可进详情 -->
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoDetailCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

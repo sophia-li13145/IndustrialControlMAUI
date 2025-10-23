@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Name="ThisPage"
-    x:Class="IndustrialControlMAUI.Pages.ProcessQualityDetailPage"
+    x:Class="IndustrialControlMAUI.Pages.FinishedQualityDetailPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
@@ -107,19 +107,20 @@
                         <Label Grid.Row="0" Grid.Column="2" Text="质检单类型：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="0" Grid.Column="3" Text="{Binding Detail.qualityTypeName}" Style="{StaticResource FieldValue}" />
 
-                        <!-- 第二行 -->
-                        <Label Grid.Row="1" Grid.Column="0" Text="工序：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.processName}" Style="{StaticResource FieldValue}" />
+                       
 
-                        <Label Grid.Row="1" Grid.Column="2" Text="关联工单号：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.orderNumber}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="1" Grid.Column="0" Text="关联工单号：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.orderNumber}" Style="{StaticResource FieldValue}" />
 
                         <!-- 第三行 -->
-                        <Label Grid.Row="2" Grid.Column="0" Text="产品名称：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.orderQualityMaterial.materialName}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="1" Grid.Column="2" Text="产品名称：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.materialName}" Style="{StaticResource FieldValue}" />
 
-                        <Label Grid.Row="2" Grid.Column="2" Text="生产数量：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.qty, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="0" Text="生产数量：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.orderQualityMaterial.qty, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
+
+                        <Label Grid.Row="2" Grid.Column="2" Text="实际完工数量：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.completedQty, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
 
                         <!-- 第四行 -->
                         <Label Grid.Row="3" Grid.Column="0" Text="检验员：" Style="{StaticResource FieldLabel}" />
@@ -228,13 +229,26 @@
                         <!-- 只读，显示XXXX风格 -->
 
                         <!-- 第2行：合格总数、不合格总数、总体合格率(只读) -->
-                        <Label Grid.Row="2" Grid.Column="0" Text="合格总数：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
+                                    <Span Text=" 合格总数：" Style="{StaticResource FieldLabel}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                         <Entry Grid.Row="2" Grid.Column="1"
                                Text="{Binding Detail.totalQualified, Mode=TwoWay,  Converter={StaticResource DecParseOnlyConv}}"
                                Keyboard="Numeric"
-                               IsEnabled="{Binding IsEditing}" /> 
-
-                        <Label Grid.Row="2" Grid.Column="2" Text="不合格总数：" Style="{StaticResource FieldLabel}" />
+                               IsEnabled="{Binding IsEditing}" />
+                        <Label Grid.Row="2" Grid.Column="2">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
+                                    <Span Text=" 不合格总数：" Style="{StaticResource FieldLabel}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                         <Entry Grid.Row="2" Grid.Column="3"
                                Text="{Binding Detail.totalUnqualified, Mode=TwoWay,Converter={StaticResource DecParseOnlyConv}}"
                                Keyboard="Numeric"

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="IndustrialControlMAUI.Pages.DefectPickerPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Size="900,600">
+
+    <Grid RowDefinitions="*,Auto" Padding="16" BackgroundColor="White">
+        <!-- 列表（多选） -->
+        <CollectionView Grid.Row="0"
+                        ItemsSource="{Binding Rows}"
+                        SelectionMode="None">
+            <!-- 表头（与截图顺序对齐） -->
+            <CollectionView.Header>
+                <Grid ColumnDefinitions="20,20,70,70,40,40,70,40"
+                      Padding="10,8" BackgroundColor="#F5F7FA">
+                    <Label Grid.Column="0" Text=""/>
+                    <Label Grid.Column="1" Text="序号"/>
+                    <Label Grid.Column="2" Text="缺陷名称"/>
+                    <Label Grid.Column="3" Text="缺陷编号"/>
+                    <Label Grid.Column="4" Text="状态"/>
+                    <Label Grid.Column="5" Text="缺陷等级"/>
+                    <Label Grid.Column="6" Text="缺陷描述"/>
+                    <Label Grid.Column="7" Text="评定标准"/>
+                </Grid>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="20,20,70,70,40,40,70,40" Padding="10,10">
+                        <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked}"/>
+                        <Label Grid.Column="1" Text="{Binding RowNo}"/>
+                        <Label Grid.Column="2" Text="{Binding Name}"/>
+                        <Label Grid.Column="3" Text="{Binding Code}"/>
+                        <Label Grid.Column="4" Text="{Binding Status}" TextColor="#22A055"/>
+                        <Label Grid.Column="5" Text="{Binding Level}"/>
+                        <Label Grid.Column="6" Text="{Binding Description}"/>
+                        <Label Grid.Column="7" Text="{Binding Standard}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- 底部：分页 + 取消/确定 -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,8,Auto,16,Auto,8,Auto" Margin="0,12,0,0">
+            <!-- 分页区 -->
+            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                <Label Text="{Binding PageInfo}" />
+                <Button Text="上一页" Command="{Binding PrevCommand}" />
+                <Button Text="下一页" Command="{Binding NextCommand}" />
+            </HorizontalStackLayout>
+
+            <!-- 右侧按钮 -->
+            <HorizontalStackLayout Grid.Column="5" Spacing="12" HorizontalOptions="End">
+                <Button Text="取消" Clicked="OnCancel"/>
+                <Button Text="确定" Clicked="OnConfirm"/>
+            </HorizontalStackLayout>
+        </Grid>
+    </Grid>
+</toolkit:Popup>

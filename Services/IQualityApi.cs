@@ -19,6 +19,27 @@ namespace IndustrialControlMAUI.Services
          CancellationToken ct = default);
         Task<DictQuality> GetQualityDictsAsync(CancellationToken ct = default);
         Task<ApiResp<QualityDetailDto>?> GetDetailAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<UploadAttachmentResult>> UploadAttachmentAsync(
+     string attachmentFolder,
+     string attachmentLocation,
+     string? attachmentName = null,
+     string? attachmentExt = null,
+     long? attachmentSize = null,
+     CancellationToken ct = default);
+        Task<ApiResp<bool>> ExecuteSaveAsync(QualityDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool>> ExecuteCompleteInspectionAsync(QualityDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<DefectPage>> GetDefectPageAsync(
+    int pageNo, int pageSize,
+    string? defectCode = null,
+    string? defectName = null,
+    string? levelCode = null,
+    string? status = null,
+    bool? searchCount = null,
+    string? createdTimeBegin = null,
+    string? createdTimeEnd = null,
+    CancellationToken ct = default);
+
+
     }
 
     // ===================== 实现 =====================
@@ -28,6 +49,11 @@ namespace IndustrialControlMAUI.Services
         private readonly string _pageEndpoint;
         private readonly string _dictEndpoint;
         private readonly string _detailsEndpoint;
+        private readonly string _uploadAttachmentPath;
+        private readonly string _executeSavePath;
+        private readonly string _executeCompletePath;
+        private readonly string _defectPagePath;
+
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -52,7 +78,15 @@ namespace IndustrialControlMAUI.Services
                configLoader.GetApiPath("quality.dictList", "/pda/qsOrderQuality/getDictList"), servicePath);
             _detailsEndpoint = NormalizeRelative(
                configLoader.GetApiPath("quality.detailList", "/pda/qsOrderQuality/detail"), servicePath);
-
+            _uploadAttachmentPath = NormalizeRelative(
+               configLoader.GetApiPath("quality.uploadAttachment", "/pda/attachment/uploadAttachment"), servicePath);
+            _executeSavePath = NormalizeRelative(
+             configLoader.GetApiPath("quality.executeSave", "/pda/qsOrderQuality/executeSave"), servicePath);
+            _executeCompletePath = NormalizeRelative(
+                configLoader.GetApiPath("quality.executeComplete", "/pda/qsOrderQuality/executeCompleteInspection"), servicePath);
+            _defectPagePath = NormalizeRelative(
+    configLoader.GetApiPath("quality.defect.page", "/pda/qsOrderQuality/defectPageQuery"),
+    servicePath);
         }
         // ===== 公共工具 =====
         private static string BuildFullUrl(Uri? baseAddress, string url)
@@ -194,6 +228,111 @@ namespace IndustrialControlMAUI.Services
                 json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             ) ?? new ApiResp<QualityDetailDto> { success = false, message = "Empty body" };
+        }
+        public async Task<ApiResp<UploadAttachmentResult>> UploadAttachmentAsync(
+        string attachmentFolder,
+        string attachmentLocation,
+        string? attachmentName = null,
+        string? attachmentExt = null,
+        long? attachmentSize = null,
+        CancellationToken ct = default)
+        {
+            var url = BuildFullUrl(_http.BaseAddress, _uploadAttachmentPath);
+
+            // 按文档要求：application/x-www-form-urlencoded
+            var kv = new List<KeyValuePair<string, string>>
+        {
+            new("attachmentFolder", attachmentFolder),
+            new("attachmentLocation", attachmentLocation),
+        };
+            if (!string.IsNullOrWhiteSpace(attachmentName)) kv.Add(new("attachmentName", attachmentName));
+            if (!string.IsNullOrWhiteSpace(attachmentExt)) kv.Add(new("attachmentExt", attachmentExt));
+            if (attachmentSize.HasValue) kv.Add(new("attachmentSize", attachmentSize.Value.ToString()));
+
+            using var content = new FormUrlEncodedContent(kv);
+            using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            using var resp = await _http.SendAsync(req, ct);
+
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync(ct);
+            var data = JsonSerializer.Deserialize<ApiResp<UploadAttachmentResult>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new ApiResp<UploadAttachmentResult>();
+
+            return data;
+        }
+
+        public async Task<ApiResp<bool>> ExecuteSaveAsync(QualityDetailDto payload, CancellationToken ct = default)
+        {
+            var url = BuildFullUrl(_http.BaseAddress, _executeSavePath);
+            var json = JsonSerializer.Serialize(payload, _json);
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, code = (int)res.StatusCode, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(body, _json)
+                   ?? new ApiResp<bool> { success = false, message = "Empty body" };
+        }
+
+        public async Task<ApiResp<bool>> ExecuteCompleteInspectionAsync(QualityDetailDto payload, CancellationToken ct = default)
+        {
+            var url = BuildFullUrl(_http.BaseAddress, _executeCompletePath);
+            var json = JsonSerializer.Serialize(payload, _json);
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, code = (int)res.StatusCode, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(body, _json)
+                   ?? new ApiResp<bool> { success = false, message = "Empty body" };
+        }
+        public async Task<ApiResp<DefectPage>> GetDefectPageAsync(
+                 int pageNo, int pageSize,
+                 string? defectCode = null,
+                 string? defectName = null,
+                 string? levelCode = null,
+                 string? status = null,
+                 bool? searchCount = null,
+                 string? createdTimeBegin = null,
+                 string? createdTimeEnd = null,
+                 CancellationToken ct = default)
+        {
+            var url = BuildFullUrl(_http.BaseAddress, _defectPagePath);
+
+            // 该接口是 GET + query（表单编码），必填 pageNo/pageSize
+            var q = new List<string>
+    {
+        $"pageNo={pageNo}",
+        $"pageSize={pageSize}"
+    };
+            if (!string.IsNullOrWhiteSpace(defectCode)) q.Add($"defectCode={Uri.EscapeDataString(defectCode)}");
+            if (!string.IsNullOrWhiteSpace(defectName)) q.Add($"defectName={Uri.EscapeDataString(defectName)}");
+            if (!string.IsNullOrWhiteSpace(levelCode)) q.Add($"levelCode={Uri.EscapeDataString(levelCode)}");
+            if (!string.IsNullOrWhiteSpace(status)) q.Add($"status={Uri.EscapeDataString(status)}");
+            if (searchCount.HasValue) q.Add($"searchCount={(searchCount.Value ? "true" : "false")}");
+            if (!string.IsNullOrWhiteSpace(createdTimeBegin)) q.Add($"createdTimeBegin={Uri.EscapeDataString(createdTimeBegin)}");
+            if (!string.IsNullOrWhiteSpace(createdTimeEnd)) q.Add($"createdTimeEnd={Uri.EscapeDataString(createdTimeEnd)}");
+
+            var full = url + "?" + string.Join("&", q);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<DefectPage> { success = false, code = (int)res.StatusCode, message = $"HTTP {(int)res.StatusCode}" };
+
+            return System.Text.Json.JsonSerializer.Deserialize<ApiResp<DefectPage>>(body, _json)
+                   ?? new ApiResp<DefectPage> { success = false, message = "Empty body" };
         }
 
     }

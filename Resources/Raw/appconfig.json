@@ -2,7 +2,7 @@
   "schemaVersion": 8,
   "server": {
     "scheme": "http",
-    "ipAddress": "allysysindustrialsoft.aax6.cn"
+    "ipAddress": "114.250.20.230:9128"
   },
   "services": {
     "normalService": "/normalService",

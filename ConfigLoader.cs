@@ -131,7 +131,7 @@ public static class ConfigLoaderStatic
         }
 
         // 记录当前生效服务名
-        services["current"] = svcName+ "Service";
+        services["current"] = svcName.Replace("Service","") + "Service";
 
         // 持久化
         Save(node);

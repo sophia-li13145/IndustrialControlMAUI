@@ -33,6 +33,8 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Pages.WorkProcessTaskDetailPage), typeof(Pages.WorkProcessTaskDetailPage));
         Routing.RegisterRoute(nameof(Pages.ProcessQualitySearchPage), typeof(Pages.ProcessQualitySearchPage));
         Routing.RegisterRoute(nameof(Pages.ProcessQualityDetailPage), typeof(Pages.ProcessQualityDetailPage));
+        Routing.RegisterRoute(nameof(Pages.FinishedQualitySearchPage), typeof(Pages.FinishedQualitySearchPage));
+        Routing.RegisterRoute(nameof(Pages.FinishedQualityDetailPage), typeof(Pages.FinishedQualityDetailPage));
     }
 
     /// <summary>根据是否登录重建 TabBar 并跳转到对应根。</summary>

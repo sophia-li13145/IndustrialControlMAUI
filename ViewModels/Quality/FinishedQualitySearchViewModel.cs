@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 
 namespace IndustrialControlMAUI.ViewModels
 {
-    public partial class ProcessQualitySearchViewModel : ObservableObject
+    public partial class FinishedQualitySearchViewModel : ObservableObject
     {
         private readonly IQualityApi _qualityapi;
         [ObservableProperty] private bool isBusy;
@@ -29,7 +29,7 @@ namespace IndustrialControlMAUI.ViewModels
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
 
-        public ProcessQualitySearchViewModel(IQualityApi qualityapi)
+        public FinishedQualitySearchViewModel(IQualityApi qualityapi)
         {
             _qualityapi = qualityapi;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
@@ -88,7 +88,7 @@ namespace IndustrialControlMAUI.ViewModels
                 var createdTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
                 var createdTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
                 var inspectStatus = SelectedStatusOption?.Value;   // “1”“2”“3”
-                var qualityType ="IPQC";                  // 若需区分 IQC/FQC 等，可补充绑定
+                var qualityType = "FQC";                  // 若需区分 IQC/FQC 等，可补充绑定
                 var searchCount = false;                           // 是否统计总记录
 
                 // 调用 API
@@ -158,7 +158,7 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task GoDetailAsync(QualityOrderItem? item)
         {
             if (item is null) return;
-            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            await Shell.Current.GoToAsync(nameof(FinishedQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
         }
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）

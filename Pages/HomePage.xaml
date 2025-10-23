@@ -279,7 +279,7 @@ Padding="8,0,8,24">
                 </Frame>
 
                 <!-- 成品质检执行FQC -->
-                <!--<Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#FF7043"
@@ -295,7 +295,7 @@ Padding="8,0,8,24">
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnFQC"/>
                     </Frame.GestureRecognizers>
-                </Frame>-->
+                </Frame>
 
 
             </Grid>

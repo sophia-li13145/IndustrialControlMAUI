@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace IndustrialControlMAUI.Models;
@@ -197,6 +199,11 @@ public partial class QualityItem : ObservableObject
     public string? badCause { get; set; }
     public string? defect { get; set; }
     public string? inspectResult { get; set; }
+    // 已选缺陷（用于标签显示与保存）
+    public ObservableCollection<DefectChip> SelectedDefects { get; set; } = new();
+
+    // 便捷：把缺陷名称拼成逗号串，保存时可回写给 defect 字段
+    public string SelectedDefectNames => string.Join(",", SelectedDefects.Select(x => x.Name));
 
     // === 自动计算部分 ===
     private decimal? _sampleQty;
@@ -329,25 +336,104 @@ public class OrderQualityDetailDto
 }
 public partial class OrderQualityAttachmentItem : ObservableObject
 {
-    // —— 后端字段（保存时会用到）——
-    [ObservableProperty] private string attachmentExt = "";
-    [ObservableProperty] private string attachmentFolder = "";
-    [ObservableProperty] private string attachmentLocation = "";
-    [ObservableProperty] private string attachmentName = "";
-    [ObservableProperty] private string attachmentRealName = "";
-    [ObservableProperty] private long? attachmentSize;
-    [ObservableProperty] private string attachmentUrl = ""; // 统一保存时才会有
-    [ObservableProperty] private string id = "";
-    [ObservableProperty] private string memo = "";
+    // 只保留这一个：使用 MVVM Toolkit 自动生成 Public LocalPath
+    [ObservableProperty]
+    [JsonIgnore]                 // 不序列化给后端
+    private string? localPath;
 
-    // —— 前端用（不提交给后端）——
-    [ObservableProperty] private string? localPath;   // 本地缓存路径
-    [ObservableProperty] private bool isUploaded;     // 是否已传后端（点保存后才会变 true）
+    public bool IsImage { get; set; }   // 只要它为 true 才进缩略图
+
+    // 统一用 PascalCase 命名，别和小写混用
+    public string? AttachmentUrl { get; set; }
+    public string? AttachmentName { get; set; }
+    public string? AttachmentRealName { get; set; }
+    public string? AttachmentExt { get; set; }
+    public string? AttachmentFolder { get; set; }
+    public string? AttachmentLocation { get; set; }
+    public long AttachmentSize { get; set; }
+    public string? Id { get; set; }
+    public string? CreatedTime { get; set; }
+    public string? Memo { get; set; }
+    public bool IsUploaded { get; set; }
 
     public ImageSource? DisplaySource =>
-        !string.IsNullOrWhiteSpace(LocalPath)
-            ? ImageSource.FromFile(LocalPath!)
-            : (!string.IsNullOrWhiteSpace(AttachmentUrl)
-                ? ImageSource.FromUri(new Uri(AttachmentUrl))
-                : null);
+        IsImage
+            ? (!string.IsNullOrWhiteSpace(LocalPath)
+                ? ImageSource.FromFile(LocalPath!)
+                : (!string.IsNullOrWhiteSpace(AttachmentUrl)
+                    ? ImageSource.FromUri(new Uri(AttachmentUrl))
+                    : null))
+            : null;
+}
+
+public class UploadAttachmentResult
+{
+    public string? attachmentExt { get; set; }
+    public string? attachmentFolder { get; set; }
+    public string? attachmentLocation { get; set; }
+    public string? attachmentName { get; set; }
+    public string? attachmentRealName { get; set; }
+    public long attachmentSize { get; set; }
+    public string? attachmentUrl { get; set; }
+}
+public class DefectOption
+{
+    public string? Id { get; set; }
+    public string? Code { get; set; }
+    public string? Name { get; set; }
+    public string? Level { get; set; }   // 一级/二级/三级… 用于配色
+    public string? Status { get; set; }  // 启用/停用（可不管）
+}
+
+public class DefectDto
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? Code { get; set; }
+    public string? Status { get; set; }
+    public string? Level { get; set; }
+    public string? Description { get; set; }
+    public string? Standard { get; set; }
+    public string? Creator { get; set; }
+    public string? CreatedAt { get; set; }
+    public string? UpdatedAt { get; set; }
+}
+public class DefectPage
+{
+    [JsonPropertyName("pageNo")] public int PageNo { get; set; }
+    [JsonPropertyName("pageSize")] public int PageSize { get; set; }
+    [JsonPropertyName("total")] public long Total { get; set; }
+    [JsonPropertyName("records")] public List<DefectRecord> Records { get; set; } = new();
+}
+
+public class DefectRecord
+{
+    [JsonPropertyName("id")] public string? Id { get; set; }
+    [JsonPropertyName("defectName")] public string? DefectName { get; set; }
+    [JsonPropertyName("defectCode")] public string? DefectCode { get; set; }
+    [JsonPropertyName("status")] public string? Status { get; set; }          // 0/1 或 “启用”
+    [JsonPropertyName("levelCode")] public string? LevelCode { get; set; }       // 1/2/3
+    [JsonPropertyName("levelName")] public string? LevelName { get; set; }       // 一级/二级/三级
+    [JsonPropertyName("defectDescription")] public string? DefectDescription { get; set; }
+    [JsonPropertyName("evaluationStandard")] public string? EvaluationStandard { get; set; }
+    [JsonPropertyName("creator")] public string? Creator { get; set; }
+    [JsonPropertyName("createdTime")] public string? CreatedTime { get; set; }     // yyyy-MM-dd HH:mm:ss
+    [JsonPropertyName("modifiedTime")] public string? ModifiedTime { get; set; }
+    [JsonPropertyName("memo")] public string? Memo { get; set; }
+}
+
+/// <summary>
+/// 显示在“缺陷：”后的彩色标签
+/// </summary>
+public class DefectChip
+{
+    /// <summary>
+    /// 缺陷名称（展示用）
+    /// </summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>
+    /// 背景颜色
+    /// </summary>
+    public Color ColorHex { get; set; } = Colors.LightGray;
 }

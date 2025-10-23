@@ -32,8 +32,8 @@ namespace IndustrialControlMAUI.Pages
 
         private async void OnIPQC(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(ProcessQualitySearchPage));      // 模具出库管理
-        //private async void OnFQC(object? s, TappedEventArgs e)
-        //    => await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage));             // 模具入库管理
+        private async void OnFQC(object? s, TappedEventArgs e)
+            => await Shell.Current.GoToAsync(nameof(FinishedQualitySearchPage));             // 模具入库管理
 
         // —— 质检作业（按需替换为真实页面）——
         private async void GotoIQC(object? s, TappedEventArgs e)

@@ -2,12 +2,12 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class ProcessQualityDetailPage : ContentPage
+public partial class FinishedQualityDetailPage : ContentPage
 {
-    private readonly ProcessQualityDetailViewModel _vm;
-    public ProcessQualityDetailPage() : this(ServiceHelper.GetService<ProcessQualityDetailViewModel>()) { }
+    private readonly FinishedQualityDetailViewModel _vm;
+    public FinishedQualityDetailPage() : this(ServiceHelper.GetService<FinishedQualityDetailViewModel>()) { }
 
-    public ProcessQualityDetailPage(ProcessQualityDetailViewModel vm)
+    public FinishedQualityDetailPage(FinishedQualityDetailViewModel vm)
     {
         InitializeComponent();
         _vm = vm ?? throw new ArgumentNullException(nameof(vm));
@@ -33,7 +33,7 @@ public partial class ProcessQualityDetailPage : ContentPage
 
     private void OnInspectorEntryCompleted(object? sender, EventArgs e)
     {
-        if (BindingContext is not ProcessQualityDetailViewModel vm) return;
+        if (BindingContext is not FinishedQualityDetailViewModel vm) return;
 
         var text = vm.InspectorText?.Trim();
         if (string.IsNullOrWhiteSpace(text))

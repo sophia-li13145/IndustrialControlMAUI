@@ -10,7 +10,7 @@ namespace IndustrialControlMAUI.ViewModels
     /// <summary>
     /// 质检单详情页 VM
     /// </summary>
-    public partial class ProcessQualityDetailViewModel : ObservableObject, IQueryAttributable
+    public partial class FinishedQualityDetailViewModel : ObservableObject, IQueryAttributable
     {
         private readonly IQualityApi _api;
         private readonly IAuthApi _authApi;
@@ -68,7 +68,7 @@ namespace IndustrialControlMAUI.ViewModels
         public int Index { get; set; }
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
-        public ProcessQualityDetailViewModel(IQualityApi api, IAuthApi authApi)
+        public FinishedQualityDetailViewModel(IQualityApi api, IAuthApi authApi)
         {
             _api = api;
             _authApi = authApi;
@@ -288,7 +288,10 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip("没有可保存的数据。");
                 return;
             }
-
+            if (Detail.totalQualified is null || Detail.totalUnqualified is null) {
+                await ShowTip("合格总数或不合格总数不能为空。");
+                return;
+            }
             try
             {
                 IsBusy = true;
@@ -323,7 +326,11 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip("没有可提交的数据。");
                 return;
             }
-
+            if (Detail.totalQualified is null || Detail.totalUnqualified is null)
+            {
+                await ShowTip("合格总数或不合格总数不能为空。");
+                return;
+            }
             try
             {
                 // 可选：校验必须字段，例如检验结果/抽样/不良数等
@@ -663,17 +670,5 @@ namespace IndustrialControlMAUI.ViewModels
 
        
     }
-    public static class FileResultExtensions
-    {
-        public static async Task<(string tempPath, long len)> CopyToTempAndLenAsync(this Stream s)
-        {
-            var tmp = Path.Combine(FileSystem.CacheDirectory, $"up_{Guid.NewGuid():N}.bin");
-            using (var fs = File.Create(tmp))
-            {
-                await s.CopyToAsync(fs);
-            }
-            var fi = new FileInfo(tmp);
-            return (tmp, fi.Length);
-        }
-    }
+
 }

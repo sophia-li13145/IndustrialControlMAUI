@@ -36,11 +36,30 @@
 		<AndroidFastDeploymentType>None</AndroidFastDeploymentType>
 		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
 
-		<!-- 你已有：保持调试体验 -->
+		<!-- 调试优化 -->
 		<RunAOTCompilation>false</RunAOTCompilation>
 		<PublishTrimmed>false</PublishTrimmed>
 		<AndroidLinkMode>None</AndroidLinkMode>
+
+		<!-- 防止部分设备“Missing MainActivity” -->
+		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+		<AndroidPackageFormat>aab</AndroidPackageFormat>
+
+		<!-- 显式禁用多线程压缩，提升部署成功率 -->
+		<AndroidUseApkSigner>true</AndroidUseApkSigner>
+		<AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
+
+		<!-- 保证 VS 调试器端口可正常映射 -->
+		<AndroidDebugNetworkType>adb</AndroidDebugNetworkType>
+		<DebuggerAttached>true</DebuggerAttached>
+
+		<!-- 指定 CPU 架构；手持机常为 arm64-v8a -->
+		<RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+
+		<!-- 可选：如果手持机 Android < 10，可以降一点 target -->
+		<AndroidTargetSdkVersion>34</AndroidTargetSdkVersion>
 	</PropertyGroup>
+
 
 	<PropertyGroup>
 		<ApplicationTitle>联创数智管家</ApplicationTitle>
@@ -100,6 +119,12 @@
 		<Compile Update="Pages\ProductionOperations\ProcessTaskSearchPage.xaml.cs">
 		  <DependentUpon>ProcessTaskSearchPage.xaml</DependentUpon>
 		</Compile>
+		<Compile Update="Pages\Quality\FinishedQualityDetailPage.xaml.cs">
+		  <DependentUpon>FinishedQualityDetailPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\Quality\FinishedQualitySearchPage.xaml.cs">
+		  <DependentUpon>FinishedQualitySearchPage.xaml</DependentUpon>
+		</Compile>
 		<Compile Update="Pages\Quality\ProcessQualitySearchPage.xaml.cs">
 		  <DependentUpon>ProcessQualitySearchPage.xaml</DependentUpon>
 		</Compile>
@@ -145,6 +170,12 @@
 		<MauiXaml Update="Pages\ProductionOperations\WorkProcessTaskDetailPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Pages\Quality\FinishedQualityDetailPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Quality\FinishedQualitySearchPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Pages\Quality\ProcessQualitySearchPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
@@ -152,6 +183,9 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Shared\DateTimePickerPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Shared\DefectPickerPopup.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Shared\QrScanPage.xaml">
