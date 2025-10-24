@@ -16,6 +16,7 @@
             <conv:DecParseOnlyConverter x:Key="DecParseOnlyConv" />
             <conv:DefectLevelToColorConverter x:Key="DefectLevelToColor"/>
             <conv:IntGreaterThanZeroConverter x:Key="IntGT0" />
+            <conv:IndexConverter x:Key="IndexConverter" />
             <Style x:Key="PrimaryBtn" TargetType="Button">
                 <Setter Property="HeightRequest" Value="36" />
                 <Setter Property="CornerRadius" Value="8" />
@@ -229,11 +230,11 @@
                         <!-- 只读，显示XXXX风格 -->
 
                         <!-- 第2行：合格总数、不合格总数、总体合格率(只读) -->
-                        <Label Grid.Row="2" Grid.Column="0">
+                        <Label Grid.Row="2" Grid.Column="0" Style="{StaticResource FieldLabel}">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
-                                    <Span Text=" 合格总数：" Style="{StaticResource FieldLabel}"/>
+                                    <Span Text=" 合格总数：" />
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
@@ -241,11 +242,11 @@
                                Text="{Binding Detail.totalQualified, Mode=TwoWay,  Converter={StaticResource DecParseOnlyConv}}"
                                Keyboard="Numeric"
                                IsEnabled="{Binding IsEditing}" />
-                        <Label Grid.Row="2" Grid.Column="2">
+                        <Label Grid.Row="2" Grid.Column="2" Style="{StaticResource FieldLabel}">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
-                                    <Span Text=" 不合格总数：" Style="{StaticResource FieldLabel}"/>
+                                    <Span Text=" 不合格总数：" />
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
@@ -509,7 +510,7 @@
 
                     <!-- Row3 右：附件表格 -->
                     <Grid Grid.Row="3" Grid.Column="1" RowDefinitions="Auto,*" Margin="0,4,0,0">
-                        <Grid Grid.Row="0" ColumnDefinitions="40,100,60,80,120"
+                        <Grid Grid.Row="0" ColumnDefinitions="40,100,40,80,120"
           BackgroundColor="#E5EEF9" Padding="8,8">
                             <Label Grid.Column="0" Text="序号" />
                             <Label Grid.Column="1" Text="附件名称" />
@@ -518,11 +519,13 @@
                             <Label Grid.Column="4" Text="操作" />
                         </Grid>
 
-                        <CollectionView Grid.Row="1" ItemsSource="{Binding Attachments}" SelectionMode="None">
+                        <CollectionView x:Name="AttList" Grid.Row="1" ItemsSource="{Binding Attachments}" SelectionMode="None">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="60,*,100,160,120" Padding="8,10">
-                                        <Label Text="{Binding Index}" />
+                                    <Grid ColumnDefinitions="40,100,40,80,120" Padding="8,10">
+                                        <Label Text="{Binding .,
+                                            Converter={StaticResource IndexConverter},
+                                            ConverterParameter={x:Reference AttList}}" />   
                                         <Label Grid.Column="1" Text="{Binding AttachmentName}" LineBreakMode="TailTruncation"/>
                                         <Label Grid.Column="2" Text="{Binding AttachmentSize}" />
                                         <Label Grid.Column="3" Text="{Binding CreatedTime}" />

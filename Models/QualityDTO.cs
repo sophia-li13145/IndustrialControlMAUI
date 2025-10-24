@@ -256,9 +256,9 @@ public class QualityAttachment
     public string? attachmentUrl { get; set; }
     public string? attachmentExt { get; set; }
     public string? attachmentLocation { get; set; } // main/table
-    public long? attachmentSize { get; set; }     // KB
+    public decimal? attachmentSize { get; set; }     // KB
     public string? attachmentFolder { get; set; }
-    public string? memo { get; set; }
+    public string? createdTime { get; set; }
 }
 
 public partial class AttachmentItem
@@ -355,15 +355,15 @@ public partial class OrderQualityAttachmentItem : ObservableObject
     public string? CreatedTime { get; set; }
     public string? Memo { get; set; }
     public bool IsUploaded { get; set; }
+    // 预览接口返回的直连 URL（短期有效）
+    private string? _previewUrl;
+    public string? PreviewUrl { get => _previewUrl; set => SetProperty(ref _previewUrl, value); }
 
-    public ImageSource? DisplaySource =>
-        IsImage
-            ? (!string.IsNullOrWhiteSpace(LocalPath)
-                ? ImageSource.FromFile(LocalPath!)
-                : (!string.IsNullOrWhiteSpace(AttachmentUrl)
-                    ? ImageSource.FromUri(new Uri(AttachmentUrl))
-                    : null))
-            : null;
+    // 供 XAML 绑定：优先显示 Preview → Local → 原地址
+    public string? DisplaySource => PreviewUrl ?? LocalPath ?? AttachmentUrl;
+
+    // 通知 UI 刷新 DisplaySource
+    public void RefreshDisplay() => OnPropertyChanged(nameof(DisplaySource));
 }
 
 public class UploadAttachmentResult
@@ -373,7 +373,7 @@ public class UploadAttachmentResult
     public string? attachmentLocation { get; set; }
     public string? attachmentName { get; set; }
     public string? attachmentRealName { get; set; }
-    public long attachmentSize { get; set; }
+    public decimal? attachmentSize { get; set; }
     public string? attachmentUrl { get; set; }
 }
 public class DefectOption
@@ -436,4 +436,9 @@ public class DefectChip
     /// 背景颜色
     /// </summary>
     public Color ColorHex { get; set; } = Colors.LightGray;
+}
+
+public class DeleteAttachmentReq
+{
+    public string? id { get; set; }
 }

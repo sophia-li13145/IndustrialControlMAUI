@@ -9,7 +9,17 @@ public partial class FinishedQualityDetailPage : ContentPage
 
     public FinishedQualityDetailPage(FinishedQualityDetailViewModel vm)
     {
-        InitializeComponent();
+        try
+        {
+            InitializeComponent();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);           // 查看 Output 窗口
+            System.Diagnostics.Debug.WriteLine(ex.InnerException);
+            throw; // 保留原异常
+        }
+
         _vm = vm ?? throw new ArgumentNullException(nameof(vm));
         BindingContext = _vm;
     }

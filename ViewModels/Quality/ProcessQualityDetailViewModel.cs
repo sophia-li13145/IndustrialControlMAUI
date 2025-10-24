@@ -14,6 +14,7 @@ namespace IndustrialControlMAUI.ViewModels
     {
         private readonly IQualityApi _api;
         private readonly IAuthApi _authApi;
+        private readonly CancellationTokenSource _cts = new();
         private const string FolderImage = "image";
         private const string FolderFile = "file";
         private const string LocationQuality = "processQuality";
@@ -229,7 +230,7 @@ namespace IndustrialControlMAUI.ViewModels
                             AttachmentSize = (long)at.attachmentSize,
                             AttachmentUrl = at.attachmentUrl ?? "",
                             Id = at.id ?? "",
-                            Memo = at.memo ?? "",
+                            CreatedTime = at.createdTime ?? "",
                             LocalPath = null,
                             IsUploaded = true
                         };
@@ -258,6 +259,7 @@ namespace IndustrialControlMAUI.ViewModels
                         }
                     }
                 });
+                await LoadPreviewThumbnailsAsync();
 
                 // ===== 下拉选中项：检验结果 =====
                 SelectedInspectResult = InspectResultOptions
@@ -276,7 +278,42 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+        private async Task LoadPreviewThumbnailsAsync()
+        {
+            // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
+            var list = Attachments
+                .Where(a => (a.IsImage || IsImageExt(a.AttachmentExt))
+                            && string.IsNullOrWhiteSpace(a.PreviewUrl)                            && !string.IsNullOrWhiteSpace(a.AttachmentUrl))
+                .ToList();
+            if (list.Count == 0) return;
 
+            // 并发控制：最多 4 条并发
+            var options = new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = _cts.Token };
+
+            await Task.Run(() =>
+                Parallel.ForEach(list, options, item =>
+                {
+                    try
+                    {
+                        // 预签名有效期：例如 10 分钟
+                        var resp = _api.GetPreviewUrlAsync(item.AttachmentUrl!, 600, options.CancellationToken).GetAwaiter().GetResult();
+                        if (resp?.success == true && !string.IsNullOrWhiteSpace(resp.result))
+                        {
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                item.PreviewUrl = resp.result;
+                                item.LocalPath = null;  // 有了直连地址就不再用本地
+                                item.RefreshDisplay();
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        // 忽略单条失败，必要时写日志
+                    }
+                })
+            );
+        }
         /// <summary>
         /// 保存（示例：仅做本地校验与提示；如需调用后端保存接口，按你后端补齐）
         /// </summary>
@@ -453,7 +490,7 @@ namespace IndustrialControlMAUI.ViewModels
                         AttachmentExt = ext,
                         AttachmentSize = len,
                         LocalPath = f.FullPath,      // 有些设备是 content:// 也没事；缩略图走 LocalPath 时已兼容
-                        Memo = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        CreatedTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                         IsImage = isImg            // 决定是否进缩略图
                     };
 
@@ -462,39 +499,48 @@ namespace IndustrialControlMAUI.ViewModels
                     // 仅图片列表
                     if (isImg) ImageAttachments.Insert(0, localItem);
 
-                    // === 5) 调接口（图片/文件都同一条）
+                    // 6) 真正上传文件（关键：multipart/form-data + file）
                     var folder = isImg ? FolderImage : FolderFile;
+                    var contentType = DetectContentType(ext);     // 见下方辅助函数
+
+                    // 用临时文件重新打开流，避免上面 using 的 src 已被释放
+                    await using var fs = File.OpenRead(tmpPath);
                     var resp = await _api.UploadAttachmentAsync(
-                        attachmentFolder: folder,
-                        attachmentLocation: LocationQuality,
-                        attachmentName: f.FileName,
-                        attachmentExt: ext,
-                        attachmentSize: len
-                    );
+                                attachmentFolder: folder,
+                                attachmentLocation: LocationQuality,
+                                fileStream: fs,
+                                fileName: f.FileName,
+                                contentType: contentType,
+                                attachmentName: f.FileName,
+                                attachmentExt: ext,
+                                attachmentSize: len
+                            );
+
 
                     if (resp?.success == true && resp.result != null)
                     {
                         localItem.AttachmentUrl = string.IsNullOrWhiteSpace(resp.result.attachmentUrl)
-                                                       ? localItem.AttachmentUrl
-                                                       : resp.result.attachmentUrl;
+                                                        ? localItem.AttachmentUrl
+                                                        : resp.result.attachmentUrl;
                         localItem.AttachmentRealName = resp.result.attachmentRealName ?? localItem.AttachmentRealName;
                         localItem.AttachmentFolder = resp.result.attachmentFolder ?? folder;
                         localItem.AttachmentLocation = resp.result.attachmentLocation ?? LocationQuality;
                         localItem.AttachmentExt = resp.result.attachmentExt ?? ext;
 
-                        // 回填后如果出现服务端判定为图片，也补进 ImageAttachments（极少见）
+                        // 如果服务端给了 URL，就让图片改走网络地址展示；本地临时可清掉
+                        if (!string.IsNullOrWhiteSpace(resp.result.attachmentUrl))
+                            localItem.LocalPath = null;
+
+                        // 如果最终被认定是图片而你本地没归到图片，就补一次
                         var nowIsImg = localItem.IsImage || IsImageExt(localItem.AttachmentExt)
                                        || (!string.IsNullOrWhiteSpace(localItem.AttachmentUrl)
-                                           && IsImageExt(Path.GetExtension(localItem.AttachmentUrl)));
+                                           && IsImageExt(Path.GetExtension(localItem.AttachmentUrl)?.TrimStart('.')));
                         if (nowIsImg && !localItem.IsImage)
                         {
                             localItem.IsImage = true;
                             if (ImageAttachments.Count < MaxImageCount)
                                 ImageAttachments.Insert(0, localItem);
                         }
-
-                        if (!string.IsNullOrWhiteSpace(resp.result.attachmentUrl))
-                            localItem.LocalPath = null;
                     }
                     else
                     {
@@ -508,20 +554,33 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
-
-        private static bool IsImageExt(string? extOrName)
+        private static string? DetectContentType(string? ext)
         {
-            if (string.IsNullOrWhiteSpace(extOrName)) return false;
-            var ext = extOrName.StartsWith('.') ? extOrName[1..] : extOrName;
-            return _imgExts.Contains(ext);
+            switch (ext?.ToLowerInvariant())
+            {
+                case "jpg":
+                case "jpeg": return "image/jpeg";
+                case "png": return "image/png";
+                case "gif": return "image/gif";
+                case "bmp": return "image/bmp";
+                case "webp": return "image/webp";
+                case "pdf": return "application/pdf";
+                case "doc": return "application/msword";
+                case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                case "xls": return "application/vnd.ms-excel";
+                case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                case "txt": return "text/plain";
+                case "rar": return "application/x-rar-compressed";
+                case "zip": return "application/zip";
+                default: return null; // 让 HttpClient 自行处理
+            }
         }
 
-        private static bool IsAllowedFile(string? extOrName)
-        {
-            if (string.IsNullOrWhiteSpace(extOrName)) return false;
-            var ext = extOrName.StartsWith('.') ? extOrName[1..] : extOrName;
-            return _allowedFileExts.Contains(ext);
-        }
+        private static bool IsImageExt(string? ext)
+            => ext is "jpg" or "jpeg" or "png" or "gif" or "bmp" or "webp";
+
+        private static bool IsAllowedFile(string? ext)
+            => IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
 
 
         /// <summary>
@@ -541,8 +600,8 @@ namespace IndustrialControlMAUI.ViewModels
                 attachmentRealName = a.AttachmentRealName,
                 attachmentSize = a.AttachmentSize,
                 attachmentUrl = a.AttachmentUrl,
-                id = a.Id,
-                memo = a.Memo
+                createdTime = a.CreatedTime,
+                id = a.Id
             }).ToList();
 
             // 2) 明细：Items 已经是服务器的明细模型（你加载时就是 Detail.orderQualityDetailList → Items）
@@ -598,23 +657,46 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         [RelayCommand]
-        private async Task DeleteAttachment(OrderQualityAttachmentItem? item)
+        private async Task DeleteAttachmentAsync(OrderQualityAttachmentItem? item)
         {
             if (item is null) return;
 
-            bool ok = await Application.Current.MainPage.DisplayAlert("确认", $"确定删除“{item.AttachmentName}”吗？", "删除", "取消");
-            if (!ok) return;
+            // 未上传（没有 Id）的本地占位，直接本地删除
+            if (string.IsNullOrWhiteSpace(item.Id))
+            {
+                Attachments.Remove(item);
+                if (item.IsImage) ImageAttachments.Remove(item);
+                await ShowTip("已从本地移除（未上传到服务器）");
+                return;
+            }
+
+            bool confirm = await Application.Current.MainPage.DisplayAlert(
+                "确认删除",
+                $"确定删除附件：{item.AttachmentName}？",
+                "删除", "取消");
+            if (!confirm) return;
 
             try
             {
-                // 本地 & 成功：从集合里移除（图片集也一起拿掉）
-                RemoveFromCollections(item);
+                var resp = await _api.DeleteAttachmentAsync(item.Id, _cts?.Token ?? CancellationToken.None);
+                if (resp?.success == true && resp.result)
+                {
+                    Attachments.Remove(item);
+                    if (item.IsImage) ImageAttachments.Remove(item);
+                    await ShowTip("删除成功");
+                }
+                else
+                {
+                    await ShowTip($"删除失败：{resp?.message ?? "未知错误"}");
+                }
             }
             catch (Exception ex)
             {
                 await ShowTip($"删除异常：{ex.Message}");
             }
         }
+
+
 
         [RelayCommand]
         private async Task OpenDefectPicker(QualityItem? row)

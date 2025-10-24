@@ -9,7 +9,7 @@
 
         <!-- 顶部蓝条 -->
         <Grid Grid.Row="0" BackgroundColor="#007BFF" HeightRequest="56" Padding="16,0">
-            <Label Text="仓储管理系统"
+            <Label Text="生产管理系统"
                    VerticalOptions="Center"
                    TextColor="White"
                    FontSize="18"

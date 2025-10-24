@@ -1,6 +1,8 @@
 ﻿using IndustrialControlMAUI.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Web;
 
 namespace IndustrialControlMAUI.Services
 {
@@ -20,12 +22,15 @@ namespace IndustrialControlMAUI.Services
         Task<DictQuality> GetQualityDictsAsync(CancellationToken ct = default);
         Task<ApiResp<QualityDetailDto>?> GetDetailAsync(string id, CancellationToken ct = default);
         Task<ApiResp<UploadAttachmentResult>> UploadAttachmentAsync(
-     string attachmentFolder,
-     string attachmentLocation,
-     string? attachmentName = null,
-     string? attachmentExt = null,
-     long? attachmentSize = null,
-     CancellationToken ct = default);
+                string attachmentFolder,
+                string attachmentLocation,
+                Stream fileStream,                // ← 新增：文件流
+                string fileName,                  // ← 新增：文件名（需含后缀）
+                string? contentType = null,       // ← 可选：MIME 类型
+                string? attachmentName = null,
+                string? attachmentExt = null,
+                long? attachmentSize = null,
+                CancellationToken ct = default);
         Task<ApiResp<bool>> ExecuteSaveAsync(QualityDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<bool>> ExecuteCompleteInspectionAsync(QualityDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<DefectPage>> GetDefectPageAsync(
@@ -39,7 +44,9 @@ namespace IndustrialControlMAUI.Services
     string? createdTimeEnd = null,
     CancellationToken ct = default);
 
+        Task<ApiResp<string>> GetPreviewUrlAsync(string attachmentUrl, long? expires = null, CancellationToken ct = default);
 
+        Task<ApiResp<bool>> DeleteAttachmentAsync(string id, CancellationToken ct = default);
     }
 
     // ===================== 实现 =====================
@@ -53,7 +60,8 @@ namespace IndustrialControlMAUI.Services
         private readonly string _executeSavePath;
         private readonly string _executeCompletePath;
         private readonly string _defectPagePath;
-
+        private readonly string _previewImagePath;
+        private readonly string _deleteAttPath;
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -85,7 +93,13 @@ namespace IndustrialControlMAUI.Services
             _executeCompletePath = NormalizeRelative(
                 configLoader.GetApiPath("quality.executeComplete", "/pda/qsOrderQuality/executeCompleteInspection"), servicePath);
             _defectPagePath = NormalizeRelative(
-    configLoader.GetApiPath("quality.defect.page", "/pda/qsOrderQuality/defectPageQuery"),
+            configLoader.GetApiPath("quality.defect.page", "/pda/qsOrderQuality/defectPageQuery"),
+            servicePath);
+            _previewImagePath = NormalizeRelative(
+    configLoader.GetApiPath("quality.previewImage", "/pda/attachment/previewAttachment"),
+    servicePath);
+            _deleteAttPath = NormalizeRelative(
+    configLoader.GetApiPath("quality.previewImage", "/pda/qsOrderQuality/deleteAttachment"),
     servicePath);
         }
         // ===== 公共工具 =====
@@ -230,36 +244,56 @@ namespace IndustrialControlMAUI.Services
             ) ?? new ApiResp<QualityDetailDto> { success = false, message = "Empty body" };
         }
         public async Task<ApiResp<UploadAttachmentResult>> UploadAttachmentAsync(
-        string attachmentFolder,
-        string attachmentLocation,
-        string? attachmentName = null,
-        string? attachmentExt = null,
-        long? attachmentSize = null,
-        CancellationToken ct = default)
+    string attachmentFolder,
+    string attachmentLocation,
+    Stream fileStream,                // ← 新增：文件流
+    string fileName,                  // ← 新增：文件名（需含后缀）
+    string? contentType = null,       // ← 可选：MIME 类型
+    string? attachmentName = null,
+    string? attachmentExt = null,
+    long? attachmentSize = null,
+    CancellationToken ct = default)
         {
             var url = BuildFullUrl(_http.BaseAddress, _uploadAttachmentPath);
 
-            // 按文档要求：application/x-www-form-urlencoded
-            var kv = new List<KeyValuePair<string, string>>
-        {
-            new("attachmentFolder", attachmentFolder),
-            new("attachmentLocation", attachmentLocation),
-        };
-            if (!string.IsNullOrWhiteSpace(attachmentName)) kv.Add(new("attachmentName", attachmentName));
-            if (!string.IsNullOrWhiteSpace(attachmentExt)) kv.Add(new("attachmentExt", attachmentExt));
-            if (attachmentSize.HasValue) kv.Add(new("attachmentSize", attachmentSize.Value.ToString()));
+            // 准备 multipart/form-data
+            using var form = new MultipartFormDataContent();
 
-            using var content = new FormUrlEncodedContent(kv);
-            using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+            // 1) 文件部分（字段名要与后端匹配，常见是 "file" 或文档指定的名）
+            var fileContent = new StreamContent(fileStream);
+            if (!string.IsNullOrWhiteSpace(contentType))
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+
+            // 关键：name 要与后端参数名一致（例如 "file"），并且一定要提供 filename
+            form.Add(fileContent, "file", fileName);
+
+            // 2) 其他普通字段（与后端参数名一一对应）
+            form.Add(new StringContent(attachmentFolder), "attachmentFolder");
+            form.Add(new StringContent(attachmentLocation), "attachmentLocation");
+
+            if (!string.IsNullOrWhiteSpace(attachmentName))
+                form.Add(new StringContent(attachmentName), "attachmentName");
+
+            if (!string.IsNullOrWhiteSpace(attachmentExt))
+                form.Add(new StringContent(attachmentExt), "attachmentExt");
+
+            if (attachmentSize.HasValue)
+                form.Add(new StringContent(attachmentSize.Value.ToString()), "attachmentSize");
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = form };
             using var resp = await _http.SendAsync(req, ct);
 
-            resp.EnsureSuccessStatusCode();
             var json = await resp.Content.ReadAsStringAsync(ct);
-            var data = JsonSerializer.Deserialize<ApiResp<UploadAttachmentResult>>(json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new ApiResp<UploadAttachmentResult>();
+            // 如果服务端会返回 4xx/5xx + JSON 错误体，先别急着 EnsureSuccessStatusCode，以便保留服务端错误信息
+            if (!resp.IsSuccessStatusCode)
+                throw new HttpRequestException($"Upload failed: {(int)resp.StatusCode} {json}");
 
-            return data;
+            return JsonSerializer.Deserialize<ApiResp<UploadAttachmentResult>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?? new ApiResp<UploadAttachmentResult>();
         }
+
+
 
         public async Task<ApiResp<bool>> ExecuteSaveAsync(QualityDetailDto payload, CancellationToken ct = default)
         {
@@ -334,7 +368,48 @@ namespace IndustrialControlMAUI.Services
             return System.Text.Json.JsonSerializer.Deserialize<ApiResp<DefectPage>>(body, _json)
                    ?? new ApiResp<DefectPage> { success = false, message = "Empty body" };
         }
+        public async Task<ApiResp<string>> GetPreviewUrlAsync(string attachmentUrl, long? expires = null, CancellationToken ct = default)
+        {
+            var baseUrl = BuildFullUrl(_http.BaseAddress, _previewImagePath);
 
+            // 组装 query
+            var qb = HttpUtility.ParseQueryString(string.Empty);
+            qb["attachmentUrl"] = attachmentUrl;                    // 必填
+            if (expires.HasValue) qb["expires"] = expires.Value.ToString(); // 可选（秒）
+
+            var url = $"{baseUrl}?{qb}";
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, url);
+            using var resp = await _http.SendAsync(req, ct);
+            var json = await resp.Content.ReadAsStringAsync(ct);
+
+            return JsonSerializer.Deserialize<ApiResp<string>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            }) ?? new ApiResp<string>();
+        }
+
+        public async Task<ApiResp<bool>> DeleteAttachmentAsync(string id, CancellationToken ct = default)
+        {
+            var url = BuildFullUrl(_http.BaseAddress, _deleteAttPath);
+            var reqObj = new DeleteAttachmentReq { id = id };
+            var json = JsonSerializer.Serialize(reqObj, _json);
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var body = await res.Content.ReadAsStringAsync(ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, code = (int)res.StatusCode, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(body, _json)
+                   ?? new ApiResp<bool> { success = false, message = "Empty body" };
+        }
     }
+
+
 
 }
