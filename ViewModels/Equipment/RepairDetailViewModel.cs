@@ -13,6 +13,7 @@ namespace IndustrialControlMAUI.ViewModels
     {
         private readonly IEquipmentApi _api;
         private readonly IAttachmentApi _attachmentApi;
+        private readonly IAuthApi _authapi;
         private readonly CancellationTokenSource _cts = new();
 
         public ObservableCollection<OrderRepairAttachmentItem> ErrorAttachments { get; } = new();
@@ -23,6 +24,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private RepairDetailDto? detail;
+        public List<UserInfoDto> AllUsers { get; private set; }
 
 
         // 明细与附件集合（用于列表绑定）
@@ -41,11 +43,11 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> urgentDict = new();
         [ObservableProperty] private List<DictItem> repairTypeDict = new();
 
-        public RepairDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi)
+        public RepairDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IAuthApi authapi)
         {
             _api = api;
             _attachmentApi = attachmentApi;
-            _ = EnsureDictsLoadedAsync();
+            _authapi = authapi;
         }
 
         private async Task EnsureDictsLoadedAsync()
@@ -67,6 +69,18 @@ namespace IndustrialControlMAUI.ViewModels
                 _dictsLoaded = true;
             }
         }
+
+        public async Task GetAllUsers()
+        {
+            try
+            {
+                AllUsers = await _authapi.GetAllUsersAsync();
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert("错误", $"加载用户列表失败：{ex.Message}", "OK");
+            }
+        }
         /// <summary>
         /// Shell 路由入参，例如：.../RepairDetailPage?id=xxxx
         /// </summary>
@@ -82,6 +96,9 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand]
         private async Task LoadAsync()
         {
+            await EnsureDictsLoadedAsync();
+            if (AllUsers is null || AllUsers.Count == 0)
+                await GetAllUsers();
             var urgentMap = UrgentDict?
            .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
            .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
@@ -112,12 +129,22 @@ namespace IndustrialControlMAUI.ViewModels
                 }
 
                 Detail = resp.result;
-                Detail.urgentText = urgentMap.TryGetValue(Detail.urgent ?? "", out var uName)
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Detail.UrgentText = urgentMap.TryGetValue(Detail.maintainReportDomain?.urgent ?? "", out var uName)
                         ? uName
                         : Detail.urgent;
-                Detail.maintainTypeText = typeMap.TryGetValue(Detail.maintainType ?? "", out var sName)
-                        ? sName
-                        : Detail.maintainType;
+                    Detail.MaintainTypeText = typeMap.TryGetValue(Detail.maintainType ?? "", out var sName)
+                            ? sName
+                            : Detail.maintainType;
+                    Detail.MainRepairUserText = AllUsers.Where(x => x.username == Detail.mainRepairUser).FirstOrDefault()?.realname;
+                    var assiUsers = Detail.assitRepairUsers?.Split(',').ToList();
+                    if (assiUsers != null)
+                        Detail.AssitRepairUsersText = string.Join(",", AllUsers.Where(x => assiUsers.Contains(x.username)).Select(x => x.realname).ToList());
+                    Detail.RepairStartTime = Detail.RepairStartTime?.Split(' ')[0];
+                    Detail.RepairEndTime = Detail.RepairEndTime?.Split(' ')[0];
+                    Detail.ExpectedRepairDate = Detail.maintainReportDomain?.expectedRepairDate?.Split(' ')[0];
+                });
                 //异常图片
                 ErrorAttachments.Clear();
 
@@ -145,11 +172,12 @@ namespace IndustrialControlMAUI.ViewModels
                                    || IsImageExt(Path.GetExtension(error.AttachmentUrl));
 
                     ErrorAttachments.Add(error);
-                    await LoadErrorPreviewThumbnailsAsync();
-                    await LoadWorkflowAsync(_id!);
+                }
+                await LoadErrorPreviewThumbnailsAsync();
+                await LoadWorkflowAsync(_id!);
 
-                    // ===== 明细 =====
-                    await MainThread.InvokeOnMainThreadAsync(() =>
+                // ===== 明细 =====
+                await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         Items.Clear();
                         int i = 1;
@@ -164,6 +192,7 @@ namespace IndustrialControlMAUI.ViewModels
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         Attachments.Clear();
+                        ImageAttachments.Clear();
 
                         foreach (var at in (Detail.maintainWorkOrderAttachmentDomainList ?? new List<RepairAttachment>()))
                         {
@@ -184,18 +213,14 @@ namespace IndustrialControlMAUI.ViewModels
                                 IsUploaded = true
                             };
 
-                            // === 关键：只要是图片，才入缩略图集合 ===
-                            item.IsImage = IsImageExt(item.AttachmentExt)
-                                           || IsImageExt(Path.GetExtension(item.AttachmentUrl));
-
-                            Attachments.Add(item);
-                            if (item.IsImage) ImageAttachments.Add(item);
+                            if (item.AttachmentLocation == "fujian") Attachments.Add(item);
+                            if (item.AttachmentLocation == "image") ImageAttachments.Add(item);
                         }
 
 
                     });
                     await LoadPreviewThumbnailsAsync();
-                }
+                
             }
             catch (Exception ex)
             {
@@ -209,10 +234,8 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
-            var list = Attachments
-                .Where(a => (a.IsImage || IsImageExt(a.AttachmentExt))
-                            && string.IsNullOrWhiteSpace(a.PreviewUrl)                            && !string.IsNullOrWhiteSpace(a.AttachmentUrl))
-                .ToList();
+            var list = ImageAttachments.Where(a => (IsImageExt(a.AttachmentExt))
+                            && string.IsNullOrWhiteSpace(a.PreviewUrl) && !string.IsNullOrWhiteSpace(a.AttachmentUrl)).ToList();
             if (list.Count == 0) return;
 
             // 并发控制：最多 4 条并发

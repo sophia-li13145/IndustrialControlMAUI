@@ -237,12 +237,8 @@ namespace IndustrialControlMAUI.ViewModels
                             QualityNo = Detail?.qualityNo
                         };
 
-                        // === 关键：只要是图片，才入缩略图集合 ===
-                        item.IsImage = IsImageExt(item.AttachmentExt)
-                                       || IsImageExt(Path.GetExtension(item.AttachmentUrl));
-
-                        Attachments.Add(item);
-                        if (item.IsImage) ImageAttachments.Add(item);
+                        if (item.AttachmentFolder == LocationFile) Attachments.Add(item);
+                        if (item.AttachmentFolder == LocationImage) ImageAttachments.Add(item);
                     }
 
                     foreach (var it in Detail.orderQualityDetailList ?? new())
@@ -284,8 +280,8 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
-            var list = Attachments
-                .Where(a => (a.IsImage || IsImageExt(a.AttachmentExt))
+            var list = ImageAttachments
+                .Where(a => (IsImageExt(a.AttachmentExt))
                             && string.IsNullOrWhiteSpace(a.PreviewUrl)
                             && !string.IsNullOrWhiteSpace(a.AttachmentUrl))
                 .ToList();
@@ -459,7 +455,7 @@ namespace IndustrialControlMAUI.ViewModels
                 foreach (var f in pick)
                 {
                     var ext = Path.GetExtension(f.FileName)?.TrimStart('.').ToLowerInvariant();
-                    var isImg = IsImageExt(ext);
+                    var isImg = isImage;
 
                     // === 1) 统一做格式校验（文件入口也要限制到白名单）
                     if (!isImg && !IsAllowedFile(ext))
@@ -505,11 +501,16 @@ namespace IndustrialControlMAUI.ViewModels
                         CreatedTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                         IsImage = isImg            // 决定是否进缩略图
                     };
+                    if (!isImg) {
+                        localItem.AttachmentLocation = LocationFile;
+                        Attachments.Insert(0, localItem);
+                    }
 
-                    // 全部列表
-                    Attachments.Insert(0, localItem);
                     // 仅图片列表
-                    if (isImg) ImageAttachments.Insert(0, localItem);
+                    if (isImg) {
+                        localItem.AttachmentLocation = LocationImage;
+                        ImageAttachments.Insert(0, localItem);
+                    }
 
                     // === 5) 调接口（图片/文件都同一条）
                     var attachmentLocation = isImg ? LocationImage : LocationFile;
@@ -544,17 +545,6 @@ namespace IndustrialControlMAUI.ViewModels
                         // 如果服务端给了 URL，就让图片改走网络地址展示；本地临时可清掉
                         if (!string.IsNullOrWhiteSpace(resp.result.attachmentUrl))
                             localItem.LocalPath = null;
-
-                        // 如果最终被认定是图片而你本地没归到图片，就补一次
-                        var nowIsImg = localItem.IsImage || IsImageExt(localItem.AttachmentExt)
-                                       || (!string.IsNullOrWhiteSpace(localItem.AttachmentUrl)
-                                           && IsImageExt(Path.GetExtension(localItem.AttachmentUrl)?.TrimStart('.')));
-                        if (nowIsImg && !localItem.IsImage)
-                        {
-                            localItem.IsImage = true;
-                            if (ImageAttachments.Count < MaxImageCount)
-                                ImageAttachments.Insert(0, localItem);
-                        }
                     }
                     else
                     {
@@ -603,9 +593,14 @@ namespace IndustrialControlMAUI.ViewModels
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;
-
+            // 合并两个集合并去重（按 Id 或 Url 去重都可以）
+            var allAttachments = Attachments
+                .Concat(ImageAttachments)
+                .GroupBy(a => a.Id ?? a.AttachmentUrl) // 防止重复
+                .Select(g => g.First())
+                .ToList();
             // 1) 附件：把 UI 集合映射回服务器字段
-            Detail.orderQualityAttachmentList = Attachments.Select(a => new QualityAttachment
+            Detail.orderQualityAttachmentList = allAttachments.Select(a => new QualityAttachment
             {
                 attachmentExt = a.AttachmentExt,
                 attachmentFolder = a.AttachmentFolder,
@@ -681,8 +676,8 @@ namespace IndustrialControlMAUI.ViewModels
             // 未上传（没有 Id）的本地占位，直接本地删除
             if (string.IsNullOrWhiteSpace(item.Id))
             {
-                Attachments.Remove(item);
-                if (item.IsImage) ImageAttachments.Remove(item);
+                if (item.AttachmentLocation == LocationFile) Attachments.Remove(item);
+                if (item.AttachmentLocation == LocationImage) ImageAttachments.Remove(item);
                 await ShowTip("已从本地移除（未上传到服务器）");
                 return;
             }

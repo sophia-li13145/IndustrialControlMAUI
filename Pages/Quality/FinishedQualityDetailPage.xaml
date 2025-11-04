@@ -454,7 +454,7 @@
                 <!-- 图片附件 -->
                 <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
                 <!-- 左窄右宽两列 -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
 
                     <!-- Row0 左：图片上传标题 -->
                     <Label Grid.Row="0" Grid.Column="0" Text="图片上传：" VerticalTextAlignment="Start" />
@@ -478,7 +478,7 @@
                     WidthRequest="22" HeightRequest="22" CornerRadius="11"
                     BackgroundColor="#00000066" TextColor="White"
                     HorizontalOptions="End" VerticalOptions="Start" Margin="2"
-                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveAttachmentCommand}"
+                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
                     CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>

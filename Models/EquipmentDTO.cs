@@ -660,7 +660,7 @@ public class DictRepair
 }
 
 
-public class RepairDetailDto : ObservableObject
+public partial class RepairDetailDto : ObservableObject
 {
     public string? id { get; set; }
     public string? maintainNo { get; set; }
@@ -672,7 +672,9 @@ public class RepairDetailDto : ObservableObject
 
     public string? maintainType { get; set; }
 
-    public string? maintainTypeText { get; set; }
+    [ObservableProperty] private string? maintainTypeText;
+    [ObservableProperty] private string? mainRepairUserText;
+    [ObservableProperty] private string? assitRepairUsersText;
     public string? factoryCode { get; set; }
     public string? factoryName { get; set; }
     public string? assignTo { get; set; }
@@ -681,20 +683,18 @@ public class RepairDetailDto : ObservableObject
     public string? mainRepairUser { get; set; }
     public string? assitRepairUsers { get; set; }
 
-    public string? acceptanceDate { get; set; }
+    [ObservableProperty] private string? repairStartTime;
+    [ObservableProperty] private string? repairEndTime;
+    [ObservableProperty] private string? expectedRepairDate;
     public string? acceptanceOpinion { get; set; }
     public string? acceptor { get; set; }
-
-    public string? expectedRepairDate { get; set; }
     public string? completedRepairDate { get; set; }
-    public string? repairStartTime { get; set; }
-    public string? repairEndTime { get; set; }
     public string? repairResult { get; set; }
 
     public decimal? repairDuration { get; set; }
     public string? urgent { get; set; }
 
-    public string? urgentText { get; set; }
+    [ObservableProperty] public string? urgentText;
 
     public bool? auditBack { get; set; }
     public string? auditStatus { get; set; }

@@ -111,12 +111,8 @@ namespace IndustrialControlMAUI.ViewModels
                             IsUploaded = true
                         };
 
-                        // === 关键：只要是图片，才入缩略图集合 ===
-                        item.IsImage = IsImageExt(item.AttachmentExt)
-                                       || IsImageExt(Path.GetExtension(item.AttachmentUrl));
-
-                        Attachments.Add(item);
-                        if (item.IsImage) ImageAttachments.Add(item);
+                        if (item.AttachmentLocation == "fujian") Attachments.Add(item);
+                        if (item.AttachmentLocation == "image") ImageAttachments.Add(item);
                     }
 
                     
@@ -135,7 +131,7 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
-            var list = Attachments
+            var list = ImageAttachments
                 .Where(a => (a.IsImage || IsImageExt(a.AttachmentExt))
                             && string.IsNullOrWhiteSpace(a.PreviewUrl)                            && !string.IsNullOrWhiteSpace(a.AttachmentUrl))
                 .ToList();

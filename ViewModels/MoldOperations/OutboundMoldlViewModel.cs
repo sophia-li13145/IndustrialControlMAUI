@@ -19,7 +19,6 @@ namespace IndustrialControlMAUI.ViewModels
         public OutboundMoldViewModel(IMoldApi api)
         {
             _api = api;
-
             MoldGroups = new ObservableCollection<MoldGroupVM>();
             ScannedList = new ObservableCollection<ScannedRow>();
 
@@ -33,8 +32,8 @@ namespace IndustrialControlMAUI.ViewModels
             CancelScanCommand = new AsyncRelayCommand(CancelScanAsync);
             ConfirmCommand = new AsyncRelayCommand(ConfirmAsync);
             ScanSubmitCommand = new AsyncRelayCommand(ScanSubmitAsync);
+            
         }
-
         // 无 DI 场景可用的辅助构造（可按需删除）
         public OutboundMoldViewModel() : this(
             (IMoldApi)App.Current!.Handler!.MauiContext!.Services.GetService(typeof(IMoldApi))!)

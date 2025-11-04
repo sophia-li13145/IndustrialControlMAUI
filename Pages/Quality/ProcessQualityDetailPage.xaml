@@ -469,7 +469,7 @@
                     WidthRequest="22" HeightRequest="22" CornerRadius="11"
                     BackgroundColor="#00000066" TextColor="White"
                     HorizontalOptions="End" VerticalOptions="Start" Margin="2"
-                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveAttachmentCommand}"
+                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
                     CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>
