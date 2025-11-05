@@ -1,4 +1,7 @@
-﻿using Microsoft.Maui.Controls;
+﻿using CommunityToolkit.Maui.Views;
+using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.ViewModels;
+using Microsoft.Maui.Controls;
 
 namespace IndustrialControlMAUI.Pages
 {
@@ -53,6 +56,23 @@ namespace IndustrialControlMAUI.Pages
 
         private async void OnRepairSearch(object? s, TappedEventArgs e)
           => await Shell.Current.GoToAsync(nameof(RepairSearchPage));
+
+        // —— 能源：手动抄表 ——（与首页其它方法同风格）
+        private async void OnEnergyManualRead(object? s, TappedEventArgs e)
+        {
+            // 弹出“仪表选择”弹窗
+            var popup = new MeterSelectPopup(
+                Handler!.MauiContext!.Services.GetRequiredService<MeterSelectViewModel>());
+
+            var result = await this.ShowPopupAsync(popup);
+
+            // 选中后跳转到抄表页并回填
+            if (result is EnergyMeterUiRow row)
+            {
+                await Shell.Current.GoToAsync(nameof(ManualReadingPage),
+                    new Dictionary<string, object> { ["meter"] = row });
+            }
+        }
         // ✅ 退出登录
         private async void OnLogoutClicked(object? sender, EventArgs e)
         {

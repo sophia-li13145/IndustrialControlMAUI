@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="IndustrialControlMAUI.Pages.MeterSelectPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16" BackgroundColor="White">
+
+        <!-- 顶部筛选（去掉部门、设备） -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,*,*,*" RowDefinitions="*,*" ColumnSpacing="10" RowSpacing="8">
+            <Label Grid.Row="0" Grid.Column="0" Text="仪表编码"/>
+            <Entry Grid.Row="0" Grid.Column="1" Placeholder="请输入" Text="{Binding FilterCode}" />
+            <Label Grid.Row="0" Grid.Column="2" Text="能源类型"/>
+            <Picker Grid.Row="0" Grid.Column="3" 
+                    ItemsSource="{Binding EnergyTypeOptions}"
+                    SelectedItem="{Binding SelectedEnergyType}" />
+            <Label Grid.Row="1" Grid.Column="0" Text="车间"/>
+            <Picker Grid.Row="1" Grid.Column="1" 
+                    ItemsSource="{Binding WorkshopOptions}"
+                    SelectedItem="{Binding SelectedWorkshop}" />
+            <Label Grid.Row="1" Grid.Column="2" Text="产线"/>
+            <Picker Grid.Row="1" Grid.Column="3" 
+                    ItemsSource="{Binding LineOptions}"
+                    SelectedItem="{Binding SelectedLine}" />
+        </Grid>
+
+        <!-- 表格 -->
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Rows}" SelectionMode="Single"
+                        SelectedItem="{Binding SelectedRow, Mode=TwoWay}">
+            <CollectionView.Header>
+                <Grid ColumnDefinitions="40,*,*,*,*,*" Padding="10,8" BackgroundColor="#F5F7FA">
+                    <Label Text="选择"/>
+                    <Label Grid.Column="1" Text="仪表编码"/>
+                    <Label Grid.Column="2" Text="能源类型"/>
+                    <Label Grid.Column="3" Text="车间/部门"/>
+                    <Label Grid.Column="4" Text="产线"/>
+                    <Label Grid.Column="5" Text="设备"/>
+                </Grid>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="40,*,*,*,*,*" Padding="10,8">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}},
+                                          Path=BindingContext.SelectRowCommand}"
+                        CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <!-- 单选按钮：用手势触发选择；IsChecked 仅负责显示 -->
+                        <RadioButton>
+                            <RadioButton.GestureRecognizers>
+                                <TapGestureRecognizer
+                Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}},
+                                  Path=BindingContext.SelectRowCommand}"
+                CommandParameter="{Binding .}" />
+                            </RadioButton.GestureRecognizers>
+                        </RadioButton>
+
+                        <!-- 勾选状态 = (SelectedRow == 当前行) -->
+                        <RadioButton IsChecked="{Binding IsSelected}">
+                            <RadioButton.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}},
+                                  Path=BindingContext.SelectRowCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </RadioButton.GestureRecognizers>
+                        </RadioButton>
+                        <Label Grid.Column="1" Text="{Binding MeterCode}" />
+                        <Label Grid.Column="2" Text="{Binding EnergyTypeText}" />
+                        <Label Grid.Column="3" Text="{Binding WorkshopName}" />
+                        <Label Grid.Column="4" Text="{Binding LineName}" />
+                        <Label Grid.Column="5" Text="{Binding DevName}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- 底部操作 -->
+        <HorizontalStackLayout Grid.Row="2" Spacing="12" HorizontalOptions="Center">
+            <Button Text="查询" Command="{Binding QueryCommand}" />
+            <Button Text="确 认" Clicked="OnConfirmClicked" />
+        </HorizontalStackLayout>
+    </Grid>
+</toolkit:Popup>

@@ -380,6 +380,32 @@ Padding="8,0,8,24">
                 </Frame>
                
             </Grid>
+
+            <Label Text="能源管理系统" Style="{StaticResource SectionTitle}" />
+            <Grid ColumnDefinitions="*,*"
+        RowDefinitions="Auto,Auto,Auto"
+        Padding="8,0,8,24">
+
+                <!-- 手动抄表  -->
+                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                    BackgroundColor="#00796B"
+                    StrokeShape="RoundRectangle 32">
+                            <Image Source="search_24_filled.svg"
+                       HeightRequest="28" WidthRequest="28"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="手动抄表" FontSize="12" Margin="0,6,0,0"
+                   HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEnergyManualRead" />
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

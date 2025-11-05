@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="IndustrialControlMAUI.Pages.ManualReadingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="能源管理系统">
+
+    <Grid x:Name="RootGrid"
+          Padding="10"
+          RowDefinitions="Auto,Auto,*"
+          RowSpacing="12">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding CloseReaderDropdownCommand}" />
+        </Grid.GestureRecognizers>
+
+        
+        <Grid  Grid.Row="0" ColumnDefinitions="*,100" >
+            <Label Grid.Column="0" Text="手动抄表" FontAttributes="Bold" FontSize="18"/>
+            <Button Grid.Column="1" Grid.ColumnSpan="1" Text="保 存" Command="{Binding SaveCommand}" BackgroundColor="Green" FontSize="16"/>
+        </Grid>
+        <Label Grid.Row="1" Text="{Binding Form.MeterCode, StringFormat='仪表编码：{0}'}"
+   FontAttributes="Bold" FontSize="20" />
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="60,*,60,*" ColumnSpacing="12" RowSpacing="2">
+
+            <Label Grid.Row="0" Grid.Column="0" Text="能源类型：" />
+            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Form.EnergyType}" />
+
+            <Label Grid.Row="0" Grid.Column="2" Text="仪表点位：" />
+            <Picker Grid.Row="0" Grid.Column="3"
+            ItemsSource="{Binding MeterPoints}"
+            SelectedItem="{Binding SelectedMeterPoint}"
+            ItemDisplayBinding="{Binding meterPointCode}" />
+
+            <Label Grid.Row="1" Grid.Column="0" Text="指标名称：" />
+            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Form.IndicatorName}" />
+
+            <Label Grid.Row="1" Grid.Column="2" Text="上次抄表数：" />
+            <Label Grid.Row="1" Grid.Column="3" Text="{Binding Form.LastReading}" />
+
+            <Label Grid.Row="2" Grid.Column="0" Text="本次抄表数：" />
+            <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Form.CurrentReading, Mode=TwoWay}" Keyboard="Numeric" Placeholder="请输入" />
+
+            <Label Grid.Row="2" Grid.Column="2" Text="消耗量：" />
+            <Label Grid.Row="2" Grid.Column="3" Text="{Binding Form.Consumption}" />
+
+            <Label Grid.Row="3" Grid.Column="0" Text="能源单位：" />
+            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Form.Unit}" />
+
+            <Label Grid.Row="3" Grid.Column="2" Text="抄表时间：" />
+            <Entry Grid.Row="3" Grid.Column="3" Text="{Binding ReadingTimeText}" IsReadOnly="True" />
+
+            <Label Grid.Row="4" Grid.Column="0" Text="抄表人：" />
+
+            <!-- 搜索下拉（悬浮） -->
+            <Grid Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Entry Grid.Row="0" Text="{Binding ReaderQuery, Mode=TwoWay}" Placeholder="输入姓名搜索（模糊）" />
+
+                <Border Grid.Row="1"
+                        IsVisible="{Binding IsReaderDropdownOpen}"
+                        StrokeThickness="1" Stroke="#E5E7EB"
+                        BackgroundColor="White" Padding="0" Margin="0,4,0,0">
+                    <CollectionView ItemsSource="{Binding ReaderSuggestions}" HeightRequest="200" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="12,10">
+                                    <Label Text="{Binding Name}" />
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickReaderCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <Label Grid.Row="5" Grid.Column="0" Text="备注：" />
+            <Editor Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" HeightRequest="96" Text="{Binding Form.Remark}" Placeholder="请输入" />
+
+            
+        </Grid>
+    </Grid>
+
+</ContentPage>

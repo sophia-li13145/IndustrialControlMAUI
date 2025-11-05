@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui;
+using IndustrialControl.ViewModels.Energy;
 using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
+using IndustrialControlMAUI.ViewModels;
 using Microsoft.Extensions.Logging;
 using ZXing.Net.Maui;
 using ZXing.Net.Maui.Controls;
@@ -67,6 +69,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.MaintenanceSearchViewModel>();
             builder.Services.AddTransient<ViewModels.RepairDetailViewModel>();
             builder.Services.AddTransient<ViewModels.RepairSearchViewModel>();
+            builder.Services.AddTransient<MeterSelectViewModel>();
+            builder.Services.AddTransient<ManualReadingViewModel>();
 
             // ===== 注册 Pages（DI 创建）=====
             builder.Services.AddTransient<Pages.LoginPage>();
@@ -100,6 +104,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.MaintenanceDetailPage>();
             builder.Services.AddTransient<Pages.RepairSearchPage>();
             builder.Services.AddTransient<Pages.RepairDetailPage>();
+            builder.Services.AddTransient<MeterSelectPopup>();
+            builder.Services.AddTransient<ManualReadingPage>();
 
             builder.Services.AddTransient<WarehouseLocationPickerPage>();
             builder.Services.AddTransient<QrScanPage>();
@@ -127,6 +133,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddHttpClient<IEquipmentApi, EquipmentApi>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>();
             builder.Services.AddHttpClient<IAttachmentApi, AttachmentApi>(ConfigureBaseAddress)
+          .AddHttpMessageHandler<AuthHeaderHandler>();
+            builder.Services.AddHttpClient<IEnergyApi, EnergyApi>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>();
 
             var app = builder.Build();
