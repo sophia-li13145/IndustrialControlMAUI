@@ -34,7 +34,7 @@ namespace IndustrialControlMAUI.ViewModels
             _qualityapi = qualityapi;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
-            _ = EnsureDictsLoadedAsync();   // fire-and-forget
+           
            
         }
         private async Task EnsureDictsLoadedAsync()
@@ -61,10 +61,9 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
-
-
         public async Task SearchAsync()
         {
+            await EnsureDictsLoadedAsync(); 
             if (IsBusy) return;
             IsBusy = true;
             try

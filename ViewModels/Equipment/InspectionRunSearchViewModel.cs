@@ -8,9 +8,9 @@ using System.Collections.ObjectModel;
 
 namespace IndustrialControlMAUI.ViewModels
 {
-    public partial class ProcessQualitySearchViewModel : ObservableObject
+    public partial class InspectionRunSearchViewModel : ObservableObject
     {
-        private readonly IQualityApi _qualityapi;
+        private readonly IEquipmentApi _equipmentapi;
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? keyword;
         [ObservableProperty] private DateTime startDate = DateTime.Today.AddDays(-7);
@@ -24,17 +24,18 @@ namespace IndustrialControlMAUI.ViewModels
 
         private bool _dictsLoaded = false;
 
-        public ObservableCollection<QualityOrderItem> Orders { get; } = new();
+        public ObservableCollection<InspectionOrderItem> Orders { get; } = new();
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
 
-        public ProcessQualitySearchViewModel(IQualityApi qualityapi)
+        public InspectionRunSearchViewModel(IEquipmentApi equipmentapi)
         {
-            _qualityapi = qualityapi;
+            _equipmentapi = equipmentapi;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
-           
+            _ = EnsureDictsLoadedAsync();   // fire-and-forget
+
         }
         private async Task EnsureDictsLoadedAsync()
         {
@@ -44,7 +45,7 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 if (InspectStatusDict.Count > 0) return; // 已加载则跳过
 
-                var dicts = await _qualityapi.GetQualityDictsAsync();
+                var dicts = await _equipmentapi.GetInspectionDictsAsync();
                 InspectStatusDict = dicts.InspectStatus;
 
                 // 如果你需要将字典转为下拉选项绑定到 Picker：
@@ -60,9 +61,10 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+
+
         public async Task SearchAsync()
         {
-            await EnsureDictsLoadedAsync();
             if (IsBusy) return;
             IsBusy = true;
             try
@@ -78,26 +80,22 @@ namespace IndustrialControlMAUI.ViewModels
                 StringComparer.OrdinalIgnoreCase
             ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                // 构造查询参数
-                //var factoryCode = AppState.Instance.GlobalConfig?.FactoryCode ?? "";  // 从配置取工厂编码
                 var pageNo = PageIndex;
                 var pageSize = PageSize;
-                var qualityNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
+                var inspectNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
                 var createdTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
                 var createdTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
                 var inspectStatus = SelectedStatusOption?.Value;   // “1”“2”“3”
-                var qualityType ="IPQC";                  // 若需区分 IQC/FQC 等，可补充绑定
                 var searchCount = false;                           // 是否统计总记录
 
                 // 调用 API
-                var resp = await _qualityapi.PageQueryAsync(
+                var resp = await _equipmentapi.PageQueryAsync(
                     pageNo: pageNo,
                     pageSize: pageSize,
-                    qualityNo: qualityNo,
+                    inspectNo: inspectNo,
                     createdTimeBegin: createdTimeBegin,
                     createdTimeEnd: createdTimeEnd,
                     inspectStatus: inspectStatus,
-                    qualityType: qualityType,
                     searchCount: searchCount);
 
                 var records = resp?.result?.records;
@@ -109,19 +107,21 @@ namespace IndustrialControlMAUI.ViewModels
 
                 foreach (var t in records)
                 {
-                    t.inspectStatusName = statusMap.TryGetValue(t.inspectStatus ?? "", out var sName)
+                    t.inspectStatusText = statusMap.TryGetValue(t.inspectStatus ?? "", out var sName)
                         ? sName
                         : t.inspectStatus;
 
-                    Orders.Add(new QualityOrderItem
+                    Orders.Add(new InspectionOrderItem
                     {
                         Id = t.id,
-                        QualityNo = t.qualityNo,
+                        InspectNo = t.inspectNo,
                         InspectStatus = t.inspectStatus,
-                        InspectStatusText = t.inspectStatusName,
-                        MaterialName = t.materialName,
-                        OrderNumber = t.orderNumber,
-                        ProcessName = t.processName,
+                        InspectStatusText = t.inspectStatusText,
+                        InspectResult = t.inspectResult,
+                        DevName = t.devName,
+                        InspectTime = ParseDate(t.inspectTime),
+                        PlanName = t.planName,
+                        DevCode = t.devCode,
                         CreatedTime = ParseDate(t.createdTime)
                     });
                 }
@@ -153,10 +153,10 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 点击一条工单进入执行页
         [RelayCommand]
-        private async Task GoDetailAsync(QualityOrderItem? item)
+        private async Task GoDetailAsync(InspectionOrderItem? item)
         {
             if (item is null) return;
-            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            await Shell.Current.GoToAsync(nameof(InspectionDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
         }
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）

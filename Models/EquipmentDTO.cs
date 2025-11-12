@@ -139,6 +139,8 @@ public class InspectionDetailDto : ObservableObject
     /// <summary>设备编码</summary>
     public string? devCode { get; set; }
 
+    public string? devName { get; set; }
+
     /// <summary>工厂编码</summary>
     public string? factoryCode { get; set; }
 

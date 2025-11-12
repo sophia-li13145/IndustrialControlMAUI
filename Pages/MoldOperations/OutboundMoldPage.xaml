@@ -191,7 +191,7 @@
                                     HorizontalOptions="Fill">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:ScannedRow">
-                                <Grid ColumnDefinitions="80,*,*,120,120" Padding="8" BackgroundColor="White">
+                                <Grid ColumnDefinitions="80,*,*,60,60" Padding="8" BackgroundColor="White">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup Name="CommonStates">
                                             <VisualState Name="Normal">

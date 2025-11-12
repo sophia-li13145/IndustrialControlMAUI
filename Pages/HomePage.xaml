@@ -220,8 +220,8 @@
             <Label Text="质检作业" Style="{StaticResource SectionTitle}"/>
 
             <Grid ColumnDefinitions="*,*"
-RowDefinitions="Auto,Auto,Auto"
-Padding="8,0,8,24">
+                    RowDefinitions="Auto,Auto,Auto"
+                    Padding="8,0,8,24"> 
 
                 <!-- 质检单单查询 -->
                 <!--<Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">

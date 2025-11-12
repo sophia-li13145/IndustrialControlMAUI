@@ -15,12 +15,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
     // 状态字典（值→名），用于将 auditStatus 映射为中文
     private readonly Dictionary<string, string> _auditMap = new();
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanStart))]
-    [NotifyPropertyChangedFor(nameof(CanPauseResume))]
-    [NotifyPropertyChangedFor(nameof(CanFinish))]
-    private bool isBusy;
+    [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool isPaused;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanStart))]
@@ -375,7 +370,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
             }
                 // 关键：加载下拉选项
-                await LoadShiftsAsync();
+            await LoadShiftsAsync();
             await LoadDevicesAsync();
             await LoadMaterialInputsAsync();
             await LoadOutputInputsAsync();

@@ -1,4 +1,5 @@
 using IndustrialControlMAUI.ViewModels;
+using ZXing.Net.Maui.Controls;
 
 namespace IndustrialControlMAUI.Pages;
 [QueryProperty(nameof(WorkOrderNo), "workOrderNo")]
@@ -15,29 +16,29 @@ public partial class OutboundMoldPage : ContentPage
         BindingContext = _vm;
     }
 
+    // 删掉 _lifecycleCts?.Cancel(); 和 Dispose(); —— 不要在 OnDisappearing 里动 CTS
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        // 防止重复初始化
         if (_loadedOnce) return;
         _loadedOnce = true;
+
         _lifecycleCts = new CancellationTokenSource();
-        if (BindingContext is OutboundMoldViewModel vm)
-            vm.SetLifecycleToken(_lifecycleCts.Token);
+        _vm.SetLifecycleToken(_lifecycleCts.Token);
+
         if (!string.IsNullOrWhiteSpace(WorkOrderNo))
-        {
             await _vm.LoadAsync(WorkOrderNo);
-        }
+
         ScanEntry?.Focus();
     }
 
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        try { _lifecycleCts?.Cancel(); } catch { }
-        _lifecycleCts?.Dispose();
-        _lifecycleCts = null;
+        // 不要 Cancel/Dispose 页面级 CTS（避免返回瞬间崩溃）
     }
+
+
 
     bool _submitting = false;
 
@@ -61,26 +62,27 @@ public partial class OutboundMoldPage : ContentPage
     // 新增：扫码按钮事件
     private async void OnScanClicked(object sender, EventArgs e)
     {
-        var tcs = new TaskCompletionSource<string>();
-        await Navigation.PushAsync(new QrScanPage(tcs));
-
-        // 等待扫码结果
-        var result = await tcs.Task;
-        if (string.IsNullOrWhiteSpace(result))
-            return;
-
-        // 回填到输入框
-        ScanEntry.Text = result.Trim();
-
-        // 同步到 ViewModel
-        if (BindingContext is OutboundMoldViewModel vm)
+        try
         {
-            if (_vm.ScanSubmitCommand.CanExecute(null))
-                await _vm.ScanSubmitCommand.ExecuteAsync(null); // ★ await 异步命令
+            var tcs = new TaskCompletionSource<string>();
+            await Navigation.PushAsync(new QrScanPage(tcs));
 
-            // 清空并继续聚焦，方便下一次输入/扫码
+            var result = await tcs.Task;
+            if (string.IsNullOrWhiteSpace(result))
+                return;
+
+            _vm.ScanCode = result.Trim();
+
+            if (_vm.ScanSubmitCommand.CanExecute(null))
+                await _vm.ScanSubmitCommand.ExecuteAsync(null);
+
             ScanEntry.Text = string.Empty;
             ScanEntry.Focus();
         }
+        catch (Exception ex)
+        {
+            await DisplayAlert("错误", $"扫码时出现异常：{ex.Message}", "知道了");
+        }
     }
+
 }

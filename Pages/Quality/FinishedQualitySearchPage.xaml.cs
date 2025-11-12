@@ -17,7 +17,14 @@ public partial class FinishedQualitySearchPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        QualityNoEntry.Focus();
+        if (BindingContext is FinishedQualitySearchViewModel vm)
+        {
+            // 场景A：首次进入或返回详情页后，自动刷新
+            if (!vm.IsBusy)
+                _ = vm.SearchAsync();   // 保留当前筛选条件，直接查
+
+            QualityNoEntry?.Focus();
+        }
     }
 
     protected override void OnDisappearing()

@@ -243,14 +243,17 @@ namespace IndustrialControlMAUI.ViewModels
         {
             try
             {
-                var baseSteps = new List<WorkflowVmItem>
-        {
-            new() { StatusValue = "0", Title = "新建" },
-            new() { StatusValue = "1", Title = "待保养" },
-            new() { StatusValue = "2", Title = "保养中" },
-            new() { StatusValue = "3", Title = "已完成" }
-        };
-
+                var baseSteps = new List<WorkflowVmItem>();
+                //{
+                //    new() { StatusValue = "0", Title = "新建" },
+                //    new() { StatusValue = "1", Title = "待保养" },
+                //    new() { StatusValue = "2", Title = "保养中" },
+                //    new() { StatusValue = "3", Title = "已完成" }
+                //};
+                var dicts = await _api.GetMainDictsAsync();
+                foreach (var d in dicts.MaintenanceStatus)
+                    baseSteps.Add(new WorkflowVmItem { Title = d.dictItemName ?? "", StatusValue = d.dictItemValue ?? "" });
+                baseSteps = baseSteps.OrderBy(x => x.StatusValue).ToList();
                 var resp = await _api.GetMainWorkflowAsync(id, _cts.Token);
                 var list = resp?.result ?? new List<MaintenanceWorkflowNode>();
 

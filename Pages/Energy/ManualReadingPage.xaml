@@ -30,8 +30,14 @@
 
             <Label Grid.Row="0" Grid.Column="0" Text="能源类型：" />
             <Label Grid.Row="0" Grid.Column="1" Text="{Binding Form.EnergyType}" />
-
-            <Label Grid.Row="0" Grid.Column="2" Text="仪表点位：" />
+            <Label Grid.Row="0" Grid.Column="2" >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
+                            <Span Text=" 仪表点位：" />
+                        </FormattedString>
+                    </Label.FormattedText>
+            </Label>
             <Picker Grid.Row="0" Grid.Column="3"
             ItemsSource="{Binding MeterPoints}"
             SelectedItem="{Binding SelectedMeterPoint}"

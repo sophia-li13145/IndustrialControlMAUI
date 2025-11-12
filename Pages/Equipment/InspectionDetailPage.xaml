@@ -94,16 +94,16 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <!-- 三行两列：行0图形，行1标题，行2时间 -->
-                        <Grid ColumnDefinitions="Auto,20,30,25"
+                        <Grid ColumnDefinitions="18,15,30,20"
           RowDefinitions="Auto,Auto,Auto"
           Padding="12,0"
           HorizontalOptions="Center" VerticalOptions="Center">
 
                             <!-- 圆点：默认白底；激活(已完成/当前)描边蓝，未到达描边灰 -->
                             <Frame Grid.Row="0" Grid.Column="0"
-                                   WidthRequest="36" HeightRequest="36"
+                                   WidthRequest="24" HeightRequest="24"
                                    Padding="0" HasShadow="False"
-                                   CornerRadius="20"
+                                   CornerRadius="16"
                                    BackgroundColor="White"
                                    BorderColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
                                    HorizontalOptions="Center"
@@ -341,7 +341,10 @@
                 <!-- 图片附件 -->
                 <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
                 <!-- 左窄右宽两列 -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+
+                    <!-- Row0 左：图片上传标题 -->
+                    <Label Grid.Row="0" Grid.Column="0" Text="图片上传：" VerticalTextAlignment="Start" />
 
                     <!-- Row0 右：缩略图 + 上传方块 -->
                     <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="8" VerticalOptions="Start">
@@ -357,22 +360,18 @@
                    CornerRadius="8" HasShadow="False" BorderColor="#E5E7EB" Margin="0,0,8,0">
                                             <Image Aspect="AspectFill" Source="{Binding DisplaySource}" />
                                         </Frame>
-                                        <!-- 右上角删除 -->
-                                        <Button Text="×" FontSize="12" Padding="0"
-                    WidthRequest="22" HeightRequest="22" CornerRadius="11"
-                    BackgroundColor="#00000066" TextColor="White"
-                    HorizontalOptions="End" VerticalOptions="Start" Margin="2"
-                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveAttachmentCommand}"
-                    CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+
                     </HorizontalStackLayout>
 
+                    <!-- Row1 左：附件信息标题 -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="附件信息：" VerticalTextAlignment="Center" />
 
                     <!-- Row3 右：附件表格 -->
-                    <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*" Margin="0,4,0,0">
+                    <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*" Margin="0,4,0,0">
                         <Grid Grid.Row="0" ColumnDefinitions="40,100,40,80,120"
           BackgroundColor="#E5EEF9" Padding="8,8">
                             <Label Grid.Column="0" Text="序号" />
@@ -406,7 +405,8 @@
                             </CollectionView.ItemTemplate>
                         </CollectionView>
                     </Grid>
-                    <Grid Grid.Row="2"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
+
+                    <Grid Grid.Row="4"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
                         <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
 ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                             <Label Grid.Column="0" Text="创建人：" Style="{StaticResource FieldLabel}" />
@@ -423,7 +423,6 @@ ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                         </Grid>
                     </Grid>
                 </Grid>
-
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

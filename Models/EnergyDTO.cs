@@ -183,7 +183,7 @@ namespace IndustrialControlMAUI.Models
         public string? indicatorName { get; set; }    // 显示名（如：22相电压）
         public string? unit { get; set; }             // 单位（可能为 null）
         public bool? mainPoint { get; set; }          // 是否主点位
-        public string? magnification { get; set; }
+        public decimal? magnification { get; set; }
         public string? formule { get; set; }
         public string? memo { get; set; }
 

@@ -240,12 +240,16 @@ namespace IndustrialControlMAUI.ViewModels
         {
             try
             {
-                var baseSteps = new List<WorkflowVmItem>
-        {
-            new() { StatusValue = "0", Title = "待执行" },
-            new() { StatusValue = "1", Title = "执行中" },
-            new() { StatusValue = "2", Title = "已完成" },
-        };
+                var baseSteps = new List<WorkflowVmItem>();
+                //{
+                //    new() { StatusValue = "0", Title = "待执行" },
+                //    new() { StatusValue = "1", Title = "执行中" },
+                //    new() { StatusValue = "2", Title = "已完成" },
+                //};
+                var dicts = await _api.GetInspectionDictsAsync();
+                foreach (var d in dicts.InspectStatus)
+                    baseSteps.Add(new WorkflowVmItem { Title = d.dictItemName ?? "", StatusValue = d.dictItemValue ?? "" });
+                baseSteps = baseSteps.OrderBy(x => x.StatusValue).ToList();
 
                 var resp = await _api.GetWorkflowAsync(id, _cts.Token);
                 var list = resp?.result ?? new List<InspectWorkflowNode>();

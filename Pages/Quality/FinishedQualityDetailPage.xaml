@@ -83,11 +83,13 @@
             <Button Grid.Column="1"
                     Text="保存"
                     Style="{StaticResource PrimaryBtn}"
-                    Command="{Binding SaveCommand}" />
+                    Command="{Binding SaveCommand}"
+                    IsVisible="{Binding IsEditing}"/>
             <Button Grid.Column="2"
                     Text="完成质检"
                     Style="{StaticResource SuccessBtn}"
-                    Command="{Binding CompleteCommand}" />
+                    Command="{Binding CompleteCommand}"
+                    IsVisible="{Binding IsEditing}"/>
         </Grid>
 
 
@@ -144,6 +146,7 @@
                                     IsSpellCheckEnabled="True"
                                     ClearButtonVisibility="WhileEditing"
                                     Completed="OnInspectorEntryCompleted" 
+                                    IsEnabled="{Binding IsEditing}"
                                     />
                
                             </Grid>
@@ -440,7 +443,8 @@
                                                     HorizontalOptions="Center"
                                                     VerticalOptions="Center"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenDefectPickerCommand}"
-                                                    CommandParameter="{Binding .}" />
+                                                    CommandParameter="{Binding .}"
+                                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"/>
                                             </HorizontalStackLayout>
 
                                         </Grid>
@@ -475,11 +479,12 @@
                                         </Frame>
                                         <!-- 右上角删除 -->
                                         <Button Text="×" FontSize="12" Padding="0"
-                    WidthRequest="22" HeightRequest="22" CornerRadius="11"
-                    BackgroundColor="#00000066" TextColor="White"
-                    HorizontalOptions="End" VerticalOptions="Start" Margin="2"
-                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
-                    CommandParameter="{Binding .}" />
+                                                WidthRequest="22" HeightRequest="22" CornerRadius="11"
+                                                BackgroundColor="#00000066" TextColor="White"
+                                                HorizontalOptions="End" VerticalOptions="Start" Margin="2"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
+                                                CommandParameter="{Binding .}"
+                                                IsVisible="{Binding IsEditing}" /> 
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
@@ -487,7 +492,7 @@
 
                         <!-- 上传方块 -->
                         <Frame WidthRequest="96" HeightRequest="96" CornerRadius="8"
-           BorderColor="#E5E7EB" BackgroundColor="White"
+           BorderColor="#E5E7EB" BackgroundColor="White" IsVisible="{Binding IsEditing}"
            HasShadow="False" Padding="8" VerticalOptions="Start">
                             <VerticalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
                                 <Label Text="＋" FontSize="28" TextColor="#9CA3AF" />
@@ -503,7 +508,7 @@
                     <Label Grid.Row="1" Grid.Column="0" Text="附件信息：" VerticalTextAlignment="Center" />
 
                     <!-- Row1 右：上传附件链接 -->
-                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="12" VerticalOptions="Center">
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="12" VerticalOptions="Center" IsVisible="{Binding IsEditing}">
                         <Label Text="上传附件" TextColor="#3B82F6">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnPickFileClicked" />
@@ -514,7 +519,7 @@
                     <!-- Row2 右：提示 -->
                     <Label Grid.Row="2" Grid.Column="1"
          Text="（单个附件最大支持20M，支持格式PDF、Word、Excel、Txt、JPG、PNG、RAR）"
-         FontSize="12" TextColor="#9CA3AF" />
+         FontSize="12" TextColor="#9CA3AF" IsVisible="{Binding IsEditing}"/>
 
                     <!-- Row3 右：附件表格 -->
                     <Grid Grid.Row="3" Grid.Column="1" RowDefinitions="Auto,*" Margin="0,4,0,0">
@@ -545,7 +550,7 @@
                     CommandParameter="{Binding .}" />
                                                 </Label.GestureRecognizers>
                                             </Label>
-                                            <Label Text="删除" TextColor="Red">
+                                            <Label Text="删除" TextColor="Red" IsVisible="{Binding IsEditing}">
                                                 <Label.GestureRecognizers>
                                                     <TapGestureRecognizer
                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="IndustrialControlMAUI.Pages.InspectionRunDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:IndustrialControlMAUI.ViewModels"
+    Title="点巡检执行">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- 分区标题 -->
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="BackgroundColor" Value="#F5F7FA"/>
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="TextColor" Value="#111827"/>
+            </Style>
+
+            <!-- 卡片容器 -->
+            <Style x:Key="Card" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="White"/>
+                <Setter Property="CornerRadius" Value="10"/>
+                <Setter Property="HasShadow" Value="False"/>
+                <Setter Property="BorderColor" Value="#E5E7EB"/>
+                <Setter Property="Margin" Value="0,6,0,10"/>
+                <Setter Property="Padding" Value="10"/>
+            </Style>
+
+            <!-- 表头 -->
+            <Style x:Key="TableHeader" TargetType="Grid">
+                <Setter Property="BackgroundColor" Value="#EAF2FF"/>
+                <Setter Property="Padding" Value="8,6"/>
+            </Style>
+
+            <!-- 主按钮/次按钮 -->
+            <Style x:Key="PrimaryBtn" TargetType="Button">
+                <Setter Property="HeightRequest" Value="36"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="BackgroundColor" Value="#1677ff"/>
+            </Style>
+            <Style x:Key="SuccessBtn" TargetType="Button" BasedOn="{StaticResource PrimaryBtn}">
+                <Setter Property="BackgroundColor" Value="#22c55e"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+
+    <Grid x:Name="RootGrid">
+
+        <!-- 点击空白处收起检验员下拉 -->
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding ClearInspectorCommand}" />
+        </Grid.GestureRecognizers>
+
+        <ScrollView>
+        <VerticalStackLayout Spacing="8" Padding="12">
+
+            <!-- 顶部操作 -->
+            <HorizontalStackLayout HorizontalOptions="End" Spacing="8">
+                <Button Text="保存"   Command="{Binding SaveCommand}"    Style="{StaticResource PrimaryBtn}"/>
+                <Button Text="完成点检" Command="{Binding CompleteCommand}" Style="{StaticResource SuccessBtn}"/>
+            </HorizontalStackLayout>
+
+            <!-- 基础信息 -->
+            <Label Text="点巡检单基础信息" Style="{StaticResource SectionTitle}"/>
+            <Frame Style="{StaticResource Card}">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="10" RowSpacing="6">
+
+                    <Label Grid.Row="0" Grid.Column="0" Text="点检单号：" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Detail.qualityNo}" />
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="设备名称：" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.materialName}" />
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="点检日期：" />
+                    <DatePicker Grid.Row="2" Grid.Column="1"
+                                Date="{Binding Detail.inspectDate, Mode=TwoWay}"
+                                HorizontalOptions="Start"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="备注：" />
+                    <Entry Grid.Row="3" Grid.Column="1"
+                           Text="{Binding Detail.inspectRemark, Mode=TwoWay}" />
+                </Grid>
+            </Frame>
+
+            <!-- 检验结果 -->
+            <Label Text="检验结果" Style="{StaticResource SectionTitle}"/>
+            <Frame Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="8">
+
+                    <Label Grid.Row="0" Grid.Column="0" Text="检验结果：" />
+                    <Picker Grid.Row="0" Grid.Column="1"
+                            ItemsSource="{Binding InspectResultOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedInspectResult, Mode=TwoWay}"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="合格项目数：" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.qualifiedNum}" />
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="不合格项目数：" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.unqualifiedNum}" 
+                           TextColor="{Binding IsUnqualifiedSelected, Converter={toolkit:BoolToObjectConverter TrueObject=Red, FalseObject=#111827}}"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="检验员：" />
+                    <Grid Grid.Row="3" Grid.Column="1">
+                        <Entry x:Name="InspectorEntry"
+                               Text="{Binding InspectorText, Mode=TwoWay}"
+                               Placeholder="输入姓名/账号筛选"
+                               Completed="OnInspectorEntryCompleted"/>
+                        <!-- 下拉浮层 -->
+                        <Frame HasShadow="True" Padding="0" Margin="0,40,0,0"
+                               IsVisible="{Binding IsInspectorDropdownOpen}"
+                               ZIndex="9999" CornerRadius="8"
+                               BackgroundColor="White" BorderColor="#E5E7EB">
+                            <CollectionView ItemsSource="{Binding InspectorSuggestions}" HeightRequest="220">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="10" ColumnDefinitions="Auto,*">
+                                            <Label Grid.Column="0" Text="👤"/>
+                                            <Label Grid.Column="1" Text="{Binding realname}"/>
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickInspectorCommand}"
+                                                    CommandParameter="{Binding .}"/>
+                                            </Grid.GestureRecognizers>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Frame>
+                    </Grid>
+                </Grid>
+            </Frame>
+
+            <!-- 点检项目执行 -->
+            <Label Text="点检项目执行" Style="{StaticResource SectionTitle}"/>
+            <Frame Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+
+                    <HorizontalStackLayout HorizontalOptions="End">
+                        <Button Text="一键合格" Command="{Binding SetAllQualifiedCommand}" Style="{StaticResource PrimaryBtn}"/>
+                    </HorizontalStackLayout>
+
+                    <!-- 表头 -->
+                    <Grid Style="{StaticResource TableHeader}"
+                          ColumnDefinitions="50,*,120,140,*,140" >
+                        <Label Grid.Column="0" Text="序号" />
+                        <Label Grid.Column="1" Text="检查内容" />
+                        <Label Grid.Column="2" Text="标准值" />
+                        <Label Grid.Column="3" Text="检验结果" />
+                        <Label Grid.Column="4" Text="缺陷" />
+                        <Label Grid.Column="5" Text="备注" />
+                    </Grid>
+
+                    <!-- 行 -->
+                    <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="8,6"
+                                      ColumnDefinitions="50,*,120,140,*,140"
+                                      RowDefinitions="Auto" ColumnSpacing="8" >
+                                    <Label Grid.Column="0" Text="{Binding index}" HorizontalTextAlignment="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding checkContent}" LineBreakMode="WordWrap"/>
+
+                                    <Label Grid.Column="2" Text="{Binding standardVal}" />
+
+                                    <Picker Grid.Column="3"
+                                            ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectResultOptions}"
+                                            ItemDisplayBinding="{Binding Text}"
+                                            SelectedItem="{Binding inspectResult, Mode=TwoWay}"/>
+
+                                    <!-- 缺陷 chips + 选择按钮 -->
+                                    <HorizontalStackLayout Grid.Column="4" Spacing="6">
+                                        <FlexLayout BindableLayout.ItemsSource="{Binding SelectedDefects}"
+                                                    Direction="Row" Wrap="Wrap" AlignItems="Center">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Frame Padding="8,4" Margin="0,0,6,6" HasShadow="False"
+                                                           CornerRadius="6" BorderColor="#E5E7EB"
+                                                           BackgroundColor="{Binding ColorHex}">
+                                                        <Label Text="{Binding Name}" FontSize="12"/>
+                                                    </Frame>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </FlexLayout>
+                                        <Button Text="选择" HeightRequest="28"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenDefectPickerCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                    </HorizontalStackLayout>
+
+                                    <Entry Grid.Column="5" Text="{Binding remark, Mode=TwoWay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 图片附件 -->
+            <Label Text="图片附件" Style="{StaticResource SectionTitle}"/>
+            <Frame Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="＋ 上传图片"  Clicked="OnPickImagesClicked"  Style="{StaticResource PrimaryBtn}"/>
+                    </HorizontalStackLayout>
+
+                    <CollectionView ItemsSource="{Binding ImageAttachments}"
+                                    ItemsLayout="HorizontalList" HeightRequest="96" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Frame Padding="0" WidthRequest="96" HeightRequest="96" CornerRadius="8"
+                                           HasShadow="False" BorderColor="#E5E7EB" Margin="0,0,6,0">
+                                        <Image Aspect="AspectFill" Source="{Binding PreviewUrl}">
+                                            <Image.Triggers>
+                                                <DataTrigger TargetType="Image" Binding="{Binding PreviewUrl}" Value="{x:Null}">
+                                                    <Setter Property="Source" Value="{Binding LocalPath}"/>
+                                                </DataTrigger>
+                                            </Image.Triggers>
+                                        </Image>
+                                    </Frame>
+                                    <Button Text="×"
+                                            Padding="0" WidthRequest="22" HeightRequest="22"
+                                            BackgroundColor="#EF4444" TextColor="White"
+                                            CornerRadius="11"
+                                            HorizontalOptions="End" VerticalOptions="Start"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentAsyncCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Label Text="暂无图片附件" IsVisible="{Binding ImageAttachments.Count, Converter={toolkit:IntToBoolConverter}, ConverterParameter=Zero}" TextColor="#9CA3AF"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- 其他附件 -->
+            <Label Text="文件附件" Style="{StaticResource SectionTitle}"/>
+            <Frame Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="＋ 上传附件"  Clicked="OnPickFileClicked" Style="{StaticResource PrimaryBtn}"/>
+                    </HorizontalStackLayout>
+
+                    <!-- 表头 -->
+                    <Grid Style="{StaticResource TableHeader}" ColumnDefinitions="50,*,120,140,120">
+                        <Label Grid.Column="0" Text="序号"/>
+                        <Label Grid.Column="1" Text="附件名称"/>
+                        <Label Grid.Column="2" Text="大小"/>
+                        <Label Grid.Column="3" Text="上传时间"/>
+                        <Label Grid.Column="4" Text="操作"/>
+                    </Grid>
+
+                    <CollectionView ItemsSource="{Binding Attachments}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="8,6" ColumnDefinitions="50,*,120,140,120" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding index}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding .}" Value="{x:Null}">
+                                                <Setter Property="Text" Value="{x:Reference Self}"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Label Grid.Column="1" Text="{Binding AttachmentName}" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="2" Text="{Binding AttachmentSize}"/>
+                                    <Label Grid.Column="3" Text="{Binding CreatedTime}"/>
+                                    <HorizontalStackLayout Grid.Column="4" Spacing="8">
+                                        <Button Text="预览" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DownloadAttachmentCommand}" CommandParameter="{Binding .}"/>
+                                        <Button Text="删除" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentAsyncCommand}" CommandParameter="{Binding .}"/>
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Label Text="暂无文件附件" IsVisible="{Binding Attachments.Count, Converter={toolkit:IntToBoolConverter}, ConverterParameter=Zero}" TextColor="#9CA3AF"/>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+    </Grid>
+</ContentPage>

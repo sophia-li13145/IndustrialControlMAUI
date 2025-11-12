@@ -1,9 +1,4 @@
-﻿using ZXing.Net.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Storage;
-using ZXing.SkiaSharp;                 
-using ZXing;                           
+﻿using ZXing.Net.Maui;                     
 using SkiaSharp;
 using BarcodeFormat = ZXing.BarcodeFormat;                       
 
@@ -157,4 +152,17 @@ public partial class QrScanPage : ContentPage
         }
         barcodeView.IsDetecting = true;
     }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        // ✅ 防御性判断，防止闪退
+        if (barcodeView != null)
+        {
+            barcodeView.IsDetecting = false;
+            barcodeView.Handler?.DisconnectHandler();
+        }
+    }
+
 }

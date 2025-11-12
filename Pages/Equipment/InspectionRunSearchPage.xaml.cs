@@ -3,11 +3,11 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class ProcessQualitySearchPage : ContentPage
+public partial class InspectionRunSearchPage : ContentPage
 {
-    private readonly ProcessQualitySearchViewModel _vm;
+    private readonly InspectionRunSearchViewModel _vm;
 
-    public ProcessQualitySearchPage(ProcessQualitySearchViewModel vm)
+    public InspectionRunSearchPage(InspectionRunSearchViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;
@@ -17,17 +17,8 @@ public partial class ProcessQualitySearchPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-
-        if (BindingContext is ProcessQualitySearchViewModel vm)
-        {
-            // 场景A：首次进入或返回详情页后，自动刷新
-            if (!vm.IsBusy)
-                _ = vm.SearchAsync();   // 保留当前筛选条件，直接查
-
-             QualityNoEntry?.Focus();
-        }
+        QualityNoEntry.Focus();
     }
-
 
     protected override void OnDisappearing()
     {
@@ -49,7 +40,7 @@ public partial class ProcessQualitySearchPage : ContentPage
         QualityNoEntry.Text = result.Trim();
 
         // 同步到 ViewModel
-        if (BindingContext is ProcessQualitySearchViewModel vm)
+        if (BindingContext is InspectionRunSearchViewModel vm)
         {
             vm.Keyword = result.Trim();
 

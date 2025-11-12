@@ -185,6 +185,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                 // —— 只在这里手动触发一次计算，保证初值显示一致 ——
                 Detail?.Recalc();
+                IsEditing = !IsCompletedStatus(Detail?.inspectStatus);
 
                 await LoadInspectorsAsync();
 
@@ -361,9 +362,6 @@ namespace IndustrialControlMAUI.ViewModels
 
             try
             {
-                // 可选：校验必须字段，例如检验结果/抽样/不良数等
-                // if (string.IsNullOrWhiteSpace(Detail.inspectResult)) { await ShowTip("请先选择检验结果"); return; }
-
                 IsBusy = true;
                 PreparePayloadFromUi();
 
@@ -371,8 +369,13 @@ namespace IndustrialControlMAUI.ViewModels
                 if (resp?.success == true && resp.result == true)
                 {
                     await ShowTip("已完成质检。");
-                    // 可选：返回上页 / 刷新列表
-                    // await Shell.Current.GoToAsync("..");
+                    // 本地立即反映完成态，防止用户回退前误操作
+                    Detail.inspectStatus = "3";
+                    IsEditing = false;
+
+                    // 直接返回，触发搜索页 OnAppearing -> 自动刷新
+                    await Shell.Current.GoToAsync("..");
+                    return;
                 }
                 else
                 {
@@ -752,7 +755,8 @@ namespace IndustrialControlMAUI.ViewModels
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
-       
+        private static bool IsCompletedStatus(string? s)
+     => string.Equals(s, "3", StringComparison.OrdinalIgnoreCase);
     }
     
 }

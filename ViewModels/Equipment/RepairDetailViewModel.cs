@@ -381,15 +381,18 @@ namespace IndustrialControlMAUI.ViewModels
                 // ① 定义 6 个有序节点（按前端展示顺序）
                 //   statusValue 请按后端返回值对应好；下方是常见映射示例：
                 //   0:报修  1:待派工  2:待维修  3:维修中  4:维修完成  5:已验收
-                var baseSteps = new List<RepairWorkflowVmItem>
-        {
-            new() { StatusValue = "0", Title = "待派工" },
-            new() { StatusValue = "1", Title = "待维修" },
-            new() { StatusValue = "2", Title = "维修中" },
-            new() { StatusValue = "3", Title = "维修完成" },
-            new() { StatusValue = "4", Title = "已验收" },
-        };
-
+                var baseSteps = new List<RepairWorkflowVmItem>();
+                //{
+                //    new() { StatusValue = "0", Title = "待派工" },
+                //    new() { StatusValue = "1", Title = "待维修" },
+                //    new() { StatusValue = "2", Title = "维修中" },
+                //    new() { StatusValue = "3", Title = "维修完成" },
+                //    new() { StatusValue = "4", Title = "已验收" },
+                //};
+                var dicts = await _api.GetRepairDictsAsync();
+                foreach (var d in dicts.AuditStatus)
+                    baseSteps.Add(new RepairWorkflowVmItem { Title = d.dictItemName ?? "", StatusValue = d.dictItemValue ?? "" });
+                baseSteps = baseSteps.OrderBy(x => x.StatusValue).ToList();
                 var resp = await _api.GetRepairWorkflowAsync(id, _cts.Token);
                 var nodes = resp?.result ?? new List<RepairWorkflowNode>();
 

@@ -155,7 +155,7 @@ namespace IndustrialControlMAUI.Services
             };
             if (!string.IsNullOrWhiteSpace(meterCode)) p["meterCode"] = meterCode!.Trim();
             if (!string.IsNullOrWhiteSpace(energyType)) p["energyType"] = energyType!.Trim();
-            if (!string.IsNullOrWhiteSpace(workshopId)) p["workshopId"] = workshopId!.Trim();
+            if (!string.IsNullOrWhiteSpace(workshopId)) p["workShopId"] = workshopId!.Trim();
             if (!string.IsNullOrWhiteSpace(lineId)) p["lineId"] = lineId!.Trim();
 
             var url = _meterPageEndpoint + "?" + BuildQuery(p);

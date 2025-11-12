@@ -182,9 +182,9 @@ namespace IndustrialControlMAUI.Services
                 ["pageSize"] = pageSize.ToString(),
                 ["searchCount"] = searchCount ? "true" : "false"
             };
-            if (!string.IsNullOrWhiteSpace(inspectNo)) p["qualityNo"] = inspectNo!.Trim();
-            if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["createdTimeBegin"] = createdTimeBegin!;
-            if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["createdTimeEnd"] = createdTimeEnd!;
+            if (!string.IsNullOrWhiteSpace(inspectNo)) p["inspectNo"] = inspectNo!.Trim();
+            if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["planInspectTimeBegin"] = createdTimeBegin!;
+            if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["planInspectTimeEnd"] = createdTimeEnd!;
             if (!string.IsNullOrWhiteSpace(inspectStatus)) p["inspectStatus"] = inspectStatus!;
 
             // 2) 拼接 URL（与现有工具方法保持一致）
