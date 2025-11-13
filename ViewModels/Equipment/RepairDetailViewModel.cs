@@ -141,9 +141,9 @@ namespace IndustrialControlMAUI.ViewModels
                     var assiUsers = Detail.assitRepairUsers?.Split(',').ToList();
                     if (assiUsers != null)
                         Detail.AssitRepairUsersText = string.Join(",", AllUsers.Where(x => assiUsers.Contains(x.username)).Select(x => x.realname).ToList());
-                    Detail.RepairStartTime = Detail.RepairStartTime?.Split(' ')[0];
-                    Detail.RepairEndTime = Detail.RepairEndTime?.Split(' ')[0];
-                    Detail.ExpectedRepairDate = Detail.maintainReportDomain?.expectedRepairDate?.Split(' ')[0];
+                    Detail.RepairStartTime = Detail.RepairStartTime;
+                    Detail.RepairEndTime = Detail.RepairEndTime;
+                    Detail.ExpectedRepairDate = Detail.maintainReportDomain?.expectedRepairDate;
                 });
                 //异常图片
                 ErrorAttachments.Clear();

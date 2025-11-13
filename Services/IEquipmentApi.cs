@@ -346,8 +346,11 @@ namespace IndustrialControlMAUI.Services
             var maintenanceStatus = all.FirstOrDefault(f =>
        string.Equals(f.field, "upkeepStatus", StringComparison.OrdinalIgnoreCase))
        ?.dictItems ?? new List<DictItem>();
+            var maintenancResult = all.FirstOrDefault(f =>
+       string.Equals(f.field, "upkeepResult", StringComparison.OrdinalIgnoreCase))
+       ?.dictItems ?? new List<DictItem>();
 
-            return new DictMaintenance { MaintenanceStatus = maintenanceStatus };
+            return new DictMaintenance { MaintenanceStatus = maintenanceStatus,MaintenanceResult = maintenancResult };
         }
 
 

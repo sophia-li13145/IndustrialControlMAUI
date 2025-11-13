@@ -268,7 +268,7 @@
                                         <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
         ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="保养结果：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding upkeepResult}" Style="{StaticResource FieldValue}" />
+                                            <Label Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding upkeepResultText}" Style="{StaticResource FieldValue}" />
                                         </Grid>
                                         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
 ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">

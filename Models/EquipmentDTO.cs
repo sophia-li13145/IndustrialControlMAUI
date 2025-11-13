@@ -404,6 +404,7 @@ public class MaintenanceOrderItem
 public class DictMaintenance
 {
     public List<DictItem> MaintenanceStatus { get; set; } = new();
+    public List<DictItem> MaintenanceResult { get; set; } = new();
 }
 
 
@@ -424,9 +425,6 @@ public class MaintenanceDetailDto : ObservableObject
 
     /// <summary>检验状态（0-新建；1-待检验；2-检验中；3-检验完成）</summary>
     public string? upkeepStatus { get; set; }
-
-    /// <summary>检验状态名称（映射显示用）</summary>
-    public string? upkeepStatusText { get; set; }
     //保养内容
     public string? upkeepContent { get; set; }
     //耗材
@@ -437,8 +435,7 @@ public class MaintenanceDetailDto : ObservableObject
     //标准
     public string? upkeepStandard { get; set; }
 
-    //保养结果
-    public string? upkeepResult { get; set; }
+    public string?  upkeepResultText { get; set; }
 
     public string? upkeepMemo { get; set; }
 
@@ -492,6 +489,7 @@ public partial class MaintenanceItem : ObservableObject
     public string? consumeMaterial { get; set; }
     public string? upkeepTool { get; set; }
     public string? upkeepResult { get; set; }
+    public string? upkeepResultText { get; set; }
     public string? upkeepNo { get; set; }
     public string? memo { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Android.Icu.Text;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
@@ -19,6 +20,7 @@ namespace IndustrialControlMAUI.ViewModels
         public ObservableCollection<OrderMaintenanceAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
         public ObservableCollection<WorkflowVmItem> WorkflowSteps { get; } = new();
+        public DictMaintenance dicts = new DictMaintenance();
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private MaintenanceDetailDto? detail;
@@ -81,6 +83,7 @@ namespace IndustrialControlMAUI.ViewModels
                 }
 
                 Detail = resp.result;
+                dicts = await _api.GetMainDictsAsync();
                 await LoadWorkflowAsync(_id!);
 
                 // ===== 明细 =====
@@ -91,6 +94,7 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var it in Detail.devUpkeepTaskDetailList ?? new())
                     {
                         it.index = i++; // 1,2,3...
+                        it.upkeepResultText = dicts?.MaintenanceResult?.Where(x => x.dictItemValue == it?.upkeepResult).FirstOrDefault()?.dictItemName;
                         Items.Add(it);
                     }
                 });
@@ -250,12 +254,13 @@ namespace IndustrialControlMAUI.ViewModels
                 //    new() { StatusValue = "2", Title = "保养中" },
                 //    new() { StatusValue = "3", Title = "已完成" }
                 //};
-                var dicts = await _api.GetMainDictsAsync();
+               
                 foreach (var d in dicts.MaintenanceStatus)
                     baseSteps.Add(new WorkflowVmItem { Title = d.dictItemName ?? "", StatusValue = d.dictItemValue ?? "" });
                 baseSteps = baseSteps.OrderBy(x => x.StatusValue).ToList();
                 var resp = await _api.GetMainWorkflowAsync(id, _cts.Token);
                 var list = resp?.result ?? new List<MaintenanceWorkflowNode>();
+
 
                 // 回填时间 & 找“当前”
                 int currentIndex = -1;
