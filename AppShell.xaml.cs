@@ -41,8 +41,12 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Pages.InspectionRunDetailPage), typeof(Pages.InspectionRunDetailPage));
         Routing.RegisterRoute(nameof(Pages.MaintenanceSearchPage), typeof(Pages.MaintenanceSearchPage));
         Routing.RegisterRoute(nameof(Pages.MaintenanceDetailPage), typeof(Pages.MaintenanceDetailPage));
+        Routing.RegisterRoute(nameof(Pages.MaintenanceRunSearchPage), typeof(Pages.MaintenanceRunSearchPage));
+        Routing.RegisterRoute(nameof(Pages.MaintenanceRunDetailPage), typeof(Pages.MaintenanceRunDetailPage));
         Routing.RegisterRoute(nameof(Pages.RepairSearchPage), typeof(Pages.RepairSearchPage));
         Routing.RegisterRoute(nameof(Pages.RepairDetailPage), typeof(Pages.RepairDetailPage));
+        Routing.RegisterRoute(nameof(Pages.RepairRunSearchPage), typeof(Pages.RepairRunSearchPage));
+        Routing.RegisterRoute(nameof(Pages.RepairRunDetailPage), typeof(Pages.RepairRunDetailPage));
         Routing.RegisterRoute(nameof(Pages.ManualReadingPage),typeof(Pages.ManualReadingPage));
     }
 

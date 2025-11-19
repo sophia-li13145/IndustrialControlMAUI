@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Android.Icu.Text;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
@@ -16,10 +17,12 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IAuthApi _authApi;
         private readonly IAttachmentApi _attachmentApi;
         private readonly CancellationTokenSource _cts = new();
+        // ==== 新增：初始化阶段标记 ====
+        private bool _isInitialInspectorSetting = false;
 
-        private const string Folder = "quality";
-        private const string LocationFile = "table";
-        private const string LocationImage = "main";
+        private const string Folder = "devInspectTask";
+        private const string LocationFile = "fujian";
+        private const string LocationImage = "image";
 
         // ===== 上传限制 =====
         private const int MaxImageCount = 9;
@@ -32,6 +35,7 @@ namespace IndustrialControlMAUI.ViewModels
         public ObservableCollection<StatusOption> InspectResultOptions { get; } = new();           // 合格/不合格
 
         [ObservableProperty] private bool isBusy;
+        public DictInspection dicts = new DictInspection();
 
         // ==== 检验员输入 + 下拉 ====
         [ObservableProperty] private bool isInspectorDropdownOpen;    // 默认关闭
@@ -47,11 +51,19 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 if (SetProperty(ref inspectorText, value))
                 {
+                    // ★ 初始化阶段：禁止触发下拉
+                    if (_isInitialInspectorSetting)
+                    {
+                        IsInspectorDropdownOpen = false;
+                        return;
+                    }
+
                     FilterInspectorSuggestions(value);
                     IsInspectorDropdownOpen = InspectorSuggestions.Count > 0;
                 }
             }
         }
+
 
         // ==== 检验结果（主结论） ====
         private StatusOption? _selectedInspectResult;
@@ -92,11 +104,6 @@ namespace IndustrialControlMAUI.ViewModels
             _api = api;
             _authApi = authApi;
             _attachmentApi = attachmentApi;
-
-            // 默认选项（也可以从字典接口加载）
-            InspectResultOptions.Add(new StatusOption { Text = "合格", Value = "合格" });
-            InspectResultOptions.Add(new StatusOption { Text = "不合格", Value = "不合格" });
-
             InspectorSuggestions = new ObservableCollection<UserInfoDto>();
             AllUsers = new List<UserInfoDto>();
         }
@@ -109,6 +116,34 @@ namespace IndustrialControlMAUI.ViewModels
                 _ = LoadAsync();
             }
         }
+        private async Task LoadDictsAsync()
+        {
+            try
+            {
+                // 调你给的接口方法，取出字典
+                dicts = await _api.GetInspectionDictsAsync(_cts.Token);
+
+                // 回到主线程更新下拉选项
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    InspectResultOptions.Clear();
+
+                    foreach (var d in dicts.InspectResult ?? new List<DictItem>())
+                    {
+                        InspectResultOptions.Add(new StatusOption
+                        {
+                            Text = d.dictItemName,
+                            Value = d.dictItemValue
+                        });
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"加载保养结果字典失败：{ex.Message}");
+            }
+        }
+
 
         // ==== 数据加载 ====
         [RelayCommand]
@@ -126,10 +161,9 @@ namespace IndustrialControlMAUI.ViewModels
                 }
 
                 Detail = resp.result;
-                // —— 只在这里手动触发一次计算，保证初值显示一致 ——
-                Detail?.Recalc();
 
                 IsEditing = !IsCompletedStatus(Detail?.inspectStatus);
+                await LoadDictsAsync();
 
                 await LoadInspectorsAsync();
 
@@ -141,6 +175,10 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var it in Detail.devInspectTaskDetailList ?? new())
                     {
                         it.index = i++; // 1,2,3...
+                        var dictItem = dicts?.InspectResult?
+                    .FirstOrDefault(x => x.dictItemValue == it.inspectResult);
+
+                        it.inspectResultText = dictItem?.dictItemName;
                         Items.Add(it);
                     }
                 });
@@ -196,18 +234,29 @@ namespace IndustrialControlMAUI.ViewModels
 
                 // 初始化默认检验员=当前用户（若后端已有值优先显示后端）
                 var current = Preferences.Get("UserName", string.Empty);
+                // 开启初始化模式
+                _isInitialInspectorSetting = true;
+
                 if (!string.IsNullOrWhiteSpace(Detail?.inspecter))
+                {
                     InspectorText = Detail.inspecter;
+                }
                 else if (!string.IsNullOrWhiteSpace(current))
                 {
-                    var hit = AllUsers.FirstOrDefault(u => string.Equals(u.username, current, StringComparison.OrdinalIgnoreCase)
-                                                        || string.Equals(u.realname, current, StringComparison.OrdinalIgnoreCase));
+                    var hit = AllUsers.FirstOrDefault(u =>
+                        string.Equals(u.username, current, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(u.realname, current, StringComparison.OrdinalIgnoreCase));
+
                     if (hit != null)
                     {
                         Detail!.inspecter = hit.realname;
                         InspectorText = hit.realname;
                     }
                 }
+
+                // 初始化完毕
+                _isInitialInspectorSetting = false;
+
             }
             catch (Exception ex)
             {
@@ -256,11 +305,33 @@ namespace IndustrialControlMAUI.ViewModels
 
         // ======= 一键合格 =======
         [RelayCommand]
-        private void SetAllInspection()
+        private async Task SetAllInspection()
         {
+            if (Items == null || Items.Count == 0)
+            {
+                await ShowTip("当前没有可设置为合格的点检项目。");
+                return;
+            }
+
+            bool confirm = await Application.Current.MainPage.DisplayAlert(
+                "提示",
+                "确定要一键合格吗？\n将把所有点检项目的结果都设置为【合格】。",
+                "确定",
+                "取消");
+
+            if (!confirm) return;
+
             foreach (var item in Items)
-                item.inspectResult = "合格";
+            {
+                item.inspectResult = "合格";   // 这里现在会触发 OnPropertyChanged
+                item.inspectResultText = "合格";
+            }
+
         }
+
+
+
+
 
         // ======= 保存/完成 =======
         [RelayCommand]
@@ -309,7 +380,7 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     await ShowTip("已完成点检。");
                     // 本地立即反映完成态，防止用户回退前误操作
-                    Detail.inspectStatus = "2";
+                    Detail.inspectStatus = "3";
                     IsEditing = false;
 
                     // 直接返回，触发搜索页 OnAppearing -> 自动刷新
@@ -498,6 +569,23 @@ namespace IndustrialControlMAUI.ViewModels
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;
+            // ① 先把界面上的中文结果（upkeepResultText）转换成字典值（upkeepResult）
+            if (dicts?.InspectResult != null && dicts.InspectResult.Count > 0)
+            {
+                foreach (var it in Items)
+                {
+                    if (!string.IsNullOrWhiteSpace(it.inspectResultText))
+                    {
+                        var d = dicts.InspectResult
+                            .FirstOrDefault(x => x.dictItemName == it.inspectResultText);
+
+                        if (d != null)
+                        {
+                            it.inspectResult = d.dictItemValue;
+                        }
+                    }
+                }
+            }
 
             var allAttachments = Attachments
                 .Concat(ImageAttachments)
@@ -595,6 +683,6 @@ namespace IndustrialControlMAUI.ViewModels
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
         private static bool IsCompletedStatus(string? s)
-   => string.Equals(s, "2", StringComparison.OrdinalIgnoreCase);
+   => string.Equals(s, "3", StringComparison.OrdinalIgnoreCase);
     }
 }

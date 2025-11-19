@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Name="ThisPage"
-    x:Class="IndustrialControlMAUI.Pages.RepairDetailPage"
+    x:Class="IndustrialControlMAUI.Pages.RepairRunDetailPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
@@ -74,131 +74,39 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="0">
+    <Grid x:Name="RootGrid">
 
-        <!-- 顶部蓝条 -->
-        <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*" ColumnSpacing="8">
-            <Label Text="维修工单基础信息"
-                   VerticalOptions="Start"
-                   TextColor="Black"
-                   FontSize="14"
-                   FontAttributes="Bold" />
-        </Grid>
-        <!-- 点巡检单基础信息 - 工作流时间轴 -->
-        <Grid Margin="0,8,0,0" RowDefinitions="Auto" Grid.Row="1" >
-            <!-- 两行三列的状态进度 -->
-            <CollectionView
-    ItemsSource="{Binding WorkflowSteps}" 
-    SelectionMode="None"
-    ItemSizingStrategy="MeasureAllItems"
-    Margin="0,6,0,0">
-                <CollectionView.ItemsLayout>
-                    <!-- 纵向网格布局，每行 3 个，共两行 -->
-                    <GridItemsLayout Orientation="Vertical" Span="3"
-                         HorizontalItemSpacing="16"
-                         VerticalItemSpacing="10"/>
-                </CollectionView.ItemsLayout>
+        <!-- 点击空白处收起检验员下拉 -->
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding ClearUpkeepOperatorCommand}" />
+        </Grid.GestureRecognizers>
 
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <!-- 单个步骤卡片：基本保持你原来的结构 -->
-                        <Grid ColumnDefinitions="Auto,20,30,25"
-                  RowDefinitions="Auto,Auto,Auto"
-                  Padding="12,0"
-                  HorizontalOptions="Center"
-                  VerticalOptions="Center"
-                  Margin="0,4">
+        <ScrollView>
+            <VerticalStackLayout Spacing="8" Padding="12">
 
-                            <!-- 圆点 -->
-                            <Frame Grid.Row="0" Grid.Column="0"
-                       WidthRequest="36" HeightRequest="36"
-                       Padding="0" HasShadow="False"
-                       CornerRadius="20"
-                       BackgroundColor="White"
-                       BorderColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center">
-                                <Grid>
-                                    <!-- 当前：蓝底白字数字 -->
-                                    <Label Text="{Binding StepNo}"
-                               FontSize="14" FontAttributes="Bold"
-                               TextColor="White"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               IsVisible="{Binding IsCurrent}" />
-                                    <!-- 已完成：蓝色对勾 -->
-                                    <Label Text="✓"
-                               FontSize="18" FontAttributes="Bold"
-                               TextColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               IsVisible="{Binding IsCompleted}" />
-                                </Grid>
-                                <Frame.Triggers>
-                                    <DataTrigger TargetType="Frame" Binding="{Binding IsCurrent}" Value="True">
-                                        <Setter Property="BackgroundColor" Value="#3B82F6" />
-                                        <Setter Property="BorderColor"     Value="#3B82F6" />
-                                    </DataTrigger>
-                                </Frame.Triggers>
-                            </Frame>
-
-                            <!-- 标题 -->
-                            <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
-                       Text="{Binding Title}"
-                       FontSize="13"
-                       TextColor="{Binding IsActive, Converter={StaticResource ActiveToTitleColor}}"
-                       HorizontalTextAlignment="Center"
-                       VerticalOptions="Center"/>
-
-                            <!-- 右侧连线：每行最后一个要隐藏；最后一个整体也要隐藏 -->
-                            <BoxView Grid.Row="0" Grid.Column="3"
-                         WidthRequest="20" HeightRequest="2"
-                         VerticalOptions="Center" HorizontalOptions="Center"
-                         BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}">
-                                <BoxView.Triggers>
-                                    <!-- 行末尾（第 3、6 个）隐藏 -->
-                                    <DataTrigger TargetType="BoxView" Binding="{Binding IsRowEnd}" Value="True">
-                                        <Setter Property="IsVisible" Value="False" />
-                                    </DataTrigger>
-                                    <!-- 最后一个步骤隐藏（你原来的逻辑保留） -->
-                                    <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
-                                        <Setter Property="IsVisible" Value="False" />
-                                    </DataTrigger>
-                                </BoxView.Triggers>
-                            </BoxView>
-
-                            <!-- 时间（有值才显示） -->
-                            <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
-                       Text="{Binding Time}"
-                       FontSize="11"
-                       TextColor="#888888"
-                       HorizontalTextAlignment="Center">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="">
-                                        <Setter Property="IsVisible" Value="False"/>
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="{x:Null}">
-                                        <Setter Property="IsVisible" Value="False"/>
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </Grid>
-
-
-        <!-- 主体滚动 -->
-        <ScrollView Grid.Row="2" >
-            <VerticalStackLayout Spacing="10" Padding="12" >
+                <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Label Text="维修工单基础信息"
+                             VerticalOptions="Start"
+                             TextColor="Black"
+                             FontSize="14"
+                             FontAttributes="Bold" />
+                                                <Button Grid.Column="1"
+                              Text="保存"
+                              Style="{StaticResource PrimaryBtn}"
+                              Command="{Binding SaveCommand}"
+                              IsVisible="{Binding IsEditing}"/>
+                                                <Button Grid.Column="2"
+                              Text="完成维修"
+                              Style="{StaticResource SuccessBtn}"
+                              Command="{Binding CompleteCommand}"
+                              IsVisible="{Binding IsEditing}"/> 
+                  </Grid>
 
                 <!-- 基础信息卡片 -->
                 <Frame Style="{StaticResource Card}">
                     <Grid ColumnDefinitions="85,*,85,*"
                           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="3"
                           >
-
                         <!-- 第一行 -->
                         <Label Grid.Row="0" Grid.Column="0" Text="维修工单号：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="0" Grid.Column="1" Text="{Binding Detail.workOrderNo}" Style="{StaticResource FieldValue}" />
@@ -215,7 +123,7 @@
                         <Label Grid.Row="3" Grid.Column="0" Text="紧急程度：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.UrgentText}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="3" Grid.Column="2" Text="期望修复日期：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding Detail.maintainReportDomain.expectedRepairDate}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding DetailDetail.maintainReportDomain.expectedRepairDate}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="4" Grid.Column="0" Text="指派给：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="4" Grid.Column="1" Text="{Binding Detail.assignToName}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="4" Grid.Column="2" Text="维修内修：" Style="{StaticResource FieldLabel}" />
@@ -256,20 +164,110 @@
                     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                           ColumnDefinitions="100,*,100,*" 
                            RowSpacing="8" ColumnSpacing="2">
-                        <Label Grid.Row="0" Grid.Column="0" Text="维修结果：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" 
+                        <Label Grid.Row="0" Grid.Column="0"   Text="维修结果：" Style="{StaticResource FieldLabel}" />
+                        <Entry Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
                                Text="{Binding Detail.repairResult}"
-                               TextColor="{Binding Detail.repairResult, Converter={StaticResource InspectResultToColorConverter}}"
-                               FontAttributes="Bold"
+                               FontAttributes="Bold" IsEnabled="{Binding IsEditing}"
                                />
                         <!-- 分割线 -->
                         <BoxView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" HeightRequest="1" BackgroundColor="#E5E7EB" />
                         <Label Grid.Row="2" Grid.Column="0" Text="主维修人：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="1"  Text="{Binding Detail.MainRepairUserText}"/>   
+                        <Grid Grid.Row="2" Grid.Column="1" RowDefinitions="Auto,Auto">
+                            <Entry
+                                Grid.Row="0"
+                                Placeholder="请输入"
+                                Text="{Binding MainRepairUserText, Mode=TwoWay}"
+                                IsEnabled="{Binding IsEditing}"/> 
+
+                            <!-- 下拉列表 -->
+                            <Border
+                                    Grid.Row="1"
+                                    IsVisible="{Binding IsMainRepairUserDropdownOpen}"
+                                    Stroke="#E5E7EB"
+                                    BackgroundColor="White"
+                                    Padding="0"
+                                    Margin="0,2,0,0"> 
+                                <CollectionView
+                                    ItemsSource="{Binding MainRepairUserSuggestions}"
+                                    SelectionMode="None"> 
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Padding="8">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickMainRepairUserCommand}"
+                                                    CommandParameter="{Binding .}" /> 
+                                                </Grid.GestureRecognizers>
+                                                <Label Text="{Binding realname}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+                        </Grid>
 
                         <Label Grid.Row="2" Grid.Column="2" Text="辅助维修人：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.AssitRepairUsersText}" />
+                        <!-- 辅维修人：输入框 + 下拉多选 + 已选标签 -->
+                        <Grid Grid.Row="2" Grid.Column="3"  RowDefinitions="Auto,Auto,Auto">
+                            <Entry
+                                Grid.Row="0"
+                                Placeholder="请输入"
+                                Text="{Binding AssitRepairUsersText, Mode=TwoWay}" IsEnabled="{Binding IsEditing}"/> 
 
+                            <!-- 已选辅维修人标签（可选） -->
+                            <FlexLayout
+    Grid.Row="1"
+    BindableLayout.ItemsSource="{Binding SelectedAssistRepairUsers}"
+    Direction="Row"
+    Wrap="Wrap"
+    Margin="0,4,0,0">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame Padding="6,2"
+                   CornerRadius="10"
+                   HasShadow="False"
+                   BorderColor="#D1D5DB"
+                   Margin="2">
+                                            <Frame.GestureRecognizers>
+                                                <TapGestureRecognizer
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleAssistRepairUserCommand}"
+                        CommandParameter="{Binding .}" />
+                                            </Frame.GestureRecognizers>
+
+                                            <Label Text="{Binding realname}" FontSize="12" />
+                                        </Frame>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+
+
+
+                            <!-- 下拉候选，多选 -->
+                            <Border
+                                Grid.Row="2"
+                                IsVisible="{Binding IsAssistRepairUserDropdownOpen}"
+                                Stroke="#E5E7EB"
+                                BackgroundColor="White"
+                                Padding="0"
+                                Margin="0,2,0,0">  
+                                <CollectionView
+                                    ItemsSource="{Binding AssistRepairUserSuggestions}"
+                                    SelectionMode="None"> 
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Padding="8">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleAssistRepairUserCommand}"
+                                CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+                                                <Label Text="{Binding realname}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+                        </Grid>
                         <Label Grid.Row="3" Grid.Column="0" Text="维修开始时间：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="3" Grid.Column="1" 
                                Text="{Binding Detail.RepairStartTime}"

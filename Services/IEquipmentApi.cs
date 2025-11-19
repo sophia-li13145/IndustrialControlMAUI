@@ -53,10 +53,10 @@ namespace IndustrialControlMAUI.Services
 
         Task<ApiResp<bool?>> ExecuteSaveAsync(InspectDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<bool?>> ExecuteCompleteInspectionAsync(InspectDetailDto payload, CancellationToken ct = default);
-        Task<ApiResp<bool?>> ExecuteMainSaveAsync(MainDetailDto payload, CancellationToken ct = default);
-        Task<ApiResp<bool?>> ExecuteMainCompleteInspectionAsync(MainDetailDto payload, CancellationToken ct = default);
-        Task<ApiResp<bool?>> ExecuteRepairSaveAsync(RepairParaDetailDto payload, CancellationToken ct = default);
-        Task<ApiResp<bool?>> ExecuteRepairCompleteInspectionAsync(RepairParaDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> ExecuteMainSaveAsync(MaintenanceDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> ExecuteMainCompleteAsync(MaintenanceDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> ExecuteRepairSaveAsync(RepairDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> ExecuteRepairCompleteAsync(RepairDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteRepairAttachmentAsync(string id, CancellationToken ct = default);
     }
 
@@ -344,6 +344,9 @@ namespace IndustrialControlMAUI.Services
             var inspectStatus = all.FirstOrDefault(f =>
                 string.Equals(f.field, "inspectStatus", StringComparison.OrdinalIgnoreCase))
                 ?.dictItems ?? new List<DictItem>();
+            var inspectResult = all.FirstOrDefault(f =>
+                string.Equals(f.field, "inspectResult", StringComparison.OrdinalIgnoreCase))
+                ?.dictItems ?? new List<DictItem>();
 
             return new DictInspection
             {
@@ -479,20 +482,20 @@ namespace IndustrialControlMAUI.Services
             => PostJsonAsync<InspectDetailDto, bool?>(_executeCompletePath, payload, ct)!;
 
         // ---------- 维护执行保存 ----------
-        public Task<ApiResp<bool?>> ExecuteMainSaveAsync(MainDetailDto payload, CancellationToken ct = default)
-            => PostJsonAsync<MainDetailDto, bool?>(_mainexecuteSavePath, payload, ct)!;
+        public Task<ApiResp<bool?>> ExecuteMainSaveAsync(MaintenanceDetailDto payload, CancellationToken ct = default)
+            => PostJsonAsync<MaintenanceDetailDto, bool?>(_mainexecuteSavePath, payload, ct)!;
 
         // ---------- 维护执行完成 ----------
-        public Task<ApiResp<bool?>> ExecuteMainCompleteInspectionAsync(MainDetailDto payload, CancellationToken ct = default)
-            => PostJsonAsync<MainDetailDto, bool?>(_mainexecuteCompletePath, payload, ct)!;
+        public Task<ApiResp<bool?>> ExecuteMainCompleteAsync(MaintenanceDetailDto payload, CancellationToken ct = default)
+            => PostJsonAsync<MaintenanceDetailDto, bool?>(_mainexecuteCompletePath, payload, ct)!;
 
         // ---------- 维修执行保存 ----------
-        public Task<ApiResp<bool?>> ExecuteRepairSaveAsync(RepairParaDetailDto payload, CancellationToken ct = default)
-            => PostJsonAsync<RepairParaDetailDto, bool?>(_repexecuteSavePath, payload, ct)!;
+        public Task<ApiResp<bool?>> ExecuteRepairSaveAsync(RepairDetailDto payload, CancellationToken ct = default)
+            => PostJsonAsync<RepairDetailDto, bool?>(_repexecuteSavePath, payload, ct)!;
 
         // ---------- 维修执行完成 ----------
-        public Task<ApiResp<bool?>> ExecuteRepairCompleteInspectionAsync(RepairParaDetailDto payload, CancellationToken ct = default)
-            => PostJsonAsync<RepairParaDetailDto, bool?>(_repexecuteCompletePath, payload, ct)!;
+        public Task<ApiResp<bool?>> ExecuteRepairCompleteAsync(RepairDetailDto payload, CancellationToken ct = default)
+            => PostJsonAsync<RepairDetailDto, bool?>(_repexecuteCompletePath, payload, ct)!;
 
         public async Task<ApiResp<bool>> DeleteInspectAttachmentAsync(string id, CancellationToken ct = default)
         {

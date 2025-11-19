@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace IndustrialControlMAUI.Models;
@@ -130,6 +132,7 @@ public class InspectionOrderItem
 public class DictInspection
 {
     public List<DictItem> InspectStatus { get; set; } = new();
+    public List<DictItem> InspectResult { get; set; } = new();
 }
 
 
@@ -144,7 +147,7 @@ public class InspectionMaterial
     public string? unit { get; set; }
 }
 
-public partial class InspectionItem : ObservableObject
+public partial class InspectionItem : INotifyPropertyChanged
 {
     public int? index { get; set; }
     public string? id { get; set; }
@@ -155,7 +158,33 @@ public partial class InspectionItem : ObservableObject
     public string? inspectionAttributeName { get; set; }
     public string? inspectionAttribute { get; set; }
     public string? inspectValue { get; set; }
-    public string? inspectResult { get; set; }
+    private string? _inspectResult;
+    public string? inspectResult
+    {
+        get => _inspectResult;
+        set
+        {
+            if (_inspectResult != value)
+            {
+                _inspectResult = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    
+    private string? _inspectResultText;
+    public string? inspectResultText
+    {
+        get => _inspectResultText;
+        set
+        {
+            if (_inspectResultText != value)
+            {
+                _inspectResultText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public string? inspectNo { get; set; }
 
     public string? memo { get; set; }
@@ -163,6 +192,10 @@ public partial class InspectionItem : ObservableObject
     public string? lowerLimit { get; set; }
     public string? standardValue { get; set; }
     public string? unit { get; set; }
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
 
 public class InspectionAttachment
@@ -357,6 +390,8 @@ public class MaintenanceDetailDto : ObservableObject
     /// <summary>设备编码</summary>
     public string? devCode { get; set; }
 
+    public string? devName { get; set; }
+
     /// <summary>工厂编码</summary>
     public string? factoryCode { get; set; }
 
@@ -365,6 +400,8 @@ public class MaintenanceDetailDto : ObservableObject
 
     /// <summary>质检单号</summary>
     public string? upkeepNo { get; set; }
+
+    public string? upkeepOperator { get; set; }
 
     /// <summary>检验状态（0-新建；1-待检验；2-检验中；3-检验完成）</summary>
     public string? upkeepStatus { get; set; }
@@ -407,6 +444,7 @@ public class MaintenanceDetailDto : ObservableObject
     public List<MaintenanceAttachment>? devUpkeepTaskAttachmentList { get; set; } = new();
 
 
+
 }
 
 
@@ -431,8 +469,33 @@ public partial class MaintenanceItem : ObservableObject
     public string? upkeepContent { get; set; }
     public string? consumeMaterial { get; set; }
     public string? upkeepTool { get; set; }
-    public string? upkeepResult { get; set; }
-    public string? upkeepResultText { get; set; }
+
+    private string? _upkeepResult;
+    public string? upkeepResult
+    {
+        get => _upkeepResult;
+        set
+        {
+            if (_upkeepResult != value)
+            {
+                _upkeepResult = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    private string? _upkeepResultText;
+    public string? upkeepResultText
+    {
+        get => _upkeepResultText;
+        set
+        {
+            if (_upkeepResultText != value)
+            {
+                _upkeepResultText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public string? upkeepNo { get; set; }
     public string? memo { get; set; }
 
@@ -449,6 +512,12 @@ public class MaintenanceAttachment
     public decimal? attachmentSize { get; set; }     // KB
     public string? attachmentFolder { get; set; }
     public string? createdTime { get; set; }
+    public string? name { get; set; }        // 前端显示名（通常就是文件名）
+    public int? percent { get; set; }     // 进度（完成100）
+    public string? status { get; set; }      // "done" / "uploading" / "error"
+    public string? uid { get; set; }         // 前端生成或服务端返回的 uid
+    public string? url { get; set; }         // 可直接访问的绝对地址（若有）
+
 }
 
 public partial class OrderMaintenanceAttachmentItem : ObservableObject
@@ -481,6 +550,12 @@ public partial class OrderMaintenanceAttachmentItem : ObservableObject
 
     // 通知 UI 刷新 DisplaySource
     public void RefreshDisplay() => OnPropertyChanged(nameof(DisplaySource));
+    public string? Name { get; set; } = null;       // 默认用文件名
+    public int Percent { get; set; } = 100;
+    public string Status { get; set; } = "done";
+    public string? Uid { get; set; } = null;
+    public string? Url { get; set; } = null;        // 绝对可访问地址（若有）
+    public string? QualityNo { get; set; } = null;  // 质检单号（从 Detail.qualityNo 带过来）
 }
 
 public class MaintenanceWorkflowNode
@@ -742,6 +817,11 @@ public class RepairAttachment
     public string? modifiedTime { get; set; }
     public string? modifier { get; set; }
     public bool? delStatus { get; set; }
+    public string? name { get; set; }        // 前端显示名（通常就是文件名）
+    public int? percent { get; set; }     // 进度（完成100）
+    public string? status { get; set; }      // "done" / "uploading" / "error"
+    public string? uid { get; set; }         // 前端生成或服务端返回的 uid
+    public string? url { get; set; }         // 可直接访问的绝对地址（若有）
 }
 
 /// <summary>
@@ -829,6 +909,12 @@ public partial class OrderRepairAttachmentItem : ObservableObject
 
     // 通知 UI 刷新 DisplaySource
     public void RefreshDisplay() => OnPropertyChanged(nameof(DisplaySource));
+    public string? Name { get; set; } = null;       // 默认用文件名
+    public int Percent { get; set; } = 100;
+    public string Status { get; set; } = "done";
+    public string? Uid { get; set; } = null;
+    public string? Url { get; set; } = null;        // 绝对可访问地址（若有）
+    public string? QualityNo { get; set; } = null;  // 质检单号（从 Detail.qualityNo 带过来）
 }
 
 public class RepairWorkflowNode
@@ -861,20 +947,16 @@ public class RepairWorkflowVmItem
 
         public string? id { get; set; }
 
-        /// <summary>
-        /// 巡检备注
-        /// </summary>
-        public string? inspectMemo { get; set; }
+    public decimal? qualifiedNum { get; set; }
+    public decimal? unqualifiedNum { get; set; }
+    public decimal? inspectNum { get; set; }
 
-        private int _inspectNum;
-        /// <summary>
-        /// 巡检项目总数
-        /// </summary>
-        public int inspectNum
-        {
-            get => _inspectNum;
-            set { if (SetProperty(ref _inspectNum, value)) RecalcRates(); }
-        }
+    /// <summary>
+    /// 巡检备注
+    /// </summary>
+    public string? inspectMemo { get; set; }
+
+
 
         private string? _inspectResult;
         /// <summary>
@@ -896,48 +978,7 @@ public class RepairWorkflowVmItem
         /// </summary>
         public string? inspecter { get; set; }
 
-        private int _qualifiedNum;
-        /// <summary>
-        /// 合格项目数
-        /// </summary>
-        public int qualifiedNum
-        {
-            get => _qualifiedNum;
-            set { if (SetProperty(ref _qualifiedNum, value)) RecalcRates(); }
-        }
-
-        private int _unqualifiedNum;
-        /// <summary>
-        /// 不合格项目数
-        /// </summary>
-        public int unqualifiedNum
-        {
-            get => _unqualifiedNum;
-            set { if (SetProperty(ref _unqualifiedNum, value)) RecalcRates(); }
-        }
-
-        // ======================= 计算字段（可选） =======================
-        // 如果后端暂时没有这两个字段，也没关系，前端自己算，用来绑定显示即可
-
-        private decimal? _passRate;
-        /// <summary>
-        /// 合格率（%） = qualifiedNum / inspectNum * 100
-        /// </summary>
-        public decimal? passRate
-        {
-            get => _passRate;
-            set => SetProperty(ref _passRate, value);
-        }
-
-        private decimal? _defectRate;
-        /// <summary>
-        /// 不合格率（%） = unqualifiedNum / inspectNum * 100
-        /// </summary>
-        public decimal? defectRate
-        {
-            get => _defectRate;
-            set => SetProperty(ref _defectRate, value);
-        }
+       
 
         // ======================= 明细 + 附件 =======================
 
@@ -951,43 +992,7 @@ public class RepairWorkflowVmItem
         /// </summary>
         public List<InspectionAttachment>? devInspectTaskAttachmentList { get; set; } = new();
 
-        // ======================= 统一计算入口 =======================
 
-        private bool _inRecalc;
-
-        /// <summary>
-        /// 外部可手动触发重算
-        /// </summary>
-        public void Recalc() => RecalcRates();
-
-        private void RecalcRates()
-        {
-            if (_inRecalc) return;
-            _inRecalc = true;
-            try
-            {
-                var total = inspectNum;
-                var q = qualifiedNum;
-                var u = unqualifiedNum;
-
-                // 合格率
-                decimal? newPass = total > 0
-                    ? decimal.Round((decimal)q / total * 100m, 2)
-                    : (decimal?)null;
-
-                // 不合格率
-                decimal? newDefect = total > 0
-                    ? decimal.Round((decimal)u / total * 100m, 2)
-                    : (decimal?)null;
-
-                if (newPass != _passRate) passRate = newPass;
-                if (newDefect != _defectRate) defectRate = newDefect;
-            }
-            finally
-            {
-                _inRecalc = false;
-            }
-        }
     /// <summary>设备编码</summary>
     public string? devCode { get; set; }
 
@@ -1019,6 +1024,10 @@ public class RepairWorkflowVmItem
 
     /// <summary>备注</summary>
     public string? memo { get; set; }
+
+    public string? creator { get; set; }
+
+    public string? modifier { get; set; }
 
     /// <summary>创建时间</summary>
     public string? createdTime { get; set; }
@@ -1079,147 +1088,6 @@ public class RepairWorkflowVmItem
         public string? upperLimit { get; set; }
 }
 
-    /// <summary>
-    /// 设备保养 - 详情 DTO（与后端 JSON 一一对应）
-    /// 方法名叫 MainDetailDto
-    /// </summary>
-    public class MainDetailDto : ObservableObject
-    {
-        // ===================== 基础字段 =====================
-
-        /// <summary>
-        /// 主键 ID
-        /// </summary>
-        public string? id { get; set; }
-
-        /// <summary>
-        /// 保养备注
-        /// </summary>
-        public string? upkeepMemo { get; set; }
-
-        /// <summary>
-        /// 保养执行人
-        /// </summary>
-        public string? upkeepOperator { get; set; }
-
-        // ===================== 列表字段 =====================
-
-        /// <summary>
-        /// 保养附件列表（devUpkeepTaskAttachmentList）
-        /// </summary>
-        public List<DevUpkeepTaskAttachment>? devUpkeepTaskAttachmentList { get; set; }
-            = new();
-
-        /// <summary>
-        /// 保养项目明细列表（devUpkeepTaskDetailList）
-        /// </summary>
-        public List<DevUpkeepTaskDetailItem>? devUpkeepTaskDetailList { get; set; }
-            = new();
-
-        // ===================== 扩展：预留计算字段（可按需启用） =====================
-        // 若未来需要，例如：完成率 = 已保养项目数 / 总项目数 * 100
-        // 可在这里像 QualityDetailDto 那样加 SetProperty + Recalc() 体系
-
-    }
-
-    // =======================================================================
-    // 附件项：devUpkeepTaskAttachmentList
-    // =======================================================================
-
-    public class DevUpkeepTaskAttachment
-    {
-        public string? attachmentExt { get; set; }
-        public string? attachmentFolder { get; set; }
-        public string? attachmentLocation { get; set; }
-        public string? attachmentName { get; set; }
-        public string? attachmentRealName { get; set; }
-        public long attachmentSize { get; set; }
-        public string? attachmentUrl { get; set; }
-        public string? id { get; set; }
-        public string? memo { get; set; }
-    }
-
-    // =======================================================================
-    // 明细项：devUpkeepTaskDetailList
-    // =======================================================================
-
-    public class DevUpkeepTaskDetailItem
-    {
-        public string? consumeMaterial { get; set; }
-        public string? id { get; set; }
-        public string? itemCode { get; set; }
-        public string? itemName { get; set; }
-        public string? memo { get; set; }
-        public string? upkeepContent { get; set; }
-        public string? upkeepResult { get; set; }
-        public string? upkeepStandard { get; set; }
-        public string? upkeepTool { get; set; }
-    }
-
-
-    /// <summary>
-    /// 设备维修 - 详情 DTO（与后端 JSON 字段一一对应）
-    /// </summary>
-    public class RepairParaDetailDto : ObservableObject
-    {
-        // ===================== 基础字段 =====================
-
-        /// <summary>
-        /// 主键 ID
-        /// </summary>
-        public string? id { get; set; }
-
-        /// <summary>
-        /// 主维修人
-        /// </summary>
-        public string? mainRepairUser { get; set; }
-
-        /// <summary>
-        /// 协助维修人（逗号分隔字符串）
-        /// </summary>
-        public string? assitRepairUsers { get; set; }
-
-        /// <summary>
-        /// 维修开始时间
-        /// </summary>
-        public string? repairStartTime { get; set; }
-
-        /// <summary>
-        /// 维修结束时间
-        /// </summary>
-        public string? repairEndTime { get; set; }
-
-        /// <summary>
-        /// 维修结果（success / fail / etc）
-        /// </summary>
-        public string? repairResult { get; set; }
-
-        private decimal _repairDuration;
-        /// <summary>
-        /// 维修时长（小时）
-        /// </summary>
-        public decimal repairDuration
-        {
-            get => _repairDuration;
-            set => SetProperty(ref _repairDuration, value);
-        }
-
-        // ===================== 附件列表 =====================
-
-        /// <summary>
-        /// 附件列表（maintainWorkOrderAttachmentDomainList）
-        /// </summary>
-        public List<RepairAttachmentItem>? maintainWorkOrderAttachmentDomainList { get; set; }
-            = new();
-
-        // ===================== 故障明细列表 =====================
-
-        /// <summary>
-        /// 故障处理明细（maintainWorkOrderItemDomainList）
-        /// </summary>
-        public List<RepairDetailItem>? maintainWorkOrderItemDomainList { get; set; }
-            = new();
-    }
 
     // =======================================================================
     // 维修附件项：maintainWorkOrderAttachmentDomainList

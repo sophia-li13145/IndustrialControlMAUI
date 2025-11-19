@@ -361,6 +361,23 @@
                         <TapGestureRecognizer Tapped="OnMaintenanceSearch"/>
                     </Frame.GestureRecognizers>
                 </Frame>
+                <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                              BackgroundColor="#00796B"
+                              StrokeShape="RoundRectangle 32"> 
+                            <Image Source="search_24_filled.svg"
+                             HeightRequest="28" WidthRequest="28"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/> 
+                        </Border>
+                        <Label Text="维护保养执行" FontSize="12" Margin="0,6,0,0"
+                        HorizontalTextAlignment="Center" TextColor="#333"/> 
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaintenanceRunSearch"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
                 <Frame Grid.Row="2" Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
@@ -378,7 +395,24 @@
                         <TapGestureRecognizer Tapped="OnRepairSearch"/>
                     </Frame.GestureRecognizers>
                 </Frame>
-               
+                <Frame Grid.Row="2" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+   BackgroundColor="#00796B"
+   StrokeShape="RoundRectangle 32">
+                            <Image Source="search_24_filled.svg"
+      HeightRequest="28" WidthRequest="28"
+      HorizontalOptions="Center"
+      VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="维修执行" FontSize="12" Margin="0,6,0,0"
+ HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRepairRunSearch"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
             </Grid>
 
             <Label Text="能源管理系统" Style="{StaticResource SectionTitle}" />

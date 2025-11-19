@@ -71,8 +71,12 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.InspectionRunSearchViewModel>();
             builder.Services.AddTransient<ViewModels.MaintenanceDetailViewModel>();
             builder.Services.AddTransient<ViewModels.MaintenanceSearchViewModel>();
+            builder.Services.AddTransient<ViewModels.MaintenanceRunDetailViewModel>();
+            builder.Services.AddTransient<ViewModels.MaintenanceRunSearchViewModel>();
             builder.Services.AddTransient<ViewModels.RepairDetailViewModel>();
             builder.Services.AddTransient<ViewModels.RepairSearchViewModel>();
+            builder.Services.AddTransient<ViewModels.RepairRunDetailViewModel>();
+            builder.Services.AddTransient<ViewModels.RepairRunSearchViewModel>();
             builder.Services.AddTransient<MeterSelectViewModel>();
             builder.Services.AddTransient<ManualReadingViewModel>();
 
@@ -108,8 +112,12 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.InspectionRunDetailPage>();
             builder.Services.AddTransient<Pages.MaintenanceSearchPage>();
             builder.Services.AddTransient<Pages.MaintenanceDetailPage>();
+            builder.Services.AddTransient<Pages.MaintenanceRunSearchPage>();
+            builder.Services.AddTransient<Pages.MaintenanceRunDetailPage>();
             builder.Services.AddTransient<Pages.RepairSearchPage>();
             builder.Services.AddTransient<Pages.RepairDetailPage>();
+            builder.Services.AddTransient<Pages.RepairRunSearchPage>();
+            builder.Services.AddTransient<Pages.RepairRunDetailPage>();
             builder.Services.AddTransient<MeterSelectPopup>();
             builder.Services.AddTransient<ManualReadingPage>();
 

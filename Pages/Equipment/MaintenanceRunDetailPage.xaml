@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Name="ThisPage"
-    x:Class="IndustrialControlMAUI.Pages.InspectionRunDetailPage"
+    x:Class="IndustrialControlMAUI.Pages.MaintenanceRunDetailPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:vm="clr-namespace:IndustrialControlMAUI.ViewModels"
     xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
-    Title="点巡检执行">
+    BackgroundColor="White"
+    Title="设备管理系统">
 
+    <!-- 局部样式：按钮/标题/分组标题 -->
     <ContentPage.Resources>
         <ResourceDictionary>
+            <conv:NullOrEmptyToBoolInverseConverter x:Key="NullOrEmptyToBoolInverseConverter" />
             <conv:StringToNullableDecimalConverter x:Key="DecConv" />
+            <conv:DecParseOnlyConverter x:Key="DecParseOnlyConv" />
+            <conv:DefectLevelToColorConverter x:Key="DefectLevelToColor"/>
+            <conv:IntGreaterThanZeroConverter x:Key="IntGT0" />
+            <conv:IndexConverter x:Key="IndexConverter" />
+            <conv:BoolToPrimaryOrGrayConverter x:Key="BoolToPrimaryOrGray" />
+            <conv:ActiveToTitleColorConverter  x:Key="ActiveToTitleColor"  />
+            <conv:InspectResultToColorConverter x:Key="InspectResultToColorConverter" />
             <Style x:Key="PrimaryBtn" TargetType="Button">
                 <Setter Property="HeightRequest" Value="36" />
                 <Setter Property="CornerRadius" Value="8" />
@@ -66,119 +74,164 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-
     <Grid x:Name="RootGrid">
 
         <!-- 点击空白处收起检验员下拉 -->
         <Grid.GestureRecognizers>
-            <TapGestureRecognizer Command="{Binding ClearInspectorCommand}" />
+            <TapGestureRecognizer Command="{Binding ClearUpkeepOperatorCommand}" />
         </Grid.GestureRecognizers>
 
         <ScrollView>
             <VerticalStackLayout Spacing="8" Padding="12">
-                <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                    <Label Text="点巡检单基础信息"
-                   VerticalOptions="Start"
-                   TextColor="Black"
-                   FontSize="14"
-                   FontAttributes="Bold" />
-                    <Button Grid.Column="1"
-                    Text="保存"
-                    Style="{StaticResource PrimaryBtn}"
-                    Command="{Binding SaveCommand}"
-                    IsVisible="{Binding IsEditing}"/>
-                    <Button Grid.Column="2"
-                    Text="完成点检"
-                    Style="{StaticResource SuccessBtn}"
-                    Command="{Binding CompleteCommand}"
-                    IsVisible="{Binding IsEditing}"/>
+
+            <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <Label Text="保养单基础信息"
+    VerticalOptions="Start"
+    TextColor="Black"
+    FontSize="14"
+    FontAttributes="Bold" />
+                <Button Grid.Column="1"
+     Text="保存"
+     Style="{StaticResource PrimaryBtn}"
+     Command="{Binding SaveCommand}"
+     IsVisible="{Binding IsEditing}"/>
+                <Button Grid.Column="2"
+     Text="完成保养"
+     Style="{StaticResource SuccessBtn}"
+     Command="{Binding CompleteCommand}"
+     IsVisible="{Binding IsEditing}"/>
+            </Grid>
+
+        <!-- 点巡检单基础信息 - 工作流时间轴 -->
+                <Grid Margin="0,8,0,0" RowDefinitions="Auto" Grid.Row="1" >
+                    <CollectionView ItemsSource="{Binding WorkflowSteps}"
+                    SelectionMode="None"
+                    ItemsLayout="HorizontalList"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <!-- 三行两列：行0图形，行1标题，行2时间 -->
+                                <Grid ColumnDefinitions="20,15,25,15"
+          RowDefinitions="Auto,Auto,Auto"
+          Padding="12,0"
+          HorizontalOptions="Center" VerticalOptions="Center">
+
+                                    <!-- 圆点：默认白底；激活(已完成/当前)描边蓝，未到达描边灰 -->
+                                    <Frame Grid.Row="0" Grid.Column="0"
+                                   WidthRequest="24" HeightRequest="24"
+                                   Padding="0" HasShadow="False"
+                                   CornerRadius="16"
+                                   BackgroundColor="White"
+                                   BorderColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+
+                                        <!-- 这里只放一个内容：Grid 叠放两个 Label，避免“Content 被设置多次” -->
+                                        <Grid>
+                                            <!-- 当前步骤：蓝底白字数字（可见性互斥） -->
+                                            <Label Text="{Binding StepNo}"
+               FontSize="14"
+               FontAttributes="Bold"
+               TextColor="White"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               IsVisible="{Binding IsCurrent}" />
+
+                                            <!-- 已完成：蓝色对勾（字符；如果太细可把 FontSize 调到 20~22） -->
+                                            <Label Text="✓"
+               FontSize="18"
+               FontAttributes="Bold"
+               TextColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               IsVisible="{Binding IsCompleted}" />
+                                        </Grid>
+
+                                        <!-- 关键：触发器写在 Frame 上，直接改 Frame 的底色与描边 -->
+                                        <Frame.Triggers>
+                                            <DataTrigger TargetType="Frame" Binding="{Binding IsCurrent}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#3B82F6" />
+                                                <Setter Property="BorderColor"     Value="#3B82F6" />
+                                            </DataTrigger>
+                                        </Frame.Triggers>
+                                    </Frame>
+                                    <!-- 标题：激活(已完成/当前)为深色，未到达为灰 -->
+                                    <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+           Text="{Binding Title}"
+           FontSize="13"
+           TextColor="{Binding IsActive, Converter={StaticResource ActiveToTitleColor}}"
+           HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+
+                                    <!-- 连线：当前或已完成为蓝，否则灰；最后一个隐藏 -->
+                                    <BoxView Grid.Row="0" Grid.Column="3"
+                 WidthRequest="20" HeightRequest="2"
+                 VerticalOptions="Center" HorizontalOptions="Center"
+                 BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}">
+                                        <BoxView.Triggers>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </BoxView.Triggers>
+                                    </BoxView>
+
+
+
+                                    <!-- 时间：只有有值才显示（当前与已完成都有时间）；未到达不显示 -->
+                                    <Label Grid.Row="2"  Grid.Column="1" Grid.ColumnSpan="3"
+                                   Text="{Binding Time}"
+                                   FontSize="11"
+                                   TextColor="#888888"
+                                   HorizontalTextAlignment="Center">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="">
+                                                <Setter Property="IsVisible" Value="False"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="{x:Null}">
+                                                <Setter Property="IsVisible" Value="False"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
                 </Grid>
 
+                <!-- 基础信息卡片 -->
                 <Frame Style="{StaticResource Card}">
                     <Grid ColumnDefinitions="80,*,80,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="5"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="5"
                           >
 
                         <!-- 第一行 -->
-                        <Label Grid.Row="0" Grid.Column="0" Text="点检单号：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Detail.inspectNo}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="0" Grid.Column="0" Text="保养单号：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Detail.upkeepNo}" Style="{StaticResource FieldValue}" />
 
                         <Label Grid.Row="0" Grid.Column="2" Text="计划名称：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="0" Grid.Column="3" Text="{Binding Detail.planName}" Style="{StaticResource FieldValue}" />
-
-                        <!-- 第二行 -->
                         <Label Grid.Row="1" Grid.Column="0" Text="计划编号：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.planCode}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="1" Grid.Column="2" Text="设备名称：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.devName}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="2" Grid.Column="0" Text="设备编号：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.devCode}" Style="{StaticResource FieldValue}" />
-                        <Label Grid.Row="2" Grid.Column="2" Text="计划点检日期：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.planInspectTime}" Style="{StaticResource FieldValue}" />
-
-                        <!-- 第三行 -->
-                        <Label Grid.Row="3" Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" Style="{StaticResource FieldValue}" />
-
-                    </Grid>
-                </Frame>
-                <!-- 检验结果 -->
-            <Label Text="检验结果" Style="{StaticResource SectionTitle}"/>
-            <Frame Style="{StaticResource Card}">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-       ColumnDefinitions="90,*,60,*,60,*" 
-        RowSpacing="8" ColumnSpacing="5">
-
-                        <Label Grid.Row="0" Grid.Column="0"  Grid.ColumnSpan="2" Text="检验结果：" />
-                        <Picker Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2"
-         ItemsSource="{Binding InspectResultOptions}"
-         ItemDisplayBinding="{Binding Text}"
-         SelectedItem="{Binding SelectedInspectResult, Mode=TwoWay}"
-         IsEnabled="{Binding IsEditing}">
-                            <Picker.Triggers>
-                                <DataTrigger TargetType="Picker"
-Binding="{Binding SelectedInspectResult.Text}"
-Value="合格">
-                                    <Setter Property="BackgroundColor" Value="#B2F2BB"/>
-                                </DataTrigger>
-                                <DataTrigger TargetType="Picker"
-Binding="{Binding SelectedInspectResult.Text}"
-Value="不合格">
-                                    <Setter Property="BackgroundColor" Value="#FFA8A8"/>
-                                </DataTrigger>
-                            </Picker.Triggers>
-
-                        </Picker>
-                        <!-- 分割线 -->
-                        <BoxView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6" HeightRequest="1" BackgroundColor="#E5E7EB" />
-                        <Label Grid.Row="2" Grid.Column="0" Text="点检项目总数：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="1"  Text="{Binding Detail.inspectNum}"/>
-
-                        <Label Grid.Row="2" Grid.Column="2" Text="合格项目数：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="3"
-        Text="{Binding Detail.qualifiedNum}"
-         />
-                        <Label Grid.Row="2" Grid.Column="4" Text="不合格项目数：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="5"
-         Text="{Binding Detail.unqualifiedNum}"
-         />
-                        <Label Grid.Row="3" Grid.Column="0" Text="实际点检日期：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="1" 
-       Text="{Binding Detail.inspectTime}"
-       />
-
-                        <Label Grid.Row="3" Grid.Column="2"  Text="操作人：" Style="{StaticResource FieldLabel}" />
-                        <Grid Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2">
-                            <Entry x:Name="InspectorEntry"
-           Text="{Binding InspectorText, Mode=TwoWay}"
-           Placeholder="请输入"
-           Completed="OnInspectorEntryCompleted"/>
+                        <Label Grid.Row="2" Grid.Column="2" Text="计划保养日期：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.planUpkeepTime}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="3" Grid.Column="0" Text="创建日期：" Style="{StaticResource FieldLabel}" />
+                        <DatePicker Grid.Row="3" Grid.Column="1" Date="{Binding Detail.createdTime}" />
+                        <Label Grid.Row="3" Grid.Column="2" Text="操作人：" Style="{StaticResource FieldLabel}" />
+                        <Grid Grid.Row="3" Grid.Column="3" >
+                            <Entry
+                                Text="{Binding UpkeepOperator, Mode=TwoWay}"
+                                Placeholder="请输入"
+                                Completed="OnUpkeepOperatorEntryCompleted"/> 
                             <!-- 下拉浮层 -->
                             <Frame HasShadow="True" Padding="0" Margin="0,40,0,0"
-           IsVisible="{Binding IsInspectorDropdownOpen}"
-           ZIndex="9999" CornerRadius="8"
-           BackgroundColor="White" BorderColor="#E5E7EB">
-                                <CollectionView ItemsSource="{Binding InspectorSuggestions}" HeightRequest="220">
+                                IsVisible="{Binding IsUpkeepOperatorDropdownOpen}"
+                                ZIndex="9999" CornerRadius="8"
+                                BackgroundColor="White" BorderColor="#E5E7EB"> 
+                                <CollectionView ItemsSource="{Binding UpkeepOperatorSuggestions}" HeightRequest="220">
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Padding="10" ColumnDefinitions="Auto,*">
@@ -186,8 +239,8 @@ Value="不合格">
                                                 <Label Grid.Column="1" Text="{Binding realname}"/>
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickInspectorCommand}"
-                                CommandParameter="{Binding .}"/>
+                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickUpkeepOperatorCommand}"
+                     CommandParameter="{Binding .}"/>
                                                 </Grid.GestureRecognizers>
                                             </Grid>
                                         </DataTemplate>
@@ -195,25 +248,21 @@ Value="不合格">
                                 </CollectionView>
                             </Frame>
                         </Grid>
-
-                        <!-- 第4行：检验备注（整行） -->
-                        <Label Grid.Row="4" Grid.Column="0" Text="点检备注：" Style="{StaticResource FieldLabel}" />
-                        <Entry  Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="5"
-        Text="{Binding Detail.inspectMemo, Mode=TwoWay}"
-        IsEnabled="{Binding IsEditing}" />
-
-
-
+                        <Label Grid.Row="4" Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="5" Grid.Column="0" Text="保养备注：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.upkeepMemo}" Style="{StaticResource FieldValue}" />
                     </Grid>
-            </Frame>
+                </Frame>
+
+                <!-- 保养项目执行 -->
                 <Grid ColumnDefinitions="*,120">
-                    <!-- 点检项目执行 -->
-            <Label Text="点检项目执行" Style="{StaticResource SectionTitle}"/>
+                    <Label Text="保养项目执行" Style="{StaticResource SectionTitle}"/>
                     <Button Grid.Column="1"
- Text="一键合格"
- Style="{StaticResource PrimaryBtn}"
- Command="{Binding SetAllInspectionCommand}"
- IsVisible="{Binding IsEditing}"/>
+                            Text="一键完成"
+                            Style="{StaticResource PrimaryBtn}"
+                            Command="{Binding SetAllUpkeepCommand}"
+                            IsVisible="{Binding IsEditing}"/> 
                 </Grid>
                 <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
                     <CollectionView.ItemTemplate>
@@ -222,67 +271,52 @@ Value="不合格">
                             <Grid ColumnDefinitions="12,*" ColumnSpacing="8" Margin="0,6,0,0">
                                 <!-- 序号：与卡片顶部对齐 -->
                                 <Label Grid.Column="0"
-       Text="{Binding index}"
-       VerticalOptions="Center"
-       HorizontalTextAlignment="Center"
-       VerticalTextAlignment="Center"
-       FontAttributes="Bold"
-       TextColor="#111827"
-       Margin="0,8,0,0"/>
+                       Text="{Binding index}"
+                       VerticalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontAttributes="Bold"
+                       TextColor="#111827"
+                       Margin="0,8,0,0"/>
 
                                 <!-- 右侧你的原 Frame 卡片，内容保持不变 -->
                                 <Frame Grid.Column="1" Style="{StaticResource Card}">
                                     <Grid
-        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-        ColumnDefinitions="Auto,*"
-        RowSpacing="8" ColumnSpacing="5">
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                        ColumnDefinitions="Auto,*"
+                        RowSpacing="8" ColumnSpacing="5">
 
-                                        <!-- 行0：项目名称 -->
                                         <Label Grid.Row="0" Grid.Column="0" Text="项目名称：" Style="{StaticResource FieldLabel}" />
                                         <Label Grid.Row="0" Grid.Column="1" Text="{Binding itemName}" Style="{StaticResource FieldValue}" />
-                                        <BoxView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6" HeightRequest="1" BackgroundColor="#E5E7EB" />
-                                        <!-- 行1：检验属性、检验方式 -->
+                                        <BoxView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" HeightRequest="1" BackgroundColor="#E5E7EB" />
+
                                         <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-              ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
-                                            <Label Grid.Column="0" Text="检验属性：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="1" Text="{Binding inspectionAttributeName}" Style="{StaticResource FieldValue}" />
-                                            <Label Grid.Column="2" Text="检验方式：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="3" Text="{Binding inspectionMode}" Style="{StaticResource FieldValue}" />
+                              ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="保养内容：" Style="{StaticResource FieldLabel}" />
+                                            <Label Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding upkeepContent}" Style="{StaticResource FieldValue}" />
                                         </Grid>
                                         <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                            <Label Grid.Column="0" Text="检验标准：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="1" Text="{Binding inspectionStandard}" Style="{StaticResource FieldValue}" />
+                                            <Label Grid.Column="0" Text="操作方法及标准：" Style="{StaticResource FieldLabel}" />
+                                            <Label Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding upkeepStandard}" Style="{StaticResource FieldValue}" />
                                         </Grid>
-                                        <!-- 行2：标准值、上限值、下限值 -->
+
                                         <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-              ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="10">
-                                            <Label Grid.Column="0" Text="标准值：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="1" Text="{Binding standardValue}" Style="{StaticResource FieldValue}" />
-                                            <Label Grid.Column="2" Text="上限值：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="3" Text="{Binding upperLimit}" Style="{StaticResource FieldValue}" />
-                                            <Label Grid.Column="4" Text="下限值：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="5" Text="{Binding lowerLimit}" Style="{StaticResource FieldValue}" />
+                              ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="耗材：" Style="{StaticResource FieldLabel}" />
+                                            <Label Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding consumeMaterial}" Style="{StaticResource FieldValue}" />
                                         </Grid>
-
-                                        <!-- 行4：抽样数、不良数、不良率(只读) -->
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
-                                ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="10">
-                                            <Label Grid.Column="0" Text="点检值：" Style="{StaticResource FieldLabel}" />
-                                            <Entry Grid.Column="1" Text="{Binding inspectValue, Mode=TwoWay, Converter={StaticResource DecConv}}" Keyboard="Numeric"
-IsEnabled="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IsEditing}" />
-                                            <Label Grid.Column="2" Text="单位：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="3" Text="{Binding unit}"  />
-                                            
+                                                ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="工具：" Style="{StaticResource FieldLabel}" />
+                                            <Label Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding upkeepTool}" Style="{StaticResource FieldValue}" />
                                         </Grid>
-
                                         <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
-ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                            <Label Text="点检结果：" Style="{StaticResource FieldLabel}" />
-
+        ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="保养结果：" Style="{StaticResource FieldLabel}" />
                                             <Picker x:Name="RowResultPicker"
-                           Grid.Column="1"
-                           ItemsSource="{Binding Source={x:Reference ThisPage}, Path=BindingContext.InspectResultTextList}"
-                           SelectedItem="{Binding inspectResult, Mode=TwoWay}"
+                           Grid.Column="1" Grid.ColumnSpan="3"
+                           ItemsSource="{Binding Source={x:Reference ThisPage}, Path=BindingContext.MaintenanceResultTextList}"
+                           SelectedItem="{Binding upkeepResultText, Mode=TwoWay}"
                            IsEnabled="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IsEditing}">
                                                 <!-- 默认底色（可选） -->
                                                 <Picker.BackgroundColor>#F3F4F6</Picker.BackgroundColor>
@@ -291,24 +325,24 @@ ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                                     <!-- 直接监听控件自己的 SelectedItem，避免依赖模型的通知 -->
                                                     <DataTrigger TargetType="Picker"
 Binding="{Binding Source={x:Reference RowResultPicker}, Path=SelectedItem}"
-Value="合格">
+Value="完成">
                                                         <Setter Property="BackgroundColor" Value="#B2F2BB"/>
                                                     </DataTrigger>
 
                                                     <DataTrigger TargetType="Picker"
 Binding="{Binding Source={x:Reference RowResultPicker}, Path=SelectedItem}"
-Value="不合格">
+Value="未完成">
                                                         <Setter Property="BackgroundColor" Value="#FFA8A8"/>
                                                     </DataTrigger>
                                                 </Picker.Triggers>
                                             </Picker>
                                         </Grid>
                                         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
-                                ColumnDefinitions="Auto,*" ColumnSpacing="10">
+ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
-                                            <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="5"
-       Text="{Binding memo, Mode=TwoWay}"
-       IsEnabled="{Binding IsEditing}" />
+                                            <Entry Grid.Column="1" Grid.ColumnSpan="3"
+Text="{Binding memo, Mode=TwoWay}"
+IsEnabled="{Binding IsEditing}" />
                                         </Grid>
                                     </Grid>
                                 </Frame>
@@ -446,6 +480,7 @@ ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
 
 
             </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
     </Grid>
 </ContentPage>
+
