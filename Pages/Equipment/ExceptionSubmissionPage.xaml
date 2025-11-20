@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Name="ThisPage"
+    x:Class="IndustrialControlMAUI.Pages.ExceptionSubmissionPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
+    BackgroundColor="White"
+    Title="设备管理系统">
+
+    <!-- 局部样式：按钮/标题/分组标题 -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:NullOrEmptyToBoolInverseConverter x:Key="NullOrEmptyToBoolInverseConverter" />
+            <conv:StringToNullableDecimalConverter x:Key="DecConv" />
+            <conv:DecParseOnlyConverter x:Key="DecParseOnlyConv" />
+            <conv:DefectLevelToColorConverter x:Key="DefectLevelToColor"/>
+            <conv:IntGreaterThanZeroConverter x:Key="IntGT0" />
+            <conv:IndexConverter x:Key="IndexConverter" />
+            <conv:BoolToPrimaryOrGrayConverter x:Key="BoolToPrimaryOrGray" />
+            <conv:ActiveToTitleColorConverter  x:Key="ActiveToTitleColor"  />
+            <conv:InspectResultToColorConverter x:Key="InspectResultToColorConverter" />
+            <Style x:Key="PrimaryBtn" TargetType="Button">
+                <Setter Property="HeightRequest" Value="36" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="18,6" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="BackgroundColor" Value="#2F80ED" />
+                <Setter Property="FontAttributes" Value="Bold" />
+            </Style>
+            <Style x:Key="SuccessBtn" TargetType="Button" BasedOn="{StaticResource PrimaryBtn}">
+                <Setter Property="BackgroundColor" Value="#27AE60" />
+            </Style>
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="#1F2937" />
+                <Setter Property="Margin" Value="0,5,0,4" />
+            </Style>
+            <Style x:Key="FieldLabel" TargetType="Label">
+                <Setter Property="TextColor" Value="#4B5563" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="HorizontalTextAlignment" Value="Start" />
+                <Setter Property="Padding" Value="0" />
+            </Style>
+            <Style x:Key="FieldValue" TargetType="Label">
+                <Setter Property="TextColor" Value="#111827" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="HorizontalTextAlignment" Value="Start" />
+            </Style>
+            <Style x:Key="Card" TargetType="Frame">
+                <Setter Property="Padding" Value="12" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="BorderColor" Value="#E5E7EB" />
+            </Style>
+            <!-- 只读展示小灰框 -->
+            <Style x:Key="ReadonlyPill" TargetType="Frame">
+                <Setter Property="Padding" Value="8,6" />
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="BackgroundColor" Value="#F3F4F6" />
+                <Setter Property="BorderColor" Value="#E5E7EB" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="HorizontalOptions" Value="Fill" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="HeightRequest" Value="42" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+                <Setter Property="HorizontalTextAlignment" Value="Start" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="0">
+
+        <!-- 顶部蓝条 -->
+        <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*" ColumnSpacing="8">
+            <Label Text="保养单基础信息"
+                   VerticalOptions="Start"
+                   TextColor="Black"
+                   FontSize="14"
+                   FontAttributes="Bold" />
+        </Grid>
+        <!-- 异常提报单基础信息 - 工作流时间轴 -->
+        <Grid Margin="0,8,0,0" RowDefinitions="Auto" Grid.Row="1" >
+            <CollectionView ItemsSource="{Binding WorkflowSteps}"
+             SelectionMode="None"
+             ItemsLayout="HorizontalList"
+             HorizontalOptions="Center"
+             VerticalOptions="Center">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- 三行两列：行0图形，行1标题，行2时间 -->
+                        <Grid ColumnDefinitions="18,15,30,20"
+   RowDefinitions="Auto,Auto,Auto"
+   Padding="12,0"
+   HorizontalOptions="Center" VerticalOptions="Center">
+
+                            <!-- 圆点：默认白底；激活(已完成/当前)描边蓝，未到达描边灰 -->
+                            <Frame Grid.Row="0" Grid.Column="0"
+                            WidthRequest="24" HeightRequest="24"
+                            Padding="0" HasShadow="False"
+                            CornerRadius="16"
+                            BackgroundColor="White"
+                            BorderColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+
+                                <!-- 这里只放一个内容：Grid 叠放两个 Label，避免“Content 被设置多次” -->
+                                <Grid>
+                                    <!-- 当前步骤：蓝底白字数字（可见性互斥） -->
+                                    <Label Text="{Binding StepNo}"
+        FontSize="14"
+        FontAttributes="Bold"
+        TextColor="White"
+        HorizontalOptions="Center"
+        VerticalOptions="Center"
+        IsVisible="{Binding IsCurrent}" />
+
+                                    <!-- 已完成：蓝色对勾（字符；如果太细可把 FontSize 调到 20~22） -->
+                                    <Label Text="✓"
+        FontSize="18"
+        FontAttributes="Bold"
+        TextColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
+        HorizontalOptions="Center"
+        VerticalOptions="Center"
+        IsVisible="{Binding IsCompleted}" />
+                                </Grid>
+
+                                <!-- 关键：触发器写在 Frame 上，直接改 Frame 的底色与描边 -->
+                                <Frame.Triggers>
+                                    <DataTrigger TargetType="Frame" Binding="{Binding IsCurrent}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#3B82F6" />
+                                        <Setter Property="BorderColor"     Value="#3B82F6" />
+                                    </DataTrigger>
+                                </Frame.Triggers>
+                            </Frame>
+                            <!-- 标题：激活(已完成/当前)为深色，未到达为灰 -->
+                            <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+    Text="{Binding Title}"
+    FontSize="13"
+    TextColor="{Binding IsActive, Converter={StaticResource ActiveToTitleColor}}"
+    HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+
+                            <!-- 连线：当前或已完成为蓝，否则灰；最后一个隐藏 -->
+                            <BoxView Grid.Row="0" Grid.Column="3"
+          WidthRequest="20" HeightRequest="2"
+          VerticalOptions="Center" HorizontalOptions="Center"
+          BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}">
+                                <BoxView.Triggers>
+                                    <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
+                                        <Setter Property="IsVisible" Value="False" />
+                                    </DataTrigger>
+                                </BoxView.Triggers>
+                            </BoxView>
+
+
+
+                            <!-- 时间：只有有值才显示（当前与已完成都有时间）；未到达不显示 -->
+                            <Label Grid.Row="2"  Grid.Column="1" Grid.ColumnSpan="3"
+                            Text="{Binding Time}"
+                            FontSize="11"
+                            TextColor="#888888"
+                            HorizontalTextAlignment="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="">
+                                        <Setter Property="IsVisible" Value="False"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="{x:Null}">
+                                        <Setter Property="IsVisible" Value="False"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+
+        <!-- 主体滚动 -->
+        <ScrollView Grid.Row="2" >
+            <VerticalStackLayout Spacing="10" Padding="12" >
+
+                <!-- 基础信息卡片 -->
+                <Frame Style="{StaticResource Card}">
+                    <Grid ColumnDefinitions="85,*,85,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="3"
+                          >
+                        <Label Grid.Row="0" Grid.Column="0" Text="异常单号：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Detail.maintainNo}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="0" Grid.Column="2" Text="设备名称：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="0" Grid.Column="3" Text="{Binding Detail.devName}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="1" Grid.Column="0" Text="设备编号：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.devCode}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="1" Grid.Column="2" Text="设备型号：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.devModel}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="0" Text="设备状态：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.DevStatusText}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="2" Text="车间：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.workShopName}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="3" Grid.Column="0" Text="紧急程度：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.UrgentText}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="3" Grid.Column="2" Text="期望修复日期：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding Detail.expectedRepairDate}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="4" Grid.Column="0" Text="异常现象：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.phenomena}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="5" Grid.Column="0" Text="异常描述：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.description}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="6" Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" Style="{StaticResource FieldValue}" />
+                    </Grid>
+                </Frame>
+
+                <!-- 异常提报图片 -->
+                <Label Text="异常提报图片" Style="{StaticResource SectionTitle}"/>
+                <!-- 图片附件 -->
+                <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
+                <!-- 左窄右宽两列 -->
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+
+                    <!-- Row0 右：缩略图 + 上传方块 -->
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="8" VerticalOptions="Start">
+
+                        <CollectionView ItemsSource="{Binding ImageAttachments}"
+                    ItemsLayout="HorizontalList"
+                    HeightRequest="96"
+                    SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Frame Padding="0" WidthRequest="96" HeightRequest="96"
+                   CornerRadius="8" HasShadow="False" BorderColor="#E5E7EB" Margin="0,0,8,0">
+                                            <Image Aspect="AspectFill" Source="{Binding DisplaySource}" />
+                                        </Frame>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </HorizontalStackLayout>
+                    <Grid Grid.Row="1"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
+                        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="创建人：" Style="{StaticResource FieldLabel}" />
+                            <Label Grid.Column="1" Text="{Binding Detail.creator}" Style="{StaticResource FieldValue}" />
+                            <Label Grid.Column="2" Text="创建日期：" Style="{StaticResource FieldLabel}" />
+                            <Label Grid.Column="3" Text="{Binding Detail.createdTime}" Style="{StaticResource FieldValue}" />
+                        </Grid>
+                        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="最近修改人：" Style="{StaticResource FieldLabel}" />
+                            <Label Grid.Column="1" Text="{Binding Detail.modifier}" Style="{StaticResource FieldValue}" />
+                            <Label Grid.Column="2" Text="修改日期：" Style="{StaticResource FieldLabel}" />
+                            <Label Grid.Column="3" Text="{Binding Detail.modifiedTime}" Style="{StaticResource FieldValue}" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
+

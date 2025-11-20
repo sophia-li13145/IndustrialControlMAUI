@@ -215,5 +215,20 @@ namespace IndustrialControlMAUI.Models
         public string? meterReadingTime { get; set; }       // 本次抄表时间（yyyy-MM-dd HH:mm:ss）
     }
 
+    public class DevItem
+    {
+        public string? devCode { get; set; }
+        public string? devName { get; set; }
+        public string? devModel { get; set; }
+        public string? devProducer { get; set; }
+        public string? workShopId { get; set; }
+        public string? workShopName { get; set; }
+
+        public string? lineId { get; set; }
+        public string? lineName { get; set; }
+        public string? devTypeId { get; set; }
+        public string? devTypeCode { get; set; }
+    }
+
 }
 

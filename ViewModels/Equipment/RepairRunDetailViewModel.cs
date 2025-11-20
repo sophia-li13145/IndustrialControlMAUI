@@ -1,4 +1,5 @@
 ﻿using Android.Icu.Text;
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
@@ -66,7 +67,14 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> urgentDict = new();
         [ObservableProperty] private List<DictItem> repairTypeDict = new();
         public DictRepair dicts = new DictRepair();
+        private const string Folder = "devMaintainExecute";
+        private const string LocationFile = "fujian";
+        private const string LocationImage = "image";
 
+        // ===== 上传限制 =====
+        private const int MaxImageCount = 9;
+        private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
+        private const long MaxFileBytes = 20L * 1024 * 1024;   // 20MB
         public RepairRunDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IAuthApi authapi)
         {
             _api = api;
@@ -369,6 +377,113 @@ namespace IndustrialControlMAUI.ViewModels
                     }
                 })
             );
+        }
+
+        // ======= 附件：选择/上传/预览/删除 =======
+        [RelayCommand] public async Task PickImagesAsync() => await PickAndUploadAsync(isImage: true);
+        [RelayCommand] public async Task PickFilesAsync() => await PickAndUploadAsync(isImage: false);
+
+        private async Task PickAndUploadAsync(bool isImage)
+        {
+            try
+            {
+                var pick = await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    var opt = new PickOptions
+                    {
+                        PickerTitle = isImage ? "选择图片" : "选择附件",
+                        FileTypes = isImage
+                            ? FilePickerFileType.Images
+                            : new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                            {
+                                { DevicePlatform.Android,     new[] { "*/*" } },
+                                { DevicePlatform.iOS,         new[] { "public.data" } },
+                                { DevicePlatform.MacCatalyst, new[] { "public.data" } },
+                                { DevicePlatform.WinUI,       new[] { "*" } },
+                            })
+                    };
+                    return await FilePicker.PickMultipleAsync(opt);
+                });
+                if (pick == null) return;
+
+                foreach (var f in pick)
+                {
+                    var ext = Path.GetExtension(f.FileName)?.TrimStart('.').ToLowerInvariant();
+                    var isImg = isImage;
+
+                    // 1) 白名单
+                    if (!isImg && !IsAllowedFile(ext))
+                    {
+                        await ShowTip($"不支持的文件格式：{f.FileName}\n允许：PDF、Word、Excel、Txt、JPG、PNG、RAR/ZIP");
+                        continue;
+                    }
+
+                    // 2) 复制到临时计算大小
+                    using var s = await f.OpenReadAsync();
+                    var (tmpPath, len) = await s.CopyToTempAndLenAsync();
+
+                    // 3) 数量/大小限制
+                    if (isImg)
+                    {
+                        if (ImageAttachments.Count >= MaxImageCount) { await ShowTip($"最多上传 {MaxImageCount} 张图片。"); continue; }
+                        if (len > MaxImageBytes) { await ShowTip($"图片过大：{f.FileName}\n单张不超过 2M。"); continue; }
+                    }
+                    else
+                    {
+                        if (len > MaxFileBytes) { await ShowTip($"附件过大：{f.FileName}\n单个不超过 20M。"); continue; }
+                    }
+
+                    // 4) 本地项（先显示）
+                    var localItem = new OrderRepairAttachmentItem
+                    {
+                        AttachmentName = f.FileName,
+                        AttachmentExt = ext,
+                        AttachmentSize = len,
+                        LocalPath = f.FullPath,
+                        CreatedTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        IsImage = isImg
+                    };
+
+                    if (isImg) { localItem.AttachmentLocation = LocationImage; ImageAttachments.Insert(0, localItem); }
+                    else { localItem.AttachmentLocation = LocationFile; Attachments.Insert(0, localItem); }
+
+                    // 5) 上传
+                    var contentType = DetectContentType(ext);
+                    await using var fs = File.OpenRead(tmpPath);
+                    var resp = await _attachmentApi.UploadAttachmentAsync(
+                        attachmentFolder: Folder,
+                        attachmentLocation: localItem.AttachmentLocation,
+                        fileStream: fs,
+                        fileName: f.FileName,
+                        contentType: contentType,
+                        attachmentName: f.FileName,
+                        attachmentExt: ext,
+                        attachmentSize: len
+                    );
+
+                    if (resp?.success == true && resp.result != null)
+                    {
+                        localItem.AttachmentUrl = string.IsNullOrWhiteSpace(resp.result.attachmentUrl) ? localItem.AttachmentUrl : resp.result.attachmentUrl;
+                        localItem.AttachmentRealName = resp.result.attachmentRealName ?? localItem.AttachmentRealName;
+                        localItem.AttachmentFolder = resp.result.attachmentFolder ?? Folder;
+                        localItem.AttachmentExt = resp.result.attachmentExt ?? ext;
+                        localItem.Name = string.IsNullOrWhiteSpace(localItem.Name) ? localItem.AttachmentName : localItem.Name;
+                        localItem.Percent = 100;
+                        localItem.Status = "done";
+
+                        if (!string.IsNullOrWhiteSpace(resp.result.attachmentUrl))
+                            localItem.LocalPath = null;
+                    }
+                    else
+                    {
+                        await ShowTip($"上传失败：{resp?.message ?? "未知错误"}（已仅本地显示）");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"选择/上传异常：{ex.Message}");
+            }
         }
 
         /// <summary>
@@ -776,6 +891,27 @@ namespace IndustrialControlMAUI.ViewModels
         }
         private static bool IsCompletedStatus(string? s)
    => string.Equals(s, "3", StringComparison.OrdinalIgnoreCase)|| string.Equals(s, "4", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsAllowedFile(string? ext) =>
+                IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
+
+        private static string? DetectContentType(string? ext) => ext?.ToLowerInvariant() switch
+        {
+            "jpg" or "jpeg" => "image/jpeg",
+            "png" => "image/png",
+            "gif" => "image/gif",
+            "bmp" => "image/bmp",
+            "webp" => "image/webp",
+            "pdf" => "application/pdf",
+            "doc" => "application/msword",
+            "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "xls" => "application/vnd.ms-excel",
+            "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "txt" => "text/plain",
+            "rar" => "application/x-rar-compressed",
+            "zip" => "application/zip",
+            _ => null
+        };
     }
 
 }

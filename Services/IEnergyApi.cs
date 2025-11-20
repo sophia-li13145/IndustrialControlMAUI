@@ -36,6 +36,8 @@ namespace IndustrialControlMAUI.Services
         Task<LastReadingResult?> GetLastReadingAsync(string meterCode, string meterPointCode, CancellationToken ct = default);
 
         Task<bool> SaveMeterReadingAsync(MeterSaveReq req, CancellationToken ct = default);
+
+        Task<List<DevItem>> GetDevListAsync(CancellationToken ct = default);
     }
 
     // ===================== 实现 =====================
@@ -51,10 +53,12 @@ namespace IndustrialControlMAUI.Services
         private readonly string _pointsByMeterEndpoint;
         private readonly string _lastReadingMeterEndpoint;
         private readonly string _saveReadingEndpoint;
+        private readonly string _devListEndpoint;
 
         public EnergyApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
         {
             _http = http;
+            _auth = auth;
 
             if (_http.Timeout == System.Threading.Timeout.InfiniteTimeSpan)
                 _http.Timeout = TimeSpan.FromSeconds(15);
@@ -85,7 +89,11 @@ namespace IndustrialControlMAUI.Services
             _saveReadingEndpoint = NormalizeRelative(
             configLoader.GetApiPath("energy.saveReading", "/pda/emMeter/save"),
             servicePath);
-            _auth = auth;
+            _devListEndpoint = NormalizeRelative(
+    configLoader.GetApiPath("energy.devList", "/pda/common/queryDevList"),
+    servicePath);
+
+           
         }
 
         // ===== 公共工具 =====
@@ -310,5 +318,22 @@ namespace IndustrialControlMAUI.Services
             var r = JsonSerializer.Deserialize<ApiResp<bool>>(json, _json);
             return r?.success == true && r.result;
         }
+
+        public async Task<List<DevItem>> GetDevListAsync(CancellationToken ct = default)
+        {
+            var full = BuildFullUrl(_http.BaseAddress, _devListEndpoint);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new();
+
+            var dto = JsonSerializer.Deserialize<ApiResp<List<DevItem>>>(json, _json);
+            return dto?.result ?? new List<DevItem>();
+        }
+
     }
 }

@@ -58,6 +58,21 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<bool?>> ExecuteRepairSaveAsync(RepairDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<bool?>> ExecuteRepairCompleteAsync(RepairDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteRepairAttachmentAsync(string id, CancellationToken ct = default);
+        Task<PageResponeResult<MaintenanceReportDto>> ESPageQueryAsync(
+            int pageNo,
+         int pageSize,
+         string? maintainNo,
+         string? createdTimeBegin,
+         string? createdTimeEnd,
+         string? auditStatus,
+         bool searchCount,
+         CancellationToken ct = default);
+        Task<DictExcept> GetExceptDictsAsync(CancellationToken ct = default);
+        Task<ApiResp<MaintenanceReportDto>?> GetExceptDetailAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<List<ExceptWorkflowNode>>> GetExceptWorkflowAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<bool?>> ExecuteExceptSaveAsync(MaintenanceReportDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> SubmitExceptAsync(MaintenanceReportDto payload, CancellationToken ct = default);
+
     }
 
 
@@ -90,6 +105,13 @@ namespace IndustrialControlMAUI.Services
         private readonly string _repexecuteSavePath;
         private readonly string _repexecuteCompletePath;
         private readonly string _repdeleteAttPath;
+
+        private readonly string _exceptPageEndpoint;
+        private readonly string _dictESEndpoint;
+        private readonly string _exceptDetailsEndpoint;
+        private readonly string _exceptWorkflowPath;
+
+
 
         private static readonly JsonSerializerOptions _json = new()
         {
@@ -163,6 +185,17 @@ namespace IndustrialControlMAUI.Services
             _repdeleteAttPath = NormalizeRelative(
         configLoader.GetApiPath("equipment.repdeleteAtt", "/pda/dev/maintainWorkOrder/deleteAttachment"),
         servicePath);
+            //异常提报
+            _exceptPageEndpoint = NormalizeRelative(
+        configLoader.GetApiPath("equipment.exceptPage", "/pda/dev/maintainReport/pageQuery"),
+        servicePath);
+            _dictESEndpoint = NormalizeRelative(
+        configLoader.GetApiPath("equipment.exceptDic", "/pda/dev/maintainReport/getDictList"),
+        servicePath);
+            _exceptDetailsEndpoint = NormalizeRelative(
+              configLoader.GetApiPath("equipment.exceptDetails", "/pda/dev/maintainReport/detail"), servicePath);
+            _exceptWorkflowPath = NormalizeRelative(
+              configLoader.GetApiPath("equipment.exceptWorkflow", "/pda/dev/maintainReport/getWorkflow"), servicePath);
         }
 
         // ===================== 公共工具 =====================
@@ -329,8 +362,8 @@ namespace IndustrialControlMAUI.Services
                 ["searchCount"] = searchCount ? "true" : "false"
             };
             if (!string.IsNullOrWhiteSpace(inspectNo)) p["inspectNo"] = inspectNo.Trim();
-            if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["planInspectTimeBegin"] = createdTimeBegin;
-            if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["planInspectTimeEnd"] = createdTimeEnd;
+            if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["createdTimeStart"] = createdTimeBegin;
+            if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["createdTimeEnd"] = createdTimeEnd;
             if (!string.IsNullOrWhiteSpace(inspectStatus)) p["inspectStatus"] = inspectStatus;
 
             return await GetPageAsync<InspectionRecordDto>(_pageEndpoint, p, ct);
@@ -509,6 +542,67 @@ namespace IndustrialControlMAUI.Services
         {
             return await _attachmentApi.DeleteAttachmentAsync(id, _repdeleteAttPath, ct);
         }
+        //异常提报
+        public async Task<PageResponeResult<MaintenanceReportDto>> ESPageQueryAsync(
+            int pageNo,
+         int pageSize,
+         string? maintainNo,
+         string? createdTimeBegin,
+         string? createdTimeEnd,
+         string? auditStatus,
+         bool searchCount,
+         CancellationToken ct = default)
+        {
+            var p = new Dictionary<string, string>
+            {
+                ["pageNo"] = pageNo.ToString(),
+                ["pageSize"] = pageSize.ToString(),
+                ["searchCount"] = searchCount ? "true" : "false"
+            };
+            if (!string.IsNullOrWhiteSpace(maintainNo)) p["maintainNo"] = maintainNo.Trim();
+            if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["createdTimeStart"] = createdTimeBegin;
+            if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["createdTimeEnd"] = createdTimeEnd;
+            if (!string.IsNullOrWhiteSpace(auditStatus)) p["auditStatus"] = auditStatus;
+
+            return await GetPageAsync<MaintenanceReportDto>(_exceptPageEndpoint, p, ct);
+        }
+
+        public async Task<DictExcept> GetExceptDictsAsync(CancellationToken ct = default)
+        {
+            var all = await GetDictFieldsAsync(_dictESEndpoint, ct);
+
+            var auditStatus = all.FirstOrDefault(f =>
+                string.Equals(f.field, "auditStatus", StringComparison.OrdinalIgnoreCase))
+                ?.dictItems ?? new List<DictItem>();
+
+            var urgent = all.FirstOrDefault(f =>
+                string.Equals(f.field, "urgent", StringComparison.OrdinalIgnoreCase))
+                ?.dictItems ?? new List<DictItem>();
+
+            var devStatus = all.FirstOrDefault(f =>
+                string.Equals(f.field, "devStatus", StringComparison.OrdinalIgnoreCase))
+                ?.dictItems ?? new List<DictItem>();
+
+            return new DictExcept
+            {
+                AuditStatus = auditStatus,
+                Urgent = urgent,
+                DevStatus = devStatus
+            };
+        }
+
+        public Task<ApiResp<MaintenanceReportDto>?> GetExceptDetailAsync(string id, CancellationToken ct = default)
+            => GetApiRespByIdAsync<MaintenanceReportDto>(_exceptDetailsEndpoint, id, ct);
+        public Task<ApiResp<List<ExceptWorkflowNode>>> GetExceptWorkflowAsync(string id, CancellationToken ct = default)
+            => GetApiRespByIdAsync<List<ExceptWorkflowNode>>(_exceptWorkflowPath, id, ct)!;
+
+        // ---------- 异常保存 ----------
+        public Task<ApiResp<bool?>> ExecuteExceptSaveAsync(MaintenanceReportDto payload, CancellationToken ct = default)
+            => PostJsonAsync<MaintenanceReportDto, bool?>(_repexecuteSavePath, payload, ct)!;
+
+        // ---------- 异常保修 ----------
+        public Task<ApiResp<bool?>> SubmitExceptAsync(MaintenanceReportDto payload, CancellationToken ct = default)
+            => PostJsonAsync<MaintenanceReportDto, bool?>(_repexecuteCompletePath, payload, ct)!;
     }
 
 }

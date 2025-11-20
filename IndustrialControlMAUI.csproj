@@ -119,11 +119,20 @@
 		<Compile Update="Pages\Equipment\MaintenanceRunSearchPage.xaml.cs">
 		  <DependentUpon>MaintenanceRunSearchPage.xaml</DependentUpon>
 		</Compile>
+		<Compile Update="Pages\Equipment\EditExceptionSubmissionPage.xaml.cs">
+		  <DependentUpon>EditExceptionSubmissionPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\Equipment\ExceptionSubmissionPage.xaml.cs">
+		  <DependentUpon>ExceptionSubmissionPage.xaml</DependentUpon>
+		</Compile>
 		<Compile Update="Pages\Equipment\RepairRunDetailPage.xaml.cs">
 		  <DependentUpon>RepairRunDetailPage.xaml</DependentUpon>
 		</Compile>
 		<Compile Update="Pages\Equipment\RepairRunSearchPage.xaml.cs">
 		  <DependentUpon>RepairRunSearchPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Pages\Equipment\ExceptionSubmissionSearchPage.xaml.cs">
+		  <DependentUpon>ExceptionSubmissionSearchPage.xaml</DependentUpon>
 		</Compile>
 		<Compile Update="Pages\Equipment\RepairSearchPage.xaml.cs">
 		  <DependentUpon>RepairSearchPage.xaml</DependentUpon>
@@ -200,6 +209,12 @@
 		<MauiXaml Update="Pages\Equipment\MaintenanceRunSearchPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Pages\Equipment\ExceptionSubmissionPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Equipment\EditExceptionSubmissionPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Pages\Equipment\RepairRunDetailPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
@@ -207,6 +222,9 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Equipment\RepairRunSearchPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Equipment\ExceptionSubmissionSearchPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Equipment\RepairSearchPage.xaml">

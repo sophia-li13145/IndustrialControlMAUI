@@ -1121,4 +1121,127 @@ public class RepairWorkflowVmItem
         public string? repairMethod { get; set; }
         public string? suggestions { get; set; }
     }
+//异常提报
+public class MaintenanceReportDto
+{
+    public bool auditBack { get; set; }
+    public string? auditStatus { get; set; }
+    public string? auditStatusText { get; set; }
+
+    public string? createdTime { get; set; }
+    public string? creator { get; set; }
+    public string? dataSource { get; set; }
+    public string? dataTimeId { get; set; }
+    public bool delStatus { get; set; }
+    public string? description { get; set; }
+    public string? devCode { get; set; }
+    public string? devModel { get; set; }
+    public string? devName { get; set; }
+    public string? devStatus { get; set; }
+    public string? expectedRepairDate { get; set; }
+    public string? factoryCode { get; set; }
+    public string? factoryName { get; set; }
+    public string? id { get; set; }
+    public string? maintainNo { get; set; }
+    public List<MaintainReportAttachment> maintainReportAttachmentDomainList { get; set; } = new();
+    public string? memo { get; set; }
+    public string? modifiedTime { get; set; }
+    public string? modifier { get; set; }
+    public string? phenomena { get; set; }
+    public string? urgent { get; set; }
+    public string? UrgentText { get; set; }
+    public string? DevStatusText{ get; set; }
+    public string? urgentText { get; set; }
+    public string? workOrderId { get; set; }
+    public string? workOrderNo { get; set; }
+    public string? workShopName { get; set; }
+}
+public class MaintainReportAttachment
+{
+    public string? attachmentExt { get; set; }
+    public string? attachmentFolder { get; set; }
+    public string? attachmentLocation { get; set; }
+    public string? attachmentName { get; set; }
+    public string? attachmentRealName { get; set; }
+    public long attachmentSize { get; set; }
+    public string? attachmentUrl { get; set; }
+    public string? createdTime { get; set; }
+    public string? creator { get; set; }
+    public bool delStatus { get; set; }
+    public string? devMaintainId { get; set; }
+    public string? id { get; set; }
+    public string? memo { get; set; }
+    public string? modifiedTime { get; set; }
+    public string? modifier { get; set; }
+    public string status { get; set; } = "done";
+    public string? uid { get; set; } = null;
+    public string? url { get; set; } = null;        // 绝对可访问地址（若有）
+}
+public class DictExcept
+{
+    public List<DictItem> AuditStatus { get; set; } = new();
+
+    public List<DictItem> Urgent { get; set; } = new();
+
+    public List<DictItem> DevStatus { get; set; } = new();
+}
+public partial class OrderExceptAttachmentItem : ObservableObject
+{
+    // 只保留这一个：使用 MVVM Toolkit 自动生成 Public LocalPath
+    [ObservableProperty]
+    [JsonIgnore]                 // 不序列化给后端
+    private string? localPath;
+
+    public bool IsImage { get; set; }   // 只要它为 true 才进缩略图
+
+    // 统一用 PascalCase 命名，别和小写混用
+    public string? AttachmentUrl { get; set; }
+    public string? AttachmentName { get; set; }
+    public string? AttachmentRealName { get; set; }
+    public string? AttachmentExt { get; set; }
+    public string? AttachmentFolder { get; set; }
+    public string? AttachmentLocation { get; set; }
+    public long AttachmentSize { get; set; }
+    public string? Id { get; set; }
+    public string? CreatedTime { get; set; }
+    public string? Memo { get; set; }
+    public bool IsUploaded { get; set; }
+    // 预览接口返回的直连 URL（短期有效）
+    private string? _previewUrl;
+    public string? PreviewUrl { get => _previewUrl; set => SetProperty(ref _previewUrl, value); }
+
+    // 供 XAML 绑定：优先显示 Preview → Local → 原地址
+    public string? DisplaySource => PreviewUrl ?? LocalPath ?? AttachmentUrl;
+
+    // 通知 UI 刷新 DisplaySource
+    public void RefreshDisplay() => OnPropertyChanged(nameof(DisplaySource));
+    public string? Name { get; set; } = null;       // 默认用文件名
+    public int Percent { get; set; } = 100;
+    public string Status { get; set; } = "done";
+    public string? Uid { get; set; } = null;
+    public string? Url { get; set; } = null;        // 绝对可访问地址（若有）
+    public string? QualityNo { get; set; } = null;  // 质检单号（从 Detail.qualityNo 带过来）
+}
+public class ExceptWorkflowVmItem
+{
+    public string? StatusValue { get; set; }
+    public string? Title { get; set; }
+    public string? Time { get; set; }
+    public int StepNo { get; set; }
+
+    public bool IsCurrent { get; set; }
+    public bool IsCompleted { get; set; }
+    public bool IsActive { get; set; }   // 用于标题/连线变色
+    public bool IsLast { get; set; }   // 最后一个节点隐藏连线
+    public bool IsRowEnd { get; set; }   // 每行末尾（第 3、6 个）隐藏连线
+
+}
+public class ExceptWorkflowNode
+{
+    public string? statusValue { get; set; }  // "0" | "1" | "2"
+    public string? statusName { get; set; }  // "新建"、"待检验" 等（仅展示用）
+    public string? statusTime { get; set; }  // "2025-01-02 12:34:56"
+}
+
+
 

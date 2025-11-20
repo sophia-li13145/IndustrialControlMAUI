@@ -61,7 +61,7 @@
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#00ACC1"
                                 StrokeShape="RoundRectangle 32">
-                            <Image Source="pen_24_filled.svg"
+                            <Image Source="in_mold.svg"
                                    HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
@@ -265,7 +265,7 @@
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#00796B"
                                 StrokeShape="RoundRectangle 32">
-                            <Image Source="search_24_filled.svg"
+                            <Image Source="process_check.svg"
                                    HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
@@ -284,7 +284,7 @@
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#FF7043"
                                 StrokeShape="RoundRectangle 32">
-                            <Image Source="vehicle_truck_24_filled.svg"
+                            <Image Source="finish_check.svg"
                                    HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
@@ -304,16 +304,16 @@
             <Label Text="设备作业" Style="{StaticResource SectionTitle}"/>
 
             <Grid ColumnDefinitions="*,*"
-                    RowDefinitions="Auto,Auto,Auto"
+                    RowDefinitions="Auto,Auto,Auto,Auto"
                     Padding="8,0,8,24">
 
                 <!-- 点检任务查询 -->
                 <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
-                                BackgroundColor="#00796B"
+                                BackgroundColor="GreenYellow"
                                 StrokeShape="RoundRectangle 32">
-                            <Image Source="search_24_filled.svg"
+                            <Image Source="inspect_search.svg"
                                    HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
@@ -330,9 +330,9 @@
                 <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
-                                BackgroundColor="#FF7043"
+                                BackgroundColor="CadetBlue"
                                 StrokeShape="RoundRectangle 32">
-                            <Image Source="vehicle_truck_24_filled.svg"
+                            <Image Source="inspect_run.svg"
                                    HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
@@ -347,9 +347,9 @@
                 <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
-                 BackgroundColor="#00796B"
+                 BackgroundColor="MediumPurple"
                  StrokeShape="RoundRectangle 32">
-                            <Image Source="search_24_filled.svg"
+                            <Image Source="maintain_search.svg"
                     HeightRequest="28" WidthRequest="28"
                     HorizontalOptions="Center"
                     VerticalOptions="Center"/>
@@ -364,9 +364,9 @@
                 <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
-                              BackgroundColor="#00796B"
-                              StrokeShape="RoundRectangle 32"> 
-                            <Image Source="search_24_filled.svg"
+                              BackgroundColor="AliceBlue"
+                              StrokeShape="RoundRectangle 32">
+                            <Image Source="maintain.svg"
                              HeightRequest="28" WidthRequest="28"
                              HorizontalOptions="Center"
                              VerticalOptions="Center"/> 
@@ -381,9 +381,9 @@
                 <Frame Grid.Row="2" Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
-                   BackgroundColor="#00796B"
+                   BackgroundColor="Pink"
                    StrokeShape="RoundRectangle 32">
-                            <Image Source="search_24_filled.svg"
+                            <Image Source="repair.svg"
                       HeightRequest="28" WidthRequest="28"
                       HorizontalOptions="Center"
                       VerticalOptions="Center"/>
@@ -400,19 +400,35 @@
                         <Border HeightRequest="64" WidthRequest="64"
    BackgroundColor="#00796B"
    StrokeShape="RoundRectangle 32">
-                            <Image Source="search_24_filled.svg"
+                            <Image Source="repair_run.svg"
       HeightRequest="28" WidthRequest="28"
       HorizontalOptions="Center"
       VerticalOptions="Center"/>
                         </Border>
                         <Label Text="维修执行" FontSize="12" Margin="0,6,0,0"
- HorizontalTextAlignment="Center" TextColor="#333"/>
+ HorizontalTextAlignment="Center" TextColor="ForestGreen"/>
                     </VerticalStackLayout>
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnRepairRunSearch"/>
                     </Frame.GestureRecognizers>
                 </Frame>
-
+                <Frame Grid.Row="3" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+     BackgroundColor="Orange"
+     StrokeShape="RoundRectangle 32">
+                            <Image Source="except_submit.svg"
+        HeightRequest="28" WidthRequest="28"
+        HorizontalOptions="Center"
+        VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="异常提报" FontSize="12" Margin="0,6,0,0"
+   HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnExceptionSubmission"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
             </Grid>
 
             <Label Text="能源管理系统" Style="{StaticResource SectionTitle}" />

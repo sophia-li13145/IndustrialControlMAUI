@@ -64,6 +64,9 @@ namespace IndustrialControlMAUI.Pages
         private async void OnRepairRunSearch(object? s, TappedEventArgs e)
          => await Shell.Current.GoToAsync(nameof(RepairRunSearchPage));
 
+        private async void OnExceptionSubmission(object? s, TappedEventArgs e)
+        => await Shell.Current.GoToAsync(nameof(ExceptionSubmissionSearchPage));
+
         // —— 能源：手动抄表 ——（与首页其它方法同风格）
         private async void OnEnergyManualRead(object? s, TappedEventArgs e)
         {
