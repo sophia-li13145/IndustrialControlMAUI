@@ -79,75 +79,184 @@
         <ScrollView>
             <VerticalStackLayout Spacing="8" Padding="12">
 
-                <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                    <Label Text="保修单基础信息"
-                             VerticalOptions="Start"
-                             TextColor="Black"
-                             FontSize="14"
-                             FontAttributes="Bold" />
-                                                <Button Grid.Column="1"
-                              Text="保存"
-                              Style="{StaticResource PrimaryBtn}"
-                              Command="{Binding SaveCommand}"
-                              IsVisible="{Binding IsEditing}"/>
-                                                <Button Grid.Column="2"
-                              Text="保修"
-                              Style="{StaticResource SuccessBtn}"
-                              Command="{Binding CompleteCommand}"
-                              IsVisible="{Binding IsEditing}"/> 
-                  </Grid>
+                <Grid Margin="16,10"
+      ColumnDefinitions="*,Auto">
+
+                    <!-- 左侧标题 -->
+                    <Label Grid.Column="0"
+           Text="保修单基础信息"
+           VerticalOptions="Center"
+           TextColor="Black"
+           FontSize="14"
+           FontAttributes="Bold" />
+
+                    <!-- 右侧按钮容器：始终靠右 -->
+                    <HorizontalStackLayout Grid.Column="1"
+                           Spacing="12"
+                           HorizontalOptions="End">
+
+                        <!-- 新增：确定 -->
+                        <Button Text="确定"
+                HeightRequest="40"
+                WidthRequest="100"
+                IsVisible="{Binding IsNew}"
+                Command="{Binding ConfirmCommand}"
+                IsEnabled="{Binding IsEditing}" />
+
+                        <!-- 编辑：保存 -->
+                        <Button Text="保存"
+                HeightRequest="40"
+                WidthRequest="100"
+                IsVisible="{Binding IsEditMode}"
+                Command="{Binding SaveCommand}"
+                IsEnabled="{Binding IsEditing}" />
+
+                        <!-- 编辑：报修 -->
+                        <Button Text="报修"
+                HeightRequest="40"
+                WidthRequest="100"
+                IsVisible="{Binding IsEditMode}"
+                Command="{Binding CompleteCommand}"
+                IsEnabled="{Binding IsEditing}" />
+                    </HorizontalStackLayout>
+                </Grid>
+
+
 
                 <!-- 基础信息卡片 -->
                 <Frame Style="{StaticResource Card}">
                     <Grid ColumnDefinitions="85,*,85,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="3"
-                          >
-                        <Label Grid.Row="0" Grid.Column="0" Text="异常单号：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Detail.maintainNo}" Style="{StaticResource FieldValue}" IsReadOnly="True"/>
-                        <Label Grid.Row="0" Grid.Column="2" Text="设备名称：" Style="{StaticResource FieldLabel}" />
-                        <Picker Grid.Row="1"
-                                Grid.Column="1"
-                                ItemsSource="{Binding DevOptions}"
-                                ItemDisplayBinding="{Binding devName}"
-                                SelectedItem="{Binding SelectedDev, Mode=TwoWay}"
-                                Title="请选择设备"
-                                IsEnabled="{Binding IsEditing}" /> 
-                        <Label Grid.Row="1" Grid.Column="0" Text="设备编号：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Detail.devCode}" Style="{StaticResource FieldValue}" />
-                        <Label Grid.Row="1" Grid.Column="2" Text="设备型号：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="1" Grid.Column="3" Text="{Binding Detail.devModel}" Style="{StaticResource FieldValue}" IsReadOnly="True"/>
-                        <Label Grid.Row="2" Grid.Column="0" Text="设备状态：" Style="{StaticResource FieldLabel}" />
-                        <Picker Grid.Row="2"
-                                Grid.Column="1"
-                                ItemsSource="{Binding DevStatusDict}"
-                                ItemDisplayBinding="{Binding dictItemName}"
-                                SelectedItem="{Binding SelectedDevStatus, Mode=TwoWay}"
-                                Title="请选择设备状态"
-                                IsEnabled="{Binding IsEditing}" /> 
+      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+      RowSpacing="8" ColumnSpacing="3">
+
+                        <!-- 异常单号（自动生成，可不加星） -->
+                        <Label Grid.Row="0" Grid.Column="0" Text="异常单号：" />
+                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding Detail.maintainNo}" IsReadOnly="True"/>
+
+                        <!-- * 设备名称 -->
+                        <Label Grid.Row="0" Grid.Column="2">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 设备名称：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Picker Grid.Row="0" Grid.Column="3"
+            ItemsSource="{Binding DevOptions}"
+            ItemDisplayBinding="{Binding devName}"
+            SelectedItem="{Binding SelectedDev, Mode=TwoWay}"
+            Title="请选择"
+            IsEnabled="{Binding IsEditing}" />
+
+                        <!-- * 设备编号 -->
+                        <Label Grid.Row="1" Grid.Column="0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 设备编号：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Detail.devCode}" IsReadOnly="True"/>
+
+                        <!-- * 设备型号 -->
+                        <Label Grid.Row="1" Grid.Column="2">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 设备型号：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Entry Grid.Row="1" Grid.Column="3" Text="{Binding Detail.devModel}" IsReadOnly="True"/>
+
+                        <!-- * 设备状态 -->
+                        <Label Grid.Row="2" Grid.Column="0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 设备状态：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Picker Grid.Row="2" Grid.Column="1"
+            ItemsSource="{Binding DevStatusDict}"
+            ItemDisplayBinding="{Binding dictItemName}"
+            SelectedItem="{Binding SelectedDevStatus, Mode=TwoWay}"
+            Title="请选择"
+            IsEnabled="{Binding IsEditing}" />
+
+                        <!-- 车间（自动带出，不必填） -->
                         <Label Grid.Row="2" Grid.Column="2" Text="车间：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="2" Grid.Column="3" Text="{Binding Detail.workShopName}" Style="{StaticResource FieldValue}" IsReadOnly="True" />
-                        <Label Grid.Row="3" Grid.Column="0" Text="紧急程度：" Style="{StaticResource FieldLabel}" />
-                        <Picker Grid.Row="3"
-                                Grid.Column="1"
-                                ItemsSource="{Binding UrgentDict}"
-                                ItemDisplayBinding="{Binding dictItemName}"
-                                SelectedItem="{Binding SelectedUrgent, Mode=TwoWay}"
-                                Title="请选择紧急程度"
-                                IsEnabled="{Binding IsEditing}" />
-                        <Label Grid.Row="3" Grid.Column="2" Text="期望修复日期：" Style="{StaticResource FieldLabel}" />
-                        <DatePicker Grid.Row="3" Grid.Column="3" Date="{Binding Detail.expectedRepairDate}" />
-                        <Label Grid.Row="4" Grid.Column="0" Text="异常现象：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.phenomena}" Style="{StaticResource FieldValue}" />
-                        <Label Grid.Row="5" Grid.Column="0" Text="异常描述：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.description}" Style="{StaticResource FieldValue}" />
-                        <Label Grid.Row="6" Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" Style="{StaticResource FieldValue}" />
+                        <Entry Grid.Row="2" Grid.Column="3" Text="{Binding Detail.workShopName}" IsReadOnly="True" />
+
+                        <!-- * 紧急程度 -->
+                        <Label Grid.Row="3" Grid.Column="0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 紧急程度：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Picker Grid.Row="3" Grid.Column="1"
+            ItemsSource="{Binding UrgentDict}"
+            ItemDisplayBinding="{Binding dictItemName}"
+            SelectedItem="{Binding SelectedUrgent, Mode=TwoWay}"
+            Title="请选择"
+            IsEnabled="{Binding IsEditing}" />
+
+                        <!-- * 期望修复日期 -->
+                        <Label Grid.Row="3" Grid.Column="2">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 期望修复日期：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <DatePicker Grid.Row="3" Grid.Column="3"
+                Date="{Binding Detail.expectedRepairDate}" />
+
+                        <!-- * 异常现象 -->
+                        <Label Grid.Row="4" Grid.Column="0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 异常现象：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Entry Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
+           Text="{Binding Detail.phenomena}" />
+
+                        <!-- * 异常描述 -->
+                        <Label Grid.Row="5" Grid.Column="0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red"/>
+                                    <Span Text=" 异常描述：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"
+           Text="{Binding Detail.description}" />
+
+                        <!-- 备注（非必填） -->
+                        <Label Grid.Row="6" Grid.Column="0" Text="备注：" />
+                        <Entry Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" />
                     </Grid>
+
                 </Frame>
 
-                <Label Text="异常提报图片" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
+                <!-- 图片附件 -->
+                <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
                 <!-- 左窄右宽两列 -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+
+                    <!-- Row0 左：图片上传标题 -->
+                    <Label Grid.Row="0" Grid.Column="0" Text="图片上传：" VerticalTextAlignment="Start" />
 
                     <!-- Row0 右：缩略图 + 上传方块 -->
                     <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="8" VerticalOptions="Start">
@@ -163,27 +272,32 @@
                    CornerRadius="8" HasShadow="False" BorderColor="#E5E7EB" Margin="0,0,8,0">
                                             <Image Aspect="AspectFill" Source="{Binding DisplaySource}" />
                                         </Frame>
+                                        <!-- 右上角删除 -->
+                                        <Button Text="×" FontSize="12" Padding="0"
+                                                WidthRequest="22" HeightRequest="22" CornerRadius="11"
+                                                BackgroundColor="#00000066" TextColor="White"
+                                                HorizontalOptions="End" VerticalOptions="Start" Margin="2"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
+                                                CommandParameter="{Binding .}"
+                                                IsVisible="{Binding IsEditing}" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+
+                        <!-- 上传方块 -->
+                        <Frame WidthRequest="96" HeightRequest="96" CornerRadius="8"
+           BorderColor="#E5E7EB" BackgroundColor="White" IsVisible="{Binding IsEditing}"
+           HasShadow="False" Padding="8" VerticalOptions="Start">
+                            <VerticalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
+                                <Label Text="＋" FontSize="28" TextColor="#9CA3AF" />
+                                <Label Text="单击上传" FontSize="12" TextColor="#9CA3AF" Margin="0,0,0,2" LineHeight="1.1"/>
+                            </VerticalStackLayout>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer  Tapped="OnPickImagesClicked" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
                     </HorizontalStackLayout>
-                    <Grid Grid.Row="1"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
-                        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
-                            <Label Grid.Column="0" Text="创建人：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="1" Text="{Binding Detail.creator}" Style="{StaticResource FieldValue}" />
-                            <Label Grid.Column="2" Text="创建日期：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="3" Text="{Binding Detail.createdTime}" Style="{StaticResource FieldValue}" />
-                        </Grid>
-                        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
-                            <Label Grid.Column="0" Text="最近修改人：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="1" Text="{Binding Detail.modifier}" Style="{StaticResource FieldValue}" />
-                            <Label Grid.Column="2" Text="修改日期：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="3" Text="{Binding Detail.modifiedTime}" Style="{StaticResource FieldValue}" />
-                        </Grid>
-                    </Grid>
                 </Grid>
 
             </VerticalStackLayout>

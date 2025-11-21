@@ -21,6 +21,7 @@ public partial class EditExceptionSubmissionPage : ContentPage
 
     }
 
-   
 
+    private async void OnPickImagesClicked(object sender, EventArgs e)
+    => await _vm.PickImagesAsync();
 }

@@ -5,7 +5,7 @@
              Shell.NavBarIsVisible="True">
 
     <!-- 根布局：顶部（蓝条） / 条件区 / 列表 -->
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
 
         <!-- 顶部蓝条 -->
         <Grid Grid.Row="0" BackgroundColor="#007BFF" HeightRequest="56" Padding="16,0">
@@ -19,7 +19,7 @@
         <!-- 条件区 -->
         <VerticalStackLayout Grid.Row="1" Padding="12" Spacing="10">
             <!-- 第一行：工单号 + 查询 + 扫码图标按钮 -->
-            <Grid ColumnDefinitions="*,40" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,70" ColumnSpacing="8">
                 <Entry x:Name="QualityNoEntry"
                        Placeholder="异常提报单号"
                        Text="{Binding Keyword}"
@@ -43,13 +43,23 @@
                         SelectedItem="{Binding SelectedStatusOption}" />
             </Grid>
         </VerticalStackLayout>
+        <Grid Grid.Row="2" Padding="16,0">
+            <Button 
+        Text="新建异常"
+        HeightRequest="40"
+        WidthRequest="120"
+        Command="{Binding GoCreateCommand}"
+        VerticalOptions="Center"
+        HorizontalOptions="Start"/>
+        </Grid>
 
         <!-- 列表（自身可滚动，外面不要再套 ScrollView） -->
-        <CollectionView Grid.Row="2"
+        <CollectionView Grid.Row="3"
                         ItemsSource="{Binding Orders}"
                         SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
+                    
                     <Frame Margin="0,6,0,0" Padding="10"
                            HasShadow="False" BorderColor="#E0E6EF">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">

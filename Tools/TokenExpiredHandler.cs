@@ -1,11 +1,5 @@
-﻿using IndustrialControlMAUI.Tools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace IndustrialControlMAUI.Tools
 {
@@ -40,7 +34,7 @@ namespace IndustrialControlMAUI.Tools
                 var media = resp.Content?.Headers?.ContentType?.MediaType?.ToLowerInvariant();
                 if (media is not null && media.Contains("json"))
                 {
-                    var text = await resp.Content.ReadAsStringAsync(ct);
+                    var text = await resp.Content.ReadAsStringAsync();
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         var api = JsonSerializer.Deserialize<ApiBase>(text, new JsonSerializerOptions

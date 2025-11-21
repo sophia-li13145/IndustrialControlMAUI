@@ -131,10 +131,10 @@ namespace IndustrialControlMAUI.ViewModels
                 Detail = resp.result;
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    Detail.UrgentText = urgentMap.TryGetValue(Detail?.urgent ?? "", out var uName)
+                    Detail.urgentText = urgentMap.TryGetValue(Detail?.urgent ?? "", out var uName)
                         ? uName
                         : Detail.urgent;
-                    Detail.DevStatusText = typeMap.TryGetValue(Detail.devStatus ?? "", out var sName)
+                    Detail.devStatusText = typeMap.TryGetValue(Detail.devStatus ?? "", out var sName)
                             ? sName
                             : Detail.devStatus;
                 });

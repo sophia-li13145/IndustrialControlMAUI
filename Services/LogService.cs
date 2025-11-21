@@ -69,7 +69,7 @@ namespace IndustrialControlMAUI.Services
 
                     try
                     {
-                        await Task.Delay(_interval, token);
+                        await SafeDelay(_interval, token);
                     }
                     catch (OperationCanceledException)
                     {
@@ -82,6 +82,20 @@ namespace IndustrialControlMAUI.Services
                 // 兜底（通常到不了这里）
             }
         }
+
+        private async Task SafeDelay(TimeSpan interval, CancellationToken token)
+        {
+            var ms = (int)interval.TotalMilliseconds;
+            var step = 50; // 50ms 一次
+            var loops = ms / step;
+
+            for (int i = 0; i < loops; i++)
+            {
+                if (token.IsCancellationRequested) return;
+                await Task.Delay(step);
+            }
+        }
+
 
 
         // 写日志

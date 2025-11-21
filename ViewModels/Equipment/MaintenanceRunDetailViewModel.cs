@@ -607,7 +607,7 @@ namespace IndustrialControlMAUI.ViewModels
                 var resp = await _api.ExecuteMainCompleteAsync(Detail);
                 if (resp?.success == true && resp.result == true)
                 {
-                    await ShowTip("已完成点检。");
+                    await ShowTip("已完成保养。");
                     // 本地立即反映完成态，防止用户回退前误操作
                     Detail.upkeepStatus = "3";
                     IsEditing = false;

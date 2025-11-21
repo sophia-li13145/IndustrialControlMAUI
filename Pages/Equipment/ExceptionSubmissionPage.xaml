@@ -199,11 +199,11 @@
                         <Label Grid.Row="1" Grid.Column="2" Text="设备型号：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.devModel}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="2" Grid.Column="0" Text="设备状态：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.DevStatusText}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.devStatusText}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="2" Grid.Column="2" Text="车间：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.workShopName}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="3" Grid.Column="0" Text="紧急程度：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.UrgentText}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.urgentText}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="3" Grid.Column="2" Text="期望修复日期：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="3" Grid.Column="3" Text="{Binding Detail.expectedRepairDate}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="4" Grid.Column="0" Text="异常现象：" Style="{StaticResource FieldLabel}" />

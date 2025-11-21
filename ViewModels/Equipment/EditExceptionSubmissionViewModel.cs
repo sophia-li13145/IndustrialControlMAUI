@@ -24,6 +24,8 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private MaintenanceReportDto? detail;
+        [ObservableProperty] private bool isNew;       // 新建 = true
+        [ObservableProperty] private bool isEditMode;  // 编辑 = true
 
         // 明细与附件集合（用于列表绑定）
         public ObservableCollection<MaintainWorkOrderItemDomain> Items { get; } = new();
@@ -103,35 +105,50 @@ namespace IndustrialControlMAUI.ViewModels
         /// </summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            if (query.TryGetValue("id", out var v))
+            if (query.TryGetValue("id", out var v) && v is not null && !string.IsNullOrWhiteSpace(v.ToString()))
             {
-                _id = v?.ToString();
+                // 编辑模式
+                _id = v.ToString();
+                IsNew = false;
+                IsEditMode = true;
+
                 _ = LoadAsync();
             }
+            else
+            {
+                // 新增模式
+                _id = null;
+                IsNew = true;
+                IsEditMode = false;
+
+                _ = InitForCreateAsync();
+            }
         }
+        private async Task InitForCreateAsync()
+        {
+            await EnsureDictsLoadedAsync();  // 加载下拉字典等
+
+            Detail = new MaintenanceReportDto
+            {
+                // 根据你后端约定填一些默认值
+                auditStatus = "0",   // 新建
+                creator = Preferences.Get("UserName", string.Empty),
+                createdTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                modifier = Preferences.Get("UserName", string.Empty),
+                modifiedTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            // 新建肯定可编辑
+            IsEditing = true;
+        }
+
+
 
         [RelayCommand]
         private async Task LoadAsync()
         {
             await EnsureDictsLoadedAsync();
-            var urgentMap = UrgentDict?
-           .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
-           .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
-           .Select(g => g.First())
-           .ToDictionary(
-           k => k.dictItemValue!,
-           v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
-           StringComparer.OrdinalIgnoreCase
-       ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var typeMap = DevStatusDict?
-           .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
-           .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
-           .Select(g => g.First())
-           .ToDictionary(
-           k => k.dictItemValue!,
-           v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
-           StringComparer.OrdinalIgnoreCase
-       ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            
             if (IsBusy || string.IsNullOrWhiteSpace(_id)) return;
             IsBusy = true;
             try
@@ -148,15 +165,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-
-                    Detail.UrgentText = urgentMap.TryGetValue(Detail?.urgent ?? "", out var uName)
-                        ? uName
-                        : Detail.urgent;
-
-                    Detail.DevStatusText = typeMap.TryGetValue(Detail.devStatus ?? "", out var sName)
-                        ? sName
-                        : Detail.devStatus;
-                    // === 根据详情值反选“紧急程度”下拉 ===
+                    // ===== 根据详情值反选“紧急程度”下拉 =====
                     if (!string.IsNullOrWhiteSpace(Detail.urgent) && UrgentDict != null)
                     {
                         SelectedUrgent = UrgentDict
@@ -164,12 +173,38 @@ namespace IndustrialControlMAUI.ViewModels
                                 d.dictItemValue, Detail.urgent, StringComparison.OrdinalIgnoreCase));
                     }
 
-                    // === 根据详情值反选“设备状态”下拉 ===
+                    // ===== 根据详情值反选“设备状态”下拉 =====
                     if (!string.IsNullOrWhiteSpace(Detail.devStatus) && DevStatusDict != null)
                     {
                         SelectedDevStatus = DevStatusDict
                             .FirstOrDefault(d => string.Equals(
                                 d.dictItemValue, Detail.devStatus, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    // =============================
+                    // 下拉框初始化默认值（关键新增部分）
+                    // =============================
+
+                    // 1) 紧急程度：如果接口没给值、或者没匹配到，就取第一个作为默认
+                    if (SelectedUrgent == null && UrgentDict != null && UrgentDict.Count > 0)
+                    {
+                        SelectedUrgent = UrgentDict[0];
+
+                        Detail.urgent = SelectedUrgent.dictItemValue;
+                        Detail.urgentText = string.IsNullOrWhiteSpace(SelectedUrgent.dictItemName)
+                            ? SelectedUrgent.dictItemValue
+                            : SelectedUrgent.dictItemName;
+                    }
+
+                    // 2) 设备状态：同理
+                    if (SelectedDevStatus == null && DevStatusDict != null && DevStatusDict.Count > 0)
+                    {
+                        SelectedDevStatus = DevStatusDict[0];
+
+                        Detail.devStatus = SelectedDevStatus.dictItemValue;
+                        Detail.devStatusText = string.IsNullOrWhiteSpace(SelectedDevStatus.dictItemName)
+                            ? SelectedDevStatus.dictItemValue
+                            : SelectedDevStatus.dictItemName;
                     }
 
                 });
@@ -184,7 +219,22 @@ namespace IndustrialControlMAUI.ViewModels
                          string.Equals(x.devName, Detail.devName, StringComparison.OrdinalIgnoreCase)));
 
                     if (hit != null)
+                    {
                         SelectedDev = hit;
+                    }
+                    // 如果接口没给设备信息，帮它选一个默认（比如第一个）
+                    else
+                    {
+                        var first = DevOptions.FirstOrDefault();
+                        if (first != null)
+                        {
+                            SelectedDev = first;
+                            Detail.devCode = first.devCode;
+                            Detail.devName = first.devName;
+                            Detail.devModel = first.devModel;
+                            Detail.workShopName = first.workShopName;
+                        }
+                    }
                 }
 
                 await LoadWorkflowAsync(_id!);
@@ -233,10 +283,9 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // ======= 附件：选择/上传/预览/删除 =======
-        [RelayCommand] public async Task PickImagesAsync() => await PickAndUploadAsync(isImage: true);
-        [RelayCommand] public async Task PickFilesAsync() => await PickAndUploadAsync(isImage: false);
+        [RelayCommand] public async Task PickImagesAsync() => await PickAndUploadAsync();
 
-        private async Task PickAndUploadAsync(bool isImage)
+        private async Task PickAndUploadAsync()
         {
             try
             {
@@ -244,16 +293,9 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     var opt = new PickOptions
                     {
-                        PickerTitle = isImage ? "选择图片" : "选择附件",
-                        FileTypes = isImage
-                            ? FilePickerFileType.Images
-                            : new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                            {
-                                { DevicePlatform.Android,     new[] { "*/*" } },
-                                { DevicePlatform.iOS,         new[] { "public.data" } },
-                                { DevicePlatform.MacCatalyst, new[] { "public.data" } },
-                                { DevicePlatform.WinUI,       new[] { "*" } },
-                            })
+                        PickerTitle ="选择图片",
+                        FileTypes = FilePickerFileType.Images
+                            
                     };
                     return await FilePicker.PickMultipleAsync(opt);
                 });
@@ -262,29 +304,15 @@ namespace IndustrialControlMAUI.ViewModels
                 foreach (var f in pick)
                 {
                     var ext = Path.GetExtension(f.FileName)?.TrimStart('.').ToLowerInvariant();
-                    var isImg = isImage;
-
-                    // 1) 白名单
-                    if (!isImg && !IsAllowedFile(ext))
-                    {
-                        await ShowTip($"不支持的文件格式：{f.FileName}\n允许：PDF、Word、Excel、Txt、JPG、PNG、RAR/ZIP");
-                        continue;
-                    }
 
                     // 2) 复制到临时计算大小
                     using var s = await f.OpenReadAsync();
                     var (tmpPath, len) = await s.CopyToTempAndLenAsync();
 
                     // 3) 数量/大小限制
-                    if (isImg)
-                    {
                         if (ImageAttachments.Count >= MaxImageCount) { await ShowTip($"最多上传 {MaxImageCount} 张图片。"); continue; }
                         if (len > MaxImageBytes) { await ShowTip($"图片过大：{f.FileName}\n单张不超过 2M。"); continue; }
-                    }
-                    else
-                    {
-                        if (len > MaxFileBytes) { await ShowTip($"附件过大：{f.FileName}\n单个不超过 20M。"); continue; }
-                    }
+
 
                     // 4) 本地项（先显示）
                     var localItem = new OrderExceptAttachmentItem
@@ -294,11 +322,9 @@ namespace IndustrialControlMAUI.ViewModels
                         AttachmentSize = len,
                         LocalPath = f.FullPath,
                         CreatedTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        IsImage = isImg
                     };
 
-                    if (isImg) { localItem.AttachmentLocation = LocationImage; ImageAttachments.Insert(0, localItem); }
-                    else { localItem.AttachmentLocation = LocationFile; Attachments.Insert(0, localItem); }
+                    localItem.AttachmentLocation = LocationImage; ImageAttachments.Insert(0, localItem); 
 
                     // 5) 上传
                     var contentType = DetectContentType(ext);
@@ -400,8 +426,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         private static bool IsImageExt(string? ext)
             => ext is "jpg" or "jpeg" or "png" or "gif" or "bmp" or "webp";
-        private static bool IsAllowedFile(string? ext) =>
-            IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
+
 
         private static string? DetectContentType(string? ext) => ext?.ToLowerInvariant() switch
         {
@@ -511,38 +536,6 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
-        // 当界面选择的设备发生变化时，把信息回填到 Detail 上
-        partial void OnSelectedDevChanged(DevItem? value)
-        {
-            if (Detail is null || value is null) return;
-
-            Detail.devCode = value.devCode;
-            Detail.devName = value.devName;
-            Detail.devModel = value.devModel;
-            Detail.workShopName = value.workShopName;
-        }
-
-        // 选择“设备状态”时，同步回 Detail
-        partial void OnSelectedDevStatusChanged(DictItem? value)
-        {
-            if (Detail is null || value is null) return;
-
-            Detail.devStatus = value.dictItemValue;
-            Detail.DevStatusText = string.IsNullOrWhiteSpace(value.dictItemName)
-                ? value.dictItemValue
-                : value.dictItemName;
-        }
-
-        // 选择“紧急程度”时，同步回 Detail
-        partial void OnSelectedUrgentChanged(DictItem? value)
-        {
-            if (Detail is null || value is null) return;
-
-            Detail.urgent = value.dictItemValue;
-            Detail.UrgentText = string.IsNullOrWhiteSpace(value.dictItemName)
-                ? value.dictItemValue
-                : value.dictItemName;
-        }
 
         // ======= 保存/完成 =======
         [RelayCommand]
@@ -554,8 +547,36 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = true;
                 PreparePayloadFromUi();
-
-                var resp = await _api.ExecuteExceptSaveAsync(Detail);
+                // === 关键：从 Detail 映射出真正的请求体 ===
+                var payload = new BuildExceptRequest
+                {
+                    id = Detail.id,
+                    description = Detail.description,
+                    devCode = Detail.devCode,
+                    devModel = Detail.devModel,
+                    devName = Detail.devName,
+                    devStatus = Detail.devStatus,
+                    expectedRepairDate = Detail.expectedRepairDate,
+                    memo = Detail.memo,
+                    phenomena = Detail.phenomena,
+                    urgent = Detail.urgent,               // 注意这里是 level1/level2/level3
+                    workShopName = Detail.workShopName,
+                    maintainReportAttachmentDomainList = Detail.maintainReportAttachmentDomainList
+                        .Select(a => new BuildExceptAttachment
+                        {
+                            attachmentExt = a.attachmentExt,
+                            attachmentFolder = a.attachmentFolder,
+                            attachmentLocation = a.attachmentLocation,
+                            attachmentName = a.attachmentName,
+                            attachmentRealName = a.attachmentRealName,
+                            attachmentSize = a.attachmentSize,
+                            attachmentUrl = a.attachmentUrl,
+                            id = a.id,
+                            memo = a.memo
+                        })
+                        .ToList()
+                };
+                var resp = await _api.ExecuteExceptSaveAsync(payload);
                 if (resp?.success == true && resp.result == true)
                 {
                     await ShowTip("已保存。");
@@ -585,11 +606,39 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = true;
                 PreparePayloadFromUi();
-
-                var resp = await _api.SubmitExceptAsync(Detail);
+                // === 关键：从 Detail 映射出真正的请求体 ===
+                var payload = new BuildExceptRequest
+                {
+                    id = Detail.id,
+                    description = Detail.description,
+                    devCode = Detail.devCode,
+                    devModel = Detail.devModel,
+                    devName = Detail.devName,
+                    devStatus = Detail.devStatus,
+                    expectedRepairDate = Detail.expectedRepairDate,
+                    memo = Detail.memo,
+                    phenomena = Detail.phenomena,
+                    urgent = Detail.urgent,               // 注意这里是 level1/level2/level3
+                    workShopName = Detail.workShopName,
+                    maintainReportAttachmentDomainList = Detail.maintainReportAttachmentDomainList
+                        .Select(a => new BuildExceptAttachment
+                        {
+                            attachmentExt = a.attachmentExt,
+                            attachmentFolder = a.attachmentFolder,
+                            attachmentLocation = a.attachmentLocation,
+                            attachmentName = a.attachmentName,
+                            attachmentRealName = a.attachmentRealName,
+                            attachmentSize = a.attachmentSize,
+                            attachmentUrl = a.attachmentUrl,
+                            id = a.id,
+                            memo = a.memo
+                        })
+                        .ToList()
+                };
+                var resp = await _api.SubmitExceptAsync(payload);
                 if (resp?.success == true && resp.result == true)
                 {
-                    await ShowTip("已完成点检。");
+                    await ShowTip("已报修。");
                     // 本地立即反映完成态，防止用户回退前误操作
                     Detail.auditStatus = "1";
                     IsEditing = false;
@@ -612,6 +661,77 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+
+        // 新增时的“确定”按钮
+        [RelayCommand]
+        private async Task ConfirmAsync()
+        {
+            if (Detail is null)
+            {
+                await ShowTip("没有可提交的数据。");
+                return;
+            }
+
+            try
+            {
+                IsBusy = true;
+
+                // 先把附件等从 UI 回填到 Detail
+                PreparePayloadFromUi();
+
+                // === 关键：从 Detail 映射出真正的请求体 ===
+                var payload = new BuildExceptRequest
+                {
+                    id = Detail.id,
+                    description = Detail.description,
+                    devCode = Detail.devCode,
+                    devModel = Detail.devModel,
+                    devName = Detail.devName,
+                    devStatus = Detail.devStatus,
+                    expectedRepairDate = Detail.expectedRepairDate,
+                    memo = Detail.memo,
+                    phenomena = Detail.phenomena,
+                    urgent = Detail.urgent,               // 注意这里是 level1/level2/level3
+                    workShopName = Detail.workShopName,
+                    maintainReportAttachmentDomainList = Detail.maintainReportAttachmentDomainList
+                        .Select(a => new BuildExceptAttachment
+                        {
+                            attachmentExt = a.attachmentExt,
+                            attachmentFolder = a.attachmentFolder,
+                            attachmentLocation = a.attachmentLocation,
+                            attachmentName = a.attachmentName,
+                            attachmentRealName = a.attachmentRealName,
+                            attachmentSize = a.attachmentSize,
+                            attachmentUrl = a.attachmentUrl,
+                            id = a.id,
+                            memo = a.memo
+                        })
+                        .ToList()
+                };
+
+                var resp = await _api.BuildExceptAsync(payload);
+
+                if (resp?.success == true && resp.result == true)
+                {
+                    await ShowTip("新增异常已提交。");
+                    await Shell.Current.GoToAsync("..");
+                }
+                else
+                {
+                    await ShowTip($"新增失败：{resp?.message ?? "接口返回失败"}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"新增异常：{ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+
 
         private void PreparePayloadFromUi()
         {
@@ -643,7 +763,8 @@ namespace IndustrialControlMAUI.ViewModels
            
         }
         private static bool IsCompletedStatus(string? s)
-   => string.Equals(s, "1", StringComparison.OrdinalIgnoreCase)|| string.Equals(s, "4", StringComparison.OrdinalIgnoreCase);
+    => string.Equals(s, "1", StringComparison.OrdinalIgnoreCase);
+
     }
 
 }

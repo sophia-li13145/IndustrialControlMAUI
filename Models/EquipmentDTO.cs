@@ -1049,7 +1049,7 @@ public class RepairWorkflowVmItem
         public string? attachmentLocation { get; set; }
         public string? attachmentName { get; set; }
         public string? attachmentRealName { get; set; }
-        public long attachmentSize { get; set; }
+        public decimal? attachmentSize { get; set; }
         public string? attachmentUrl { get; set; }
         public string? id { get; set; }
         public string? memo { get; set; }
@@ -1100,7 +1100,7 @@ public class RepairWorkflowVmItem
         public string? attachmentLocation { get; set; }
         public string? attachmentName { get; set; }
         public string? attachmentRealName { get; set; }
-        public long attachmentSize { get; set; }
+        public decimal? attachmentSize { get; set; }
         public string? attachmentUrl { get; set; }
         public string? id { get; set; }
         public string? memo { get; set; }
@@ -1122,7 +1122,7 @@ public class RepairWorkflowVmItem
         public string? suggestions { get; set; }
     }
 //异常提报
-public class MaintenanceReportDto
+public class MaintenanceReportDto : ObservableObject
 {
     public bool auditBack { get; set; }
     public string? auditStatus { get; set; }
@@ -1134,9 +1134,24 @@ public class MaintenanceReportDto
     public string? dataTimeId { get; set; }
     public bool delStatus { get; set; }
     public string? description { get; set; }
-    public string? devCode { get; set; }
-    public string? devModel { get; set; }
-    public string? devName { get; set; }
+    private string? _devCode;
+    public string? devCode
+    {
+        get => _devCode;
+        set => SetProperty(ref _devCode, value);
+    }
+    private string? _devModel;
+    public string? devModel
+    {
+        get => _devModel;
+        set => SetProperty(ref _devModel, value);
+    }
+    private string? _devName;
+    public string? devName
+    {
+        get => _devName;
+        set => SetProperty(ref _devName, value);
+    }
     public string? devStatus { get; set; }
     public string? expectedRepairDate { get; set; }
     public string? factoryCode { get; set; }
@@ -1149,12 +1164,28 @@ public class MaintenanceReportDto
     public string? modifier { get; set; }
     public string? phenomena { get; set; }
     public string? urgent { get; set; }
-    public string? UrgentText { get; set; }
-    public string? DevStatusText{ get; set; }
-    public string? urgentText { get; set; }
+    private string? _urgentText;
+    public string? urgentText
+    {
+        get => _urgentText;
+        set => SetProperty(ref _urgentText, value);
+    }
+
+    private string? _devStatusText;
+    public string? devStatusText
+    {
+        get => _devStatusText;
+        set => SetProperty(ref _devStatusText, value);
+    }
+
     public string? workOrderId { get; set; }
     public string? workOrderNo { get; set; }
-    public string? workShopName { get; set; }
+    private string? _workShopName;
+    public string? workShopName
+    {
+        get => _workShopName;
+        set => SetProperty(ref _workShopName, value);
+    }
 }
 public class MaintainReportAttachment
 {
@@ -1163,7 +1194,7 @@ public class MaintainReportAttachment
     public string? attachmentLocation { get; set; }
     public string? attachmentName { get; set; }
     public string? attachmentRealName { get; set; }
-    public long attachmentSize { get; set; }
+    public decimal? attachmentSize { get; set; }
     public string? attachmentUrl { get; set; }
     public string? createdTime { get; set; }
     public string? creator { get; set; }
@@ -1242,6 +1273,40 @@ public class ExceptWorkflowNode
     public string? statusName { get; set; }  // "新建"、"待检验" 等（仅展示用）
     public string? statusTime { get; set; }  // "2025-01-02 12:34:56"
 }
+
+// 异常提报 - 新建接口入参（严格对应 swagger 上那段 JSON）
+public class BuildExceptRequest
+{
+    public string? description { get; set; }
+    public string? devCode { get; set; }
+    public string? devModel { get; set; }
+    public string? devName { get; set; }
+    public string? devStatus { get; set; }
+    public string? expectedRepairDate { get; set; }
+    public string? id { get; set; }                    // 新建一般为 null
+
+    public List<BuildExceptAttachment> maintainReportAttachmentDomainList { get; set; } = new();
+
+    public string? memo { get; set; }
+    public string? phenomena { get; set; }
+    public string? urgent { get; set; }
+    public string? workShopName { get; set; }
+}
+
+// 附件结构：只保留接口例子里的字段
+public class BuildExceptAttachment
+{
+    public string? attachmentExt { get; set; }
+    public string? attachmentFolder { get; set; }
+    public string? attachmentLocation { get; set; }
+    public string? attachmentName { get; set; }
+    public string? attachmentRealName { get; set; }
+    public decimal? attachmentSize { get; set; }
+    public string? attachmentUrl { get; set; }
+    public string? id { get; set; }
+    public string? memo { get; set; }
+}
+
 
 
 

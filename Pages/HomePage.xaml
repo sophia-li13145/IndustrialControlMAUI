@@ -398,7 +398,7 @@
                 <Frame Grid.Row="2" Grid.Column="1" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
-   BackgroundColor="#00796B"
+   BackgroundColor="GreenYellow"
    StrokeShape="RoundRectangle 32">
                             <Image Source="repair_run.svg"
       HeightRequest="28" WidthRequest="28"
@@ -406,7 +406,7 @@
       VerticalOptions="Center"/>
                         </Border>
                         <Label Text="维修执行" FontSize="12" Margin="0,6,0,0"
- HorizontalTextAlignment="Center" TextColor="ForestGreen"/>
+ HorizontalTextAlignment="Center"/>
                     </VerticalStackLayout>
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnRepairRunSearch"/>

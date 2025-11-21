@@ -177,6 +177,14 @@ namespace IndustrialControlMAUI.ViewModels
             if (item is null) return;
             await Shell.Current.GoToAsync(nameof(EditExceptionSubmissionPage) + $"?id={Uri.EscapeDataString(item.id)}");
         }
+
+        // 新建异常：不带 id 跳到编辑页 => 进入新增模式
+        [RelayCommand]
+        private async Task GoCreateAsync()
+        {
+            await Shell.Current.GoToAsync(nameof(EditExceptionSubmissionPage));
+        }
+
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）
         /// </summary>
