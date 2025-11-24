@@ -95,39 +95,39 @@
                     <DataTemplate>
                         <!-- 三行两列：行0图形，行1标题，行2时间 -->
                         <Grid ColumnDefinitions="18,15,30,20"
-   RowDefinitions="Auto,Auto,Auto"
-   Padding="12,0"
-   HorizontalOptions="Center" VerticalOptions="Center">
+RowDefinitions="Auto,Auto,Auto"
+Padding="12,0"
+HorizontalOptions="Center" VerticalOptions="Center">
 
                             <!-- 圆点：默认白底；激活(已完成/当前)描边蓝，未到达描边灰 -->
                             <Frame Grid.Row="0" Grid.Column="0"
-                            WidthRequest="24" HeightRequest="24"
-                            Padding="0" HasShadow="False"
-                            CornerRadius="16"
-                            BackgroundColor="White"
-                            BorderColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center">
+                         WidthRequest="24" HeightRequest="24"
+                         Padding="0" HasShadow="False"
+                         CornerRadius="16"
+                         BackgroundColor="White"
+                         BorderColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center">
 
                                 <!-- 这里只放一个内容：Grid 叠放两个 Label，避免“Content 被设置多次” -->
                                 <Grid>
                                     <!-- 当前步骤：蓝底白字数字（可见性互斥） -->
                                     <Label Text="{Binding StepNo}"
-        FontSize="14"
-        FontAttributes="Bold"
-        TextColor="White"
-        HorizontalOptions="Center"
-        VerticalOptions="Center"
-        IsVisible="{Binding IsCurrent}" />
+     FontSize="14"
+     FontAttributes="Bold"
+     TextColor="White"
+     HorizontalOptions="Center"
+     VerticalOptions="Center"
+     IsVisible="{Binding IsCurrent}" />
 
                                     <!-- 已完成：蓝色对勾（字符；如果太细可把 FontSize 调到 20~22） -->
                                     <Label Text="✓"
-        FontSize="18"
-        FontAttributes="Bold"
-        TextColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
-        HorizontalOptions="Center"
-        VerticalOptions="Center"
-        IsVisible="{Binding IsCompleted}" />
+     FontSize="18"
+     FontAttributes="Bold"
+     TextColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}"
+     HorizontalOptions="Center"
+     VerticalOptions="Center"
+     IsVisible="{Binding IsCompleted}" />
                                 </Grid>
 
                                 <!-- 关键：触发器写在 Frame 上，直接改 Frame 的底色与描边 -->
@@ -140,16 +140,16 @@
                             </Frame>
                             <!-- 标题：激活(已完成/当前)为深色，未到达为灰 -->
                             <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
-    Text="{Binding Title}"
-    FontSize="13"
-    TextColor="{Binding IsActive, Converter={StaticResource ActiveToTitleColor}}"
-    HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+ Text="{Binding Title}"
+ FontSize="13"
+ TextColor="{Binding IsActive, Converter={StaticResource ActiveToTitleColor}}"
+ HorizontalTextAlignment="Center" VerticalOptions="Center"/>
 
                             <!-- 连线：当前或已完成为蓝，否则灰；最后一个隐藏 -->
                             <BoxView Grid.Row="0" Grid.Column="3"
-          WidthRequest="20" HeightRequest="2"
-          VerticalOptions="Center" HorizontalOptions="Center"
-          BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}">
+       WidthRequest="20" HeightRequest="2"
+       VerticalOptions="Center" HorizontalOptions="Center"
+       BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}">
                                 <BoxView.Triggers>
                                     <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
                                         <Setter Property="IsVisible" Value="False" />
@@ -161,10 +161,10 @@
 
                             <!-- 时间：只有有值才显示（当前与已完成都有时间）；未到达不显示 -->
                             <Label Grid.Row="2"  Grid.Column="1" Grid.ColumnSpan="3"
-                            Text="{Binding Time}"
-                            FontSize="11"
-                            TextColor="#888888"
-                            HorizontalTextAlignment="Center">
+                         Text="{Binding Time}"
+                         FontSize="11"
+                         TextColor="#888888"
+                         HorizontalTextAlignment="Center">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding Time}" Value="">
                                         <Setter Property="IsVisible" Value="False"/>

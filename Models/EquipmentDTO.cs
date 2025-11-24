@@ -1255,16 +1255,16 @@ public partial class OrderExceptAttachmentItem : ObservableObject
 }
 public class ExceptWorkflowVmItem
 {
-    public string? StatusValue { get; set; }
-    public string? Title { get; set; }
+    public string StatusValue { get; set; } = "";
+    public string Title { get; set; } = "";
     public string? Time { get; set; }
-    public int StepNo { get; set; }
 
-    public bool IsCurrent { get; set; }
-    public bool IsCompleted { get; set; }
-    public bool IsActive { get; set; }   // 用于标题/连线变色
-    public bool IsLast { get; set; }   // 最后一个节点隐藏连线
-    public bool IsRowEnd { get; set; }   // 每行末尾（第 3、6 个）隐藏连线
+    // 计算/标注用
+    public int StepNo { get; set; }           // 1,2,3
+    public bool IsCompleted { get; set; }     // 已完成（在当前之前且有时间）
+    public bool IsCurrent { get; set; }       // 当前节点（最后一个有时间的）
+    public bool IsActive => IsCompleted || IsCurrent; // 蓝色描边/连线的条件
+    public bool IsLast { get; set; }
 
 }
 public class ExceptWorkflowNode

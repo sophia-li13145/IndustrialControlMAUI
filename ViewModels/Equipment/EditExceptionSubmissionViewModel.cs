@@ -58,13 +58,11 @@ namespace IndustrialControlMAUI.ViewModels
 
         public DictExcept dicts = new DictExcept();
         private const string Folder = "devUpkeepTask";
-        private const string LocationFile = "fujian";
         private const string LocationImage = "image";
 
         // ===== 上传限制 =====
         private const int MaxImageCount = 9;
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
-        private const long MaxFileBytes = 20L * 1024 * 1024;   // 20MB
 
         public EditExceptionSubmissionViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IEnergyApi energyApi)
         {
@@ -99,6 +97,40 @@ namespace IndustrialControlMAUI.ViewModels
                 _dictsLoaded = true;
             }
         }
+        // 选设备
+        partial void OnSelectedDevChanged(DevItem? value)
+        {
+            if (Detail is null || value is null) return;
+
+            Detail.devCode = value.devCode;
+            Detail.devName = value.devName;
+            Detail.devModel = value.devModel;
+            Detail.workShopName = value.workShopName;
+        }
+
+        // 选设备状态
+        partial void OnSelectedDevStatusChanged(DictItem? value)
+        {
+            if (Detail is null || value is null) return;
+
+            Detail.devStatus = value.dictItemValue;
+            Detail.devStatusText = string.IsNullOrWhiteSpace(value.dictItemName)
+                ? value.dictItemValue
+                : value.dictItemName;
+        }
+
+        // 选紧急程度
+        partial void OnSelectedUrgentChanged(DictItem? value)
+        {
+            if (Detail is null || value is null) return;
+
+            Detail.urgent = value.dictItemValue;
+            Detail.urgentText = string.IsNullOrWhiteSpace(value.dictItemName)
+                ? value.dictItemValue
+                : value.dictItemName;
+        }
+
+
 
         /// <summary>
         /// Shell 路由入参，例如：.../RepairDetailPage?id=xxxx
@@ -399,7 +431,6 @@ namespace IndustrialControlMAUI.ViewModels
             );
         }
 
-       
 
         /// <summary>
         /// 预览附件
@@ -688,7 +719,7 @@ namespace IndustrialControlMAUI.ViewModels
                     devModel = Detail.devModel,
                     devName = Detail.devName,
                     devStatus = Detail.devStatus,
-                    expectedRepairDate = Detail.expectedRepairDate,
+                    expectedRepairDate = Detail.expectedRepairDate??DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                     memo = Detail.memo,
                     phenomena = Detail.phenomena,
                     urgent = Detail.urgent,               // 注意这里是 level1/level2/level3
@@ -730,8 +761,6 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
-
-
 
         private void PreparePayloadFromUi()
         {

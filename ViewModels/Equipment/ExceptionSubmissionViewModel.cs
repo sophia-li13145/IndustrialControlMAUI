@@ -277,11 +277,12 @@ namespace IndustrialControlMAUI.ViewModels
                 //    new() { StatusValue = "1", Title = "已报修" },
                 //};
                 var dicts = await _api.GetExceptDictsAsync();
-                foreach (var d in AuditStatusDict)
+                foreach (var d in dicts.AuditStatus)
                     baseSteps.Add(new ExceptWorkflowVmItem { Title = d.dictItemName ?? "", StatusValue = d.dictItemValue ?? "" });
                 baseSteps = baseSteps.OrderBy(x => x.StatusValue).ToList();
+
                 var resp = await _api.GetExceptWorkflowAsync(id, _cts.Token);
-                var nodes = resp?.result ?? new List<ExceptWorkflowNode>();
+                var list = resp?.result ?? new List<ExceptWorkflowNode>();
 
                 // 回填时间 & 找“当前”
                 int currentIndex = -1;
@@ -289,7 +290,7 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     var s = baseSteps[i];
                     s.StepNo = i + 1;
-                    var hit = nodes.FirstOrDefault(x => string.Equals(x.statusValue, s.StatusValue, StringComparison.OrdinalIgnoreCase));
+                    var hit = list.FirstOrDefault(x => string.Equals(x.statusValue, s.StatusValue, StringComparison.OrdinalIgnoreCase));
                     if (hit != null && !string.IsNullOrWhiteSpace(hit.statusTime))
                     {
                         s.Time = hit.statusTime.Split(' ')[0];
