@@ -21,6 +21,10 @@ public partial class RepairRunDetailPage : ContentPage
 
     }
 
-   
+    private async void OnPickImagesClicked(object sender, EventArgs e)
+         => await _vm.PickImagesAsync();
+
+    private async void OnPickFileClicked(object sender, EventArgs e)
+        => await _vm.PickFilesAsync();
 
 }

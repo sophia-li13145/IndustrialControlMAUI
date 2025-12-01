@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace IndustrialControlMAUI.Models;
 
@@ -666,9 +667,10 @@ public class StockCheckOrderItem
 /// 库存盘点明细
 /// 对应 /pda/wmsInstockCheck/pageQueryDetails 的 records
 /// </summary>
-public class StockCheckDetailItem
+public partial class StockCheckDetailItem : ObservableObject
 {
-    public bool IsSelected { get; set; }
+    [ObservableProperty]
+    private bool isSelected;
 
     public string? id { get; set; }
 

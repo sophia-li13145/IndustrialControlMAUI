@@ -162,7 +162,7 @@
             Style="{StaticResource SectionTitle}" />
                 <Frame Style="{StaticResource Card}">
                     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                          ColumnDefinitions="100,*,100,*" 
+                          ColumnDefinitions="50,*,50,*" 
                            RowSpacing="8" ColumnSpacing="2">
                         <Label Grid.Row="0" Grid.Column="0"   Text="维修结果：" Style="{StaticResource FieldLabel}" />
                         <Entry Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
@@ -268,20 +268,57 @@
                                 </CollectionView>
                             </Border>
                         </Grid>
-                        <Label Grid.Row="3" Grid.Column="0" Text="维修开始时间：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="1" 
-                               Text="{Binding Detail.RepairStartTime}"
-                               />
+                        <!-- 维修开始时间 -->
+                        <Label Grid.Row="3" Grid.Column="0"
+       Text="维修开始时间：" Style="{StaticResource FieldLabel}" />
 
-                        <Label Grid.Row="3" Grid.Column="2"  Text="维修结束时间：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="3" 
-                                Text="{Binding Detail.RepairEndTime}"
-                               />
+                        <Grid Grid.Row="3" Grid.Column="1"
+      ColumnDefinitions="*,Auto">
+                            <!-- 日期 -->
+                            <DatePicker Grid.Column="0"
+                Date="{Binding Detail.RepairStartTime, Mode=TwoWay}"
+                                        Format="yyyy-MM-dd"
+                IsEnabled="{Binding IsEditing}" />
+                            <!-- 时间 -->
+                            <TimePicker Grid.Column="1"
+                Time="{Binding Detail.RepairStartTimeTime, Mode=TwoWay}"
+                WidthRequest="45"
+                Margin="0,0,0,0"
+                IsEnabled="{Binding IsEditing}" />
+                        </Grid>
 
-                        <!-- 第4行：检验备注（整行） -->
-                        <Label Grid.Row="4" Grid.Column="0" Text="维修时长：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
-                               Text="{Binding Detail.repairDuration, StringFormat='{}{0:G29}小时'}" />
+                        <!-- 维修结束时间 -->
+                        <Label Grid.Row="3" Grid.Column="2"
+       Text="维修结束时间：" Style="{StaticResource FieldLabel}" />
+
+                        <Grid Grid.Row="3" Grid.Column="3"
+      ColumnDefinitions="*,Auto">
+                            <!-- 日期 -->
+                            <DatePicker Grid.Column="0"
+                Date="{Binding Detail.RepairEndTime, Mode=TwoWay}"
+                                        Format="yyyy-MM-dd"
+                IsEnabled="{Binding IsEditing}" />
+                            <!-- 时间 -->
+                            <TimePicker Grid.Column="1"
+                Time="{Binding Detail.RepairEndTimeTime, Mode=TwoWay}"
+                WidthRequest="45"
+                Margin="0,0,0,0"
+                IsEnabled="{Binding IsEditing}" />
+                        </Grid>
+                        <Label Grid.Row="4" Grid.Column="0"
+       Text="维修时长：" Style="{StaticResource FieldLabel}" />
+                        <Grid Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
+      ColumnDefinitions="Auto,Auto">
+                            <Entry Grid.Column="0"
+           WidthRequest="80"
+           Text="{Binding Detail.repairDuration, Mode=TwoWay, StringFormat='{0:F2}', TargetNullValue=''}" />
+                            <Label Grid.Column="1"
+           Text="小时"
+           VerticalTextAlignment="Center"
+           Margin="6,0,0,0"/>
+                        </Grid>
+
+
                     </Grid>
                 </Frame>
 
@@ -312,20 +349,20 @@
 
                                         <!-- 行0：项目名称 -->
                                         <Label Grid.Row="0" Grid.Column="0" Text="故障名称：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding faultName}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="0" Grid.Column="1" Text="{Binding faultName}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}" />
                                         <BoxView Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6" HeightRequest="1" BackgroundColor="#E5E7EB" />
                                         <Label Grid.Row="2" Grid.Column="0" Text="故障描述：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding faultDescription}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding faultDescription}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}"/>
                                         <Label Grid.Row="3" Grid.Column="0" Text="故障原因：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding faultCause}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding faultCause}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}"/>
                                         <Label Grid.Row="4" Grid.Column="0" Text="故障部位：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding faultPart}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding faultPart}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}"/>
                                         <Label Grid.Row="5" Grid.Column="0" Text="维修操作方法：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding repairMethod}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding repairMethod}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}" />
                                         <Label Grid.Row="6" Grid.Column="0" Text="预防建议：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="6" Grid.Column="1" Text="{Binding suggestions}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="6" Grid.Column="1" Text="{Binding suggestions}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}"/>
                                         <Label Grid.Row="7" Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
-                                        <Label Grid.Row="7" Grid.Column="1" Text="{Binding memo}" Style="{StaticResource FieldValue}" />
+                                        <Entry Grid.Row="7" Grid.Column="1" Text="{Binding memo}" Style="{StaticResource FieldValue}" IsEnabled="{Binding IsEditing}"/>
 
                                     </Grid>
                                 </Frame>
@@ -337,7 +374,10 @@
                 <!-- 图片附件 -->
                 <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
                 <!-- 左窄右宽两列 -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+
+                    <!-- Row0 左：图片上传标题 -->
+                    <Label Grid.Row="0" Grid.Column="0" Text="图片上传：" VerticalTextAlignment="Start" />
 
                     <!-- Row0 右：缩略图 + 上传方块 -->
                     <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="8" VerticalOptions="Start">
@@ -353,15 +393,52 @@
                    CornerRadius="8" HasShadow="False" BorderColor="#E5E7EB" Margin="0,0,8,0">
                                             <Image Aspect="AspectFill" Source="{Binding DisplaySource}" />
                                         </Frame>
+                                        <!-- 右上角删除 -->
+                                        <Button Text="×" FontSize="12" Padding="0"
+                                                WidthRequest="22" HeightRequest="22" CornerRadius="11"
+                                                BackgroundColor="#00000066" TextColor="White"
+                                                HorizontalOptions="End" VerticalOptions="Start" Margin="2"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
+                                                CommandParameter="{Binding .}"
+                                                IsVisible="{Binding IsEditing}" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+
+                        <!-- 上传方块 -->
+                        <Frame WidthRequest="96" HeightRequest="96" CornerRadius="8"
+           BorderColor="#E5E7EB" BackgroundColor="White" IsVisible="{Binding IsEditing}"
+           HasShadow="False" Padding="8" VerticalOptions="Start">
+                            <VerticalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
+                                <Label Text="＋" FontSize="28" TextColor="#9CA3AF" />
+                                <Label Text="单击上传" FontSize="12" TextColor="#9CA3AF" Margin="0,0,0,2" LineHeight="1.1"/>
+                            </VerticalStackLayout>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer  Tapped="OnPickImagesClicked" />
+                            </Frame.GestureRecognizers>
+                        </Frame>
                     </HorizontalStackLayout>
 
+                    <!-- Row1 左：附件信息标题 -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="附件信息：" VerticalTextAlignment="Center" />
+
+                    <!-- Row1 右：上传附件链接 -->
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="12" VerticalOptions="Center" IsVisible="{Binding IsEditing}">
+                        <Label Text="上传附件" TextColor="#3B82F6">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnPickFileClicked" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+
+                    <!-- Row2 右：提示 -->
+                    <Label Grid.Row="2" Grid.Column="1"
+         Text="（单个附件最大支持20M，支持格式PDF、Word、Excel、Txt、JPG、PNG、RAR）"
+         FontSize="12" TextColor="#9CA3AF" IsVisible="{Binding IsEditing}"/>
 
                     <!-- Row3 右：附件表格 -->
-                    <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*" Margin="0,4,0,0">
+                    <Grid Grid.Row="3" Grid.Column="1" RowDefinitions="Auto,*" Margin="0,4,0,0">
                         <Grid Grid.Row="0" ColumnDefinitions="40,100,40,80,120"
           BackgroundColor="#E5EEF9" Padding="8,8">
                             <Label Grid.Column="0" Text="序号" />
@@ -376,8 +453,8 @@
                                 <DataTemplate>
                                     <Grid ColumnDefinitions="40,100,40,80,120" Padding="8,10">
                                         <Label Text="{Binding .,
-                                      Converter={StaticResource IndexConverter},
-                                      ConverterParameter={x:Reference AttList}}" />
+                                            Converter={StaticResource IndexConverter},
+                                            ConverterParameter={x:Reference AttList}}" />
                                         <Label Grid.Column="1" Text="{Binding AttachmentName}" LineBreakMode="TailTruncation"/>
                                         <Label Grid.Column="2" Text="{Binding AttachmentSize}" />
                                         <Label Grid.Column="3" Text="{Binding CreatedTime}" />
@@ -389,13 +466,21 @@
                     CommandParameter="{Binding .}" />
                                                 </Label.GestureRecognizers>
                                             </Label>
+                                            <Label Text="删除" TextColor="Red" IsVisible="{Binding IsEditing}">
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
+                    CommandParameter="{Binding .}" />
+                                                </Label.GestureRecognizers>
+                                            </Label>
                                         </HorizontalStackLayout>
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+
                     </Grid>
-                    <Grid Grid.Row="2"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
+                    <Grid Grid.Row="4"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
                         <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
 ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                             <Label Grid.Column="0" Text="创建人：" Style="{StaticResource FieldLabel}" />

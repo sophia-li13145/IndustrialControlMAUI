@@ -693,6 +693,7 @@ public partial class RepairDetailDto : ObservableObject
     [ObservableProperty] private string? maintainTypeText;
     [ObservableProperty] private string? mainRepairUserText;
     [ObservableProperty] private string? assitRepairUsersText;
+
     public string? factoryCode { get; set; }
     public string? factoryName { get; set; }
     public string? assignTo { get; set; }
@@ -701,15 +702,12 @@ public partial class RepairDetailDto : ObservableObject
     public string? mainRepairUser { get; set; }
     public string? assitRepairUsers { get; set; }
 
-    [ObservableProperty] private string? repairStartTime;
-    [ObservableProperty] private string? repairEndTime;
     [ObservableProperty] private string? expectedRepairDate;
     public string? acceptanceOpinion { get; set; }
     public string? acceptor { get; set; }
     public string? completedRepairDate { get; set; }
     public string? repairResult { get; set; }
 
-    public decimal? repairDuration { get; set; }
     public string? urgent { get; set; }
 
     [ObservableProperty] public string? urgentText;
@@ -731,8 +729,70 @@ public partial class RepairDetailDto : ObservableObject
     public List<RepairAttachment>? maintainWorkOrderAttachmentDomainList { get; set; }
     public List<MaintainWorkOrderItemDomain>? maintainWorkOrderItemDomainList { get; set; }
 
+    [ObservableProperty] private DateTime? repairStartTime;
+    [ObservableProperty] private DateTime? repairEndTime;
+
+    // 仅给 TimePicker 用
+    [ObservableProperty] private TimeSpan repairStartTimeTime;
+    [ObservableProperty] private TimeSpan repairEndTimeTime;
+
+    // 维修时长
+    private decimal? _repairDuration;
+    public decimal? repairDuration
+    {
+        get => _repairDuration;
+        set => SetProperty(ref _repairDuration, value);
+    }
+
+    // DateTime 改变 -> 同步 TimeSpan + 计算时长
+    partial void OnRepairStartTimeChanged(DateTime? value)
+    {
+        if (value != null)
+            RepairStartTimeTime = value.Value.TimeOfDay;
+
+        UpdateRepairDuration();
+    }
+
+    partial void OnRepairEndTimeChanged(DateTime? value)
+    {
+        if (value != null)
+            RepairEndTimeTime = value.Value.TimeOfDay;
+
+        UpdateRepairDuration();
+    }
+
+    // TimeSpan 改变 -> 反推回 DateTime（保留日期）
+    partial void OnRepairStartTimeTimeChanged(TimeSpan value)
+    {
+        if (RepairStartTime != null)
+            RepairStartTime = RepairStartTime.Value.Date + value;
+        else
+            RepairStartTime = DateTime.Today + value;
+    }
+
+    partial void OnRepairEndTimeTimeChanged(TimeSpan value)
+    {
+        if (RepairEndTime != null)
+            RepairEndTime = RepairEndTime.Value.Date + value;
+        else
+            RepairEndTime = DateTime.Today + value;
+    }
+
+    private void UpdateRepairDuration()
+    {
+        if (RepairStartTime is null || RepairEndTime is null ||
+            RepairEndTime <= RepairStartTime)
+        {
+            repairDuration = null;
+            return;
+        }
+
+        var hours = (RepairEndTime.Value - RepairStartTime.Value).TotalHours;
+        repairDuration = Math.Round((decimal)hours, 2);
+    }
 
 }
+
 
 /// <summary>
 /// 维修报告

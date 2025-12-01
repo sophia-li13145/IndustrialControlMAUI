@@ -28,6 +28,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty]
         private string? checkNo;
 
+        [ObservableProperty]
+        private string? checkId;
+
         /// <summary>仓库名称（从上一页或接口首条记录带入）</summary>
         [ObservableProperty]
         private string? warehouseName;
@@ -78,6 +81,8 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty]
         private bool canEdit = true;      // 是否可以编辑/结存
 
+        private StockCheckDetailItem? _lastSelectedItem;
+
         partial void OnAuditStatusChanged(string? value)
         {
             CanEdit = !string.Equals(value, "2");   // 已完成不能编辑
@@ -96,6 +101,8 @@ namespace IndustrialControlMAUI.ViewModels
                     WarehouseName = s2;
                 if (query.TryGetValue("AuditStatus", out var a) && a is string s3)
                     AuditStatus = s3;   // 触发 OnAuditStatusChanged
+                if (query.TryGetValue("CheckId", out var b) && b is string s4)
+                    CheckId = s4;   
             }
             else
             {
@@ -134,7 +141,7 @@ namespace IndustrialControlMAUI.ViewModels
             // 如果只有一条数据，直接弹窗编辑
             if (Details.Count == 1)
             {
-                OpenEditDialog(Details[0]);
+                await OpenEditDialog(Details[0]);
             }
         }
 
@@ -152,38 +159,47 @@ namespace IndustrialControlMAUI.ViewModels
 
             if (Details.Count == 1)
             {
-                OpenEditDialog(Details[0]);
+                await  OpenEditDialog(Details[0]);
             }
         }
 
 
         /// <summary>点击列表某一行</summary>
         [RelayCommand]
-        private async void OpenEditDialog(StockCheckDetailItem item)
+        private async Task OpenEditDialog(StockCheckDetailItem item)
         {
             if (!IsFlexibleMode && !CanEdit)
             {
                 await ShowTip("该盘点单已完成，不能再编辑。");
                 return;
             }
-            // 1. 先处理选中效果：其他行取消选中，当前行设为选中
-            foreach (var d in Details)
-            {
-                d.IsSelected = ReferenceEquals(d, item);
-            }
 
-            // 2. 让 CollectionView 刷新（MAUI 对子属性没通知，这样做最简单）
-            var index = Details.IndexOf(item);
-            if (index >= 0)
+            try
             {
-                Details.RemoveAt(index);
-                Details.Insert(index, item);
+                IsBusy = true;
+                await Task.Yield();
+
+                // 只处理上一次和当前两个对象
+                if (_lastSelectedItem != null)
+                    _lastSelectedItem.IsSelected = false;
+
+                item.IsSelected = true;
+                _lastSelectedItem = item;
+
+                EditingItem = item;
+                EditCheckQtyText = item.checkQty.ToString();
+                EditMemo = item.memo;
+
+                IsEditDialogVisible = true;
             }
-            EditingItem = item;
-            EditCheckQtyText = item.checkQty.ToString();
-            EditMemo = item.memo;
-            IsEditDialogVisible = true;
+            finally
+            {
+                IsBusy = false;
+            }
         }
+
+
+
 
         /// <summary>弹窗点“取消”</summary>
         [RelayCommand]
@@ -195,10 +211,11 @@ namespace IndustrialControlMAUI.ViewModels
             EditMemo = null;
         }
 
-        /// <summary>弹窗点“确认” —— 调用保存接口</summary>
+        /// <summary>弹窗点“确认” —— 普通盘点调接口，灵活盘点只改本地缓存</summary>
         [RelayCommand]
         private async Task ConfirmEdit()
         {
+            // ===== 通用校验部分 =====
             if (!IsFlexibleMode && !CanEdit)
             {
                 await ShowTip("该盘点单已完成，不能再编辑。");
@@ -211,9 +228,10 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(EditingItem.id))
+            // 灵活盘点不需要主表 id 校验，所以这个校验只对普通盘点生效
+            if (!IsFlexibleMode && string.IsNullOrWhiteSpace(EditingItem.id))
             {
-                await ShowTip("缺少盘点单主表id，无法保存。");
+                await ShowTip("缺少盘点单明细 id，无法保存。");
                 return;
             }
 
@@ -226,22 +244,43 @@ namespace IndustrialControlMAUI.ViewModels
             var item = EditingItem;
             var profitLoss = checkQty - item.instockQty;
 
+            // ===== 分支 1：灵活盘点 —— 只改页面缓存，不调接口 =====
+            if (IsFlexibleMode)
+            {
+                // 本地更新列表显示
+                item.checkQty = checkQty;
+                item.profitLossQty = profitLoss;
+                item.memo = EditMemo;
+
+                // 如果行模型没有属性通知，这里仍然用 Remove/Insert 触发 UI 刷新
+                var idx = Details.IndexOf(item);
+                if (idx >= 0)
+                {
+                    Details.RemoveAt(idx);
+                    Details.Insert(idx, item);
+                }
+
+                // 关闭弹窗即可，真正提交由“结存”按钮统一处理
+                IsEditDialogVisible = false;
+                return;
+            }
+
+            // ===== 分支 2：普通盘点 —— 调保存接口 =====
             var req = new StockCheckEditReq
             {
-                //id = item.id,
-                memo = null,
-                saveOrHand = null, // 如需区分暂存/提交，可在这里赋值
+                id = CheckId,
+                saveOrHand = "1", // 如需区分暂存/提交，可在这里赋值
                 wmsInstockCheckDetailList =
-                {
-                    new StockCheckEditDetailReq
-                    {
-                        id = item.id,
-                        checkQty = checkQty,
-                        profitLossQty = profitLoss,
-                        dataBelong = item.dataBelong,
-                        memo = EditMemo
-                    }
-                }
+        {
+            new StockCheckEditDetailReq
+            {
+                id = item.id,
+                checkQty = checkQty,
+                profitLossQty = profitLoss,
+                dataBelong = item.dataBelong,
+                memo = EditMemo
+            }
+        }
             };
 
             try
@@ -260,7 +299,6 @@ namespace IndustrialControlMAUI.ViewModels
                 item.profitLossQty = profitLoss;
                 item.memo = EditMemo;
 
-                // 触发属性变化，刷新绑定
                 var idx = Details.IndexOf(item);
                 if (idx >= 0)
                 {
@@ -282,6 +320,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+
         /// <summary>
         /// 结存整张盘点单：
         //— 检查所有明细都录入盘点数量，再调用 /add 接口
@@ -295,106 +334,100 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            List<StockCheckDetailItem> all;
-
-            // ==========【模式 1：灵活盘点】==========
-            if (IsFlexibleMode)
-            {
-                // 灵活盘点：只取盘点数量不为 0 的
-                all = Details.Where(d => d.checkQty != 0).ToList();
-
-                if (all.Count == 0)
-                {
-                    await ShowTip("没有可结存的数据，请先录入盘点数量。");
-                    return;
-                }
-            }
-
-            // ==========【模式 2：普通盘点】==========
-            else
-            {
-                if (string.IsNullOrWhiteSpace(CheckNo))
-                {
-                    await ShowTip("缺少盘点单号，无法结存。");
-                    return;
-                }
-
-                IsBusy = true;
-
-                var resp = await _api.PageStockCheckDetailsAsync(
-                    checkNo: CheckNo!,
-                    location: null,
-                    materialBarcode: null,
-                    searchCount: false,
-                    pageNo: 1,
-                    pageSize: 2000,
-                    ct: _cts.Token);
-
-                if (resp == null || resp.success != true || resp.result == null)
-                {
-                    await ShowTip(resp?.message ?? "查询盘点明细失败。");
-                    IsBusy = false;
-                    return;
-                }
-
-                all = resp.result.records ?? new();
-
-                if (all.Count == 0)
-                {
-                    await ShowTip("当前盘点单没有明细，无法结存。");
-                    IsBusy = false;
-                    return;
-                }
-
-                // 🔍 普通盘点必须检查全部录入
-                var notFilled = all.Where(x => x.checkQty == 0).ToList();
-
-                if (notFilled.Any())
-                {
-                    var f = notFilled.First();
-                    await ShowTip($"未全部完成盘点，例如库位：{f.location}，物料：{f.materialCode}");
-                    IsBusy = false;
-                    return;
-                }
-            }
-
-            // ==========【开始组装结存请求体】==========
-            var first = all.First();
-
-            var req = new FlexibleStockCheckAddReq
-            {
-                memo = null,
-                saveOrHand = "2",          // 1-保存,2-结存
-                warehouseCode = first.warehouseCode,
-                warehouseName = first.warehouseName,
-            };
-
-            foreach (var r in all)
-            {
-                req.wmsInstockCheckDetailList.Add(new FlexibleStockCheckAddDetailReq
-                {
-                    checkQty = r.checkQty,
-                    instockQty = r.instockQty,
-                    profitLossQty = r.profitLossQty,
-                    location = r.location,
-                    materialCode = r.materialCode,
-                    materialName = r.materialName,
-                    stockBatch = r.stockBatch,
-                    unit = r.unit,
-                    memo = r.memo,
-                    warehouseCode = r.warehouseCode,
-                    warehouseName = r.warehouseName,
-                    dataBelong = r.dataBelong,
-                    spec = r.spec,
-                    model = r.model,
-                    productionBatch = r.productionBatch,
-                    productionDate = r.productionDate
-                });
-            }
-
-            // ==========【调用结存接口】==========
+            IsBusy = true;
             try
             {
+                List<StockCheckDetailItem> all;
+
+                // ==========【模式 1：灵活盘点】==========
+                if (IsFlexibleMode)
+                {
+                    // 灵活盘点：只取盘点数量不为 0 的
+                    all = Details.Where(d => d.checkQty != 0).ToList();
+
+                    if (all.Count == 0)
+                    {
+                        await ShowTip("没有可结存的数据，请先录入盘点数量。");
+                        return;
+                    }
+                }
+                // ==========【模式 2：普通盘点】==========
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(CheckNo))
+                    {
+                        await ShowTip("缺少盘点单号，无法结存。");
+                        return;
+                    }
+
+                    var resp = await _api.PageStockCheckDetailsAsync(
+                        checkNo: CheckNo!,
+                        location: null,
+                        materialBarcode: null,
+                        searchCount: false,
+                        pageNo: 1,
+                        pageSize: 2000,
+                        ct: _cts.Token);
+
+                    if (resp == null || resp.success != true || resp.result == null)
+                    {
+                        await ShowTip(resp?.message ?? "查询盘点明细失败。");
+                        return;
+                    }
+
+                    all = resp.result.records ?? new();
+
+                    if (all.Count == 0)
+                    {
+                        await ShowTip("当前盘点单没有明细，无法结存。");
+                        return;
+                    }
+
+                    // 普通盘点必须检查全部录入
+                    var notFilled = all.Where(x => x.checkQty == 0).ToList();
+                    if (notFilled.Any())
+                    {
+                        var f = notFilled.First();
+                        await ShowTip($"未全部完成盘点，例如库位：{f.location}，物料：{f.materialCode}");
+                        return;
+                    }
+                }
+
+                // ==========【开始组装结存请求体】==========
+                var first = all.First();
+
+                var req = new FlexibleStockCheckAddReq
+                {
+                    memo = null,
+                    saveOrHand = "2",          // 1-保存,2-结存
+                    warehouseCode = first.warehouseCode,
+                    warehouseName = first.warehouseName,
+                };
+
+                foreach (var r in all)
+                {
+                    req.wmsInstockCheckDetailList.Add(new FlexibleStockCheckAddDetailReq
+                    {
+                        checkQty = r.checkQty,
+                        instockQty = r.instockQty,
+                        profitLossQty = r.profitLossQty,
+                        location = r.location,
+                        materialCode = r.materialCode,
+                        materialName = r.materialName,
+                        stockBatch = r.stockBatch,
+                        unit = r.unit,
+                        memo = r.memo,
+                        warehouseCode = r.warehouseCode,
+                        warehouseName = r.warehouseName,
+                        dataBelong = r.dataBelong,
+                        spec = r.spec,
+                        model = r.model,
+                        productionBatch = r.productionBatch,
+                        productionDate = r.productionDate
+                    });
+                }
+
+                // ==========【调用结存接口】==========
                 var ok = await _api.AddFlexibleStockCheckAsync(req, _cts.Token);
                 if (!ok.Succeeded)
                 {
@@ -406,6 +439,9 @@ namespace IndustrialControlMAUI.ViewModels
                 AuditStatus = "2";    // 已完成
                 await Shell.Current.GoToAsync("..");
             }
+            catch (OperationCanceledException)
+            {
+            }
             catch (Exception ex)
             {
                 await ShowTip("结存异常：" + ex.Message);
@@ -415,6 +451,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+
 
 
 
@@ -460,8 +497,6 @@ namespace IndustrialControlMAUI.ViewModels
                 foreach (var r in records)
                 {
                     r.index = i++;
-                    if (string.IsNullOrWhiteSpace(WarehouseName))
-                        WarehouseName = r.warehouseName;
                     Details.Add(r);
                 }
 

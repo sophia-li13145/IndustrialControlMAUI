@@ -92,7 +92,7 @@ public partial class StockCheckSearchViewModel : ObservableObject
         if (item is null) return;
         await Shell.Current.GoToAsync(
      $"{nameof(FlexibleStockCheckPage)}" +
-     $"?CheckNo={item.checkNo}" +
+     $"?CheckNo={item.checkNo}&CheckId={item.id}" +
      $"&WarehouseCode={item.warehouseCode}" +
      $"&AuditStatus={item.auditStatus}");
 

@@ -262,6 +262,17 @@ IsEnabled="{Binding CanEdit}" />
                 </Grid>
             </Frame>
         </Grid>
+        <!-- ===== 全局 Loading 蒙层（纯圆圈） ===== -->
+        <Grid IsVisible="{Binding IsBusy}"
+          BackgroundColor="#80000000"
+          InputTransparent="False">
 
+            <ActivityIndicator IsRunning="True"
+                           IsVisible="True"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           WidthRequest="60"
+                           HeightRequest="60" />
+        </Grid>
     </Grid>
 </ContentPage>

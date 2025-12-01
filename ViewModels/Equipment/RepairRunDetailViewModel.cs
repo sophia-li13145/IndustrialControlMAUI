@@ -1,6 +1,4 @@
-﻿using Android.Icu.Text;
-using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
@@ -556,72 +554,6 @@ namespace IndustrialControlMAUI.ViewModels
         // --------- 工具方法 ----------
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
-
-        private async Task LoadWorkflowAsync(string id)
-        {
-            try
-            {
-                // ① 定义 6 个有序节点（按前端展示顺序）
-                //   statusValue 请按后端返回值对应好；下方是常见映射示例：
-                //   0:报修  1:待派工  2:待维修  3:维修中  4:维修完成  5:已验收
-                var baseSteps = new List<RepairWorkflowVmItem>();
-                //{
-                //    new() { StatusValue = "0", Title = "待派工" },
-                //    new() { StatusValue = "1", Title = "待维修" },
-                //    new() { StatusValue = "2", Title = "维修中" },
-                //    new() { StatusValue = "3", Title = "维修完成" },
-                //    new() { StatusValue = "4", Title = "已验收" },
-                //};
-                var dicts = await _api.GetRepairDictsAsync();
-                foreach (var d in dicts.AuditStatus)
-                    baseSteps.Add(new RepairWorkflowVmItem { Title = d.dictItemName ?? "", StatusValue = d.dictItemValue ?? "" });
-                baseSteps = baseSteps.OrderBy(x => x.StatusValue).ToList();
-                var resp = await _api.GetRepairWorkflowAsync(id, _cts.Token);
-                var nodes = resp?.result ?? new List<RepairWorkflowNode>();
-
-                // ② 回填时间 & 找“当前”（最后一个有时间的索引）
-                int currentIndex = -1;
-                for (int i = 0; i < baseSteps.Count; i++)
-                {
-                    var s = baseSteps[i];
-                    s.StepNo = i + 1;
-                    s.IsLast = (i == baseSteps.Count - 1);
-                    s.IsRowEnd = ((i + 1) % 3 == 0);   // 每行 3 列：第 3、6 个为行尾，用于隐藏连线
-
-                    var hit = nodes.FirstOrDefault(x =>
-                        string.Equals(x.statusValue, s.StatusValue, StringComparison.OrdinalIgnoreCase));
-
-                    if (hit != null && !string.IsNullOrWhiteSpace(hit.statusTime))
-                    {
-                        // 仅取日期部分（若格式 "yyyy-MM-dd HH:mm:ss"）
-                        var t = hit.statusTime.Trim();
-                        var sp = t.Split(' ');
-                        s.Time = sp.Length > 0 ? sp[0] : t;
-
-                        currentIndex = i;   // 最后一个有时间的视作“当前”
-                    }
-                }
-
-                // ③ 标注 Completed / Current / Active（Active = Completed 或 Current）
-                for (int i = 0; i < baseSteps.Count; i++)
-                {
-                    var s = baseSteps[i];
-                    s.IsCurrent = (i == currentIndex);
-                    s.IsCompleted = (currentIndex >= 0) && (i < currentIndex) && !string.IsNullOrWhiteSpace(s.Time);
-                    s.IsActive = s.IsCurrent || s.IsCompleted;
-                }
-
-                // ④ 刷新绑定集合
-                WorkflowSteps.Clear();
-                foreach (var s in baseSteps)
-                    WorkflowSteps.Add(s);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("LoadWorkflowAsync error: " + ex.Message);
-            }
-        }
-
 
         private void FilterMainRepairUserSuggestions(string? keyword)
         {
