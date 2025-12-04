@@ -309,7 +309,7 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 _confirming = false;
             }
-        }
+        } 
 
         #endregion
         public void ApplyQueryAttributes(IDictionary<string, object> query)

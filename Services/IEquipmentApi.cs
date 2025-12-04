@@ -71,7 +71,7 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<MaintenanceReportDto>?> GetExceptDetailAsync(string id, CancellationToken ct = default);
         Task<ApiResp<List<ExceptWorkflowNode>>> GetExceptWorkflowAsync(string id, CancellationToken ct = default);
         Task<ApiResp<bool?>> ExecuteExceptSaveAsync(BuildExceptRequest payload, CancellationToken ct = default);
-        Task<ApiResp<bool?>> SubmitExceptAsync(BuildExceptRequest payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> SubmitExceptAsync(string id, CancellationToken ct = default);
         Task<ApiResp<bool?>> BuildExceptAsync(BuildExceptRequest payload, CancellationToken ct = default);
     }
 
@@ -660,8 +660,14 @@ namespace IndustrialControlMAUI.Services
             => PostJsonAsync<BuildExceptRequest, bool?>(_exceptSavePath, payload, ct)!;
 
         // ---------- 异常保修 ----------
-        public Task<ApiResp<bool?>> SubmitExceptAsync(BuildExceptRequest payload, CancellationToken ct = default)
-            => PostJsonAsync<BuildExceptRequest, bool?>(_submitexceptPath, payload, ct)!;
+        // ---------- 异常报修 ----------
+        public Task<ApiResp<bool?>> SubmitExceptAsync(string id, CancellationToken ct = default)
+        {
+            // 请求体形如：{ "id": "xxxx" }
+            var payload = new { id };
+            return PostJsonAsync<object, bool?>(_submitexceptPath, payload, ct)!;
+        }
+
 
         public Task<ApiResp<bool?>> BuildExceptAsync(BuildExceptRequest payload, CancellationToken ct = default)
             => PostJsonAsync<BuildExceptRequest, bool?>(_buildexceptPath, payload, ct)!;

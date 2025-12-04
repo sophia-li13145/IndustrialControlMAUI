@@ -17,9 +17,13 @@ public partial class ExceptionSubmissionSearchPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        QualityNoEntry.Focus();
-    }
 
+        QualityNoEntry.Focus();
+
+        // 页面初始化时自动查一次
+        if (_vm.SearchCommand.CanExecute(null))
+            _vm.SearchCommand.Execute(null);
+    }
     protected override void OnDisappearing()
     {
         base.OnDisappearing();

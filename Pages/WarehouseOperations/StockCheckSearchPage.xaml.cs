@@ -33,4 +33,13 @@ public partial class StockCheckSearchPage : ContentPage
             OrderEntry.Focus();
         }
     }
+
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        OrderEntry.Focus();
+        await _vm.SearchAsync();
+
+    }
 }

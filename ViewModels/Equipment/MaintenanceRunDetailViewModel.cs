@@ -29,6 +29,11 @@ namespace IndustrialControlMAUI.ViewModels
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
         private const long MaxFileBytes = 20L * 1024 * 1024;   // 20MB
 
+        // 根据状态动态显示按钮文字
+        [ObservableProperty] private string saveButtonText = "保存";
+        [ObservableProperty] private string actionButtonText = "提交";   // 新建态是提交，待保养态是完成保养
+
+
         public ObservableCollection<OrderMaintenanceAttachmentItem> Attachments { get; } = new();
         public ObservableCollection<OrderMaintenanceAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
@@ -203,6 +208,38 @@ namespace IndustrialControlMAUI.ViewModels
 
                 Detail = resp.result;
                 IsEditing = !IsCompletedStatus(Detail?.upkeepStatus);
+                // ===== 动态按钮文字 =====
+                // ===== 动态按钮文字（根据状态决定显示文字） =====
+                switch (Detail?.upkeepStatus)
+                {
+                    case "0":   // 新建
+                        SaveButtonText = "保存";
+                        ActionButtonText = "提交";
+                        IsEditing = true;
+                        break;
+
+                    case "1":   // 待保养
+                    case "2":   // 保养中
+                        SaveButtonText = "保存";
+                        ActionButtonText = "完成保养";
+                        IsEditing = true;
+                        break;
+
+                    case "3":   // 已完成
+                        SaveButtonText = "保存";
+                        ActionButtonText = "完成保养";
+
+                        // 已完成 → 整页只读
+                        IsEditing = false;
+                        break;
+
+                    default:
+                        SaveButtonText = "保存";
+                        ActionButtonText = "提交";
+                        IsEditing = true;
+                        break;
+                }
+
 
                 // ① 先加载字典（里面会顺便填充 MaintenanceResultOptions）
                 await LoadDictsAsync();
@@ -577,7 +614,7 @@ namespace IndustrialControlMAUI.ViewModels
                 if (resp?.success == true && resp.result == true)
                 {
                     await ShowTip("已保存。");
-                    _ = LoadAsync(); // 保存后刷新
+                    await Shell.Current.GoToAsync("..");
                 }
                 else
                 {

@@ -737,7 +737,7 @@ namespace IndustrialControlMAUI.ViewModels
                 if (resp?.success == true && resp.result == true)
                 {
                     await ShowTip("已保存。");
-                    _ = LoadAsync(); // 保存后刷新
+                    await Shell.Current.GoToAsync("..");
                 }
                 else
                 {

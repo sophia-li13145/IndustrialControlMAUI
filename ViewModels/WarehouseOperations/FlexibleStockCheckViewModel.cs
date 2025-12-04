@@ -321,10 +321,6 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
-        /// <summary>
-        /// 结存整张盘点单：
-        //— 检查所有明细都录入盘点数量，再调用 /add 接口
-        /// </summary>
         [RelayCommand]
         private async Task SettleAsync()
         {
@@ -337,101 +333,136 @@ namespace IndustrialControlMAUI.ViewModels
             IsBusy = true;
             try
             {
-                List<StockCheckDetailItem> all;
-
                 // ==========【模式 1：灵活盘点】==========
                 if (IsFlexibleMode)
                 {
                     // 灵活盘点：只取盘点数量不为 0 的
-                    all = Details.Where(d => d.checkQty != 0).ToList();
+                    var all = Details.Where(d => d.checkQty != 0).ToList();
 
                     if (all.Count == 0)
                     {
                         await ShowTip("没有可结存的数据，请先录入盘点数量。");
                         return;
                     }
+
+                    // ==========【开始组装灵活盘点结存请求体】==========
+                    var first = all.First();
+
+                    var flexReq = new FlexibleStockCheckAddReq
+                    {
+                        memo = null,
+                        saveOrHand = "2",          // 1-保存,2-结存
+                        warehouseCode = first.warehouseCode,
+                        warehouseName = first.warehouseName,
+                    };
+
+                    foreach (var r in all)
+                    {
+                        flexReq.wmsInstockCheckDetailList.Add(new FlexibleStockCheckAddDetailReq
+                        {
+                            checkQty = r.checkQty,
+                            instockQty = r.instockQty,
+                            profitLossQty = r.profitLossQty,
+                            location = r.location,
+                            materialCode = r.materialCode,
+                            materialName = r.materialName,
+                            stockBatch = r.stockBatch,
+                            unit = r.unit,
+                            memo = r.memo,
+                            warehouseCode = r.warehouseCode,
+                            warehouseName = r.warehouseName,
+                            dataBelong = r.dataBelong,
+                            spec = r.spec,
+                            model = r.model,
+                            productionBatch = r.productionBatch,
+                            productionDate = r.productionDate
+                        });
+                    }
+
+                    // ==========【调用灵活盘点结存接口】==========
+                    var ok = await _api.AddFlexibleStockCheckAsync(flexReq, _cts.Token);
+                    if (!ok.Succeeded)
+                    {
+                        await ShowTip(ok.Message ?? "灵活盘点结存失败");
+                        return;
+                    }
+
+                    await ShowTip("灵活盘点结存成功");
+                    AuditStatus = "2";    // 已完成
+                    await Shell.Current.GoToAsync("..");
+                    return;
                 }
+
                 // ==========【模式 2：普通盘点】==========
-                else
+                if (string.IsNullOrWhiteSpace(CheckNo))
                 {
-                    if (string.IsNullOrWhiteSpace(CheckNo))
-                    {
-                        await ShowTip("缺少盘点单号，无法结存。");
-                        return;
-                    }
-
-                    var resp = await _api.PageStockCheckDetailsAsync(
-                        checkNo: CheckNo!,
-                        location: null,
-                        materialBarcode: null,
-                        searchCount: false,
-                        pageNo: 1,
-                        pageSize: 2000,
-                        ct: _cts.Token);
-
-                    if (resp == null || resp.success != true || resp.result == null)
-                    {
-                        await ShowTip(resp?.message ?? "查询盘点明细失败。");
-                        return;
-                    }
-
-                    all = resp.result.records ?? new();
-
-                    if (all.Count == 0)
-                    {
-                        await ShowTip("当前盘点单没有明细，无法结存。");
-                        return;
-                    }
-
-                    // 普通盘点必须检查全部录入
-                    var notFilled = all.Where(x => x.checkQty == 0).ToList();
-                    if (notFilled.Any())
-                    {
-                        var f = notFilled.First();
-                        await ShowTip($"未全部完成盘点，例如库位：{f.location}，物料：{f.materialCode}");
-                        return;
-                    }
+                    await ShowTip("缺少盘点单号，无法结存。");
+                    return;
                 }
 
-                // ==========【开始组装结存请求体】==========
-                var first = all.First();
+                var resp = await _api.PageStockCheckDetailsAsync(
+                    checkNo: CheckNo!,
+                    location: null,
+                    materialBarcode: null,
+                    searchCount: false,
+                    pageNo: 1,
+                    pageSize: 2000,
+                    ct: _cts.Token);
 
-                var req = new FlexibleStockCheckAddReq
+                if (resp == null || resp.success != true || resp.result == null)
                 {
-                    memo = null,
-                    saveOrHand = "2",          // 1-保存,2-结存
-                    warehouseCode = first.warehouseCode,
-                    warehouseName = first.warehouseName,
+                    await ShowTip(resp?.message ?? "查询盘点明细失败。");
+                    return;
+                }
+
+                var allNormal = resp.result.records ?? new();
+
+                if (allNormal.Count == 0)
+                {
+                    await ShowTip("当前盘点单没有明细，无法结存。");
+                    return;
+                }
+
+                // 普通盘点必须检查全部录入
+                var notFilled = allNormal.Where(x => x.checkQty == 0).ToList();
+                if (notFilled.Any())
+                {
+                    var f = notFilled.First();
+                    await ShowTip($"未全部完成盘点，例如库位：{f.location}，物料：{f.materialCode}");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(CheckId))
+                {
+                    await ShowTip("缺少盘点单主表 id，无法结存。");
+                    return;
+                }
+
+                // ==========【开始组装普通盘点结存请求体】==========
+                var editReq = new StockCheckEditReq
+                {
+                    id = CheckId,
+                    // 这里用 "2" 表示结存/提交，如果后台约定结存也是 "1" 就保持一致改回 "1"
+                    saveOrHand = "2"
                 };
 
-                foreach (var r in all)
+                foreach (var r in allNormal)
                 {
-                    req.wmsInstockCheckDetailList.Add(new FlexibleStockCheckAddDetailReq
+                    editReq.wmsInstockCheckDetailList.Add(new StockCheckEditDetailReq
                     {
+                        id = r.id,
                         checkQty = r.checkQty,
-                        instockQty = r.instockQty,
                         profitLossQty = r.profitLossQty,
-                        location = r.location,
-                        materialCode = r.materialCode,
-                        materialName = r.materialName,
-                        stockBatch = r.stockBatch,
-                        unit = r.unit,
-                        memo = r.memo,
-                        warehouseCode = r.warehouseCode,
-                        warehouseName = r.warehouseName,
                         dataBelong = r.dataBelong,
-                        spec = r.spec,
-                        model = r.model,
-                        productionBatch = r.productionBatch,
-                        productionDate = r.productionDate
+                        memo = r.memo
                     });
                 }
 
-                // ==========【调用结存接口】==========
-                var ok = await _api.AddFlexibleStockCheckAsync(req, _cts.Token);
-                if (!ok.Succeeded)
+                // ==========【调用普通盘点结存接口】==========
+                var ok2 = await _api.EditStockCheckAsync(editReq, _cts.Token);
+                if (!ok2.Succeeded)
                 {
-                    await ShowTip(ok.Message ?? "结存失败");
+                    await ShowTip(ok2.Message ?? "结存失败");
                     return;
                 }
 
@@ -456,20 +487,21 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
-        // ========== 核心查询逻辑 ==========
 
         public async Task QueryDetailsAsync(string? location, string? materialBarcode)
         {
-            // 普通盘点模式：仍然必须有 CheckNo
             if (!IsFlexibleMode && string.IsNullOrWhiteSpace(CheckNo))
             {
                 await ShowTip("缺少盘点单号，无法查询盘点明细。");
                 return;
             }
 
-            await _scanLock.WaitAsync(_cts.Token);
+            var gotLock = false;
             try
             {
+                await _scanLock.WaitAsync(_cts.Token);
+                gotLock = true;
+
                 IsBusy = true;
 
                 var resp = await _api.PageStockCheckDetailsAsync(
@@ -499,11 +531,10 @@ namespace IndustrialControlMAUI.ViewModels
                     r.index = i++;
                     Details.Add(r);
                 }
-
-                // 不再自动弹“未查询到”的提示，由外面根据需要决定
             }
             catch (OperationCanceledException)
             {
+                // 可按需忽略
             }
             catch (Exception ex)
             {
@@ -512,9 +543,11 @@ namespace IndustrialControlMAUI.ViewModels
             finally
             {
                 IsBusy = false;
-                _scanLock.Release();
+                if (gotLock)
+                    _scanLock.Release();
             }
         }
+
 
         private Task ShowTip(string msg) =>
             Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask;

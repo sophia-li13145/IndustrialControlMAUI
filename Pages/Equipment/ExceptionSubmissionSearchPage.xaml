@@ -63,28 +63,42 @@
                     <Frame Margin="0,6,0,0" Padding="10"
                            HasShadow="False" BorderColor="#E0E6EF">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                            <!-- 右上角蓝点 -->
-                            <BoxView Grid.Column="1" WidthRequest="8" HeightRequest="8"
-                                     IsVisible="{Binding CanEdit}"
-                                     HorizontalOptions="End" VerticalOptions="Start"
-                                     CornerRadius="4" Color="#2F80ED" />
 
-                            <!-- 编辑按钮 -->
-                            <Button Grid.Column="1" Grid.Row="0" Text="编辑"
-                                    IsVisible="{Binding CanEdit}"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoEditCommand}"
-                                    CommandParameter="{Binding .}"
-                                    HeightRequest="28"
-                                    Padding="10,0"
-                                    HorizontalOptions="End"
-                                    BackgroundColor="Transparent"
-                                    TextColor="#2F80ED"/>
-
-                            <Grid Grid.Row="0" Grid.ColumnSpan="1" ColumnDefinitions="Auto,*">
+                            <!-- 左：单号（仍然在 Row=0, Col=0） -->
+                            <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="Auto,*">
                                 <Label Text="异常提报单号：" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding maintainNo}" />
                             </Grid>
 
+                            <!-- 右：按钮区域（新加一层 StackLayout） -->
+                            <StackLayout Grid.Row="0" Grid.Column="1"
+                 Orientation="Horizontal"
+                 Spacing="8"
+                 HorizontalOptions="End"
+                 VerticalOptions="Center">
+
+                                <!-- 编辑按钮 -->
+                                <Button Text="编辑"
+                IsVisible="{Binding CanEdit}"
+                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.GoEditCommand}"
+                CommandParameter="{Binding .}"
+                HeightRequest="28"
+                Padding="10,0"
+                BackgroundColor="Transparent"
+                TextColor="#2F80ED" />
+
+                                <!-- 报修按钮 -->
+                                <Button Text="报修"
+                IsVisible="{Binding CanEdit}"
+                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RepairCommand}"
+                CommandParameter="{Binding .}"
+                HeightRequest="28"
+                Padding="10,0"
+                BackgroundColor="Transparent"
+                TextColor="#2F80ED" />
+                            </StackLayout>
+
+                            <!-- 下面几行保持不变 -->
                             <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
                                 <Label Text="状态：" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding auditStatusText}" />
@@ -110,6 +124,7 @@
                                 <Label Grid.Column="1" Text="{Binding urgentText}" />
                             </Grid>
                         </Grid>
+
 
                         <!-- 点整卡片也可进详情 -->
                         <Frame.GestureRecognizers>

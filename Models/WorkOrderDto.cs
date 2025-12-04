@@ -752,7 +752,7 @@ public class StockCheckEditDetailReq
     public string? id { get; set; }
 
     /// <summary>盘点数量</summary>
-    public decimal checkQty { get; set; }
+    public decimal? checkQty { get; set; }
 
     /// <summary>盈亏数量 = 盘点数量 - 账存数量</summary>
     public decimal? profitLossQty { get; set; }

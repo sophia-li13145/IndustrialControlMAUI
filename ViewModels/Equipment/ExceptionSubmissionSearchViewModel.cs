@@ -38,6 +38,61 @@ namespace IndustrialControlMAUI.ViewModels
             _ = EnsureDictsLoadedAsync();   // fire-and-forget
            
         }
+
+        // ======= 新增：报修命令 =======
+        [RelayCommand]
+        private async Task RepairAsync(MaintenanceReportDto? item)
+        {
+            if (item is null || string.IsNullOrWhiteSpace(item.id))
+                return;
+
+            // 二次确认
+            var ok = await Shell.Current.DisplayAlert(
+                "确认报修",
+                "确定要对该异常提报执行报修操作吗？",
+                "确定",
+                "取消");
+            if (!ok) return;
+
+            if (IsBusy) return;
+
+            try
+            {
+                IsBusy = true;
+
+                // 调用报修接口：只需要 id
+                var resp = await _equipmentapi.SubmitExceptAsync(item.id);
+
+                if (resp?.success == true && resp.result == true)
+                {
+                    await ShowTip("报修成功。");
+                    // ⭐ 本地更新这一行的状态，并触发 UI 刷新
+                    var idx = Orders.IndexOf(item);
+                    if (idx >= 0)
+                    {
+                        // 直接改原对象
+                        item.auditStatus = "1";          // 报修状态码，按你后端实际调整
+                        item.auditStatusText = "已报修"; // 或者用字典里对应的中文
+
+                        // 关键：替换这一行，强制 CollectionView 重绘
+                        Orders[idx] = item;
+                    }
+
+                }
+                else
+                {
+                    await ShowTip($"报修失败：{resp?.message ?? "接口返回失败"}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"报修异常：{ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;

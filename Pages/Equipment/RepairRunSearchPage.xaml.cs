@@ -14,10 +14,11 @@ public partial class RepairRunSearchPage : ContentPage
         _vm = vm;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         QualityNoEntry.Focus();
+        await _vm.SearchAsync();
     }
 
     protected override void OnDisappearing()

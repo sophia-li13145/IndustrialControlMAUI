@@ -1,5 +1,6 @@
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.ViewModels;
+using System.Threading.Tasks;
 
 namespace IndustrialControlMAUI.Pages;
 
@@ -14,10 +15,11 @@ public partial class InspectionRunSearchPage : ContentPage
         _vm = vm;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         QualityNoEntry.Focus();
+        await _vm.SearchAsync();
     }
 
     protected override void OnDisappearing()
