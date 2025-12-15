@@ -99,7 +99,7 @@ public class QualityDetailDto : ObservableObject
     public string? processCode { get; set; }
     public string? processName { get; set; }
     public string? orderNumber { get; set; }
-
+    public string? supplierName { get; set; }
     public string? inspectStatus { get; set; }     // 0/1/2/3
     public string? inspectResult { get; set; }     // 合格/不合格
     public string? inspectRemark { get; set; }
@@ -257,7 +257,29 @@ public partial class QualityItem : ObservableObject
     public string? lowerLimit { get; set; }
     public string? badCause { get; set; }
     public string? defect { get; set; }
-    public string? inspectResult { get; set; }
+    private string? _inspectResult;
+    public string? inspectResult
+    {
+        get => _inspectResult;
+        set => SetProperty(ref _inspectResult, value);
+    }
+
+
+    private string? _inspectStartTime;
+    public string? inspectStartTime
+    {
+        get => _inspectStartTime;
+        set => SetProperty(ref _inspectStartTime, value);
+    }
+
+    private string? _inspectEndTime;
+    public string? inspectEndTime
+    {
+        get => _inspectEndTime;
+        set => SetProperty(ref _inspectEndTime, value);
+    }
+
+
     // 已选缺陷（用于标签显示与保存）
     public ObservableCollection<DefectChip> SelectedDefects { get; set; } = new();
 

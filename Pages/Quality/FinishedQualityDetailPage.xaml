@@ -116,10 +116,10 @@
                         <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.materialName}" Style="{StaticResource FieldValue}" />
 
                         <Label Grid.Row="2" Grid.Column="0" Text="生产数量：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.orderQualityMaterial.qty, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.orderQualityMaterial.QtyWithUnit, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
 
                         <Label Grid.Row="2" Grid.Column="2" Text="实际完工数量：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.completedQty, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.CompletedQtyWithUnit, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
 
                         <Label Grid.Row="3" Grid.Column="0" Style="{StaticResource FieldLabel}" >
                             <Label.FormattedText>

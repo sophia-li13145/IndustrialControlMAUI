@@ -60,7 +60,7 @@
                 <DataTemplate>
                     <Frame Margin="0,6,0,0" Padding="10"
                            HasShadow="False" BorderColor="#E0E6EF">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                             <!-- 右上角蓝点 -->
                             <BoxView Grid.Column="1" WidthRequest="8" HeightRequest="8"
                                      HorizontalOptions="End" VerticalOptions="Start"
@@ -87,21 +87,15 @@
                             </Grid>
 
                             <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
-                                <Label Text="产品名称：" FontAttributes="Bold" />
+                                <Label Text="物料名称：" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding MaterialName}" />
                             </Grid>
 
                             <Grid Grid.Row="3" ColumnDefinitions="Auto,*">
-                                <Label Text="关联工单号：" FontAttributes="Bold" />
+                                <Label Text="关联到货单：" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding OrderNumber}" />
                             </Grid>
-
                             <Grid Grid.Row="4" ColumnDefinitions="Auto,*">
-                                <Label Text="工序：" FontAttributes="Bold" />
-                                <Label Grid.Column="1" Text="{Binding ProcessName}" />
-                            </Grid>
-
-                            <Grid Grid.Row="5" ColumnDefinitions="Auto,*">
                                 <Label Text="创建日期：" FontAttributes="Bold" />
                                 <Label Grid.Column="1"
                                        Text="{Binding CreatedTime, StringFormat='{0:yyyy-M-d}'}" />

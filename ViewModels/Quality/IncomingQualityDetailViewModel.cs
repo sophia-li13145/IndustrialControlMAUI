@@ -1,7 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
+using IndustrialControlMAUI.Popups;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
@@ -129,6 +131,47 @@ namespace IndustrialControlMAUI.ViewModels
             IsInspectorDropdownOpen = false;
             InspectorSuggestions.Clear();
         }
+
+        [RelayCommand]
+        private async Task PickStartDateTimeAsync(QualityItem row)
+        {
+            if (!IsEditing || row is null) return;
+
+            DateTime? init = TryParse(row.inspectStartTime);
+
+            var popup = new DateTimePickerPopup("选择开始时间", init);
+            var resultObj = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+            if (resultObj is not DateTimePopupResult result) return;
+            if (result.IsCanceled) return;
+
+            row.inspectStartTime = result.IsCleared
+                ? null
+                : result.Value?.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        [RelayCommand]
+        private async Task PickEndDateTimeAsync(QualityItem row)
+        {
+            if (!IsEditing || row is null) return;
+
+            DateTime? init = TryParse(row.inspectEndTime);
+
+            var popup = new DateTimePickerPopup("选择结束时间", init);
+            var resultObj = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+            if (resultObj is not DateTimePopupResult result) return;
+            if (result.IsCanceled) return;
+
+            row.inspectEndTime = result.IsCleared
+                ? null
+                : result.Value?.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        private static DateTime? TryParse(string? s)
+            => DateTime.TryParse(s, out var dt) ? dt : null;
+
+
 
         [RelayCommand]
         private void ClearInspector()

@@ -383,6 +383,9 @@
 		<MauiXaml Update="Pages\WarehouseOperations\StockCheckSearchPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Pages\Shared\DateTimePickerPopup.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 </Project>

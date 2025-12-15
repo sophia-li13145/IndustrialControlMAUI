@@ -17,6 +17,7 @@
             <conv:DefectLevelToColorConverter x:Key="DefectLevelToColor"/>
             <conv:IntGreaterThanZeroConverter x:Key="IntGT0" />
             <conv:IndexConverter x:Key="IndexConverter" />
+            <conv:NullableDateTimeToTextConverter x:Key="DateTimeTextConv" />
             <Style x:Key="PrimaryBtn" TargetType="Button">
                 <Setter Property="HeightRequest" Value="36" />
                 <Setter Property="CornerRadius" Value="8" />
@@ -119,7 +120,7 @@
                         <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.orderQualityMaterial.materialName}" Style="{StaticResource FieldValue}" />
 
                         <Label Grid.Row="2" Grid.Column="2" Text="到货数量：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.qty, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding Detail.orderQualityMaterial.QtyWithUnit, StringFormat='{0:G29}'}" Style="{StaticResource FieldValue}" />
 
                         <Label Grid.Row="3" Grid.Column="0" Text="到货日期：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.orderQualityMaterial.arrivalDate}" Style="{StaticResource FieldValue}" />
@@ -305,12 +306,12 @@
                        TextColor="#111827"
                        Margin="0,8,0,0"/>
 
-                                <!-- 右侧你的原 Frame 卡片，内容保持不变 -->
+                                <!-- 右侧卡片 -->
                                 <Frame Grid.Column="1" Style="{StaticResource Card}">
-                                    <Grid
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                        ColumnDefinitions="Auto,*"
-                        RowSpacing="8" ColumnSpacing="5">
+                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnDefinitions="Auto,*"
+                          RowSpacing="8"
+                          ColumnSpacing="5">
 
                                         <!-- 行0：项目名称 -->
                                         <Label Grid.Row="0" Grid.Column="0" Text="项目名称：" Style="{StaticResource FieldLabel}" />
@@ -336,113 +337,215 @@
                                             <Label Grid.Column="5" Text="{Binding lowerLimit}" Style="{StaticResource FieldValue}" />
                                         </Grid>
 
-                                        <!-- 行3：检验结果 -->
-                                        <!-- 行3：检验结果（明细项） -->
+                                        <!-- 行3：检验结果（用 Frame 变色，Picker 透明） -->
                                         <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
-                                                ColumnDefinitions="Auto,*" ColumnSpacing="10">
+      ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="检验结果：" Style="{StaticResource FieldLabel}" />
 
-                                            <Picker x:Name="RowResultPicker"
-                                                    Grid.Column="1"
-                                                    ItemsSource="{Binding Source={x:Reference ThisPage}, Path=BindingContext.InspectResultTextList}"
-                                                    SelectedItem="{Binding inspectResult, Mode=TwoWay}"
-                                                    IsEnabled="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IsEditing}"> 
-                                                <!-- 默认底色（可选） -->
-                                                <Picker.BackgroundColor>#F3F4F6</Picker.BackgroundColor>
-
-                                                <Picker.Triggers>
-                                                    <!-- 直接监听控件自己的 SelectedItem，避免依赖模型的通知 -->
-                                                    <DataTrigger TargetType="Picker"
-                         Binding="{Binding Source={x:Reference RowResultPicker}, Path=SelectedItem}"
+                                            <Frame Grid.Column="1"
+           Padding="0"
+           CornerRadius="6"
+           HasShadow="False"
+           BorderColor="#E5E7EB"
+           BackgroundColor="#F3F4F6">
+                                                <Frame.Triggers>
+                                                    <DataTrigger TargetType="Frame"
+                         Binding="{Binding inspectResult}"
                          Value="合格">
-                                                        <Setter Property="BackgroundColor" Value="#B2F2BB"/>
+                                                        <Setter Property="BackgroundColor" Value="#B2F2BB" />
                                                     </DataTrigger>
 
-                                                    <DataTrigger TargetType="Picker"
-                         Binding="{Binding Source={x:Reference RowResultPicker}, Path=SelectedItem}"
+                                                    <DataTrigger TargetType="Frame"
+                         Binding="{Binding inspectResult}"
                          Value="不合格">
-                                                        <Setter Property="BackgroundColor" Value="#FFA8A8"/>
+                                                        <Setter Property="BackgroundColor" Value="#FFA8A8" />
                                                     </DataTrigger>
-                                                </Picker.Triggers>
-                                            </Picker>
-                                        </Grid>
+                                                </Frame.Triggers>
 
+                                                <Picker ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectResultTextList}"
+                SelectedItem="{Binding inspectResult, Mode=TwoWay}"
+                IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
+                BackgroundColor="Transparent"
+                Title="请选择"/>
+                                            </Frame>
+                                        </Grid>
 
                                         <!-- 行4：抽样数、不良数、不良率(只读) -->
                                         <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="抽样数：" Style="{StaticResource FieldLabel}" />
-                                            <Entry Grid.Column="1" Text="{Binding sampleQty, Mode=TwoWay, Converter={StaticResource DecConv}}" Keyboard="Numeric"
-                                   IsEnabled="{Binding Source={x:Reference Name=ThisPage}, Path=BindingContext.IsEditing}" />
+                                            <Entry Grid.Column="1"
+                                   Text="{Binding sampleQty, Mode=TwoWay, Converter={StaticResource DecConv}}"
+                                   Keyboard="Numeric"
+                                   IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
+
                                             <Label Grid.Column="2" Text="不良数：" Style="{StaticResource FieldLabel}" />
-                                            <Entry Grid.Column="3" Text="{Binding badQty, Mode=TwoWay, Converter={StaticResource DecConv}}" Keyboard="Numeric"
-                                   IsEnabled="{Binding Source={x:Reference Name=ThisPage}, Path=BindingContext.IsEditing}" />
+                                            <Entry Grid.Column="3"
+                                   Text="{Binding badQty, Mode=TwoWay, Converter={StaticResource DecConv}}"
+                                   Keyboard="Numeric"
+                                   IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
+
                                             <Label Grid.Column="4" Text="不良率：" Style="{StaticResource FieldLabel}" />
-                                            <Frame Grid.Column="5" Padding="0,0" CornerRadius="6" HasShadow="False"
-       BackgroundColor="#F3F4F6" BorderColor="#E5E7EB"> 
+                                            <Frame Grid.Column="5" Padding="6,4" CornerRadius="6" HasShadow="False"
+                                   BackgroundColor="#F3F4F6" BorderColor="#E5E7EB">
                                                 <Label Text="{Binding badRate, StringFormat='{0:0.##}%'}"
-           VerticalTextAlignment="Center" />
+                                       VerticalTextAlignment="Center" />
+                                            </Frame>
+                                        </Grid>
+
+                                        <!-- 行5：检验设备 + 检验参数 -->
+                                        <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
+                                            <Picker Grid.Column="1"
+                                    Title="请选择"
+                                    ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectDeviceList}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding selectedInspectDevice, Mode=TwoWay}"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
+                                    BackgroundColor="#F3F4F6" />
+
+                                            <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
+                                            <Picker Grid.Column="3"
+                                    Title="请选择"
+                                    ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectParamList}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding selectedInspectParam, Mode=TwoWay}"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
+                                    BackgroundColor="#F3F4F6" />
+                                        </Grid>
+
+                                        <!-- 行6：开始时间 + 结束时间（方案2：点击弹窗选日期+时间，可清空） -->
+                                        <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+      ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+
+                                            <Label Grid.Column="0" Text="开始时间：" Style="{StaticResource FieldLabel}" />
+
+                                            <!-- 开始时间：灰框 + 点击 -->
+                                            <Frame Grid.Column="1"
+           Style="{StaticResource ReadonlyPill}"
+           Padding="10,8">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickStartDateTimeCommand}"
+                CommandParameter="{Binding .}" />
+                                                </Frame.GestureRecognizers>
+
+                                                <Label Text="{Binding inspectStartTime, TargetNullValue=请选择}"
+               TextColor="#111827"
+               VerticalTextAlignment="Center" />
+                                                <Frame.IsEnabled>
+                                                    <Binding Source="{RelativeSource AncestorType={x:Type ContentPage}}"
+                     Path="BindingContext.IsEditing"/>
+                                                </Frame.IsEnabled>
                                             </Frame>
 
+                                            <Label Grid.Column="2" Text="结束时间：" Style="{StaticResource FieldLabel}" />
+
+                                            <!-- 结束时间：灰框 + 点击 -->
+                                            <Frame Grid.Column="3"
+           Style="{StaticResource ReadonlyPill}"
+           Padding="10,8">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickEndDateTimeCommand}"
+                CommandParameter="{Binding .}" />
+                                                </Frame.GestureRecognizers>
+
+                                                <Label Text="{Binding inspectEndTime, TargetNullValue=请选择}"
+               TextColor="#111827"
+               VerticalTextAlignment="Center" />
+                                                <Frame.IsEnabled>
+                                                    <Binding Source="{RelativeSource AncestorType={x:Type ContentPage}}"
+                     Path="BindingContext.IsEditing"/>
+                                                </Frame.IsEnabled>
+                                            </Frame>
                                         </Grid>
 
-                                        <!-- 行5：不良原因 -->
-                                        <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行7：实际值 + 两个按钮 -->
+                                        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="实际值：" Style="{StaticResource FieldLabel}" />
+                                            <Entry Grid.Column="1"
+                                   Placeholder="请输入"
+                                   Text="{Binding actualValue, Mode=TwoWay, Converter={StaticResource DecConv}}"
+                                   Keyboard="Numeric"
+                                   IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
+
+                                            <HorizontalStackLayout Grid.Column="2" Spacing="8">
+                                                <Button Text="自动检验"
+                                        BackgroundColor="#22C55E"
+                                        TextColor="White"
+                                        CornerRadius="6"
+                                        Padding="10,6"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AutoInspectCommand}"
+                                        CommandParameter="{Binding .}"
+                                        IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"/>
+                                                <Button Text="查看检验详细数据"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#2563EB"
+                                        Padding="6,6"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewInspectDetailCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+
+                                        <!-- 行8：不良原因 -->
+                                        <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="不良原因：" Style="{StaticResource FieldLabel}" />
-                                            <Entry Grid.Column="1" Text="{Binding badCause, Mode=TwoWay}"
-                                   IsEnabled="{Binding Source={x:Reference Name=ThisPage}, Path=BindingContext.IsEditing}" />
+                                            <Entry Grid.Column="1"
+                                   Placeholder="请输入"
+                                   Text="{Binding badCause, Mode=TwoWay}"
+                                   IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
                                         </Grid>
 
-                                        <!-- 行6：缺陷 + 新增 -->
-                                        <Grid Grid.Row="6" Grid.Column="0" ColumnDefinitions="Auto,*" ColumnSpacing="0" Margin="0,0,0,0">
+                                        <!-- 行9：缺陷 + 新增 -->
+                                        <Grid Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*" ColumnSpacing="0" Margin="0,0,0,0">
                                             <Label Text="缺陷：" Grid.Column="0" VerticalTextAlignment="Center" />
 
-                                            <!-- 标签区：只读显示已选缺陷 -->
                                             <HorizontalStackLayout Grid.Column="1" Spacing="6">
                                                 <FlexLayout BindableLayout.ItemsSource="{Binding SelectedDefects}"
-                Direction="Row" Wrap="Wrap" AlignItems="Center">
+                                            Direction="Row" Wrap="Wrap" AlignItems="Center">
                                                     <BindableLayout.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Frame Padding="8,4"
-                                                               Margin="4"
-                                                               HasShadow="False"
-                                                               CornerRadius="6"
-                                                               BackgroundColor="{Binding ColorHex}"> 
-                                                            <Label Text="{Binding Name}" FontSize="12" TextColor="Black"/>
-                                                        </Frame>
-                                                    </DataTemplate>
-                                                </BindableLayout.ItemTemplate>
-                                            </FlexLayout>
+                                                        <DataTemplate>
+                                                            <Frame Padding="8,4"
+                                                   Margin="4"
+                                                   HasShadow="False"
+                                                   CornerRadius="6"
+                                                   BackgroundColor="{Binding ColorHex}">
+                                                                <Label Text="{Binding Name}" FontSize="12" TextColor="Black"/>
+                                                            </Frame>
+                                                        </DataTemplate>
+                                                    </BindableLayout.ItemTemplate>
+                                                </FlexLayout>
 
-
-
-                                            <!-- “+”按钮：打开缺陷选择弹窗 -->
-                                            <Button 
-                                                    Text="＋"
-                                                    WidthRequest="36"
-                                                    HeightRequest="28"
-                                                    FontSize="18"
-                                                    TextColor="#111111"
-                                                    BackgroundColor="White"
-                                                    BorderColor="#D1D5DB"
-                                                    BorderWidth="1"
-                                                    CornerRadius="6"
-                                                    Padding="0"
-                                                    HorizontalOptions="Center"
-                                                    VerticalOptions="Center"
-                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenDefectPickerCommand}"
-                                                    CommandParameter="{Binding .}" 
-                                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"/>
+                                                <Button Text="＋"
+                                        WidthRequest="36"
+                                        HeightRequest="28"
+                                        FontSize="18"
+                                        TextColor="#111111"
+                                        BackgroundColor="White"
+                                        BorderColor="#D1D5DB"
+                                        BorderWidth="1"
+                                        CornerRadius="6"
+                                        Padding="0"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenDefectPickerCommand}"
+                                        CommandParameter="{Binding .}"
+                                        IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"/>
                                             </HorizontalStackLayout>
-
                                         </Grid>
+
                                     </Grid>
                                 </Frame>
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+
 
                 <!-- 图片附件 -->
                 <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
