@@ -473,7 +473,7 @@
                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
                                             <HorizontalStackLayout Grid.Column="2" Spacing="8">
-                                                <Button Text="自动检验"
+                                        <Button Text="自动检验"
                                         BackgroundColor="#22C55E"
                                         TextColor="White"
                                         CornerRadius="6"
