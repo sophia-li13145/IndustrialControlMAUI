@@ -482,7 +482,14 @@
                                         TextColor="#2563EB"
                                         Padding="6,6"
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewInspectDetailCommand}"
-                                        CommandParameter="{Binding .}"/>
+                                        CommandParameter="{Binding .}"
+                                        IsEnabled="{Binding IsAutoInspectEnabled}">
+                                                    <Button.Triggers>
+                                                        <Trigger TargetType="Button" Property="IsEnabled" Value="False">
+                                                            <Setter Property="TextColor" Value="#9CA3AF" />
+                                                        </Trigger>
+                                                    </Button.Triggers>
+                                                </Button>
                                             </HorizontalStackLayout>
                                         </Grid>
 
