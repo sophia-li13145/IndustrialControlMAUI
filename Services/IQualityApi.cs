@@ -124,7 +124,7 @@ namespace IndustrialControlMAUI.Services
                 configLoader.GetApiPath("quality.inspectParams", "/pda/qsOrderQuality/queryPmsEqptPointParams"),
                 servicePath);
             _autoInspectPath = NormalizeRelative(
-                configLoader.GetApiPath("quality.autoInspect", "/pda/qsOrderQuality/checkQcItemLimit"),
+                configLoader.GetApiPath("quality.autoInspect", "/pda/qsOrderQuality/checkQsItemLimit"),
                 servicePath);
             _inspectDetailPagePath = NormalizeRelative(
                 configLoader.GetApiPath("quality.inspectDetailPage", "/pda/qsOrderQuality/pageQueryInspectionDetail"),
