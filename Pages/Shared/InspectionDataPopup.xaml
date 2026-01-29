@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="IndustrialControlMAUI.Popups.InspectionDataPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Size="900,600">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16" BackgroundColor="White">
+        <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto">
+            <Label Text="检验详细数据" FontAttributes="Bold" FontSize="16" VerticalTextAlignment="Center" />
+            <Button Grid.Column="1"
+                    Text="×"
+                    FontSize="16"
+                    Padding="4"
+                    BackgroundColor="Transparent"
+                    TextColor="#6B7280"
+                    Clicked="OnClose"/>
+        </Grid>
+
+        <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" RowSpacing="12" Margin="0,12,0,0">
+            <CollectionView Grid.Row="0"
+                            ItemsSource="{Binding Rows}"
+                            SelectionMode="None"
+                            HeightRequest="180">
+                <CollectionView.Header>
+                    <Grid ColumnDefinitions="60,*,120,160"
+                          Padding="10,8" BackgroundColor="#F5F7FA">
+                        <Label Grid.Column="0" Text="序号"/>
+                        <Label Grid.Column="1" Text="采集参数"/>
+                        <Label Grid.Column="2" Text="数值"/>
+                        <Label Grid.Column="3" Text="采集时间"/>
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.EmptyView>
+                    <Grid Padding="24">
+                        <Label Text="暂无数据" TextColor="#9CA3AF" HorizontalOptions="Center" />
+                    </Grid>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="60,*,120,160" Padding="10,10">
+                            <Label Grid.Column="0" Text="{Binding RowNo}"/>
+                            <Label Grid.Column="1" Text="{Binding ParamName}"/>
+                            <Label Grid.Column="2" Text="{Binding Value}"/>
+                            <Label Grid.Column="3" Text="{Binding CollectTime}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Frame Grid.Row="1"
+                   BorderColor="#E5E7EB"
+                   BackgroundColor="White"
+                   CornerRadius="6"
+                   HasShadow="False"
+                   Padding="12">
+                <Grid RowDefinitions="Auto,*">
+                    <Label Text="数据趋势" FontAttributes="Bold" />
+                    <Grid Grid.Row="1">
+                        <Frame BorderColor="#D1D5DB"
+                               CornerRadius="4"
+                               HasShadow="False"
+                               Padding="0">
+                            <Grid>
+                                <Label Text="暂无趋势图" TextColor="#9CA3AF" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Grid>
+                        </Frame>
+                        <HorizontalStackLayout VerticalOptions="End" HorizontalOptions="Center" Spacing="6" Margin="0,6,0,0">
+                            <Label Text="•" TextColor="#6366F1" FontSize="14" />
+                            <Label Text="数值" TextColor="#6B7280" />
+                            <Label Text="采集时间" TextColor="#6B7280" Margin="20,0,0,0"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Grid>
+            </Frame>
+
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,8,Auto" Margin="0,12,0,0">
+                <Label Text="{Binding PageInfo}" VerticalTextAlignment="Center" />
+                <Button Grid.Column="1" Text="上一页" Command="{Binding PrevCommand}" />
+                <Button Grid.Column="3" Text="下一页" Command="{Binding NextCommand}" />
+            </Grid>
+        </Grid>
+
+        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+    </Grid>
+</toolkit:Popup>

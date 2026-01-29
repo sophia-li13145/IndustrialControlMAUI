@@ -1,6 +1,7 @@
 ﻿using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Headers;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Web;
@@ -38,6 +39,25 @@ namespace IndustrialControlMAUI.Services
 
         Task<ApiResp<bool>> DeleteAttachmentAsync(string id, CancellationToken ct = default);
         Task<ApiResp<List<InspectWorkflowNode>>> GetWorkflowAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<List<InspectDeviceOption>>?> GetInspectDevicesAsync(CancellationToken ct = default);
+        Task<ApiResp<List<InspectParamOption>>?> GetInspectParamsAsync(string deviceCode, CancellationToken ct = default);
+        Task<ApiResp<bool?>> CheckQcItemLimitAsync(
+            string deviceCode,
+            string paramCode,
+            string qsOrderItemId,
+            string? collectTimeBegin,
+            string? collectTimeEnd,
+            decimal? actualValue,
+            CancellationToken ct = default);
+        Task<PageResponeResult<InspectionDetailRecord>?> GetInspectionDetailPageAsync(
+            string deviceCode,
+            string paramCode,
+            string? collectTimeBegin,
+            string? collectTimeEnd,
+            int pageNo,
+            int pageSize,
+            bool? searchCount,
+            CancellationToken ct = default);
     }
 
     // ===================== 实现 =====================
@@ -54,6 +74,10 @@ namespace IndustrialControlMAUI.Services
         private readonly string _deleteAttPath;
         private readonly IAttachmentApi _attachmentApi;
         private readonly string _workflowPath;
+        private readonly string _inspectDevicePath;
+        private readonly string _inspectParamPath;
+        private readonly string _autoInspectPath;
+        private readonly string _inspectDetailPagePath;
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -93,6 +117,18 @@ namespace IndustrialControlMAUI.Services
             _workflowPath = NormalizeRelative(
                configLoader.GetApiPath("quality.workflow", "/pda/qsOrderQuality/getQsOrderWorkflow"),
                servicePath);
+            _inspectDevicePath = NormalizeRelative(
+                configLoader.GetApiPath("quality.inspectDevices", "/pda/common/queryDevList"),
+                servicePath);
+            _inspectParamPath = NormalizeRelative(
+                configLoader.GetApiPath("quality.inspectParams", "/pda/qsOrderQuality/queryPmsEqptPointParams"),
+                servicePath);
+            _autoInspectPath = NormalizeRelative(
+                configLoader.GetApiPath("quality.autoInspect", "/pda/qsOrderQuality/checkQcItemLimit"),
+                servicePath);
+            _inspectDetailPagePath = NormalizeRelative(
+                configLoader.GetApiPath("quality.inspectDetailPage", "/pda/qsOrderQuality/pageQueryInspectionDetail"),
+                servicePath);
         }
         // ===== 公共工具 =====
         private static string BuildFullUrl(Uri? baseAddress, string url)
@@ -214,6 +250,130 @@ namespace IndustrialControlMAUI.Services
             
 
             return new DictQuality { InspectStatus = inspectStatus, QualityTypes = qualityTypes };
+        }
+
+        public async Task<ApiResp<List<InspectDeviceOption>>?> GetInspectDevicesAsync(CancellationToken ct = default)
+        {
+            var full = BuildFullUrl(_http.BaseAddress, _inspectDevicePath);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+            {
+                return new ApiResp<List<InspectDeviceOption>>
+                {
+                    success = false,
+                    code = (int)res.StatusCode,
+                    message = $"HTTP {(int)res.StatusCode}"
+                };
+            }
+
+            return JsonSerializer.Deserialize<ApiResp<List<InspectDeviceOption>>>(json, _json);
+        }
+
+        public async Task<ApiResp<List<InspectParamOption>>?> GetInspectParamsAsync(string deviceCode, CancellationToken ct = default)
+        {
+            var p = new Dictionary<string, string>
+            {
+                ["deviceCode"] = deviceCode
+            };
+            var url = _inspectParamPath + "?" + BuildQuery(p);
+            var full = BuildFullUrl(_http.BaseAddress, url);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+            {
+                return new ApiResp<List<InspectParamOption>>
+                {
+                    success = false,
+                    code = (int)res.StatusCode,
+                    message = $"HTTP {(int)res.StatusCode}"
+                };
+            }
+
+            return JsonSerializer.Deserialize<ApiResp<List<InspectParamOption>>>(json, _json);
+        }
+
+        public async Task<ApiResp<bool?>> CheckQcItemLimitAsync(
+            string deviceCode,
+            string paramCode,
+            string qsOrderItemId,
+            string? collectTimeBegin,
+            string? collectTimeEnd,
+            decimal? actualValue,
+            CancellationToken ct = default)
+        {
+            var p = new Dictionary<string, string>
+            {
+                ["deviceCode"] = deviceCode,
+                ["paramCode"] = paramCode,
+                ["qsOrderItemId"] = qsOrderItemId
+            };
+            if (!string.IsNullOrWhiteSpace(collectTimeBegin)) p["collectTimeBegin"] = collectTimeBegin!;
+            if (!string.IsNullOrWhiteSpace(collectTimeEnd)) p["collectTimeEnd"] = collectTimeEnd!;
+            if (actualValue is not null) p["actualValue"] = actualValue.Value.ToString("G29", CultureInfo.InvariantCulture);
+
+            var url = _autoInspectPath + "?" + BuildQuery(p);
+            var full = BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+            {
+                return new ApiResp<bool?>
+                {
+                    success = false,
+                    code = (int)res.StatusCode,
+                    message = $"HTTP {(int)res.StatusCode}"
+                };
+            }
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json);
+        }
+
+        public async Task<PageResponeResult<InspectionDetailRecord>?> GetInspectionDetailPageAsync(
+            string deviceCode,
+            string paramCode,
+            string? collectTimeBegin,
+            string? collectTimeEnd,
+            int pageNo,
+            int pageSize,
+            bool? searchCount,
+            CancellationToken ct = default)
+        {
+            var p = new Dictionary<string, string>
+            {
+                ["deviceCode"] = deviceCode,
+                ["paramCode"] = paramCode,
+                ["pageNo"] = pageNo.ToString(),
+                ["pageSize"] = pageSize.ToString()
+            };
+            if (!string.IsNullOrWhiteSpace(collectTimeBegin)) p["collectTimeBegin"] = collectTimeBegin!;
+            if (!string.IsNullOrWhiteSpace(collectTimeEnd)) p["collectTimeEnd"] = collectTimeEnd!;
+            if (searchCount.HasValue) p["searchCount"] = searchCount.Value ? "true" : "false";
+
+            var url = _inspectDetailPagePath + "?" + BuildQuery(p);
+            var full = BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+            {
+                return new PageResponeResult<InspectionDetailRecord>
+                {
+                    success = false,
+                    code = (int)res.StatusCode,
+                    message = $"HTTP {(int)res.StatusCode}"
+                };
+            }
+
+            return JsonSerializer.Deserialize<PageResponeResult<InspectionDetailRecord>>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
         }
         // Services/QualityApi.cs 追加方法（沿用你 BuildQuery/BuildFullUrl 风格）
         public async Task<ApiResp<QualityDetailDto>?> GetDetailAsync(string id, CancellationToken ct = default)

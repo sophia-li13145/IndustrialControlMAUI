@@ -308,7 +308,7 @@
                                 <!-- 右侧你的原 Frame 卡片，内容保持不变 -->
                                 <Frame Grid.Column="1" Style="{StaticResource Card}">
                                     <Grid
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                         ColumnDefinitions="Auto,*"
                         RowSpacing="8" ColumnSpacing="5">
 
@@ -386,16 +386,113 @@
 
                                         </Grid>
 
-                                        <!-- 行5：不良原因 -->
+                                        <!-- 行5：检验设备 + 检验参数 -->
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
+                                            <Picker Grid.Column="1"
+                                    Title="请选择"
+                                    ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectDeviceList}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding selectedInspectDevice, Mode=TwoWay}"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
+                                    BackgroundColor="#F3F4F6" />
+
+                                            <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
+                                            <Picker Grid.Column="3"
+                                    Title="请选择"
+                                    ItemsSource="{Binding InspectParamOptions}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding selectedInspectParam, Mode=TwoWay}"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
+                                    BackgroundColor="#F3F4F6" />
+                                        </Grid>
+
+                                        <!-- 行6：开始时间 + 结束时间（方案2：点击弹窗选日期+时间，可清空） -->
+                                        <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+      ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+
+                                            <Label Grid.Column="0" Text="开始时间：" Style="{StaticResource FieldLabel}" />
+
+                                            <!-- 开始时间：灰框 + 点击 -->
+                                            <Frame Grid.Column="1"
+           Style="{StaticResource ReadonlyPill}"
+           Padding="10,8">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickStartDateTimeCommand}"
+                CommandParameter="{Binding .}" />
+                                                </Frame.GestureRecognizers>
+
+                                                <Label Text="{Binding inspectStartTime, TargetNullValue=请选择}"
+               TextColor="#111827"
+               VerticalTextAlignment="Center" />
+                                                <Frame.IsEnabled>
+                                                    <Binding Source="{RelativeSource AncestorType={x:Type ContentPage}}"
+                     Path="BindingContext.IsEditing"/>
+                                                </Frame.IsEnabled>
+                                            </Frame>
+
+                                            <Label Grid.Column="2" Text="结束时间：" Style="{StaticResource FieldLabel}" />
+
+                                            <!-- 结束时间：灰框 + 点击 -->
+                                            <Frame Grid.Column="3"
+           Style="{StaticResource ReadonlyPill}"
+           Padding="10,8">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickEndDateTimeCommand}"
+                CommandParameter="{Binding .}" />
+                                                </Frame.GestureRecognizers>
+
+                                                <Label Text="{Binding inspectEndTime, TargetNullValue=请选择}"
+               TextColor="#111827"
+               VerticalTextAlignment="Center" />
+                                                <Frame.IsEnabled>
+                                                    <Binding Source="{RelativeSource AncestorType={x:Type ContentPage}}"
+                     Path="BindingContext.IsEditing"/>
+                                                </Frame.IsEnabled>
+                                            </Frame>
+                                        </Grid>
+
+                                        <!-- 行7：实际值 + 两个按钮 -->
+                                        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="实际值：" Style="{StaticResource FieldLabel}" />
+                                            <Entry Grid.Column="1"
+                                   Placeholder="请输入"
+                                   Text="{Binding actualValue, Mode=TwoWay, Converter={StaticResource DecConv}}"
+                                   Keyboard="Numeric"
+                                   IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
+
+                                            <HorizontalStackLayout Grid.Column="2" Spacing="8">
+                                                <Button Text="自动检验"
+                                        BackgroundColor="#22C55E"
+                                        TextColor="White"
+                                        CornerRadius="6"
+                                        Padding="10,6"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AutoInspectCommand}"
+                                        CommandParameter="{Binding .}"
+                                        IsEnabled="{Binding IsAutoInspectEnabled}"/>
+                                                <Button Text="查看检验详细数据"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#2563EB"
+                                        Padding="6,6"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewInspectDetailCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+
+                                        <!-- 行8：不良原因 -->
+                                        <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="不良原因：" Style="{StaticResource FieldLabel}" />
                                             <Entry Grid.Column="1" Text="{Binding badCause, Mode=TwoWay}"
                                    IsEnabled="{Binding Source={x:Reference Name=ThisPage}, Path=BindingContext.IsEditing}" />
                                         </Grid>
 
-                                        <!-- 行6：缺陷 + 新增 -->
-                                        <Grid Grid.Row="6" Grid.Column="0" ColumnDefinitions="Auto,*" ColumnSpacing="0" Margin="0,0,0,0">
+                                        <!-- 行9：缺陷 + 新增 -->
+                                        <Grid Grid.Row="9" Grid.Column="0" ColumnDefinitions="Auto,*" ColumnSpacing="0" Margin="0,0,0,0">
                                             <Label Text="缺陷：" Grid.Column="0" VerticalTextAlignment="Center" />
 
                                             <!-- 标签区：只读显示已选缺陷 -->
@@ -575,4 +672,3 @@ ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
         </ScrollView>
     </Grid>
 </ContentPage>
-

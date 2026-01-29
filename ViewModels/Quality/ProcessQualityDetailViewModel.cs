@@ -1,9 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
+using IndustrialControlMAUI.Popups;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -39,6 +42,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 检验结果下拉（合格 / 不合格）
         public ObservableCollection<StatusOption> InspectResultOptions { get; } = new();
+        public ObservableCollection<InspectDeviceOption> InspectDeviceList { get; } = new();
 
         private StatusOption? _selectedInspectResult;
         public StatusOption? SelectedInspectResult
@@ -81,6 +85,14 @@ namespace IndustrialControlMAUI.ViewModels
         public List<UserInfoDto> AllUsers { get; private set; }
         public ObservableCollection<UserInfoDto> InspectorSuggestions { get; }
 
+        partial void OnIsEditingChanged(bool value)
+        {
+            foreach (var item in Items)
+            {
+                item.IsEditing = value;
+            }
+        }
+
         private string? inspectorText;
         public string? InspectorText
         {
@@ -117,6 +129,33 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         [RelayCommand]
+        public async Task LoadInspectDevicesAsync()
+        {
+            try
+            {
+                var resp = await _api.GetInspectDevicesAsync();
+                if (resp?.success != true || resp.result is null)
+                {
+                    await ShowTip($"加载检验设备失败：{resp?.message ?? "接口返回失败"}");
+                    return;
+                }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    InspectDeviceList.Clear();
+                    foreach (var device in resp.result)
+                    {
+                        InspectDeviceList.Add(device);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"加载检验设备失败：{ex.Message}");
+            }
+        }
+
+        [RelayCommand]
         private void PickInspector(UserInfoDto? user)
         {
             if (user is null) return;
@@ -129,6 +168,45 @@ namespace IndustrialControlMAUI.ViewModels
             IsInspectorDropdownOpen = false;
             InspectorSuggestions.Clear();
         }
+
+        [RelayCommand]
+        private async Task PickStartDateTimeAsync(QualityItem row)
+        {
+            if (!IsEditing || row is null) return;
+
+            DateTime? init = TryParse(row.inspectStartTime);
+
+            var popup = new DateTimePickerPopup("选择开始时间", init);
+            var resultObj = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+            if (resultObj is not DateTimePopupResult result) return;
+            if (result.IsCanceled) return;
+
+            row.inspectStartTime = result.IsCleared
+                ? null
+                : result.Value?.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        [RelayCommand]
+        private async Task PickEndDateTimeAsync(QualityItem row)
+        {
+            if (!IsEditing || row is null) return;
+
+            DateTime? init = TryParse(row.inspectEndTime);
+
+            var popup = new DateTimePickerPopup("选择结束时间", init);
+            var resultObj = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+            if (resultObj is not DateTimePopupResult result) return;
+            if (result.IsCanceled) return;
+
+            row.inspectEndTime = result.IsCleared
+                ? null
+                : result.Value?.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        private static DateTime? TryParse(string? s)
+            => DateTime.TryParse(s, out var dt) ? dt : null;
 
         [RelayCommand]
         private void ClearInspector()
@@ -188,6 +266,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsEditing = !IsCompletedStatus(Detail?.inspectStatus);
 
                 await LoadInspectorsAsync();
+                await LoadInspectDevicesAsync();
 
                 // ===== 明细 =====
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -197,6 +276,7 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var it in Detail.orderQualityDetailList ?? new())
                     {
                         it.index = i++; // 1,2,3...
+                        InitializeItem(it);
                         Items.Add(it);
                     }
                 });
@@ -277,6 +357,68 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+
+        private void InitializeItem(QualityItem item)
+        {
+            item.IsEditing = IsEditing;
+            item.PropertyChanged -= HandleItemPropertyChanged;
+            item.PropertyChanged += HandleItemPropertyChanged;
+
+            if (!string.IsNullOrWhiteSpace(item.deviceCode))
+            {
+                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.deviceCode);
+            }
+        }
+
+        private async void HandleItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not QualityItem item) return;
+
+            if (e.PropertyName == nameof(QualityItem.selectedInspectDevice))
+            {
+                await LoadInspectParamsAsync(item);
+            }
+        }
+
+        private async Task LoadInspectParamsAsync(QualityItem item)
+        {
+            item.InspectParamOptions.Clear();
+            item.selectedInspectParam = null;
+
+            var deviceCode = item.selectedInspectDevice?.devCode;
+            if (string.IsNullOrWhiteSpace(deviceCode))
+            {
+                return;
+            }
+
+            try
+            {
+                var resp = await _api.GetInspectParamsAsync(deviceCode!);
+                if (resp?.success != true || resp.result is null)
+                {
+                    await ShowTip($"加载设备参数失败：{resp?.message ?? "接口返回失败"}");
+                    return;
+                }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var param in resp.result)
+                    {
+                        item.InspectParamOptions.Add(param);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(item.paramCode))
+                    {
+                        item.selectedInspectParam = item.InspectParamOptions
+                            .FirstOrDefault(p => p.paramCode == item.paramCode);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"加载设备参数失败：{ex.Message}");
+            }
+        }
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -348,6 +490,69 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        [RelayCommand]
+        private async Task AutoInspectAsync(QualityItem? row)
+        {
+            if (row is null) return;
+            if (!row.IsAutoInspectEnabled)
+            {
+                await ShowTip("请先选择设备、参数、开始/结束时间并填写实际值。");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(row.id))
+            {
+                await ShowTip("缺少质检明细 ID，无法自动检验。");
+                return;
+            }
+
+            try
+            {
+                var resp = await _api.CheckQcItemLimitAsync(
+                    row.deviceCode!,
+                    row.paramCode!,
+                    row.id!,
+                    row.inspectStartTime,
+                    row.inspectEndTime,
+                    row.actualValue,
+                    _cts.Token);
+
+                if (resp?.success != true)
+                {
+                    await ShowTip($"自动检验失败：{resp?.message ?? "接口返回失败"}");
+                    return;
+                }
+
+                row.inspectResult = resp.result == true ? "合格" : "不合格";
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"自动检验异常：{ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private async Task ViewInspectDetailAsync(QualityItem? row)
+        {
+            if (row is null) return;
+
+            if (row.selectedInspectDevice is null || row.selectedInspectParam is null)
+            {
+                await ShowTip("请先选择检验设备和检验参数。");
+                return;
+            }
+
+            var query = new InspectionDetailQuery
+            {
+                DeviceCode = row.selectedInspectDevice.devCode,
+                ParamCode = row.selectedInspectParam.paramCode,
+                CollectTimeBegin = row.inspectStartTime,
+                CollectTimeEnd = row.inspectEndTime
+            };
+
+            await InspectionDataPopup.ShowAsync(_api, query);
         }
 
 

@@ -269,15 +269,95 @@ public partial class QualityItem : ObservableObject
     public string? inspectStartTime
     {
         get => _inspectStartTime;
-        set => SetProperty(ref _inspectStartTime, value);
+        set
+        {
+            if (SetProperty(ref _inspectStartTime, value))
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+        }
     }
 
     private string? _inspectEndTime;
     public string? inspectEndTime
     {
         get => _inspectEndTime;
-        set => SetProperty(ref _inspectEndTime, value);
+        set
+        {
+            if (SetProperty(ref _inspectEndTime, value))
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+        }
     }
+
+    public string? deviceCode { get; set; }
+    public string? deviceName { get; set; }
+    public string? paramCode { get; set; }
+    public string? paramName { get; set; }
+
+    private InspectDeviceOption? _selectedInspectDevice;
+    [JsonIgnore]
+    public InspectDeviceOption? selectedInspectDevice
+    {
+        get => _selectedInspectDevice;
+        set
+        {
+            if (SetProperty(ref _selectedInspectDevice, value))
+            {
+                deviceCode = value?.devCode;
+                deviceName = value?.devName;
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+            }
+        }
+    }
+
+    private InspectParamOption? _selectedInspectParam;
+    [JsonIgnore]
+    public InspectParamOption? selectedInspectParam
+    {
+        get => _selectedInspectParam;
+        set
+        {
+            if (SetProperty(ref _selectedInspectParam, value))
+            {
+                paramCode = value?.paramCode;
+                paramName = value?.paramName;
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public ObservableCollection<InspectParamOption> InspectParamOptions { get; set; } = new();
+
+    private decimal? _actualValue;
+    public decimal? actualValue
+    {
+        get => _actualValue;
+        set
+        {
+            if (SetProperty(ref _actualValue, value))
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+        }
+    }
+
+    private bool _isEditing = true;
+    [JsonIgnore]
+    public bool IsEditing
+    {
+        get => _isEditing;
+        set
+        {
+            if (SetProperty(ref _isEditing, value))
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+        }
+    }
+
+    [JsonIgnore]
+    public bool IsAutoInspectEnabled =>
+        IsEditing
+        && selectedInspectDevice is not null
+        && selectedInspectParam is not null
+        && !string.IsNullOrWhiteSpace(inspectStartTime)
+        && !string.IsNullOrWhiteSpace(inspectEndTime)
+        && actualValue is not null;
 
 
     // 已选缺陷（用于标签显示与保存）
@@ -327,6 +407,50 @@ public partial class QualityItem : ObservableObject
         else
             badRate = null;
     }
+}
+
+public class InspectDeviceOption
+{
+    public string? devCode { get; set; }
+    public string? devName { get; set; }
+    public string? devModel { get; set; }
+    public string? devTypeId { get; set; }
+    public string? devTypeCode { get; set; }
+    public string? devTypeName { get; set; }
+    public string? devAdministrator { get; set; }
+    public string? devProducer { get; set; }
+
+    [JsonIgnore]
+    public string? Name => devName;
+}
+
+public class InspectParamOption
+{
+    public string? paramCode { get; set; }
+    public string? paramName { get; set; }
+    public string? lowerLimit { get; set; }
+    public string? upperLimit { get; set; }
+    public string? deviceCode { get; set; }
+
+    [JsonIgnore]
+    public string? Name => paramName;
+}
+
+public class InspectionDetailRecord
+{
+    public string? collectTime { get; set; }
+    public string? collectVal { get; set; }
+    public string? paramCode { get; set; }
+    public string? paramName { get; set; }
+    public string? paramUnit { get; set; }
+}
+
+public class InspectionDetailQuery
+{
+    public string? DeviceCode { get; set; }
+    public string? ParamCode { get; set; }
+    public string? CollectTimeBegin { get; set; }
+    public string? CollectTimeEnd { get; set; }
 }
 
 public class QualityAttachment
