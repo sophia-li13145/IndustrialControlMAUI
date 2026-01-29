@@ -27,7 +27,9 @@
 
         <!-- 表格 -->
         <CollectionView Grid.Row="1" ItemsSource="{Binding Rows}" SelectionMode="Single"
-                        SelectedItem="{Binding SelectedRow, Mode=TwoWay}">
+                        SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                        RemainingItemsThreshold="2"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
             <CollectionView.Header>
                 <Grid ColumnDefinitions="40,*,*,*,*,*" Padding="10,8" BackgroundColor="#F5F7FA">
                     <Label Text="选择"/>
@@ -74,6 +76,16 @@
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <Grid Padding="8"
+                      HorizontalOptions="Center"
+                      IsVisible="{Binding IsLoadingMore}">
+                    <ActivityIndicator IsRunning="True" />
+                    <Label Text="加载中..."
+                           Margin="8,0,0,0"
+                           VerticalOptions="Center" />
+                </Grid>
+            </CollectionView.Footer>
         </CollectionView>
 
         <!-- 底部操作 -->

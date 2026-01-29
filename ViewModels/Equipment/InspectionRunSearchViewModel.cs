@@ -17,7 +17,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private DateTime endDate = DateTime.Today;
         [ObservableProperty] private string? selectedStatus = "全部";
         [ObservableProperty] private int pageIndex = 1;
-        [ObservableProperty] private int pageSize = 50;
+        [ObservableProperty] private int pageSize = 10;
+        [ObservableProperty] private bool isLoadingMore;
+        [ObservableProperty] private bool hasMore = true;
         [ObservableProperty] private List<DictItem> inspectStatusDict = new();
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedStatusOption;
@@ -69,62 +71,17 @@ namespace IndustrialControlMAUI.ViewModels
             IsBusy = true;
             try
             {
+                PageIndex = 1;
                 Orders.Clear();
-                var statusMap = InspectStatusDict?
-                .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
-                .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
-                .Select(g => g.First())
-                .ToDictionary(
-                k => k.dictItemValue!,
-                v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
-                StringComparer.OrdinalIgnoreCase
-            ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                var pageNo = PageIndex;
-                var pageSize = PageSize;
-                var inspectNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
-                var createdTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
-                var createdTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
-                var inspectStatus = SelectedStatusOption?.Value;   // “1”“2”“3”
-                var searchCount = false;                           // 是否统计总记录
-
-                // 调用 API
-                var resp = await _equipmentapi.PageQueryAsync(
-                    pageNo: pageNo,
-                    pageSize: pageSize,
-                    inspectNo: inspectNo,
-                    createdTimeBegin: createdTimeBegin,
-                    createdTimeEnd: createdTimeEnd,
-                    inspectStatus: inspectStatus,
-                    searchCount: searchCount);
-
-                var records = resp?.result?.records;
-                if (records is null || records.Count == 0)
+                var records = await LoadPageAsync(PageIndex);
+                if (records.Count == 0)
                 {
                     await ShowTip("未查询到数据");
                     return;
                 }
-
                 foreach (var t in records)
-                {
-                    t.inspectStatusText = statusMap.TryGetValue(t.inspectStatus ?? "", out var sName)
-                        ? sName
-                        : t.inspectStatus;
-
-                    Orders.Add(new InspectionOrderItem
-                    {
-                        Id = t.id,
-                        InspectNo = t.inspectNo,
-                        InspectStatus = t.inspectStatus,
-                        InspectStatusText = t.inspectStatusText,
-                        InspectResult = t.inspectResult,
-                        DevName = t.devName,
-                        InspectTime = ParseDate(t.inspectTime),
-                        PlanName = t.planName,
-                        DevCode = t.devCode,
-                        CreatedTime = ParseDate(t.createdTime)
-                    });
-                }
+                    Orders.Add(t);
+                HasMore = records.Count >= PageSize;
             }
             catch (Exception ex)
             {
@@ -134,6 +91,79 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        [RelayCommand]
+        private async Task LoadMoreAsync()
+        {
+            if (IsBusy || IsLoadingMore || !HasMore) return;
+
+            try
+            {
+                IsLoadingMore = true;
+                PageIndex++;
+                var records = await LoadPageAsync(PageIndex);
+                foreach (var t in records)
+                    Orders.Add(t);
+                HasMore = records.Count >= PageSize;
+            }
+            finally
+            {
+                IsLoadingMore = false;
+            }
+        }
+
+        private async Task<List<InspectionOrderItem>> LoadPageAsync(int pageNo)
+        {
+            var statusMap = InspectStatusDict?
+            .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
+            .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToDictionary(
+            k => k.dictItemValue!,
+            v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
+            StringComparer.OrdinalIgnoreCase
+        ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var inspectNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
+            var createdTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
+            var createdTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
+            var inspectStatus = SelectedStatusOption?.Value;
+            var searchCount = false;
+
+            var resp = await _equipmentapi.PageQueryAsync(
+                pageNo: pageNo,
+                pageSize: PageSize,
+                inspectNo: inspectNo,
+                createdTimeBegin: createdTimeBegin,
+                createdTimeEnd: createdTimeEnd,
+                inspectStatus: inspectStatus,
+                searchCount: searchCount);
+
+            var records = resp?.result?.records ?? new List<InspectionOrderItem>();
+            var mapped = new List<InspectionOrderItem>();
+            foreach (var t in records)
+            {
+                t.inspectStatusText = statusMap.TryGetValue(t.inspectStatus ?? "", out var sName)
+                    ? sName
+                    : t.inspectStatus;
+
+                mapped.Add(new InspectionOrderItem
+                {
+                    Id = t.id,
+                    InspectNo = t.inspectNo,
+                    InspectStatus = t.inspectStatus,
+                    InspectStatusText = t.inspectStatusText,
+                    InspectResult = t.inspectResult,
+                    DevName = t.devName,
+                    InspectTime = ParseDate(t.inspectTime),
+                    PlanName = t.planName,
+                    DevCode = t.devCode,
+                    CreatedTime = ParseDate(t.createdTime)
+                });
+            }
+
+            return mapped;
         }
 
 
@@ -147,6 +177,7 @@ namespace IndustrialControlMAUI.ViewModels
             StartDate = DateTime.Today.AddDays(-7);
             EndDate = DateTime.Today;
             PageIndex = 1;
+            HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
             Orders.Clear();
         }

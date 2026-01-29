@@ -24,7 +24,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private DateTime endDate = DateTime.Today;
         [ObservableProperty] private string? selectedStatus = "全部";
         [ObservableProperty] private int pageIndex = 1;
-        [ObservableProperty] private int pageSize = 50;
+        [ObservableProperty] private int pageSize = 10;
+        [ObservableProperty] private bool isLoadingMore;
+        [ObservableProperty] private bool hasMore = true;
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedStatusOption;
         public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
@@ -159,45 +161,74 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 await EnsureDictsLoadedAsync();   // ★ 先确保字典到位
 
-                var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
-                var statusList = string.IsNullOrWhiteSpace(SelectedStatusOption?.Value)
-                ? null
-                : new[] { SelectedStatusOption.Value }; // ["0"] 或 ["1"] 等
-
-                var page = await _workapi.PageWorkProcessTasksAsync(
-                    workOrderNo: byOrderNo ? Keyword?.Trim() : null,
-                    auditStatusList: statusList,
-                    processCode: SelectedProcessOption?.Value,                      // 工序下拉 Value（processCode）
-                    createdTimeStart: byOrderNo ? null : StartDate.Date,            // 可选
-                    createdTimeEnd: byOrderNo ? null : EndDate.Date.AddDays(1).AddSeconds(-1),
-                    pageNo: PageIndex,
-                    pageSize: PageSize,
-                    ct: CancellationToken.None);
-
-                var records = page?.result?.records;
-                if (records != null)
+                PageIndex = 1;
+                Orders.Clear();
+                var records = await LoadPageAsync(PageIndex);
+                if (records.Count == 0)
                 {
-                    foreach (var t in records)
-                    {
-                        if (!string.IsNullOrWhiteSpace(t.AuditStatus) &&
-                        _statusMap.TryGetValue(t.AuditStatus, out var sName))
-                            t.AuditStatusName = sName;
-                        if (!string.IsNullOrWhiteSpace(t.WorkOrderAuditStatus) &&
-                       _orderstatusMap.TryGetValue(t.WorkOrderAuditStatus, out var sName2))
-                            t.WorkOrderAuditStatus = sName2;
-                    }
-
-                    Orders.Clear();
+                    await ShowTip("未查询到任何数据");
+                }
+                else
+                {
                     foreach (var t in records)
                         Orders.Add(t);
                 }
-                else {
-                    await ShowTip("未查询到任何数据");
-                }
+
+                HasMore = records.Count >= PageSize;
             }
             finally { IsBusy = false; }
         }
 
+        [RelayCommand]
+        private async Task LoadMoreAsync()
+        {
+            if (IsBusy || IsLoadingMore || !HasMore) return;
+
+            try
+            {
+                IsLoadingMore = true;
+                PageIndex++;
+                var records = await LoadPageAsync(PageIndex);
+                foreach (var t in records)
+                    Orders.Add(t);
+                HasMore = records.Count >= PageSize;
+            }
+            finally
+            {
+                IsLoadingMore = false;
+            }
+        }
+
+        private async Task<List<ProcessTask>> LoadPageAsync(int pageNo)
+        {
+            var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
+            var statusList = string.IsNullOrWhiteSpace(SelectedStatusOption?.Value)
+            ? null
+            : new[] { SelectedStatusOption.Value };
+
+            var page = await _workapi.PageWorkProcessTasksAsync(
+                workOrderNo: byOrderNo ? Keyword?.Trim() : null,
+                auditStatusList: statusList,
+                processCode: SelectedProcessOption?.Value,
+                createdTimeStart: byOrderNo ? null : StartDate.Date,
+                createdTimeEnd: byOrderNo ? null : EndDate.Date.AddDays(1).AddSeconds(-1),
+                pageNo: pageNo,
+                pageSize: PageSize,
+                ct: CancellationToken.None);
+
+            var records = page?.result?.records ?? new List<ProcessTask>();
+            foreach (var t in records)
+            {
+                if (!string.IsNullOrWhiteSpace(t.AuditStatus) &&
+                _statusMap.TryGetValue(t.AuditStatus, out var sName))
+                    t.AuditStatusName = sName;
+                if (!string.IsNullOrWhiteSpace(t.WorkOrderAuditStatus) &&
+               _orderstatusMap.TryGetValue(t.WorkOrderAuditStatus, out var sName2))
+                    t.WorkOrderAuditStatus = sName2;
+            }
+
+            return records;
+        }
         private Task ShowTip(string message) =>
            Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
@@ -208,6 +239,7 @@ namespace IndustrialControlMAUI.ViewModels
             StartDate = DateTime.Today.AddDays(-7);
             EndDate = DateTime.Today;
             PageIndex = 1;
+            HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
             Orders.Clear();
         }
