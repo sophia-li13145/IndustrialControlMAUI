@@ -55,7 +55,9 @@
         <CollectionView Grid.Row="2"
                         x:Name="OrderList"
                         ItemsSource="{Binding Orders}"
-                        SelectionMode="None">
+                        SelectionMode="None"
+                        RemainingItemsThreshold="2"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Frame Margin="0,6,0,0"
@@ -104,6 +106,16 @@
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <Grid Padding="8"
+                      HorizontalOptions="Center"
+                      IsVisible="{Binding IsLoadingMore}">
+                    <ActivityIndicator IsRunning="True" />
+                    <Label Text="加载中..."
+                           Margin="8,0,0,0"
+                           VerticalOptions="Center" />
+                </Grid>
+            </CollectionView.Footer>
         </CollectionView>
 
     </Grid>

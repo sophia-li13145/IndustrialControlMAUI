@@ -510,7 +510,7 @@ namespace IndustrialControlMAUI.ViewModels
                     materialBarcode: materialBarcode,
                     searchCount: false,
                     pageNo: 1,
-                    pageSize: 50,
+                    pageSize: 10,
                     ct: _cts.Token);
 
                 Details.Clear();

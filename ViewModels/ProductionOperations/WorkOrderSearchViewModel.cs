@@ -19,7 +19,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private DateTime endDate = DateTime.Today;
         [ObservableProperty] private string? selectedStatus = "全部";
         [ObservableProperty] private int pageIndex = 1;
-        [ObservableProperty] private int pageSize = 50;
+        [ObservableProperty] private int pageSize = 10;
+        [ObservableProperty] private bool isLoadingMore;
+        [ObservableProperty] private bool hasMore = true;
         private readonly Dictionary<string, string> _auditMap = new();   // "1" -> "执行中"
         private readonly Dictionary<string, string> _urgentMap = new();  // "level2" -> "中"
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
@@ -91,54 +93,84 @@ namespace IndustrialControlMAUI.ViewModels
             try
             {
                 await EnsureDictsLoadedAsync();   // ★ 先确保字典到位
-
-                var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
-                DateTime? start = byOrderNo ? null : StartDate.Date;
-                DateTime? end = byOrderNo ? null : EndDate.Date.AddDays(1);
-
-                var q = new WorkOrderQuery
-                {
-                    PageNo = PageIndex,
-                    PageSize = PageSize,
-                    AuditStatus = byOrderNo ? null : SelectedStatusOption?.Value, // ★ 直接传字典值（"0"/"1"/...）
-                    CreatedTimeStart = start,
-                    CreatedTimeEnd = end,
-                    WorkOrderNo = byOrderNo ? Keyword!.Trim() : null
-                };
-
-                var page = await _api.GetWorkOrdersAsync(q);
-                var records = page?.result?.records
-                           ?? page?.result?.list?.records
-                           ?? new List<WorkOrderRecord>();
-
+                PageIndex = 1;
                 Orders.Clear();
+                var records = await LoadPageAsync(PageIndex);
                 foreach (var r in records)
-                {
-                    // r.auditStatus 是 "0"/"1"/...，r.urgent 是 "level1/2/3"
-                    var statusName = MapByDict(_auditMap, r.auditStatus);
-                    var urgentName = MapByDict(_urgentMap, r.urgent);
-                    var createdAt = TryParseDt(r.createdTime);
-
-                    Orders.Add(new WorkOrderDto
-                    {
-                        Id = r.id ?? "",
-                        OrderNo = r.workOrderNo ?? "-",
-                        OrderName = r.workOrderName ?? "",
-                        MaterialCode = r.materialCode ?? "",
-                        MaterialName = r.materialName ?? "",
-                        LineName = r.lineName ?? "",
-                        Status = statusName,
-                        Urgent = urgentName,
-                        CurQty = (int?)r.curQty,
-                        CreateDate = createdAt?.ToString("yyyy-MM-dd") ?? (r.createdTime ?? ""),
-                        BomCode = r.bomCode,                 // e.g. "BOM00000006"
-                        RouteName = r.routeName,             // e.g. "午餐肉罐头测试工序调整"
-                        WorkShopName = r.workShopName,       // e.g. "制造二组"
-                        PlanStartText = r.schemeStartDate
-                    });
-                }
+                    Orders.Add(r);
+                HasMore = records.Count >= PageSize;
             }
             finally { IsBusy = false; }
+        }
+
+        [RelayCommand]
+        private async Task LoadMoreAsync()
+        {
+            if (IsBusy || IsLoadingMore || !HasMore) return;
+
+            try
+            {
+                IsLoadingMore = true;
+                PageIndex++;
+                var records = await LoadPageAsync(PageIndex);
+                foreach (var r in records)
+                    Orders.Add(r);
+                HasMore = records.Count >= PageSize;
+            }
+            finally
+            {
+                IsLoadingMore = false;
+            }
+        }
+
+        private async Task<List<WorkOrderDto>> LoadPageAsync(int pageNo)
+        {
+            var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
+            DateTime? start = byOrderNo ? null : StartDate.Date;
+            DateTime? end = byOrderNo ? null : EndDate.Date.AddDays(1);
+
+            var q = new WorkOrderQuery
+            {
+                PageNo = pageNo,
+                PageSize = PageSize,
+                AuditStatus = byOrderNo ? null : SelectedStatusOption?.Value,
+                CreatedTimeStart = start,
+                CreatedTimeEnd = end,
+                WorkOrderNo = byOrderNo ? Keyword!.Trim() : null
+            };
+
+            var page = await _api.GetWorkOrdersAsync(q);
+            var records = page?.result?.records
+                       ?? page?.result?.list?.records
+                       ?? new List<WorkOrderRecord>();
+
+            var mapped = new List<WorkOrderDto>();
+            foreach (var r in records)
+            {
+                var statusName = MapByDict(_auditMap, r.auditStatus);
+                var urgentName = MapByDict(_urgentMap, r.urgent);
+                var createdAt = TryParseDt(r.createdTime);
+
+                mapped.Add(new WorkOrderDto
+                {
+                    Id = r.id ?? "",
+                    OrderNo = r.workOrderNo ?? "-",
+                    OrderName = r.workOrderName ?? "",
+                    MaterialCode = r.materialCode ?? "",
+                    MaterialName = r.materialName ?? "",
+                    LineName = r.lineName ?? "",
+                    Status = statusName,
+                    Urgent = urgentName,
+                    CurQty = (int?)r.curQty,
+                    CreateDate = createdAt?.ToString("yyyy-MM-dd") ?? (r.createdTime ?? ""),
+                    BomCode = r.bomCode,
+                    RouteName = r.routeName,
+                    WorkShopName = r.workShopName,
+                    PlanStartText = r.schemeStartDate
+                });
+            }
+
+            return mapped;
         }
 
         // 通用的码→名映射（字典里找不到就回退原码）
@@ -156,6 +188,7 @@ namespace IndustrialControlMAUI.ViewModels
             StartDate = DateTime.Today.AddDays(-7);
             EndDate = DateTime.Today;
             PageIndex = 1;
+            HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
             Orders.Clear();
         }

@@ -36,6 +36,10 @@ namespace IndustrialControlMAUI.ViewModels
         // ===== 列表数据 =====
         public ObservableCollection<EnergyMeterUiRow> Rows { get; } = new();
         [ObservableProperty] private EnergyMeterUiRow? selectedRow;
+        [ObservableProperty] private bool isLoadingMore;
+        [ObservableProperty] private bool hasMore = true;
+        private int _pageNo = 1;
+        private const int PageSize = 10;
 
         /// <summary>弹窗加载时调用一次</summary>
         public async Task EnsureInitAsync()
@@ -69,10 +73,39 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task Query()
         {
             await EnsureInitAsync();
+            _pageNo = 1;
+            Rows.Clear();
+            var records = await LoadPageAsync(_pageNo);
+            foreach (var r in records)
+                Rows.Add(r);
+            HasMore = records.Count >= PageSize;
+        }
 
+        [RelayCommand]
+        private async Task LoadMoreAsync()
+        {
+            if (IsLoadingMore || !HasMore) return;
+
+            try
+            {
+                IsLoadingMore = true;
+                _pageNo++;
+                var records = await LoadPageAsync(_pageNo);
+                foreach (var r in records)
+                    Rows.Add(r);
+                HasMore = records.Count >= PageSize;
+            }
+            finally
+            {
+                IsLoadingMore = false;
+            }
+        }
+
+        private async Task<List<EnergyMeterUiRow>> LoadPageAsync(int pageNo)
+        {
             var resp = await _api.MeterPageQueryAsync(
-                pageNo: 1,
-                pageSize: 50,
+                pageNo: pageNo,
+                pageSize: PageSize,
                 meterCode: FilterCode,
                 energyType: SelectedEnergyType?.Value,
                 workshopId: SelectedWorkshop?.Id,
@@ -80,11 +113,11 @@ namespace IndustrialControlMAUI.ViewModels
                 searchCount: true,
                 ct: _cts.Token);
 
-            Rows.Clear();
             var recs = resp?.result?.records ?? new();
+            var mapped = new List<EnergyMeterUiRow>();
             foreach (var r in recs)
             {
-                Rows.Add(new EnergyMeterUiRow
+                mapped.Add(new EnergyMeterUiRow
                 {
                     MeterCode = r.meterCode ?? "",
                     EnergyType = r.energyType ?? "",
@@ -94,6 +127,8 @@ namespace IndustrialControlMAUI.ViewModels
                     LineId = r.lineId ?? ""
                 });
             }
+
+            return mapped;
         }
 
         [RelayCommand]

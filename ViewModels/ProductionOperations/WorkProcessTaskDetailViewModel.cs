@@ -453,7 +453,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             processCode: Detail.processCode!,
             workOrderNo: Detail.workOrderNo!,
             pageNo: 1,
-            pageSize: 50
+            pageSize: 10
         );
 
         // ③ 判断返回是否成功并绑定
@@ -474,7 +474,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             processCode: Detail.processCode!,
             workOrderNo: Detail.workOrderNo!,
             pageNo: 1,
-            pageSize: 50
+            pageSize: 10
         );
 
         // ③ 判断返回是否成功并绑定

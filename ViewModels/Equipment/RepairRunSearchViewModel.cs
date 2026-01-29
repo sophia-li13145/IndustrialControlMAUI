@@ -17,7 +17,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private DateTime endDate = DateTime.Today;
         [ObservableProperty] private string? selectedStatus = "全部";
         [ObservableProperty] private int pageIndex = 1;
-        [ObservableProperty] private int pageSize = 50;
+        [ObservableProperty] private int pageSize = 10;
+        [ObservableProperty] private bool isLoadingMore;
+        [ObservableProperty] private bool hasMore = true;
         [ObservableProperty] private List<DictItem> repairStatusDict = new();
         [ObservableProperty] private List<DictItem> urgentDict = new();
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
@@ -71,74 +73,17 @@ namespace IndustrialControlMAUI.ViewModels
             IsBusy = true;
             try
             {
+                PageIndex = 1;
                 Orders.Clear();
-                var statusMap = RepairStatusDict?
-                .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
-                .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
-                .Select(g => g.First())
-                .ToDictionary(
-                k => k.dictItemValue!,
-                v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
-                StringComparer.OrdinalIgnoreCase
-            ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                var urgentMap = UrgentDict?
-               .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
-               .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
-               .Select(g => g.First())
-               .ToDictionary(
-               k => k.dictItemValue!,
-               v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
-               StringComparer.OrdinalIgnoreCase
-           ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                var pageNo = PageIndex;
-                var pageSize = PageSize;
-                var workOrderNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
-                var submitTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
-                var submitTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
-                var auditStatus = SelectedStatusOption?.Value;   // “1”“2”“3”
-                var searchCount = false;                           // 是否统计总记录
-
-                // 调用 API
-                var resp = await _equipmentapi.RepairPageQueryAsync(
-                    pageNo: pageNo,
-                    pageSize: pageSize,
-                    workOrderNo: workOrderNo,
-                    submitTimeBegin: submitTimeBegin,
-                    submitTimeEnd: submitTimeEnd,
-                    auditStatus: auditStatus,
-                    searchCount: searchCount);
-
-                var records = resp?.result?.records;
-                if (records is null || records.Count == 0)
+                var records = await LoadPageAsync(PageIndex);
+                if (records.Count == 0)
                 {
                     await ShowTip("未查询到数据");
                     return;
                 }
-
                 foreach (var t in records)
-                {
-                    t.auditStatusText = statusMap.TryGetValue(t.auditStatus ?? "", out var sName)
-                        ? sName
-                        : t.auditStatus;
-                    t.urgentText = urgentMap.TryGetValue(t.urgent ?? "", out var nName)
-                       ? nName
-                       : t.urgent;
-
-                    Orders.Add(new RepairOrderItem
-                    {
-                        id = t.id,
-                        workOrderNo = t.workOrderNo,
-                        auditStatus = t.auditStatus,
-                        auditStatusText = t.auditStatusText,
-                        repairResult = t.repairResult,
-                        devName = t.devName,
-                        devCode = t.devCode,
-                        repairStartTime = ParseDate(t.repairStartTime),
-                        createdTime = ParseDate(t.createdTime),
-                        urgent = t.urgent,
-                        urgentText = t.urgentText
-                    });
-                }
+                    Orders.Add(t);
+                HasMore = records.Count >= PageSize;
             }
             catch (Exception ex)
             {
@@ -148,6 +93,91 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        [RelayCommand]
+        private async Task LoadMoreAsync()
+        {
+            if (IsBusy || IsLoadingMore || !HasMore) return;
+
+            try
+            {
+                IsLoadingMore = true;
+                PageIndex++;
+                var records = await LoadPageAsync(PageIndex);
+                foreach (var t in records)
+                    Orders.Add(t);
+                HasMore = records.Count >= PageSize;
+            }
+            finally
+            {
+                IsLoadingMore = false;
+            }
+        }
+
+        private async Task<List<RepairOrderItem>> LoadPageAsync(int pageNo)
+        {
+            var statusMap = RepairStatusDict?
+            .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
+            .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToDictionary(
+            k => k.dictItemValue!,
+            v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
+            StringComparer.OrdinalIgnoreCase
+        ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var urgentMap = UrgentDict?
+           .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
+           .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+           .Select(g => g.First())
+           .ToDictionary(
+           k => k.dictItemValue!,
+           v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
+           StringComparer.OrdinalIgnoreCase
+       ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var workOrderNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
+            var submitTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
+            var submitTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
+            var auditStatus = SelectedStatusOption?.Value;
+            var searchCount = false;
+
+            var resp = await _equipmentapi.RepairPageQueryAsync(
+                pageNo: pageNo,
+                pageSize: PageSize,
+                workOrderNo: workOrderNo,
+                submitTimeBegin: submitTimeBegin,
+                submitTimeEnd: submitTimeEnd,
+                auditStatus: auditStatus,
+                searchCount: searchCount);
+
+            var records = resp?.result?.records ?? new List<RepairRecordDto>();
+            var mapped = new List<RepairOrderItem>();
+            foreach (var t in records)
+            {
+                t.auditStatusText = statusMap.TryGetValue(t.auditStatus ?? "", out var sName)
+                    ? sName
+                    : t.auditStatus;
+                t.urgentText = urgentMap.TryGetValue(t.urgent ?? "", out var nName)
+                   ? nName
+                   : t.urgent;
+
+                mapped.Add(new RepairOrderItem
+                {
+                    id = t.id,
+                    workOrderNo = t.workOrderNo,
+                    auditStatus = t.auditStatus,
+                    auditStatusText = t.auditStatusText,
+                    repairResult = t.repairResult,
+                    devName = t.devName,
+                    devCode = t.devCode,
+                    repairStartTime = ParseDate(t.repairStartTime),
+                    createdTime = ParseDate(t.createdTime),
+                    urgent = t.urgent,
+                    urgentText = t.urgentText
+                });
+            }
+
+            return mapped;
         }
 
 
@@ -161,6 +191,7 @@ namespace IndustrialControlMAUI.ViewModels
             StartDate = DateTime.Today.AddDays(-7);
             EndDate = DateTime.Today;
             PageIndex = 1;
+            HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
             Orders.Clear();
         }
