@@ -13,7 +13,7 @@ namespace IndustrialControlMAUI.Services
             try
             {
                 // 1) 取 token（按你项目实际来：SecureStorage/Preferences/ITokenProvider）
-                var token = await TokenStorage.LoadAsync(); // 示例：请替换为你的实现
+                var token = await TokenStorage.LoadAsync().ConfigureAwait(false); // 示例：请替换为你的实现
                 token = token?.Trim();
 
                 // 2) 写入头（只移除自己要覆盖的键）
@@ -45,7 +45,7 @@ namespace IndustrialControlMAUI.Services
                 System.Diagnostics.Debug.WriteLine($"[AuthHeaderHandler] error: {ex}");
             }
 
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
 

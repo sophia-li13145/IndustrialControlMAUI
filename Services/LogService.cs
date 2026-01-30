@@ -2,27 +2,27 @@ using System.Globalization;
 
 namespace IndustrialControlMAUI.Services
 {
-//    ±¾µØÎÄ±¾ÈÕÖ¾£º
+//    æœ¬åœ°æ–‡æœ¬æ—¥å¿—ï¼š
 
-//Ã¿ÌìÒ»¸öÎÄ¼ş£¬°´ÈÕÆÚÃüÃû£»
+//æ¯å¤©ä¸€ä¸ªæ–‡ä»¶ï¼ŒæŒ‰æ—¥æœŸå‘½åï¼›
 
-//Ö»¼ÇÂ¼Ê±¼ä£¨Ê±·ÖÃë£©+ ÎÄ±¾£¬²»Çø·ÖµÈ¼¶£¨Info/Error µÈ£©£¬Ò²Ã»ÓĞ½á¹¹»¯×Ö¶Î¡£
+//åªè®°å½•æ—¶é—´ï¼ˆæ—¶åˆ†ç§’ï¼‰+ æ–‡æœ¬ï¼Œä¸åŒºåˆ†ç­‰çº§ï¼ˆInfo/Error ç­‰ï¼‰ï¼Œä¹Ÿæ²¡æœ‰ç»“æ„åŒ–å­—æ®µã€‚
 
-//ºóÌ¨ÂÖÑ¯ + ÊÂ¼şÍÆËÍ£º
+//åå°è½®è¯¢ + äº‹ä»¶æ¨é€ï¼š
 
-//800ms ÂÖÑ¯µ±Ç°ÈÕÖ¾ÎÄ¼ş£¬¼ì²â±ä»¯£»
+//800ms è½®è¯¢å½“å‰æ—¥å¿—æ–‡ä»¶ï¼Œæ£€æµ‹å˜åŒ–ï¼›
 
-//ÓĞ±ä»¯¾Í°ÑÈ«Á¿ÈÕÖ¾ÎÄ±¾Í¨¹ı LogTextUpdated ÍÆ¸ø UI£»
+//æœ‰å˜åŒ–å°±æŠŠå…¨é‡æ—¥å¿—æ–‡æœ¬é€šè¿‡ LogTextUpdated æ¨ç»™ UIï¼›
 
-//Ğ´ÈÕÖ¾Ê±»á¶îÍâÍÆËÍÔöÁ¿µ¥ÌõÈÕÖ¾¸ø¶©ÔÄÕß¡£
+//å†™æ—¥å¿—æ—¶ä¼šé¢å¤–æ¨é€å¢é‡å•æ¡æ—¥å¿—ç»™è®¢é˜…è€…ã€‚
 
-//Ò³Ãæ¼¶ÆôÍ££º
+//é¡µé¢çº§å¯åœï¼š
 
-//Ö»ÔÚÈÕÖ¾²é¿´Ò³Ãæ´ò¿ªÊ±Æô¶¯ÂÖÑ¯£¬Àë¿ªÊ±Í£Ö¹£¬±ÜÃâ³¤ÆÚÕ¼×ÊÔ´¡£
+//åªåœ¨æ—¥å¿—æŸ¥çœ‹é¡µé¢æ‰“å¼€æ—¶å¯åŠ¨è½®è¯¢ï¼Œç¦»å¼€æ—¶åœæ­¢ï¼Œé¿å…é•¿æœŸå èµ„æºã€‚
 
-//ÏµÍ³¼¶ Debug ÈÕÖ¾£º
+//ç³»ç»Ÿçº§ Debug æ—¥å¿—ï¼š
 
-//DEBUG Ä£Ê½ÏÂ£¬ÓÃ Microsoft.Extensions.Logging °ÑÈÕÖ¾Êä³öµ½ VS µ÷ÊÔÆ÷¡£
+//DEBUG æ¨¡å¼ä¸‹ï¼Œç”¨ Microsoft.Extensions.Logging æŠŠæ—¥å¿—è¾“å‡ºåˆ° VS è°ƒè¯•å™¨ã€‚
     public class LogService : IDisposable
     {
         private readonly string _logsDir = Path.Combine(FileSystem.AppDataDirectory, "logs");
@@ -33,20 +33,20 @@ namespace IndustrialControlMAUI.Services
 
         public string TodayLogPath => Path.Combine(_logsDir, $"gr-{DateTime.Now:yyyy-MM-dd}.txt");
 
-        // ÈÕÖ¾±£ÁôÌìÊı£¨°üº¬½ñÌì£©
+        // æ—¥å¿—ä¿ç•™å¤©æ•°ï¼ˆåŒ…å«ä»Šå¤©ï¼‰
         private const int LogRetainDays = 7;
 
 
         public LogService()
         {
-            // È·±£ÈÕÖ¾Ä¿Â¼´æÔÚ
+            // ç¡®ä¿æ—¥å¿—ç›®å½•å­˜åœ¨
             Directory.CreateDirectory(_logsDir);
         }
 
         public void Start()
         {
             Stop();
-            // Æô¶¯Ê±ÇåÀí¾ÉÈÕÖ¾£¨Ö»±£Áô×î½ü 7 Ìì£©
+            // å¯åŠ¨æ—¶æ¸…ç†æ—§æ—¥å¿—ï¼ˆåªä¿ç•™æœ€è¿‘ 7 å¤©ï¼‰
             DeleteOldLogs();
             _cts = new CancellationTokenSource();
             _ = Task.Run(() => LoopAsync(_cts.Token));
@@ -59,21 +59,21 @@ namespace IndustrialControlMAUI.Services
                 var dir = new DirectoryInfo(_logsDir);
                 if (!dir.Exists) return;
 
-                // ½ñÌìÍùÇ°ÍÆ (LogRetainDays - 1) Ìì£¬ĞÎ³ÉÒ»¸ö¡°×îÔç±£ÁôÈÕÆÚ¡±
-                // ±ÈÈç LogRetainDays=7£¬½ñÌì 2025-11-24£¬Ôò threshold = 2025-11-18
+                // ä»Šå¤©å¾€å‰æ¨ (LogRetainDays - 1) å¤©ï¼Œå½¢æˆä¸€ä¸ªâ€œæœ€æ—©ä¿ç•™æ—¥æœŸâ€
+                // æ¯”å¦‚ LogRetainDays=7ï¼Œä»Šå¤© 2025-11-24ï¼Œåˆ™ threshold = 2025-11-18
                 var threshold = DateTime.Today.AddDays(-(LogRetainDays - 1));
 
                 foreach (var file in dir.GetFiles("gr-*.txt"))
                 {
                     var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.Name); // gr-2025-11-24
 
-                    // ·ÀÓù£ºÏÈ¼òµ¥ĞÎ×´ÅĞ¶ÏÒ»ÏÂ£¬±ÜÃâÆæ¹ÖÎÄ¼şÃûµ¼ÖÂÒì³£
+                    // é˜²å¾¡ï¼šå…ˆç®€å•å½¢çŠ¶åˆ¤æ–­ä¸€ä¸‹ï¼Œé¿å…å¥‡æ€ªæ–‡ä»¶åå¯¼è‡´å¼‚å¸¸
                     if (string.IsNullOrWhiteSpace(fileNameWithoutExt) || fileNameWithoutExt.Length < 11)
                         continue;
 
-                    // È¡³öÈÕÆÚ²¿·Ö£ºyyyy-MM-dd
-                    // Ç°×º¹Ì¶¨ÊÇ "gr-"
-                    var datePart = fileNameWithoutExt.Substring(3); // ´ÓÏÂ±ê 3 ¿ªÊ¼
+                    // å–å‡ºæ—¥æœŸéƒ¨åˆ†ï¼šyyyy-MM-dd
+                    // å‰ç¼€å›ºå®šæ˜¯ "gr-"
+                    var datePart = fileNameWithoutExt.Substring(3); // ä»ä¸‹æ ‡ 3 å¼€å§‹
 
                     if (DateTime.TryParseExact(
                             datePart,
@@ -82,7 +82,7 @@ namespace IndustrialControlMAUI.Services
                             DateTimeStyles.None,
                             out var fileDate))
                     {
-                        // Ğ¡ÓÚãĞÖµ¾ÍÉ¾³ı£¨Ò²¾ÍÊÇÔçÓÚ¡°×î½ü 7 Ìì¡±Ö®ÍâµÄÎÄ¼ş£©
+                        // å°äºé˜ˆå€¼å°±åˆ é™¤ï¼ˆä¹Ÿå°±æ˜¯æ—©äºâ€œæœ€è¿‘ 7 å¤©â€ä¹‹å¤–çš„æ–‡ä»¶ï¼‰
                         if (fileDate < threshold)
                         {
                             file.Delete();
@@ -90,15 +90,15 @@ namespace IndustrialControlMAUI.Services
                     }
                     else
                     {
-                        // ÎÄ¼şÃû²»ÊÇ±ê×¼¸ñÊ½Ê±¿ÉÒÔÑ¡ÔñºöÂÔ»òÉ¾³ı£¬ÕâÀïÑ¡ÔñºöÂÔ
+                        // æ–‡ä»¶åä¸æ˜¯æ ‡å‡†æ ¼å¼æ—¶å¯ä»¥é€‰æ‹©å¿½ç•¥æˆ–åˆ é™¤ï¼Œè¿™é‡Œé€‰æ‹©å¿½ç•¥
                         continue;
                     }
                 }
             }
             catch (Exception ex)
             {
-                // É¾³ıÊ§°Ü²»Ó°ÏìÖ÷Á÷³Ì£¬ÔÚÈÕÖ¾´°¿ÚÀï¼òµ¥ÌáÊ¾
-                LogTextUpdated?.Invoke($"É¾³ı¾ÉÈÕÖ¾Ê§°Ü: {ex.Message}");
+                // åˆ é™¤å¤±è´¥ä¸å½±å“ä¸»æµç¨‹ï¼Œåœ¨æ—¥å¿—çª—å£é‡Œç®€å•æç¤º
+                LogTextUpdated?.Invoke($"åˆ é™¤æ—§æ—¥å¿—å¤±è´¥: {ex.Message}");
             }
         }
 
@@ -110,10 +110,10 @@ namespace IndustrialControlMAUI.Services
             _cts = null;
         }
 
-        // ¶ÁÈ¡ÈÕÖ¾²¢¸üĞÂ
-        private async Task LoopAsync(CancellationToken token)
+                            var text = await sr.ReadToEndAsync().ConfigureAwait(false);
+                        await SafeDelay(_interval, token).ConfigureAwait(false);
         {
-            string last = string.Empty;
+                await Task.Delay(step).ConfigureAwait(false);
 
             try
             {
@@ -123,7 +123,7 @@ namespace IndustrialControlMAUI.Services
                     {
                         if (File.Exists(TodayLogPath))
                         {
-                            // ÓÃ FileStream + ¹²Ïí¶Á£¬±ÜÃâĞ´Èë·½Õ¼ÓÃÊ±±¨´í
+                            // ç”¨ FileStream + å…±äº«è¯»ï¼Œé¿å…å†™å…¥æ–¹å ç”¨æ—¶æŠ¥é”™
                             using var fs = new FileStream(
                                 TodayLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                             using var sr = new StreamReader(fs);
@@ -132,19 +132,19 @@ namespace IndustrialControlMAUI.Services
                             if (!string.Equals(text, last, StringComparison.Ordinal))
                             {
                                 last = text;
-                                // ÊÂ¼ş¾¡Á¿ÔÚÖ÷Ïß³Ì´¥·¢£¨ÊÓÄãµÄ¶©ÔÄÕß¶ø¶¨£©
+                                // äº‹ä»¶å°½é‡åœ¨ä¸»çº¿ç¨‹è§¦å‘ï¼ˆè§†ä½ çš„è®¢é˜…è€…è€Œå®šï¼‰
                                 MainThread.BeginInvokeOnMainThread(() => LogTextUpdated?.Invoke(text));
                             }
                         }
                     }
                     catch (OperationCanceledException)
                     {
-                        // token È¡ÏûÊ±»áÅÜµ½ÕâÀï£¬Ö±½ÓÍË³ö´óÑ­»·
+                        // token å–æ¶ˆæ—¶ä¼šè·‘åˆ°è¿™é‡Œï¼Œç›´æ¥é€€å‡ºå¤§å¾ªç¯
                         break;
                     }
                     catch
                     {
-                        // ÆäËû IO µÈÒì³£ºöÂÔÒ»ÂÖ
+                        // å…¶ä»– IO ç­‰å¼‚å¸¸å¿½ç•¥ä¸€è½®
                     }
 
                     try
@@ -153,20 +153,20 @@ namespace IndustrialControlMAUI.Services
                     }
                     catch (OperationCanceledException)
                     {
-                        break; // ±» Stop() È¡Ïû£¬Õı³£ÍË³ö
+                        break; // è¢« Stop() å–æ¶ˆï¼Œæ­£å¸¸é€€å‡º
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                // ¶µµ×£¨Í¨³£µ½²»ÁËÕâÀï£©
+                // å…œåº•ï¼ˆé€šå¸¸åˆ°ä¸äº†è¿™é‡Œï¼‰
             }
         }
 
         private async Task SafeDelay(TimeSpan interval, CancellationToken token)
         {
             var ms = (int)interval.TotalMilliseconds;
-            var step = 50; // 50ms Ò»´Î
+            var step = 50; // 50ms ä¸€æ¬¡
             var loops = ms / step;
 
             for (int i = 0; i < loops; i++)
@@ -178,21 +178,21 @@ namespace IndustrialControlMAUI.Services
 
 
 
-        // Ğ´ÈÕÖ¾
+        // å†™æ—¥å¿—
         public void WriteLog(string message)
         {
             try
             {
                 var logMessage = $"{DateTime.Now:HH:mm:ss} - {message}";
-                // ½«ÈÕÖ¾ÄÚÈİ×·¼Óµ½ÎÄ¼şÄ©Î²
+                // å°†æ—¥å¿—å†…å®¹è¿½åŠ åˆ°æ–‡ä»¶æœ«å°¾
                 File.AppendAllText(TodayLogPath, logMessage + Environment.NewLine);
-                // ´¥·¢¸üĞÂÊÂ¼ş
+                // è§¦å‘æ›´æ–°äº‹ä»¶
                 LogTextUpdated?.Invoke(logMessage);
             }
             catch (Exception ex)
             {
-                // Èç¹ûĞ´ÈëÊ§°Ü£¬¿ÉÒÔÔÚÕâÀï´¦Àí´íÎó
-                LogTextUpdated?.Invoke($"´íÎó: {ex.Message}");
+                // å¦‚æœå†™å…¥å¤±è´¥ï¼Œå¯ä»¥åœ¨è¿™é‡Œå¤„ç†é”™è¯¯
+                LogTextUpdated?.Invoke($"é”™è¯¯: {ex.Message}");
             }
         }
 

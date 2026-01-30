@@ -1,4 +1,5 @@
-﻿using GoogleGson;
+using IndustrialControlMAUI.Services.Common;
+using GoogleGson;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using Org.Apache.Http.Authentication;
@@ -175,112 +176,69 @@ namespace IndustrialControlMAUI.Services
             _http.DefaultRequestHeaders.Accept.Clear();
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            _pageEndpoint = NormalizeRelative(
+            _pageEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.page", "/pda/pmsWorkOrder/pageWorkOrders"), servicePath);
-            _workflowEndpoint = NormalizeRelative(
+            _workflowEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.workflow", "/pda/pmsWorkOrder/getWorkOrderWorkflow"), servicePath);
-            _processTasksEndpoint = NormalizeRelative(
+            _processTasksEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.processTasks", "/pda/pmsWorkOrder/pageWorkProcessTasks"), servicePath);
-            _dictEndpoint = NormalizeRelative(
+            _dictEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.dictList", "/pda/pmsWorkOrder/getWorkOrderDictList"), servicePath);
-            _workProcessTaskDictEndpoint = NormalizeRelative(
+            _workProcessTaskDictEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.dictProcessList", "/pda/pmsWorkOrder/getWorkProcessTaskDictList"), servicePath);
-            _processInfoListEndpoint = NormalizeRelative(
+            _processInfoListEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.ProcessList", "/pda/pmsWorkOrder/PmsProcessInfoList"), servicePath);
-            _workProcessTaskDetailEndpoint = NormalizeRelative(
+            _workProcessTaskDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.ProcessDetail", "/pda/pmsWorkOrder/getWorkProcessTaskDetail"), servicePath);
-            _shiftEndpoint = NormalizeRelative(
+            _shiftEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.shift", "/pda/pmsWorkOrder/getClassesListByWorkShopLine"), servicePath);
-            _deviceEndpoint = NormalizeRelative(
+            _deviceEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.device", "/pda/pmsWorkOrder/getPmsEqptPointListByLineProcess"), servicePath);
-            _updateTeamEndpoint = NormalizeRelative(
+            _updateTeamEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.updateWorkProcess", "/pda/pmsWorkOrder/editWorkProcessTask"), servicePath);
-            _startworkEndpoint = NormalizeRelative(
+            _startworkEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.startwork", "/pda/pmsWorkOrder/workProcessTaskWorkStart"), servicePath);
-            _completeworkEndpoint = NormalizeRelative(
+            _completeworkEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.completework", "/pda/pmsWorkOrder/workProcessTaskWorkChangeComplete"), servicePath);
-            _pauseworkEndpoint = NormalizeRelative(
+            _pauseworkEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.pausework", "/pda/pmsWorkOrder/workProcessTaskWorkChange"), servicePath);
-            _addMaterialEndpoint = NormalizeRelative(
+            _addMaterialEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.addMaterial", "/pda/pmsWorkOrder/addWorkProcessTaskMaterialInput"), servicePath);
-            _addOutputEndpoint = NormalizeRelative(
+            _addOutputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.addOutput", "/pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput"), servicePath);
-            _autMaterialListEndpoint = NormalizeRelative(
+            _autMaterialListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.autMaterialList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs"), servicePath);
-            _autOutputListEndpoint = NormalizeRelative(
+            _autOutputListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.autOutputList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs"), servicePath);
-            _deleteWorkProcessTaskMaterialInputEndpoint = NormalizeRelative(
+            _deleteWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput"), servicePath);
-            _deleteWorkProcessTaskOutputEndpoint = NormalizeRelative(
+            _deleteWorkProcessTaskOutputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskOutput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput"), servicePath);
-            _editWorkProcessTaskMaterialInputEndpoint = NormalizeRelative(
+            _editWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.editWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"), servicePath);
-            _workOrderDomainEndpoint = NormalizeRelative(
+            _workOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
         configLoader.GetApiPath("workOrder.domain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
         servicePath);
-            _inventoryPageEndpoint = NormalizeRelative(
+            _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
     servicePath);
 
-            _stockCheckPageEndpoint = NormalizeRelative(
+            _stockCheckPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("stockCheck.page", "/pda/wmsInstockCheck/pageQuery"),
     servicePath);
 
-            _stockCheckDetailPageEndpoint = NormalizeRelative(
+            _stockCheckDetailPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("stockCheck.detailPage", "/pda/wmsInstockCheck/pageQueryDetails"),
     servicePath);
-            _stockCheckEditEndpoint = NormalizeRelative(
+            _stockCheckEditEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("stockCheck.edit", "/pda/wmsInstockCheck/edit"),
     servicePath);
-            _flexibleStockCheckAddEndpoint = NormalizeRelative(
+            _flexibleStockCheckAddEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("stockCheck.flexibleAdd", "/pda/wmsInstockCheck/add"),
     servicePath);
 
 
         }
-        // ===== 公共工具 =====
-        private static string BuildFullUrl(Uri? baseAddress, string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("url 不能为空", nameof(url));
-
-            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return url;
-
-            if (baseAddress is null)
-                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-            var baseUrl = baseAddress.AbsoluteUri;
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-            return baseUrl + url.TrimStart('/');
-        }
-
-        private static string NormalizeRelative(string? endpoint, string servicePath)
-        {
-            var ep = (endpoint ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(ep)) return "/";
-
-            if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return ep;
-
-            if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-            if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-            servicePath = servicePath.TrimEnd('/');
-
-            if (!string.IsNullOrEmpty(servicePath) &&
-                servicePath != "/" &&
-                ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                ep = ep[servicePath.Length..];
-            }
-
-            if (!ep.StartsWith("/")) ep = "/" + ep;
-            return ep;
-        }
-
         // ===== 方法实现 =====
         public async Task<WorkOrderPageResult> GetWorkOrdersAsync(WorkOrderQuery q, CancellationToken ct = default)
         {
@@ -295,7 +253,7 @@ namespace IndustrialControlMAUI.Services
             if (!string.IsNullOrWhiteSpace(q.MaterialName)) p["materialName"] = q.MaterialName!.Trim();
             if (!string.IsNullOrWhiteSpace(q.AuditStatus)) p["auditStatus"] = q.AuditStatus!.Trim();
             var url = _pageEndpoint + "?" + BuildQuery(p);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -311,7 +269,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<WorkflowResp?> GetWorkOrderWorkflowAsync(string id, CancellationToken ct = default)
         {
             var url = _workflowEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -382,7 +340,7 @@ namespace IndustrialControlMAUI.Services
                        $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
             var url = _processTasksEndpoint + "?" + BuildQueryMulti(pairs);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -399,7 +357,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<DictBundle> GetWorkOrderDictsAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _dictEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _dictEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -419,7 +377,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<ApiResp<List<FieldDict>>> GetWorkProcessTaskDictListAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _workProcessTaskDictEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _workProcessTaskDictEndpoint);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             var resp = await _http.SendAsync(req, ct);
             resp.EnsureSuccessStatusCode();
@@ -429,7 +387,7 @@ namespace IndustrialControlMAUI.Services
         }
         public async Task<ApiResp<List<ProcessInfo>>> GetProcessInfoListAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _processInfoListEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _processInfoListEndpoint);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             var resp = await _http.SendAsync(req, ct);
             resp.EnsureSuccessStatusCode();
@@ -440,7 +398,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<ApiResp<WorkProcessTaskDetail>> GetWorkProcessTaskDetailAsync(string id, CancellationToken ct = default)
         {
             var url = _workProcessTaskDetailEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             var resp = await _http.SendAsync(req, ct);
             resp.EnsureSuccessStatusCode();
@@ -454,7 +412,7 @@ namespace IndustrialControlMAUI.Services
     string workshopsCode,
     CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _shiftEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _shiftEndpoint);
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["factoryCode"] = factoryCode,
@@ -475,7 +433,7 @@ namespace IndustrialControlMAUI.Services
             string processCode,
             CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _deviceEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deviceEndpoint);
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["factoryCode"] = factoryCode,
@@ -503,7 +461,7 @@ namespace IndustrialControlMAUI.Services
     WorkProcessTaskTeamUpdateReq req,
     CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _updateTeamEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _updateTeamEndpoint);
             var options = new JsonSerializerOptions
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -540,9 +498,9 @@ namespace IndustrialControlMAUI.Services
                 processCode,
                 workOrderNo
             };
-            var full = BuildFullUrl(_http.BaseAddress, _startworkEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _startworkEndpoint);
             var resp = await _http.PostAsJsonAsync(full, body);
-            var json = await resp.Content.ReadAsStringAsync();
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
             return JsonSerializer.Deserialize<ApiResp<bool>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -557,9 +515,9 @@ namespace IndustrialControlMAUI.Services
                 processCode,
                 workOrderNo
             };
-            var full = BuildFullUrl(_http.BaseAddress, _completeworkEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _completeworkEndpoint);
             var resp = await _http.PostAsJsonAsync(full, body);
-            var json = await resp.Content.ReadAsStringAsync();
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
             return JsonSerializer.Deserialize<ApiResp<bool>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -574,9 +532,9 @@ namespace IndustrialControlMAUI.Services
                 processCode,
                 workOrderNo
             };
-            var full = BuildFullUrl(_http.BaseAddress, _pauseworkEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _pauseworkEndpoint);
             var resp = await _http.PostAsJsonAsync(full, body);
-            var json = await resp.Content.ReadAsStringAsync();
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
             return JsonSerializer.Deserialize<ApiResp<bool>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -585,7 +543,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<ApiResp<bool>> AddWorkProcessTaskMaterialInputAsync(AddWorkProcessTaskMaterialInputReq req)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _addMaterialEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addMaterialEndpoint);
 
             var options = new JsonSerializerOptions
             {
@@ -603,14 +561,14 @@ namespace IndustrialControlMAUI.Services
                 };
             }
 
-            var json = await resp.Content.ReadAsStringAsync();
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
             var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
             return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
         }
 
         public async Task<ApiResp<bool>> AddWorkProcessTaskProductOutputAsync(AddWorkProcessTaskProductOutputReq req)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _addOutputEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addOutputEndpoint);
 
             var options = new JsonSerializerOptions
             {
@@ -628,7 +586,7 @@ namespace IndustrialControlMAUI.Services
                 };
             }
 
-            var json = await resp.Content.ReadAsStringAsync();
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
             var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
             return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
         }
@@ -675,7 +633,7 @@ namespace IndustrialControlMAUI.Services
 
             // 该 endpoint 应对应文档中的：/normalService/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs
             var url = _autMaterialListEndpoint + "?" + BuildQueryMulti(pairs);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -731,7 +689,7 @@ namespace IndustrialControlMAUI.Services
 
             // 该 endpoint 应对应文档中的：/normalService/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs
             var url = _autOutputListEndpoint + "?" + BuildQueryMulti(pairs);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -753,7 +711,7 @@ namespace IndustrialControlMAUI.Services
             if (string.IsNullOrWhiteSpace(id))
                 return new ApiResp<bool> { success = false, message = "id 不能为空" };
             
-            var full = BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskMaterialInputEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskMaterialInputEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             {
@@ -779,7 +737,7 @@ namespace IndustrialControlMAUI.Services
             if (string.IsNullOrWhiteSpace(id))
                 return new ApiResp<bool> { success = false, message = "id 不能为空" };
 
-            var full = BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskOutputEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskOutputEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             {
@@ -810,7 +768,7 @@ namespace IndustrialControlMAUI.Services
                 return new ApiResp<bool> { success = false, message = "id 不能为空" };
 
             // 例如：_editWorkProcessTaskMaterialInputEndpoint = "/normalService/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"
-            var full = BuildFullUrl(_http.BaseAddress, _editWorkProcessTaskMaterialInputEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _editWorkProcessTaskMaterialInputEndpoint);
 
             var body = new EditWorkProcessTaskMaterialInputReq
             {
@@ -840,7 +798,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default)
         {
             var url = _workOrderDomainEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -881,7 +839,7 @@ namespace IndustrialControlMAUI.Services
                        $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
             var url = _inventoryPageEndpoint + "?" + BuildQueryMulti(pairs);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -929,7 +887,7 @@ namespace IndustrialControlMAUI.Services
                        $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
             var url = _stockCheckPageEndpoint + "?" + BuildQueryMulti(pairs);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -981,7 +939,7 @@ namespace IndustrialControlMAUI.Services
                    $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
             var url = _stockCheckDetailPageEndpoint + "?" + BuildQueryMulti(pairs);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -1003,7 +961,7 @@ namespace IndustrialControlMAUI.Services
     StockCheckEditReq req,
     CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _stockCheckEditEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _stockCheckEditEndpoint);
 
             var options = new JsonSerializerOptions
             {
@@ -1031,7 +989,7 @@ namespace IndustrialControlMAUI.Services
     FlexibleStockCheckAddReq req,
     CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _flexibleStockCheckAddEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _flexibleStockCheckAddEndpoint);
 
             var options = new JsonSerializerOptions
             {

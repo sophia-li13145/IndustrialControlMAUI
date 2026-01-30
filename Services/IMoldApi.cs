@@ -1,4 +1,5 @@
-﻿using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services.Common;
+using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Headers;
 using System.Text;
@@ -59,73 +60,27 @@ namespace IndustrialControlMAUI.Services
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
 
-            _confirmInStockEndpoint = NormalizeRelative(
+            _confirmInStockEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("mold.inStock", "/pda/mold/inStock"),
                 servicePath);
-            _inStockScanQueryEndpoint = NormalizeRelative(
+            _inStockScanQueryEndpoint = ServiceUrlHelper.NormalizeRelative(
                configLoader.GetApiPath("mold.inStockScanQuery", "/pda/mold/inStockScanQuery"),
                servicePath);
 
             //-------------------------------出库-------------------------------------------
-            _queryForWorkOrderEndpoint = NormalizeRelative(
+            _queryForWorkOrderEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("mold.queryForWorkOrder", "/pda/mold/queryForWorkOrder"),
                 servicePath);
 
-            _outStockScanQueryEndpoint = NormalizeRelative(
+            _outStockScanQueryEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("mold.outStockScanQuery", "/pda/mold/outStockScanQuery"),
                 servicePath);
 
-            _outStockConfirmEndpoint = NormalizeRelative(
+            _outStockConfirmEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("mold.outStock", "/pda/mold/outStock"),
                 servicePath);
             _auth = auth;
         }
-
-        // ========== 手动拼接工具：BaseAddress.AbsoluteUri + 相对端点 ==========
-        private static string BuildFullUrl(Uri? baseAddress, string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("url 不能为空", nameof(url));
-
-            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return url;
-
-            if (baseAddress is null)
-                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-            var baseUrl = baseAddress.AbsoluteUri;
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-            var relative = url.TrimStart('/');
-            return baseUrl + relative;
-        }
-
-
-        private static string NormalizeRelative(string? endpoint, string servicePath)
-        {
-            var ep = (endpoint ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(ep)) return "/";
-
-            if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return ep;
-
-            if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-            if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-            servicePath = servicePath.TrimEnd('/');
-
-            if (!string.IsNullOrEmpty(servicePath) &&
-                servicePath != "/" &&
-                ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                ep = ep[servicePath.Length..];
-            }
-
-            if (!ep.StartsWith("/")) ep = "/" + ep;
-            return ep;
-        }
-
 
         static int ToInt(decimal? v) => v.HasValue ? (int)Math.Round(v.Value, MidpointRounding.AwayFromZero) : 0;
        /// <summary>
@@ -139,7 +94,7 @@ namespace IndustrialControlMAUI.Services
             // 构造查询串
             var qs = $"code={Uri.EscapeDataString(code ?? string.Empty)}";
             var url = _inStockScanQueryEndpoint + (_inStockScanQueryEndpoint.Contains("?") ? "&" : "?") + qs;
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             req.Headers.Accept.Clear();
@@ -177,7 +132,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<SimpleOk> ConfirmInStockByListAsync(InStockConfirmReq req, CancellationToken ct = default)
         {
             var body = JsonSerializer.Serialize(req);
-            var full = BuildFullUrl(_http.BaseAddress, _confirmInStockEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _confirmInStockEndpoint);
 
             using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             { Content = new StringContent(body, Encoding.UTF8, "application/json") };
@@ -261,7 +216,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<QueryForWorkOrderResp?> GetRawAsync(string workOrderNo, CancellationToken ct = default)
         {
             var url = $"{_queryForWorkOrderEndpoint}?workOrderNo={Uri.EscapeDataString(workOrderNo ?? string.Empty)}";
-            var requestUrl = BuildFullUrl(_http.BaseAddress, url);
+            var requestUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct).ConfigureAwait(false);
@@ -279,7 +234,7 @@ namespace IndustrialControlMAUI.Services
 
         private static async Task<string> PeekAsync(HttpContent content, int maxLen, CancellationToken ct)
         {
-            var txt = await content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var txt = await ResponseGuard.ReadAsStringSafeAsync(content, ct).ConfigureAwait(false);
             if (string.IsNullOrEmpty(txt)) return "";
             return txt.Length <= maxLen ? txt : txt.Substring(0, maxLen) + "...";
         }
@@ -291,7 +246,7 @@ namespace IndustrialControlMAUI.Services
             // 构造查询串
             var qs = $"code={Uri.EscapeDataString(code ?? string.Empty)}&workOrderNo={Uri.EscapeDataString(workOrderNo ?? string.Empty)}";
             var url = _outStockScanQueryEndpoint + (_outStockScanQueryEndpoint.Contains("?") ? "&" : "?") + qs;
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             req.Headers.Accept.Clear();
@@ -329,7 +284,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<SimpleOk> ConfirmOutStockAsync(MoldOutConfirmReq req, CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _outStockConfirmEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _outStockConfirmEndpoint);
 
             var json = JsonSerializer.Serialize(req, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             using var http = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))

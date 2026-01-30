@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using IndustrialControlMAUI.Tools;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -59,7 +60,7 @@ public partial class LoginViewModel : ObservableObject
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
             var resp = await ApiClient.Instance.PostAsJsonAsync(fullUrl, payload, cts.Token);
-            var raw = await resp.Content.ReadAsStringAsync(cts.Token);
+            var raw = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, cts.Token);
 
             if (!resp.IsSuccessStatusCode)
             {

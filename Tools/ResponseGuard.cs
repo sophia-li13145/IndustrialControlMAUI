@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -16,7 +17,7 @@ namespace IndustrialControlMAUI.Tools
 
         public static async Task<string> ReadAsStringAndCheckAsync(HttpResponseMessage res, AuthState auth, CancellationToken ct)
         {
-            var text = await res.Content.ReadAsStringAsync(ct);
+            var text = await ReadAsStringSafeAsync(res.Content, ct).ConfigureAwait(false);
 
             if (res.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
@@ -40,6 +41,42 @@ namespace IndustrialControlMAUI.Tools
             catch { /* ignore */ }
 
             return text;
+        }
+
+        public static async Task<string> ReadAsStringSafeAsync(HttpContent content, CancellationToken ct)
+        {
+            try
+            {
+                return await content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (IsCopyStreamError(ex))
+            {
+                return await ReadAsStringViaStreamAsync(content, ct).ConfigureAwait(false);
+            }
+        }
+
+        private static bool IsCopyStreamError(Exception ex)
+        {
+            while (true)
+            {
+                if (ex is IOException or HttpRequestException)
+                {
+                    if (ex.Message.IndexOf("copying content to a stream", StringComparison.OrdinalIgnoreCase) >= 0)
+                        return true;
+                }
+
+                if (ex.InnerException is null)
+                    return false;
+
+                ex = ex.InnerException;
+            }
+        }
+
+        private static async Task<string> ReadAsStringViaStreamAsync(HttpContent content, CancellationToken ct)
+        {
+            await using var stream = await content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            return await reader.ReadToEndAsync(ct).ConfigureAwait(false);
         }
 
         private sealed class ApiBase

@@ -1,4 +1,5 @@
-﻿using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services.Common;
+using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Headers;
 using System.Globalization;
@@ -98,83 +99,40 @@ namespace IndustrialControlMAUI.Services
             _http.DefaultRequestHeaders.Accept.Clear();
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            _pageEndpoint = NormalizeRelative(
+            _pageEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.page", "/pda/qsOrderQuality/pageQuery"), servicePath);
-            _dictEndpoint = NormalizeRelative(
+            _dictEndpoint = ServiceUrlHelper.NormalizeRelative(
                configLoader.GetApiPath("quality.dictList", "/pda/qsOrderQuality/getDictList"), servicePath);
-            _detailsEndpoint = NormalizeRelative(
+            _detailsEndpoint = ServiceUrlHelper.NormalizeRelative(
                configLoader.GetApiPath("quality.detailList", "/pda/qsOrderQuality/detail"), servicePath);
-            _executeSavePath = NormalizeRelative(
+            _executeSavePath = ServiceUrlHelper.NormalizeRelative(
              configLoader.GetApiPath("quality.executeSave", "/pda/qsOrderQuality/executeSave"), servicePath);
-            _executeCompletePath = NormalizeRelative(
+            _executeCompletePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.executeComplete", "/pda/qsOrderQuality/executeCompleteInspection"), servicePath);
-            _defectPagePath = NormalizeRelative(
+            _defectPagePath = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("quality.defect.page", "/pda/qsOrderQuality/defectPageQuery"),
             servicePath);
-            _deleteAttPath = NormalizeRelative(
+            _deleteAttPath = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("quality.previewImage", "/pda/qsOrderQuality/deleteAttachment"),
     servicePath);
-            _workflowPath = NormalizeRelative(
+            _workflowPath = ServiceUrlHelper.NormalizeRelative(
                configLoader.GetApiPath("quality.workflow", "/pda/qsOrderQuality/getQsOrderWorkflow"),
                servicePath);
-            _inspectDevicePath = NormalizeRelative(
+            _inspectDevicePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.inspectDevices", "/pda/common/queryDevList"),
                 servicePath);
-            _inspectParamPath = NormalizeRelative(
+            _inspectParamPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.inspectParams", "/pda/qsOrderQuality/queryPmsEqptPointParams"),
                 servicePath);
-            _autoInspectPath = NormalizeRelative(
+            _autoInspectPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.autoInspect", "/pda/qsOrderQuality/checkQsItemLimit"),
                 servicePath);
-            _inspectDetailPagePath = NormalizeRelative(
+            _inspectDetailPagePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.inspectDetailPage", "/pda/qsOrderQuality/pageQueryInspectionDetail"),
                 servicePath);
         }
-        // ===== 公共工具 =====
-        private static string BuildFullUrl(Uri? baseAddress, string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("url 不能为空", nameof(url));
-
-            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return url;
-
-            if (baseAddress is null)
-                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-            var baseUrl = baseAddress.AbsoluteUri;
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-            return baseUrl + url.TrimStart('/');
-        }
-
         private static string BuildQuery(IDictionary<string, string> p)
             => string.Join("&", p.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
-
-        private static string NormalizeRelative(string? endpoint, string servicePath)
-        {
-            var ep = (endpoint ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(ep)) return "/";
-
-            if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return ep;
-
-            if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-            if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-            servicePath = servicePath.TrimEnd('/');
-
-            if (!string.IsNullOrEmpty(servicePath) &&
-                servicePath != "/" &&
-                ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                ep = ep[servicePath.Length..];
-            }
-
-            if (!ep.StartsWith("/")) ep = "/" + ep;
-            return ep;
-        }
 
         // ===== 方法实现 =====
         public async Task<PageResponeResult<QualityRecordDto>> PageQueryAsync(
@@ -203,7 +161,7 @@ namespace IndustrialControlMAUI.Services
 
             // 2) 拼接 URL（与现有工具方法保持一致）
             var url = _pageEndpoint + "?" + BuildQuery(p);                  // BuildQuery 会做 UrlEncode
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             // 3) 发送 GET
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
@@ -231,7 +189,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<DictQuality> GetQualityDictsAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _dictEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _dictEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -254,7 +212,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<ApiResp<List<InspectDeviceOption>>?> GetInspectDevicesAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _inspectDevicePath);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _inspectDevicePath);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
@@ -278,7 +236,7 @@ namespace IndustrialControlMAUI.Services
                 ["deviceCode"] = deviceCode
             };
             var url = _inspectParamPath + "?" + BuildQuery(p);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
@@ -315,7 +273,7 @@ namespace IndustrialControlMAUI.Services
             if (actualValue is not null) p["actualValue"] = actualValue.Value.ToString("G29", CultureInfo.InvariantCulture);
 
             var url = _autoInspectPath + "?" + BuildQuery(p);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -355,7 +313,7 @@ namespace IndustrialControlMAUI.Services
             if (searchCount.HasValue) p["searchCount"] = searchCount.Value ? "true" : "false";
 
             var url = _inspectDetailPagePath + "?" + BuildQuery(p);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -379,7 +337,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<ApiResp<QualityDetailDto>?> GetDetailAsync(string id, CancellationToken ct = default)
         {
             var url = _detailsEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
@@ -405,7 +363,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<ApiResp<bool?>> ExecuteSaveAsync(QualityDetailDto payload, CancellationToken ct = default)
         {
-            var url = BuildFullUrl(_http.BaseAddress, _executeSavePath);
+            var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _executeSavePath);
             var json = JsonSerializer.Serialize(payload, _json);
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
             {
@@ -423,7 +381,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<ApiResp<bool?>> ExecuteCompleteInspectionAsync(QualityDetailDto payload, CancellationToken ct = default)
         {
-            var url = BuildFullUrl(_http.BaseAddress, _executeCompletePath);
+            var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _executeCompletePath);
             var json = JsonSerializer.Serialize(payload, _json);
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
             {
@@ -449,7 +407,7 @@ namespace IndustrialControlMAUI.Services
                  string? createdTimeEnd = null,
                  CancellationToken ct = default)
         {
-            var url = BuildFullUrl(_http.BaseAddress, _defectPagePath);
+            var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _defectPagePath);
 
             // 该接口是 GET + query（表单编码），必填 pageNo/pageSize
             var q = new List<string>
@@ -490,7 +448,7 @@ namespace IndustrialControlMAUI.Services
             string id,
             CancellationToken ct)
         {
-            var full = BuildFullUrl(_http.BaseAddress, endpoint) +
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, endpoint) +
                        "?id=" + Uri.EscapeDataString(id ?? string.Empty);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));

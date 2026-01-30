@@ -27,27 +27,27 @@ public class ConfigLoader
 
     public async Task EnsureConfigIsLatestAsync()
     {
-        using var pkgStream = await FileSystem.OpenAppPackageFileAsync(FileName);
+        using var pkgStream = await FileSystem.OpenAppPackageFileAsync(FileName).ConfigureAwait(false);
         using var pkgReader = new StreamReader(pkgStream);
-        var pkgJson = await pkgReader.ReadToEndAsync();
+        var pkgJson = await pkgReader.ReadToEndAsync().ConfigureAwait(false);
         var pkgCfg = JsonSerializer.Deserialize<AppConfig>(pkgJson, _jsonOptions) ?? new AppConfig();
 
         if (!File.Exists(_configPath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_configPath)!);
-            await File.WriteAllTextAsync(_configPath, pkgJson);
+            await File.WriteAllTextAsync(_configPath, pkgJson).ConfigureAwait(false);
             Current = pkgCfg;
             return;
         }
 
-        var currJson = await File.ReadAllTextAsync(_configPath);
+        var currJson = await File.ReadAllTextAsync(_configPath).ConfigureAwait(false);
         var currCfg = JsonSerializer.Deserialize<AppConfig>(currJson, _jsonOptions) ?? new AppConfig();
 
         if (currCfg.SchemaVersion < pkgCfg.SchemaVersion)
         {
             pkgCfg.Server = currCfg.Server;
             Current = pkgCfg;
-            await SaveAsync(Current, fireChanged: false);
+            await SaveAsync(Current, fireChanged: false).ConfigureAwait(false);
         }
         else
         {
@@ -61,14 +61,14 @@ public class ConfigLoader
     public async Task SaveAsync(AppConfig cfg, bool fireChanged = true)
     {
         var json = JsonSerializer.Serialize(cfg, _jsonOptions);
-        await File.WriteAllTextAsync(_configPath, json);
+        await File.WriteAllTextAsync(_configPath, json).ConfigureAwait(false);
         Current = cfg;
         if (fireChanged) ConfigChanged?.Invoke();
     }
 
     public async Task<AppConfig> ReloadAsync()
     {
-        var json = await File.ReadAllTextAsync(_configPath);
+        var json = await File.ReadAllTextAsync(_configPath).ConfigureAwait(false);
         Current = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions) ?? new AppConfig();
         ConfigChanged?.Invoke();
         return Current;

@@ -1,4 +1,5 @@
-﻿
+using IndustrialControlMAUI.Services.Common;
+
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using Serilog;
@@ -47,34 +48,9 @@ public sealed class WarehouseService : IWarehouseService
 
         var servicePath = _http.BaseAddress.AbsolutePath?.TrimEnd('/') ?? "/normalService";
 
-        _queryAllEndpoint = NormalizeRelative(configLoader.GetApiPath("warehouse.queryAll", "/pda/wmsWarehouse/queryAllWarehouse"), servicePath);
-        _queryByCodeEndpoint = NormalizeRelative(configLoader.GetApiPath("warehouse.queryByCode", "/pda/wmsWarehouse/queryLocationByWarehouseCode"), servicePath);
+        _queryAllEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("warehouse.queryAll", "/pda/wmsWarehouse/queryAllWarehouse"), servicePath);
+        _queryByCodeEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("warehouse.queryByCode", "/pda/wmsWarehouse/queryLocationByWarehouseCode"), servicePath);
         _auth = auth;
-    }
-
-
-    private static string NormalizeRelative(string? endpoint, string servicePath)
-    {
-        var ep = (endpoint ?? string.Empty).Trim();
-        if (string.IsNullOrEmpty(ep)) return "/";
-
-        if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-        if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-        servicePath = servicePath.TrimEnd('/');
-
-        if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            return ep;
-
-        if (!string.IsNullOrEmpty(servicePath) &&
-            servicePath != "/" &&
-            ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-        {
-            ep = ep[servicePath.Length..];
-        }
-
-        if (!ep.StartsWith("/")) ep = "/" + ep;
-        return ep;
     }
 
     public async Task<T?> GetJsonAsync<T>(string url, CancellationToken ct)
@@ -406,5 +382,4 @@ public class LocationItem
     public string Location { get; set; } = "";
     public string InventoryStatus { get; set; } = "";
 }
-
 

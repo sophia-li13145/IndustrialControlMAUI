@@ -1,4 +1,5 @@
-﻿using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services.Common;
+using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using IndustrialControlMAUI.ViewModels;
 using Serilog;
@@ -50,74 +51,44 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
         _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         // === Endpoints：从配置读取相对路径（不含 /normalService），并做老配置兼容去重 ===
-        _outboundListEndpoint = NormalizeRelative(
+        _outboundListEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.list", "/pda/wmsMaterialOutstock/getOutStock"),
             servicePath);
 
-        _detailEndpoint = NormalizeRelative(
+        _detailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.detail", "/pda/wmsMaterialOutstock/getOutStockDetail"),
             servicePath);
 
-        _scanDetailEndpoint = NormalizeRelative(
+        _scanDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.scanDetail", "/pda/wmsMaterialOutstock/getOutStockScanDetail"),
             servicePath);
 
-        _scanByBarcodeEndpoint = NormalizeRelative(
+        _scanByBarcodeEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.scanByBarcode", "/pda/wmsMaterialOutstock/getOutStockByBarcode"),
             servicePath);
 
-        _scanConfirmEndpoint = NormalizeRelative(
+        _scanConfirmEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.scanConfirm", "/pda/wmsMaterialOutstock/scanOutConfirm"),
             servicePath);
 
-        _cancelScanEndpoint = NormalizeRelative(
+        _cancelScanEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.cancelScan", "/pda/wmsMaterialOutstock/cancelOutScan"),
             servicePath);
 
-        _confirmOutstockEndpoint = NormalizeRelative(
+        _confirmOutstockEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.confirm", "/pda/wmsMaterialOutstock/confirm"),
             servicePath);
 
-        _judgeScanAllEndpoint = NormalizeRelative(
+        _judgeScanAllEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.judgeScanAll", "/pda/wmsMaterialOutstock/judgeOutstockDetailScanAll"),
             servicePath);
-        _updateOutstockLocationEndpoint = NormalizeRelative(
+        _updateOutstockLocationEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("outbound.updateLocation", "/pda/wmsMaterialOutstock/updateLocation"),
     servicePath);
 
-        _updateQuantityEndpoint = NormalizeRelative(
+        _updateQuantityEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("outbound.updateQuantity", "/pda/wmsMaterialOutstock/updateOutQuantity"),
             servicePath);
-    }
-
-    /// <summary>
-    /// 归一化为“相对服务路径”的接口：
-    /// - 去掉前导服务段（如 /normalService），避免拼接时重复
-    /// - 确保以 / 开头
-    /// - 若传入的是绝对 http(s) URL，则原样返回（不处理）
-    /// </summary>
-    private static string NormalizeRelative(string? endpoint, string servicePath)
-    {
-        var ep = (endpoint ?? string.Empty).Trim();
-        if (string.IsNullOrEmpty(ep)) return "/";
-
-        if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            return ep;
-
-        if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-        if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-        servicePath = servicePath.TrimEnd('/'); // "/normalService"
-
-        if (!string.IsNullOrEmpty(servicePath) &&
-            servicePath != "/" &&
-            ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-        {
-            ep = ep[servicePath.Length..];
-        }
-
-        if (!ep.StartsWith("/")) ep = "/" + ep;
-        return ep;
     }
 
     // ---------------- 通用 HTTP 基础 ----------------
@@ -227,29 +198,9 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
         return await ReadJsonAsync<T>(res.Content, ct).ConfigureAwait(false);
     }
 
-    private static string BuildFullUrl(Uri? baseAddress, string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-            throw new ArgumentException("url 不能为空", nameof(url));
-
-        // 已是绝对地址则直接返回
-        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            return url;
-
-        if (baseAddress is null)
-            throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-        var baseUrl = baseAddress.AbsoluteUri;
-        if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-        var relative = url.TrimStart('/'); // 关键：去掉前导斜杠，避免覆盖服务段
-        return baseUrl + relative;
-    }
-
     private async Task<TResp?> PostJsonAsync<TReq, TResp>(string url, TReq body, CancellationToken ct)
     {
-        var requestUrl = BuildFullUrl(_http.BaseAddress, url);
+        var requestUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         var json = JsonSerializer.Serialize(body, JsonOpt);
         using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(requestUrl, UriKind.Absolute))
@@ -560,5 +511,4 @@ public class GetOutStockItem
         public string? location { get; set; }
         public bool? scanStatus { get; set; }        // 可能为 null，按 false 处理
     }
-
 

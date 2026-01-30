@@ -1,4 +1,5 @@
-﻿using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services.Common;
+using IndustrialControlMAUI.Models;
 using Org.Apache.Http.Authentication;
 using System;
 using System.Collections.Generic;
@@ -34,13 +35,13 @@ namespace IndustrialControlMAUI.Services
             _http.DefaultRequestHeaders.Accept.Clear();
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            _alluserEndpoint = NormalizeRelative(
+            _alluserEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("auth.alluser", "/pda/auth/allUsers"), servicePath);
         }
 
         public async Task<List<UserInfoDto>> GetAllUsersAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _alluserEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _alluserEndpoint);
             using var req = new HttpRequestMessage(HttpMethod.Get, full);
             using var resp = await _http.SendAsync(req, ct);
             resp.EnsureSuccessStatusCode();
@@ -59,48 +60,6 @@ namespace IndustrialControlMAUI.Services
                 .ToList();
 
             return dedup;
-        }
-
-        private static string NormalizeRelative(string? endpoint, string servicePath)
-        {
-            var ep = (endpoint ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(ep)) return "/";
-
-            if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return ep;
-
-            if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-            if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-            servicePath = servicePath.TrimEnd('/');
-
-            if (!string.IsNullOrEmpty(servicePath) &&
-                servicePath != "/" &&
-                ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                ep = ep[servicePath.Length..];
-            }
-
-            if (!ep.StartsWith("/")) ep = "/" + ep;
-            return ep;
-        }
-
-        private static string BuildFullUrl(Uri? baseAddress, string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("url 不能为空", nameof(url));
-
-            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return url;
-
-            if (baseAddress is null)
-                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-            var baseUrl = baseAddress.AbsoluteUri;
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-            return baseUrl + url.TrimStart('/');
         }
     }
 

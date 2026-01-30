@@ -1,4 +1,5 @@
-﻿using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services.Common;
+using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -140,168 +141,125 @@ namespace IndustrialControlMAUI.Services
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // ================== 巡检 ==================
-            _pageEndpoint = NormalizeRelative(
+            _pageEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.page", "/pda/dev/inspectTask/pageQuery"),
                 servicePath);
 
-            _dictEndpoint = NormalizeRelative(
+            _dictEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.dictList", "/pda/dev/inspectTask/getDictList"),
                 servicePath);
 
-            _detailsEndpoint = NormalizeRelative(
+            _detailsEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.detailList", "/pda/dev/inspectTask/detail"),
                 servicePath);
 
-            _workflowPath = NormalizeRelative(
+            _workflowPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.workflow", "/pda/dev/inspectTask/getWorkflow"),
                 servicePath);
 
-            _executeSavePath = NormalizeRelative(
+            _executeSavePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.inspectexecuteSave", "/pda/dev/inspectTask/executeSave"),
                 servicePath);
 
-            _executeCompletePath = NormalizeRelative(
+            _executeCompletePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.inspectexecuteComplete", "/pda/dev/inspectTask/executeCompleteInspection"),
                 servicePath);
 
-            _deleteAttPath = NormalizeRelative(
+            _deleteAttPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.deleteAtt", "/pda/dev/inspectTask/deleteAttachment"),
                 servicePath);
 
             // ================== 保养 ==================
-            _mainPageEndpoint = NormalizeRelative(
+            _mainPageEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.mainpage", "/pda/dev/upkeepTask/pageQuery"),
                 servicePath);
 
-            _dictMainEndpoint = NormalizeRelative(
+            _dictMainEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.maindictList", "/pda/dev/upkeepTask/getDictList"),
                 servicePath);
 
-            _mainDetailsEndpoint = NormalizeRelative(
+            _mainDetailsEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.maindetailList", "/pda/dev/upkeepTask/detail"),
                 servicePath);
 
-            _mainWorkflowPath = NormalizeRelative(
+            _mainWorkflowPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.mainworkflow", "/pda/dev/upkeepTask/getWorkflow"),
                 servicePath);
 
-            _mainexecuteSavePath = NormalizeRelative(
+            _mainexecuteSavePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.mainexecuteSave", "/pda/dev/upkeepTask/executeSave"),
                 servicePath);
 
-            _mainexecuteCompletePath = NormalizeRelative(
+            _mainexecuteCompletePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.mainexecuteComplete", "/pda/dev/upkeepTask/executeCompleteUpkeep"),
                 servicePath);
 
-            _maindeleteAttPath = NormalizeRelative(
+            _maindeleteAttPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.maindeleteAtt", "/pda/dev/upkeepTask/deleteAttachment"),
                 servicePath);
 
             // ================== 维修 ==================
-            _repPageEndpoint = NormalizeRelative(
+            _repPageEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.reppage", "/pda/dev/maintainWorkOrder/pageQuery"),
                 servicePath);
 
-            _dictRepEndpoint = NormalizeRelative(
+            _dictRepEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.repdictList", "/pda/dev/maintainWorkOrder/getDictList"),
                 servicePath);
 
-            _repDetailsEndpoint = NormalizeRelative(
+            _repDetailsEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.repdetailList", "/pda/dev/maintainWorkOrder/detail"),
                 servicePath);
 
-            _repWorkflowPath = NormalizeRelative(
+            _repWorkflowPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.repworkflow", "/pda/dev/maintainWorkOrder/getWorkflow"),
                 servicePath);
 
-            _repexecuteSavePath = NormalizeRelative(
+            _repexecuteSavePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.repexecuteSave", "/pda/dev/maintainWorkOrder/executeSave"),
                 servicePath);
 
-            _repexecuteCompletePath = NormalizeRelative(
+            _repexecuteCompletePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.repexecuteComplete", "/pda/dev/maintainWorkOrder/executeComplete"),
                 servicePath);
 
-            _repdeleteAttPath = NormalizeRelative(
+            _repdeleteAttPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.repdeleteAtt", "/pda/dev/maintainWorkOrder/deleteAttachment"),
                 servicePath);
 
             // ================== 异常提报 ==================
-            _exceptPageEndpoint = NormalizeRelative(
+            _exceptPageEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.exceptPage", "/pda/dev/maintainReport/pageQuery"),
                 servicePath);
 
-            _dictESEndpoint = NormalizeRelative(
+            _dictESEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.exceptDic", "/pda/dev/maintainReport/getDictList"),
                 servicePath);
 
-            _exceptDetailsEndpoint = NormalizeRelative(
+            _exceptDetailsEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.exceptDetails", "/pda/dev/maintainReport/detail"),
                 servicePath);
 
-            _exceptWorkflowPath = NormalizeRelative(
+            _exceptWorkflowPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.exceptWorkflow", "/pda/dev/maintainReport/getWorkflow"),
                 servicePath);
 
-            _exceptSavePath = NormalizeRelative(
+            _exceptSavePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.exceptsave", "/pda/dev/maintainReport/edit"),
                 servicePath);
 
-            _submitexceptPath = NormalizeRelative(
+            _submitexceptPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.submitexcept", "/pda/dev/maintainReport/repairSubmit"),
                 servicePath);
 
-            _buildexceptPath = NormalizeRelative(
+            _buildexceptPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("equipment.buildexcept", "/pda/dev/maintainReport/add"),
                 servicePath);
         }
 
 
-        // ===================== 公共工具 =====================
-        private static string BuildFullUrl(Uri? baseAddress, string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("url 不能为空", nameof(url));
-
-            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return url;
-
-            if (baseAddress is null)
-                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-            var baseUrl = baseAddress.AbsoluteUri;
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-            return baseUrl + url.TrimStart('/');
-        }
-
         private static string BuildQuery(IDictionary<string, string> p)
             => string.Join("&", p.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
-
-        private static string NormalizeRelative(string? endpoint, string servicePath)
-        {
-            var ep = (endpoint ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(ep)) return "/";
-
-            if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return ep;
-
-            if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-            if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-            servicePath = servicePath.TrimEnd('/');
-
-            if (!string.IsNullOrEmpty(servicePath) &&
-                servicePath != "/" &&
-                ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                ep = ep[servicePath.Length..];
-            }
-
-            if (!ep.StartsWith("/")) ep = "/" + ep;
-            return ep;
-        }
 
         // ========== 抽取的通用方法：分页查询 ==========
         private async Task<PageResponeResult<T>> GetPageAsync<T>(
@@ -310,7 +268,7 @@ namespace IndustrialControlMAUI.Services
             CancellationToken ct)
         {
             var url = endpoint + "?" + BuildQuery(queryParams);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -333,7 +291,7 @@ namespace IndustrialControlMAUI.Services
         // ========== 抽取的通用方法：字典查询 ==========
         private async Task<List<DictField>> GetDictFieldsAsync(string endpoint, CancellationToken ct)
         {
-            var full = BuildFullUrl(_http.BaseAddress, endpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, endpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -349,7 +307,7 @@ namespace IndustrialControlMAUI.Services
             string id,
             CancellationToken ct)
         {
-            var full = BuildFullUrl(_http.BaseAddress, endpoint) +
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, endpoint) +
                        "?id=" + Uri.EscapeDataString(id ?? string.Empty);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
@@ -376,7 +334,7 @@ namespace IndustrialControlMAUI.Services
             TPayload payload,
             CancellationToken ct)
         {
-            var url = BuildFullUrl(_http.BaseAddress, endpoint);
+            var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, endpoint);
             var json = JsonSerializer.Serialize(payload, _json);
 
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
@@ -674,4 +632,3 @@ namespace IndustrialControlMAUI.Services
     }
 
 }
-

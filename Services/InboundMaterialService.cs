@@ -1,4 +1,5 @@
-﻿using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services.Common;
+using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using IndustrialControlMAUI.ViewModels;
 using Serilog;
@@ -54,64 +55,29 @@ public sealed class InboundMaterialService : IInboundMaterialService
 
         // ③ Endpoints：统一从配置取“相对服务路径”的地址（新配置已去掉 normalService 前缀）
         //    若老配置仍带 /normalService/ 前缀，会被 NormalizeRelative 去重。
-        _inboundListEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.list", "/pda/wmsMaterialInstock/getInStock"), servicePath);
-        _detailEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.detail", "/pda/wmsMaterialInstock/getInStockDetail"), servicePath);
-        _scanDetailEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.scanDetail", "/pda/wmsMaterialInstock/getInStockScanDetail"), servicePath);
-        _scanByBarcodeEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.scanByBarcode", "/pda/wmsMaterialInstock/getInStockByBarcode"), servicePath);
-        _scanConfirmEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.scanConfirm", "/pda/wmsMaterialInstock/scanConfirm"), servicePath);
-        _cancelScanEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.cancelScan", "/pda/wmsMaterialInstock/cancelScan"), servicePath);
-        _confirmInstockEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.confirm", "/pda/wmsMaterialInstock/confirm"), servicePath);
-        _judgeScanAllEndpoint = NormalizeRelative(configLoader.GetApiPath("inbound.judgeScanAll", "/pda/wmsMaterialInstock/judgeInstockDetailScanAll"), servicePath);
+        _inboundListEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.list", "/pda/wmsMaterialInstock/getInStock"), servicePath);
+        _detailEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.detail", "/pda/wmsMaterialInstock/getInStockDetail"), servicePath);
+        _scanDetailEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.scanDetail", "/pda/wmsMaterialInstock/getInStockScanDetail"), servicePath);
+        _scanByBarcodeEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.scanByBarcode", "/pda/wmsMaterialInstock/getInStockByBarcode"), servicePath);
+        _scanConfirmEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.scanConfirm", "/pda/wmsMaterialInstock/scanConfirm"), servicePath);
+        _cancelScanEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.cancelScan", "/pda/wmsMaterialInstock/cancelScan"), servicePath);
+        _confirmInstockEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.confirm", "/pda/wmsMaterialInstock/confirm"), servicePath);
+        _judgeScanAllEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.judgeScanAll", "/pda/wmsMaterialInstock/judgeInstockDetailScanAll"), servicePath);
 
         // 如果你有此接口，最好也放进配置：apiEndpoints.inbound.pageLocationQuery
-        _pageLocationQuery = NormalizeRelative(configLoader.GetApiPath("inbound.pageLocationQuery", "/pda/wmsMaterialInstock/pageLocationQuery"), servicePath);
-        _getInStockLocationEndpoint = NormalizeRelative(
+        _pageLocationQuery = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("inbound.pageLocationQuery", "/pda/wmsMaterialInstock/pageLocationQuery"), servicePath);
+        _getInStockLocationEndpoint = ServiceUrlHelper.NormalizeRelative(
          configLoader.GetApiPath("inbound.getInStockLocation", "/pda/wmsMaterialInstock/getInStockLocation"),
          servicePath);
 
-        _updateLocationEndpoint = NormalizeRelative(
+        _updateLocationEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("inbound.updateLocation", "/pda/wmsMaterialInstock/updateLocation"),
             servicePath);
 
-        _updateQuantityEndpoint = NormalizeRelative(
+        _updateQuantityEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("inbound.updateQuantity", "/pda/wmsMaterialInstock/updateQuantity"),
             servicePath);
       
-    }
-
-    /// <summary>
-    /// 归一化为“相对服务路径”的接口：
-    /// - 去掉前导的服务段（如 /normalService）以避免拼接成重复
-    /// - 确保以 / 开头
-    /// </summary>
-    private static string NormalizeRelative(string? endpoint, string servicePath)
-    {
-        var ep = (endpoint ?? string.Empty).Trim();
-        if (string.IsNullOrEmpty(ep)) return "/";
-
-        // 保障 servicePath 形如 "/xxx"
-        if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-        if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-        servicePath = servicePath.TrimEnd('/'); // "/normalService"
-
-        // 若 endpoint 是绝对（带 http），交给调用方处理；此处保持原样
-        if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            return ep;
-        }
-
-        // 去重：如果 ep 以 "/normalService/..." 开头，则裁掉该前缀
-        if (!string.IsNullOrEmpty(servicePath) &&
-            servicePath != "/" &&
-            ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-        {
-            ep = ep[servicePath.Length..]; // 去掉 "/normalService"
-        }
-
-        // 确保相对路径以 "/" 开头
-        if (!ep.StartsWith("/")) ep = "/" + ep;
-        return ep;
     }
 
     // ======================
@@ -229,29 +195,9 @@ public sealed class InboundMaterialService : IInboundMaterialService
         return await ReadJsonAsync<T>(res,_auth, ct).ConfigureAwait(false);
     }
 
-    private static string BuildFullUrl(Uri? baseAddress, string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-            throw new ArgumentException("url 不能为空", nameof(url));
-
-        // 已是绝对地址则直接返回
-        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            return url;
-
-        if (baseAddress is null)
-            throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-        var baseUrl = baseAddress.AbsoluteUri;
-        if (!baseUrl.EndsWith("/")) baseUrl += "/";
-
-        var relative = url.TrimStart('/'); // 关键：去掉前导斜杠，避免覆盖服务段
-        return baseUrl + relative;
-    }
-
     private async Task<TResp?> PostJsonAsync<TReq, TResp>(string url, TReq body, CancellationToken ct)
     {
-        var requestUrl = BuildFullUrl(_http.BaseAddress, url);
+        var requestUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         var json = JsonSerializer.Serialize(body, JsonOpt);
         using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(requestUrl, UriKind.Absolute))
@@ -654,7 +600,6 @@ public class GetInStockScanDetailItem
     public string? location { get; set; }
     public bool? scanStatus { get; set; }        // 可能为 null，按 false 处理
 }
-
 
 
 

@@ -1,4 +1,5 @@
-﻿using AndroidX.Annotations;
+using IndustrialControlMAUI.Services.Common;
+using AndroidX.Annotations;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Headers;
@@ -73,73 +74,31 @@ namespace IndustrialControlMAUI.Services
             _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // 端点路径允许走你的 appconfig.json 动态配置；未配置时使用默认值
-            _meterPageEndpoint = NormalizeRelative(configLoader.GetApiPath("energy.meterPage", "/pda/emMeter/queryMeterPageList"), servicePath);
-            _dictEndpoint = NormalizeRelative(configLoader.GetApiPath("energy.dictList", "/pda/emMeter/queryDictList"), servicePath);
-            _workshopEndpoint = NormalizeRelative(configLoader.GetApiPath("energy.workshops", "/pda/common/queryWorkShopList"), servicePath);
-            _userListEndpoint = NormalizeRelative(configLoader.GetApiPath("energy.users", "/pda/common/queryUserList"), servicePath);
-            _productLineEndpoint = NormalizeRelative(
+            _meterPageEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("energy.meterPage", "/pda/emMeter/queryMeterPageList"), servicePath);
+            _dictEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("energy.dictList", "/pda/emMeter/queryDictList"), servicePath);
+            _workshopEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("energy.workshops", "/pda/common/queryWorkShopList"), servicePath);
+            _userListEndpoint = ServiceUrlHelper.NormalizeRelative(configLoader.GetApiPath("energy.users", "/pda/common/queryUserList"), servicePath);
+            _productLineEndpoint = ServiceUrlHelper.NormalizeRelative(
            configLoader.GetApiPath("energy.productLines", "/pda/common/queryProductLineList"),
            servicePath);
-            _pointsByMeterEndpoint = NormalizeRelative(
+            _pointsByMeterEndpoint = ServiceUrlHelper.NormalizeRelative(
            configLoader.GetApiPath("energy.pointsByMeter", "/pda/emMeter/queryPointListByMeterCode"),
            servicePath);
-            _lastReadingMeterEndpoint = NormalizeRelative(
+            _lastReadingMeterEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("energy.lastReadingMeter", "/pda/emMeter/queryLastReadingMeter"),
             servicePath);
-            _saveReadingEndpoint = NormalizeRelative(
+            _saveReadingEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("energy.saveReading", "/pda/emMeter/save"),
             servicePath);
-            _devListEndpoint = NormalizeRelative(
+            _devListEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("energy.devList", "/pda/common/queryDevList"),
     servicePath);
 
            
         }
 
-        // ===== 公共工具 =====
-        private static string BuildFullUrl(Uri? baseAddress, string url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("url 不能为空", nameof(url));
-
-            if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return url;
-
-            if (baseAddress is null)
-                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
-
-            var baseUrl = baseAddress.AbsoluteUri;
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-            return baseUrl + url.TrimStart('/');
-        }
-
         private static string BuildQuery(IDictionary<string, string> p)
             => string.Join("&", p.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
-
-        private static string NormalizeRelative(string? endpoint, string servicePath)
-        {
-            var ep = (endpoint ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(ep)) return "/";
-
-            if (ep.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                ep.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                return ep;
-
-            if (string.IsNullOrWhiteSpace(servicePath)) servicePath = "/";
-            if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
-            servicePath = servicePath.TrimEnd('/');
-
-            if (!string.IsNullOrEmpty(servicePath) &&
-                servicePath != "/" &&
-                ep.StartsWith(servicePath + "/", StringComparison.OrdinalIgnoreCase))
-            {
-                ep = ep[servicePath.Length..];
-            }
-
-            if (!ep.StartsWith("/")) ep = "/" + ep;
-            return ep;
-        }
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -167,7 +126,7 @@ namespace IndustrialControlMAUI.Services
             if (!string.IsNullOrWhiteSpace(lineId)) p["lineId"] = lineId!.Trim();
 
             var url = _meterPageEndpoint + "?" + BuildQuery(p);
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -189,7 +148,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<List<EnergyDictItem>> GetEnergyTypeDictAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _dictEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _dictEndpoint);
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
@@ -210,7 +169,7 @@ namespace IndustrialControlMAUI.Services
         public async Task<List<IdNameOption>> GetWorkshopsAsync(string? workshopsType = "workshop", CancellationToken ct = default)
         {
             var url = _workshopEndpoint + (string.IsNullOrWhiteSpace(workshopsType) ? "" : $"?workshopsType={Uri.EscapeDataString(workshopsType)}");
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -230,7 +189,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<List<IdNameOption>> GetUsersAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _userListEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _userListEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -251,7 +210,7 @@ namespace IndustrialControlMAUI.Services
         {
             // /normalService/pda/common/queryProductLineList?workshopsType=production_line
             var url = _productLineEndpoint + (string.IsNullOrWhiteSpace(workshopsType) ? "" : $"?workshopsType={Uri.EscapeDataString(workshopsType)}");
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -273,7 +232,7 @@ namespace IndustrialControlMAUI.Services
         {
             if (string.IsNullOrWhiteSpace(meterCode)) return new();
             var url = _pointsByMeterEndpoint + $"?meterCode={Uri.EscapeDataString(meterCode)}";
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -293,7 +252,7 @@ namespace IndustrialControlMAUI.Services
                 ["meterCode"] = meterCode,
                 ["meterPointCode"] = meterPointCode
             });
-            var full = BuildFullUrl(_http.BaseAddress, url);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
@@ -306,7 +265,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<bool> SaveMeterReadingAsync(MeterSaveReq req, CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _saveReadingEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _saveReadingEndpoint);
             using var httpReq = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             {
                 Content = new StringContent(JsonSerializer.Serialize(req, _json), System.Text.Encoding.UTF8, "application/json")
@@ -321,7 +280,7 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<List<DevItem>> GetDevListAsync(CancellationToken ct = default)
         {
-            var full = BuildFullUrl(_http.BaseAddress, _devListEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _devListEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);

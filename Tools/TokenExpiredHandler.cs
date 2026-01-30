@@ -34,7 +34,7 @@ namespace IndustrialControlMAUI.Tools
                 var media = resp.Content?.Headers?.ContentType?.MediaType?.ToLowerInvariant();
                 if (media is not null && media.Contains("json"))
                 {
-                    var text = await resp.Content.ReadAsStringAsync();
+                    var text = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
                     if (!string.IsNullOrWhiteSpace(text))
                     {
                         var api = JsonSerializer.Deserialize<ApiBase>(text, new JsonSerializerOptions
