@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:IndustrialControlMAUI.Controls"
              x:Class="IndustrialControlMAUI.Pages.LoginPage"
              BackgroundColor="White"
              Shell.NavBarIsVisible="False"
@@ -38,34 +39,13 @@
                 <!-- 密码 + 显示/隐藏 -->
                 <Frame HasShadow="False" CornerRadius="12"
                        BackgroundColor="#F6F7F9" BorderColor="#E6E7EB" Padding="12">
-                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                         <Image Source="lock_icon.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"/>
-                        <Entry x:Name="PasswordEntry"
-                               Grid.Column="1"
-                               Placeholder="密码"
-                               Text="{Binding Password}"
-                               IsPassword="True"
-                               ReturnType="Done">
-                            <!-- 用 DataTrigger 根据 ShowPassword 切换 IsPassword -->
-                            <Entry.Triggers>
-                                <DataTrigger TargetType="Entry"
-                                             Binding="{Binding ShowPassword}" Value="True">
-                                    <Setter Property="IsPassword" Value="False"/>
-                                </DataTrigger>
-                            </Entry.Triggers>
-                        </Entry>
-
-                        <!-- 眼睛按钮：切换密码可见性 -->
-                        <Button Grid.Column="2"
-                                Padding="8"
-                                WidthRequest="44" HeightRequest="44"
-                                BackgroundColor="Transparent"
-                                Command="{Binding TogglePasswordCommand}">
-                            <Button.ImageSource>
-                                <!-- 若有自定义图标，可换 eye_open.png / eye_closed.png -->
-                                <FontImageSource Glyph="&#xf06e;"  FontFamily="FA" Size="18"/>
-                            </Button.ImageSource>
-                        </Button>
+                        <controls:PasswordEntryView Grid.Column="1"
+                                                    Placeholder="密码"
+                                                    Text="{Binding Password}"
+                                                    ShowPassword="{Binding ShowPassword}"
+                                                    TogglePasswordCommand="{Binding TogglePasswordCommand}" />
                     </Grid>
                 </Frame>
 
