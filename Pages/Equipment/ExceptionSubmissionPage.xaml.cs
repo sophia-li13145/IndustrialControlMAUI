@@ -5,8 +5,10 @@ namespace IndustrialControlMAUI.Pages;
 public partial class ExceptionSubmissionPage : ContentPage
 {
     private readonly ExceptionSubmissionViewModel _vm;
+    /// <summary>执行 ExceptionSubmissionPage 初始化逻辑。</summary>
     public ExceptionSubmissionPage() : this(ServiceHelper.GetService<ExceptionSubmissionViewModel>()) { }
 
+    /// <summary>执行 ExceptionSubmissionPage 初始化逻辑。</summary>
     public ExceptionSubmissionPage(ExceptionSubmissionViewModel vm)
     {
         InitializeComponent();
@@ -14,6 +16,7 @@ public partial class ExceptionSubmissionPage : ContentPage
         BindingContext = _vm;
     }
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();

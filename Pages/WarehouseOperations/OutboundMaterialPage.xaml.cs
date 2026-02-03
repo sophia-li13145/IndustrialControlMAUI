@@ -22,6 +22,7 @@ public partial class OutboundMaterialPage : ContentPage
     private readonly IServiceProvider _sp;
     private bool _loadedOnce = false;
 
+    /// <summary>执行 OutboundMaterialPage 初始化逻辑。</summary>
     public OutboundMaterialPage(IServiceProvider sp, OutboundMaterialViewModel vm, IDialogService dialogs)
     {
         InitializeComponent();
@@ -31,6 +32,7 @@ public partial class OutboundMaterialPage : ContentPage
         _sp = sp;
     }
 
+    /// <summary>执行 OnScanEntryCompleted 逻辑。</summary>
     private async void OnScanEntryCompleted(object? sender, EventArgs e)
     {
         // 取输入框内容
@@ -51,6 +53,7 @@ public partial class OutboundMaterialPage : ContentPage
         ScanEntry.Focus();
     }
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -84,6 +87,7 @@ public partial class OutboundMaterialPage : ContentPage
         ScanEntry.Focus();
     }
 
+    /// <summary>执行 OnDisappearing 逻辑。</summary>
     protected override void OnDisappearing()
     {
         // 退出页面即注销（防止多个程序/页面抢处理）
@@ -92,6 +96,7 @@ public partial class OutboundMaterialPage : ContentPage
     }
 
     // 新增：扫码按钮事件
+    /// <summary>执行 OnScanClicked 逻辑。</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();
@@ -139,6 +144,7 @@ public partial class OutboundMaterialPage : ContentPage
     }
 
 
+    /// <summary>执行 OnBinTapped 逻辑。</summary>
     private async void OnBinTapped(object? sender, TappedEventArgs e)
     {
         // 1) 取到行对象
@@ -195,6 +201,7 @@ public partial class OutboundMaterialPage : ContentPage
     }
 
 
+    /// <summary>执行 OnQtyCompleted 逻辑。</summary>
     private async void OnQtyCompleted(object sender, EventArgs e)
     {
         if (sender is not Entry entry) return;

@@ -9,6 +9,7 @@ public partial class MoldOutboundExecutePage : ContentPage, IQueryAttributable
 {
     private readonly MoldOutboundExecuteViewModel _vm;
 
+    /// <summary>执行 MoldOutboundExecutePage 初始化逻辑。</summary>
     public MoldOutboundExecutePage(MoldOutboundExecuteViewModel vm)
     {
         InitializeComponent();
@@ -16,6 +17,7 @@ public partial class MoldOutboundExecutePage : ContentPage, IQueryAttributable
     }
 
     // Shell 在导航时会调用这里，参数肯定已到
+    /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         // 1) 优先：整条 WorkOrderDto（JSON 传参）
@@ -47,6 +49,7 @@ public partial class MoldOutboundExecutePage : ContentPage, IQueryAttributable
     }
 
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();

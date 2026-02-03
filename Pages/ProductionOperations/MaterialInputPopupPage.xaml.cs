@@ -1,6 +1,6 @@
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.ViewModels;
-using Microsoft.Extensions.DependencyInjection; // ±ğÍüÁË
+using Microsoft.Extensions.DependencyInjection; // 
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +11,7 @@ public partial class MaterialInputPopupPage : ContentPage
 {
     private readonly MaterialInputPopupViewModel _vm;
 
+    /// <summary>æ‰§è¡Œ MaterialInputPopupPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public MaterialInputPopupPage(MaterialInputPopupViewModel vm)
     {
         InitializeComponent();
@@ -18,9 +19,9 @@ public partial class MaterialInputPopupPage : ContentPage
     }
 
     /// <summary>
-    /// ´ò¿ª¡°Í¶ÈëÎïÁÏ¡±µ¯´°£º
-    /// - presetMaterial != null Ê±£ºÎïÁÏÒÑÔ¤Éè£¬µ¯´°ÀïÖ»ÈÃÌîÊıÁ¿/±¸×¢£¨ÏÂÀ­½ûÓÃ£©
-    /// - presetMaterial == null Ê±£º¸ù¾İ materialInputList ÈÃÓÃ»§Ñ¡ÔñÎïÁÏ
+    /// æ‰“å¼€å¼¹çª—
+    /// - presetMaterial != null æ—¶é¢„é€‰ï¼Œä»…ç”¨äºæŸ¥çœ‹/ç¼–è¾‘
+    /// - presetMaterial == null æ—¶ materialInputList æœªé€‰æ‹©
     /// </summary>
     public static async Task<MaterialInputResult?> ShowAsync(
         IServiceProvider? sp,
@@ -29,7 +30,7 @@ public partial class MaterialInputPopupPage : ContentPage
     {
         var tcs = new TaskCompletionSource<MaterialInputResult?>();
 
-        // 1) È¡µÃ ServiceProvider£¨²ÎÊıÓÅÏÈ£¬Æä´ÎÈ«¾Ö£¬×îºóÖ±½Ó new£©
+        // 1) å– ServiceProviderï¼ˆä¼˜å…ˆå…¨å±€ï¼Œå¦åˆ™ç›´æ¥ newï¼‰
         var provider = sp ?? Application.Current?.Handler?.MauiContext?.Services;
 
         MaterialInputPopupViewModel vm =
@@ -37,16 +38,16 @@ public partial class MaterialInputPopupPage : ContentPage
                 ? ActivatorUtilities.CreateInstance<MaterialInputPopupViewModel>(provider)
                 : new MaterialInputPopupViewModel();
 
-        // 2) ³õÊ¼»¯ VM & ½á¹û»Ø´«
+        // 2) åˆå§‹åŒ– VM å¹¶ç»‘å®š
         vm.Init(materialInputList ?? Enumerable.Empty<TaskMaterialInput>(), presetMaterial);
         vm.SetResultTcs(tcs);
 
-        // 3) ´ò¿ªµ¯´°£¨½¨Òé await£¬·ÀÖ¹µ¼º½Òì³£±»ÍÌ£©
+        // 3) æ‰“å¼€å¼¹çª—å¹¶ç­‰å¾…ç»“æœ
         var page = new MaterialInputPopupPage(vm);
         if (Application.Current?.MainPage?.Navigation is not null)
             await Application.Current.MainPage.Navigation.PushModalAsync(page);
 
-        // 4) ·µ»ØµÈ´ı½á¹û£¨µ÷ÓÃ·½ await£©
+        // 4) è¿”å›ç»“æœ
         return await tcs.Task;
     }
 }

@@ -11,6 +11,7 @@ namespace IndustrialControlMAUI.ViewModels
     public partial class ProcessQualitySearchViewModel : ObservableObject
     {
         private readonly IQualityApi _qualityapi;
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? keyword;
         [ObservableProperty] private DateTime startDate = DateTime.Today.AddDays(-7);
@@ -26,11 +27,13 @@ namespace IndustrialControlMAUI.ViewModels
 
         private bool _dictsLoaded = false;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<QualityOrderItem> Orders { get; } = new();
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
 
+        /// <summary>执行 ProcessQualitySearchViewModel 初始化逻辑。</summary>
         public ProcessQualitySearchViewModel(IQualityApi qualityapi)
         {
             _qualityapi = qualityapi;
@@ -38,6 +41,7 @@ namespace IndustrialControlMAUI.ViewModels
             ClearCommand = new RelayCommand(ClearFilters);
            
         }
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;
@@ -62,6 +66,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 SearchAsync 逻辑。</summary>
         public async Task SearchAsync()
         {
             await EnsureDictsLoadedAsync();
@@ -91,6 +96,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadMoreAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadMoreAsync()
         {
@@ -111,6 +117,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<QualityOrderItem>> LoadPageAsync(int pageNo)
         {
             var statusMap = InspectStatusDict?
@@ -165,9 +172,11 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string message) =>
            Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
+        /// <summary>执行 ClearFilters 逻辑。</summary>
         private void ClearFilters()
         {
             Keyword = string.Empty;
@@ -181,6 +190,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 点击一条工单进入执行页
+        /// <summary>执行 GoDetailAsync 逻辑。</summary>
         [RelayCommand]
         private async Task GoDetailAsync(QualityOrderItem? item)
         {

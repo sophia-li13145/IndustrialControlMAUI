@@ -7,6 +7,8 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class AdminViewModel : ObservableObject
 {
     private readonly IConfigLoader _cfg;
+    private bool _servicePathCustomized;
+    private bool _isSyncingServicePath;
 
     [ObservableProperty] private int schemaVersion;
     [ObservableProperty] private string ipAddress = "";          // 可包含端口
@@ -15,12 +17,14 @@ public partial class AdminViewModel : ObservableObject
     [ObservableProperty] private string servicePath = "/normalService"; // services[serviceName] 的路径
     [ObservableProperty] private string baseUrl = "";            // 预览：scheme://ipAddress + servicePath
 
+    /// <summary>执行 AdminViewModel 初始化逻辑。</summary>
     public AdminViewModel(IConfigLoader cfg)
     {
         _cfg = cfg;
         LoadFromConfig();
     }
 
+    /// <summary>执行 LoadFromConfig 逻辑。</summary>
     private void LoadFromConfig()
     {
         JsonNode node = _cfg.Load();
@@ -40,11 +44,13 @@ public partial class AdminViewModel : ObservableObject
                        ?? "/normalService";
 
         ServiceName = current;
+        _servicePathCustomized = false;
         ServicePath = NormalizePath(path);
 
         BaseUrl = BuildBaseUrl(Scheme, IpAddress, ServicePath);
     }
 
+    /// <summary>执行 SaveAsync 逻辑。</summary>
     [RelayCommand]
     public Task SaveAsync()
     {
@@ -82,6 +88,7 @@ public partial class AdminViewModel : ObservableObject
         return Shell.Current.DisplayAlert("已保存", "配置已保存，可立即生效。", "确定");
     }
 
+    /// <summary>执行 ResetToPackageAsync 逻辑。</summary>
     [RelayCommand]
     public async Task ResetToPackageAsync()
     {
@@ -91,6 +98,7 @@ public partial class AdminViewModel : ObservableObject
     }
 
     // ========== Helper ==========
+    /// <summary>执行 BuildBaseUrl 逻辑。</summary>
     private static string BuildBaseUrl(string scheme, string ip, string path)
     {
         // 去掉用户误填的 http(s):// 前缀，避免重复
@@ -98,6 +106,7 @@ public partial class AdminViewModel : ObservableObject
         return $"{(scheme?.ToLowerInvariant() == "https" ? "https" : "http")}://{ip}{NormalizePath(path)}";
     }
 
+    /// <summary>执行 NormalizePath 逻辑。</summary>
     private static string NormalizePath(string? p)
     {
         if (string.IsNullOrWhiteSpace(p)) return "/normalService";
@@ -106,6 +115,7 @@ public partial class AdminViewModel : ObservableObject
         return s.TrimEnd('/') is "/" ? "/" : s; // 允许 "/" 但通常应为 "/normalService"
     }
 
+    /// <summary>执行 StripScheme 逻辑。</summary>
     private static string StripScheme(string s)
     {
         if (s.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
@@ -113,5 +123,39 @@ public partial class AdminViewModel : ObservableObject
         if (s.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             return s.Substring("https://".Length);
         return s;
+    }
+
+    /// <summary>执行 OnSchemeChanged 逻辑。</summary>
+    partial void OnSchemeChanged(string value) => RefreshBaseUrl();
+    /// <summary>执行 OnIpAddressChanged 逻辑。</summary>
+    partial void OnIpAddressChanged(string value) => RefreshBaseUrl();
+
+    /// <summary>执行 OnServiceNameChanged 逻辑。</summary>
+    partial void OnServiceNameChanged(string value)
+    {
+        if (_servicePathCustomized)
+        {
+            RefreshBaseUrl();
+            return;
+        }
+
+        _isSyncingServicePath = true;
+        ServicePath = NormalizePath(value);
+        _isSyncingServicePath = false;
+        RefreshBaseUrl();
+    }
+
+    /// <summary>执行 OnServicePathChanged 逻辑。</summary>
+    partial void OnServicePathChanged(string value)
+    {
+        if (!_isSyncingServicePath)
+            _servicePathCustomized = true;
+        RefreshBaseUrl();
+    }
+
+    /// <summary>执行 RefreshBaseUrl 逻辑。</summary>
+    private void RefreshBaseUrl()
+    {
+        BaseUrl = BuildBaseUrl(Scheme, IpAddress, ServicePath);
     }
 }

@@ -11,6 +11,7 @@ namespace IndustrialControlMAUI.ViewModels
     public partial class ExceptionSubmissionSearchViewModel : ObservableObject
     {
         private readonly IEquipmentApi _equipmentapi;
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? keyword;
         [ObservableProperty] private DateTime startDate = DateTime.Today.AddDays(-7);
@@ -27,11 +28,13 @@ namespace IndustrialControlMAUI.ViewModels
 
         private bool _dictsLoaded = false;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MaintenanceReportDto> Orders { get; } = new();
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
 
+        /// <summary>执行 ExceptionSubmissionSearchViewModel 初始化逻辑。</summary>
         public ExceptionSubmissionSearchViewModel(IEquipmentApi equipmentapi)
         {
             _equipmentapi = equipmentapi;
@@ -42,6 +45,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // ======= 新增：报修命令 =======
+        /// <summary>执行 RepairAsync 逻辑。</summary>
         [RelayCommand]
         private async Task RepairAsync(MaintenanceReportDto? item)
         {
@@ -95,6 +99,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;
@@ -122,6 +127,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 SearchAsync 逻辑。</summary>
         public async Task SearchAsync()
         {
             if (IsBusy) return;
@@ -150,6 +156,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadMoreAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadMoreAsync()
         {
@@ -170,6 +177,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<MaintenanceReportDto>> LoadPageAsync(int pageNo)
         {
             var statusMap = ExceptionStatusDict?
@@ -234,9 +242,11 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string message) =>
            Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
+        /// <summary>执行 ClearFilters 逻辑。</summary>
         private void ClearFilters()
         {
             Keyword = string.Empty;
@@ -250,6 +260,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 点击一条工单进入执行页
+        /// <summary>执行 GoDetailAsync 逻辑。</summary>
         [RelayCommand]
         private async Task GoDetailAsync(MaintenanceReportDto? item)
         {
@@ -257,6 +268,7 @@ namespace IndustrialControlMAUI.ViewModels
             await Shell.Current.GoToAsync(nameof(ExceptionSubmissionPage) + $"?id={Uri.EscapeDataString(item.id)}");
         }
         //进入编辑页面
+        /// <summary>执行 GoEditAsync 逻辑。</summary>
         [RelayCommand]
         private async Task GoEditAsync(MaintenanceReportDto? item)
         {
@@ -265,6 +277,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 新建异常：不带 id 跳到编辑页 => 进入新增模式
+        /// <summary>执行 GoCreateAsync 逻辑。</summary>
         [RelayCommand]
         private async Task GoCreateAsync()
         {

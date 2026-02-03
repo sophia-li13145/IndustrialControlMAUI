@@ -5,8 +5,10 @@ namespace IndustrialControlMAUI.Pages;
 public partial class OutgoingQualityDetailPage : ContentPage
 {
     private readonly OutgoingQualityDetailViewModel _vm;
+    /// <summary>æ‰§è¡Œ OutgoingQualityDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public OutgoingQualityDetailPage() : this(ServiceHelper.GetService<OutgoingQualityDetailViewModel>()) { }
 
+    /// <summary>æ‰§è¡Œ OutgoingQualityDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public OutgoingQualityDetailPage(OutgoingQualityDetailViewModel vm)
     {
         InitializeComponent();
@@ -14,16 +16,19 @@ public partial class OutgoingQualityDetailPage : ContentPage
         BindingContext = _vm;
     }
 
+    /// <summary>æ‰§è¡Œ OnPickImagesClicked é€»è¾‘ã€‚</summary>
     private async void OnPickImagesClicked(object sender, EventArgs e)
     {
         await _vm.PickImagesAsync();
     }
 
+    /// <summary>æ‰§è¡Œ OnPickFileClicked é€»è¾‘ã€‚</summary>
     private async void OnPickFileClicked(object sender, EventArgs e)
     {
         await _vm.PickFilesAsync();
     }
 
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -31,6 +36,7 @@ public partial class OutgoingQualityDetailPage : ContentPage
 
     }
 
+    /// <summary>æ‰§è¡Œ OnInspectorEntryCompleted é€»è¾‘ã€‚</summary>
     private void OnInspectorEntryCompleted(object? sender, EventArgs e)
     {
         if (BindingContext is not OutgoingQualityDetailViewModel vm) return;
@@ -42,7 +48,7 @@ public partial class OutgoingQualityDetailPage : ContentPage
             return;
         }
 
-        // 1) ÓÅÏÈ£º¾«È·Æ¥Åä£¨ÕËºÅ/ĞÕÃû/"ĞÕÃû(ÕËºÅ)"£©
+        // 1) ç²¾ç¡®åŒ¹é…ï¼ˆå§“å/å·¥å·/å§“å(å·¥å·)ï¼‰
         var exact = vm.AllUsers.FirstOrDefault(u =>
             string.Equals(u.username, text, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(u.realname, text, StringComparison.OrdinalIgnoreCase) ||
@@ -50,18 +56,18 @@ public partial class OutgoingQualityDetailPage : ContentPage
 
         if (exact is not null)
         {
-            vm.PickInspectorCommand.Execute(exact);   // Ğ´»Ø Detail.inspecter & ÊÕÆğÏÂÀ­
+            vm.PickInspectorCommand.Execute(exact);   // å†™å…¥ Detail.inspector ç­‰å­—æ®µ
             return;
         }
 
-        // 2) Ö»ÓĞÒ»¸öºòÑ¡Ê±£¬Ö±½ÓÑ¡ÖĞ
+        // 2) ä»…ä¸€ä¸ªå€™é€‰æ—¶ç›´æ¥é€‰ä¸­
         if (vm.InspectorSuggestions.Count == 1)
         {
             vm.PickInspectorCommand.Execute(vm.InspectorSuggestions[0]);
             return;
         }
 
-        // 3) ÆäÓàÇé¿ö£ºÕ¹¿ªÏÂÀ­£¬½»¸øÓÃ»§µãÑ¡
+        // 3) å±•å¼€å€™é€‰åˆ—è¡¨
         vm.IsInspectorDropdownOpen = vm.InspectorSuggestions.Count > 0;
     }
 

@@ -9,6 +9,7 @@ public partial class InspectionDataPopup : Popup
 {
     private readonly InspectionDataPopupViewModel _vm;
 
+    /// <summary>执行 InspectionDataPopup 初始化逻辑。</summary>
     public InspectionDataPopup(IQualityApi api, InspectionDetailQuery query)
     {
         InitializeComponent();
@@ -17,6 +18,7 @@ public partial class InspectionDataPopup : Popup
         Opened += async (_, _) => await _vm.LoadAsync();
     }
 
+    /// <summary>执行 ShowAsync 逻辑。</summary>
     public static Task ShowAsync(IQualityApi api, InspectionDetailQuery query)
     {
         var popup = new InspectionDataPopup(api, query);
@@ -24,5 +26,6 @@ public partial class InspectionDataPopup : Popup
         return Task.CompletedTask;
     }
 
+    /// <summary>执行 OnClose 逻辑。</summary>
     private void OnClose(object? sender, EventArgs e) => Close();
 }

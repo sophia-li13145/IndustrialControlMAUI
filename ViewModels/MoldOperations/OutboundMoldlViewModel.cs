@@ -19,6 +19,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         #region 构造 & 注入
+        /// <summary>执行 OutboundMoldViewModel 初始化逻辑。</summary>
         public OutboundMoldViewModel(IMoldApi api)
         {
             _api = api;
@@ -63,6 +64,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string scannedTextColor = "Green";
 
         private CancellationToken _lifecycleToken = CancellationToken.None;
+        /// <summary>执行 SetLifecycleToken 逻辑。</summary>
         public void SetLifecycleToken(CancellationToken token) => _lifecycleToken = token;
         #endregion
 
@@ -74,6 +76,7 @@ namespace IndustrialControlMAUI.ViewModels
         #endregion
 
         #region 加载
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         public async Task LoadAsync(string workOrderNo)
         {
             WorkOrderNo = workOrderNo;
@@ -116,6 +119,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         #region 扫码加入明细（支持扫“模具编码”，或扫“型号”批量加入）
 
+        /// <summary>执行 ScanSubmitAsync 逻辑。</summary>
         private async Task ScanSubmitAsync()
         {
             var code = (ScanCode ?? string.Empty).Trim();
@@ -219,6 +223,7 @@ namespace IndustrialControlMAUI.ViewModels
         #endregion
 
         #region 取消扫描（支持勾选多选移除）
+        /// <summary>执行 CancelScanAsync 逻辑。</summary>
         private async Task CancelScanAsync()
         {
             var toRemove = ScannedList.Where(x => x.IsSelected).ToList();
@@ -242,6 +247,7 @@ namespace IndustrialControlMAUI.ViewModels
         #region 确认出库
         private bool _confirming;
 
+        /// <summary>执行 ConfirmAsync 逻辑。</summary>
         private async Task ConfirmAsync()
         {
             if (_confirming) return;
@@ -312,6 +318,7 @@ namespace IndustrialControlMAUI.ViewModels
         } 
 
         #endregion
+        /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
             if (query.TryGetValue("workOrderNo", out var v) && v is string no && !string.IsNullOrWhiteSpace(no))
@@ -322,6 +329,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
        
        
+        /// <summary>执行 ReindexScannedList 逻辑。</summary>
         private void ReindexScannedList()
         {
             for (int i = 0; i < ScannedList.Count; i++)
@@ -336,6 +344,7 @@ namespace IndustrialControlMAUI.ViewModels
     #region 分组子VM
     public partial class MoldGroupVM : ObservableObject
     {
+        /// <summary>执行 MoldGroupVM 初始化逻辑。</summary>
         public MoldGroupVM(string modelCode, int baseQty)
         {
             ModelCode = modelCode;
@@ -359,6 +368,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         public ICommand ToggleCommand { get; }
 
+        /// <summary>执行 SetExpanded 逻辑。</summary>
         public void SetExpanded(bool expanded)
         {
             IsExpanded = expanded;

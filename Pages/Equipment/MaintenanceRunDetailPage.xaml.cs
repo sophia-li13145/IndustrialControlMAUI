@@ -5,8 +5,10 @@ namespace IndustrialControlMAUI.Pages;
 public partial class MaintenanceRunDetailPage : ContentPage
 {
     private readonly MaintenanceRunDetailViewModel _vm;
+    /// <summary>æ‰§è¡Œ MaintenanceRunDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public MaintenanceRunDetailPage() : this(ServiceHelper.GetService<MaintenanceRunDetailViewModel>()) { }
 
+    /// <summary>æ‰§è¡Œ MaintenanceRunDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public MaintenanceRunDetailPage(MaintenanceRunDetailViewModel vm)
     {
         InitializeComponent();
@@ -15,6 +17,7 @@ public partial class MaintenanceRunDetailPage : ContentPage
     }
 
    
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -27,7 +30,8 @@ public partial class MaintenanceRunDetailPage : ContentPage
     private async void OnPickFileClicked(object sender, EventArgs e)
         => await _vm.PickFilesAsync();
 
-    // ÔÚ Entry Íê³ÉÊ±×öÒ»´Î¡°¾«È·Æ¥Åä»òÎ¨Ò»ºòÑ¡×Ô¶¯Ñ¡Ôñ¡±£¬·ñÔòÕ¹¿ªÏÂÀ­
+    //  Entry å®Œæˆæ—¶ä¼˜å…ˆç²¾ç¡®åŒ¹é…ï¼Œå¦åˆ™å±•å¼€å€™é€‰
+    /// <summary>æ‰§è¡Œ OnUpkeepOperatorEntryCompleted é€»è¾‘ã€‚</summary>
     private void OnUpkeepOperatorEntryCompleted(object? sender, EventArgs e)
     {
         if (BindingContext is not MaintenanceRunDetailViewModel vm) return;

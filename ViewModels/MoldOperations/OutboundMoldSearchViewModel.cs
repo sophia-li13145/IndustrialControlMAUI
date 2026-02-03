@@ -26,15 +26,18 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool hasMore = true;
         private readonly Dictionary<string, string> _auditMap = new();   // "1" -> "执行中"
         private readonly Dictionary<string, string> _urgentMap = new();  // "level2" -> "中"
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedStatusOption;
         private bool _dictsLoaded = false;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<WorkOrderDto> Orders { get; } = new();
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
 
+        /// <summary>执行 OutboundMoldSearchViewModel 初始化逻辑。</summary>
         public OutboundMoldSearchViewModel(IMoldApi api, IWorkOrderApi workapi)
         {
             _api = api;
@@ -44,6 +47,7 @@ namespace IndustrialControlMAUI.ViewModels
             _ = EnsureDictsLoadedAsync();   // fire-and-forget
            
         }
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;
@@ -90,6 +94,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 SearchAsync 逻辑。</summary>
         public async Task SearchAsync()
         {
             if (IsBusy) return;
@@ -113,6 +118,7 @@ namespace IndustrialControlMAUI.ViewModels
             finally { IsBusy = false; }
         }
 
+        /// <summary>执行 LoadMoreAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadMoreAsync()
         {
@@ -133,6 +139,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<WorkOrderDto>> LoadPageAsync(int pageNo)
         {
             var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
@@ -183,6 +190,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 通用的码→名映射（字典里找不到就回退原码）
+        /// <summary>执行 MapByDict 逻辑。</summary>
         private static string MapByDict(Dictionary<string, string> map, string? code)
         {
             if (string.IsNullOrWhiteSpace(code)) return string.Empty;
@@ -190,6 +198,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ClearFilters 逻辑。</summary>
         private void ClearFilters()
         {
             Keyword = string.Empty;
@@ -204,6 +213,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 TryParseDt 逻辑。</summary>
         private static DateTime? TryParseDt(string? s)
         {
             if (string.IsNullOrWhiteSpace(s)) return null;
@@ -214,6 +224,7 @@ namespace IndustrialControlMAUI.ViewModels
             return null;
         }
         // 点击一条工单进入执行页
+        /// <summary>执行 GoExecuteAsync 逻辑。</summary>
         [RelayCommand]
         private async Task GoExecuteAsync(WorkOrderDto? item)
         {

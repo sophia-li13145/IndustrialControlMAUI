@@ -8,6 +8,7 @@ public partial class QrScanPage : ContentPage
 {
     private readonly TaskCompletionSource<string> _tcs;
     private bool _returned;
+    /// <summary>执行 QrScanPage 初始化逻辑。</summary>
     public QrScanPage(TaskCompletionSource<string> tcs)
     {
         InitializeComponent();
@@ -24,6 +25,7 @@ public partial class QrScanPage : ContentPage
 
 
     // 扫码事件
+    /// <summary>执行 BarcodesDetected 逻辑。</summary>
     private void BarcodesDetected(object sender, BarcodeDetectionEventArgs e)
     {
         if (_returned) return; // 防止重复触发
@@ -43,6 +45,7 @@ public partial class QrScanPage : ContentPage
     }
 
     // 新增：从相册选择图片并识别
+    /// <summary>执行 PickFromGalleryButton_Clicked 逻辑。</summary>
     private async void PickFromGalleryButton_Clicked(object? sender, EventArgs e)
     {
         try
@@ -159,6 +162,7 @@ public partial class QrScanPage : ContentPage
 
 
     // 前后摄像头切换
+    /// <summary>执行 SwitchCameraButton_Clicked 逻辑。</summary>
     private void SwitchCameraButton_Clicked(object sender, EventArgs e)
     {
         barcodeView.CameraLocation =
@@ -168,11 +172,13 @@ public partial class QrScanPage : ContentPage
     }
 
     // 手电筒开关
+    /// <summary>执行 TorchButton_Clicked 逻辑。</summary>
     private void TorchButton_Clicked(object sender, EventArgs e)
     {
         barcodeView.IsTorchOn = !barcodeView.IsTorchOn;
     }
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -188,6 +194,7 @@ public partial class QrScanPage : ContentPage
         barcodeView.IsDetecting = true;
     }
 
+    /// <summary>执行 OnDisappearing 逻辑。</summary>
     protected override void OnDisappearing()
     {
         base.OnDisappearing();

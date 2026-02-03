@@ -14,21 +14,27 @@ public partial class DefectPickerViewModel : ObservableObject
     private int _pageSize = 10; // 与截图一致
     private long _total = 0;
 
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<Row> Rows { get; } = new();
 
     [ObservableProperty] private string? defectName;
     [ObservableProperty] private string? defectCode;
 
+    /// <summary>执行 SetProperty 逻辑。</summary>
     public int PageNo { get => _pageNo; set => SetProperty(ref _pageNo, value); }
+    /// <summary>执行 SetProperty 逻辑。</summary>
     public int PageSize { get => _pageSize; set => SetProperty(ref _pageSize, value); }
+    /// <summary>执行 SetProperty 逻辑。</summary>
     public long Total { get => _total; set => SetProperty(ref _total, value); }
 
+    /// <summary>执行 DefectPickerViewModel 初始化逻辑。</summary>
     public DefectPickerViewModel(IQualityApi api, IEnumerable<string>? preselectedCodes)
     {
         _api = api;
         _preselected = new HashSet<string>(preselectedCodes ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>执行 LoadAsync 逻辑。</summary>
     public async Task LoadAsync()
     {
         var resp = await _api.GetDefectPageAsync(PageNo, PageSize,

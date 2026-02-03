@@ -27,7 +27,9 @@ namespace IndustrialControlMAUI.ViewModels
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
         private const long MaxFileBytes = 20L * 1024 * 1024;  // 20MB
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
         [ObservableProperty] private bool isBusy;
@@ -38,10 +40,13 @@ namespace IndustrialControlMAUI.ViewModels
         private double inspectorDropdownOffset = 40; // Entry 高度 + 间距
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<QualityItem> Items { get; } = new();
 
         // 检验结果下拉（合格 / 不合格）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<StatusOption> InspectResultOptions { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<InspectDeviceOption> InspectDeviceList { get; } = new();
 
         private StatusOption? _selectedInspectResult;
@@ -67,6 +72,7 @@ namespace IndustrialControlMAUI.ViewModels
         public int Index { get; set; }
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
+        /// <summary>执行 OutgoingQualityDetailViewModel 初始化逻辑。</summary>
         public OutgoingQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi)
         {
             _api = api;
@@ -85,6 +91,7 @@ namespace IndustrialControlMAUI.ViewModels
         public List<UserInfoDto> AllUsers { get; private set; }
         public ObservableCollection<UserInfoDto> InspectorSuggestions { get; }
 
+        /// <summary>执行 OnIsEditingChanged 逻辑。</summary>
         partial void OnIsEditingChanged(bool value)
         {
             foreach (var item in Items)
@@ -109,6 +116,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 LoadInspectorsAsync 逻辑。</summary>
         [RelayCommand]
         public async Task LoadInspectorsAsync()
         {
@@ -128,6 +136,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadInspectDevicesAsync 逻辑。</summary>
         [RelayCommand]
         public async Task LoadInspectDevicesAsync()
         {
@@ -155,6 +164,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 PickInspector 逻辑。</summary>
         [RelayCommand]
         private void PickInspector(UserInfoDto? user)
         {
@@ -169,6 +179,7 @@ namespace IndustrialControlMAUI.ViewModels
             InspectorSuggestions.Clear();
         }
 
+        /// <summary>执行 PickStartDateTimeAsync 逻辑。</summary>
         [RelayCommand]
         private async Task PickStartDateTimeAsync(QualityItem row)
         {
@@ -187,6 +198,7 @@ namespace IndustrialControlMAUI.ViewModels
                 : result.Value?.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
+        /// <summary>执行 PickEndDateTimeAsync 逻辑。</summary>
         [RelayCommand]
         private async Task PickEndDateTimeAsync(QualityItem row)
         {
@@ -208,6 +220,7 @@ namespace IndustrialControlMAUI.ViewModels
         private static DateTime? TryParse(string? s)
             => DateTime.TryParse(s, out var dt) ? dt : null;
 
+        /// <summary>执行 ClearInspector 逻辑。</summary>
         [RelayCommand]
         private void ClearInspector()
         {
@@ -215,6 +228,7 @@ namespace IndustrialControlMAUI.ViewModels
             IsInspectorDropdownOpen = false;
         }
 
+        /// <summary>执行 FilterInspectorSuggestions 逻辑。</summary>
         private void FilterInspectorSuggestions(string? keyword)
         {
             InspectorSuggestions.Clear();
@@ -245,6 +259,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -358,6 +373,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 InitializeItem 逻辑。</summary>
         private void InitializeItem(QualityItem item)
         {
             item.IsEditing = IsEditing;
@@ -370,6 +386,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 HandleItemPropertyChanged 逻辑。</summary>
         private async void HandleItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is not QualityItem item) return;
@@ -380,6 +397,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadInspectParamsAsync 逻辑。</summary>
         private async Task LoadInspectParamsAsync(QualityItem item)
         {
             item.InspectParamOptions.Clear();
@@ -420,6 +438,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -459,6 +478,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 保存（示例：仅做本地校验与提示；如需调用后端保存接口，按你后端补齐）
         /// </summary>
+        /// <summary>执行 Save 逻辑。</summary>
         [RelayCommand]
         private async Task Save()
         {
@@ -493,6 +513,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 AutoInspectAsync 逻辑。</summary>
         [RelayCommand]
         private async Task AutoInspectAsync(QualityItem? row)
         {
@@ -534,6 +555,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 ViewInspectDetailAsync 逻辑。</summary>
         [RelayCommand]
         private async Task ViewInspectDetailAsync(QualityItem? row)
         {
@@ -557,6 +579,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 Complete 逻辑。</summary>
         [RelayCommand]
         private async Task Complete()
         {
@@ -602,6 +625,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 预览附件
         /// </summary>
+        /// <summary>执行 PreviewAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task PreviewAttachment(QualityAttachment? att)
         {
@@ -621,13 +645,16 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 PickImagesAsync 逻辑。</summary>
         [RelayCommand]
         public async Task PickImagesAsync() => await PickAndUploadAsync(isImage: true);
 
         // 新增：附件上传命令（给“上传附件”文字）
+        /// <summary>执行 PickFilesAsync 逻辑。</summary>
         [RelayCommand]
         public async Task PickFilesAsync() => await PickAndUploadAsync(isImage: false);
 
+        /// <summary>执行 PickAndUploadAsync 逻辑。</summary>
         private async Task PickAndUploadAsync(bool isImage)
         {
             try
@@ -762,6 +789,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 DetectContentType 逻辑。</summary>
         private static string? DetectContentType(string? ext)
         {
             switch (ext?.ToLowerInvariant())
@@ -837,6 +865,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         }
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderQualityAttachmentItem? item)
         {
@@ -874,6 +903,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 DeleteAttachmentAsync 逻辑。</summary>
         [RelayCommand]
         private async Task DeleteAttachmentAsync(OrderQualityAttachmentItem? item)
         {
@@ -916,6 +946,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 OpenDefectPicker 逻辑。</summary>
         [RelayCommand]
         private async Task OpenDefectPicker(QualityItem? row)
         {
@@ -951,6 +982,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // --------- 工具方法 ----------
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 

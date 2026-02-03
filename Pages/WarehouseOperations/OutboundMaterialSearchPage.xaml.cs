@@ -5,6 +5,7 @@ public partial class OutboundMaterialSearchPage : ContentPage
 {
 
     private readonly OutboundMaterialSearchViewModel _vm;
+    /// <summary>æ‰§è¡Œ OutboundMaterialSearchPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public OutboundMaterialSearchPage(OutboundMaterialSearchViewModel vm)
     {
         _vm = vm;
@@ -13,6 +14,7 @@ public partial class OutboundMaterialSearchPage : ContentPage
         InitializeComponent();
 
     }
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -22,7 +24,7 @@ public partial class OutboundMaterialSearchPage : ContentPage
     }
 
     /// <summary>
-    /// Çå¿ÕÉ¨Ãè¼ÇÂ¼
+    /// æ‰«ç æ¸…ç©º
     /// </summary>
     void OnClearClicked(object sender, EventArgs e)
     {
@@ -30,6 +32,7 @@ public partial class OutboundMaterialSearchPage : ContentPage
         OrderEntry.Focus();
     }
 
+    /// <summary>æ‰§è¡Œ OnDisappearing é€»è¾‘ã€‚</summary>
     protected override void OnDisappearing()
     {
 
@@ -38,26 +41,27 @@ public partial class OutboundMaterialSearchPage : ContentPage
 
     
 
-    // ĞÂÔö£ºÉ¨Âë°´Å¥ÊÂ¼ş
+    // æ‰«ç æŒ‰é’®ç‚¹å‡»
+    /// <summary>æ‰§è¡Œ OnScanClicked é€»è¾‘ã€‚</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();
         await Navigation.PushAsync(new QrScanPage(tcs));
 
-        // µÈ´ıÉ¨Âë½á¹û
+        // ç­‰å¾…æ‰«ç ç»“æœ
         var result = await tcs.Task;
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        // »ØÌîµ½ÊäÈë¿ò
+        // å›å¡«æ‰«ç ç»“æœ
         OrderEntry.Text = result.Trim();
 
-        // Í¬²½µ½ ViewModel
+        // åŒæ­¥ ViewModel
         if (BindingContext is OutboundMaterialSearchViewModel vm)
         {
             vm.SearchOrderNo = result.Trim();
 
-            // ¿ÉÑ¡£ºÉ¨Âëºó×Ô¶¯´¥·¢²éÑ¯
+            // ä½¿ç”¨æ‰«ç ç»“æœæŸ¥è¯¢
             if (vm.SearchCommand.CanExecute(null))
                 vm.SearchCommand.Execute(null);
         }

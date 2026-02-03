@@ -5,8 +5,10 @@ namespace IndustrialControlMAUI.Pages;
 public partial class RepairRunDetailPage : ContentPage
 {
     private readonly RepairRunDetailViewModel _vm;
+    /// <summary>执行 RepairRunDetailPage 初始化逻辑。</summary>
     public RepairRunDetailPage() : this(ServiceHelper.GetService<RepairRunDetailViewModel>()) { }
 
+    /// <summary>执行 RepairRunDetailPage 初始化逻辑。</summary>
     public RepairRunDetailPage(RepairRunDetailViewModel vm)
     {
         InitializeComponent();
@@ -14,6 +16,7 @@ public partial class RepairRunDetailPage : ContentPage
         BindingContext = _vm;
     }
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();

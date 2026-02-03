@@ -44,16 +44,22 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
     [ObservableProperty] private WorkProcessTaskDetail? detail;
 
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<TaskMaterialInput> Inputs { get; } = new();
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<TaskMaterialOutput> Outputs { get; } = new();
 
     // 班次/设备下拉
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<StatusOption> ShiftOptions { get; } = new();
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<StatusOption> DeviceOptions { get; } = new();
     [ObservableProperty] private string? currentUserName; // 进入页面时赋值实际登录人
     // 投料记录列表（表格2的数据源）
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<MaterialAuRecord> MaterialInputRecords { get; } = new();
     // —— 产出记录列表（表2数据源）
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<OutputAuRecord> OutputRecords { get; } = new();
     public event EventHandler? TabChanged;
 
@@ -88,6 +94,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
     private bool _suppressRemoteUpdate = false;
 
+    /// <summary>执行 WorkProcessTaskDetailViewModel 初始化逻辑。</summary>
     public WorkProcessTaskDetailViewModel(IWorkOrderApi api)
     {
         _api = api;
@@ -126,14 +133,18 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             }
         }
     }
+    /// <summary>执行 OnIsBusyChanged 逻辑。</summary>
     partial void OnIsBusyChanged(bool value) => NotifyAllCanExec();
+    /// <summary>执行 OnStateChanged 逻辑。</summary>
     partial void OnStateChanged(TaskRunState value) => NotifyAllCanExec();
+    /// <summary>执行 NotifyAllCanExec 逻辑。</summary>
     private void NotifyAllCanExec()
     {
         (StartWorkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (PauseResumeCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (FinishCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
+    /// <summary>执行 OnActiveTabChanged 逻辑。</summary>
     partial void OnActiveTabChanged(DetailTab value)
     {
         IsInputVisible = (value == DetailTab.Input);
@@ -145,6 +156,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
+    /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.TryGetValue("id", out var v) && v is string id && !string.IsNullOrWhiteSpace(id))
@@ -152,6 +164,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await InitAsync(id);
         }
     }
+    /// <summary>执行 NotifyCanExec 逻辑。</summary>
     private void NotifyCanExec()
     {
         OnPropertyChanged(nameof(CanStart));
@@ -159,6 +172,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(CanFinish));
     }
 
+    /// <summary>执行 StartWorkAsync 逻辑。</summary>
     [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task StartWorkAsync()
     {
@@ -189,6 +203,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
+    /// <summary>执行 PauseResumeAsync 逻辑。</summary>
     [RelayCommand(CanExecute = nameof(CanPauseResume))]
     private async Task PauseResumeAsync()
     {
@@ -256,6 +271,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 FinishAsync 逻辑。</summary>
     [RelayCommand(CanExecute = nameof(CanFinish))]
     private async Task FinishAsync()
     {
@@ -287,6 +303,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
+    /// <summary>执行 ShowInput 逻辑。</summary>
     [RelayCommand]
     public void ShowInput()
     {
@@ -294,6 +311,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         ActiveTab = DetailTab.Input;
     }
 
+    /// <summary>执行 ShowOutput 逻辑。</summary>
     [RelayCommand]
     public void ShowOutput()
     {
@@ -301,6 +319,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         ActiveTab = DetailTab.Output;  // 同上
     }
 
+    /// <summary>执行 InitAsync 逻辑。</summary>
     [RelayCommand]
     private async Task InitAsync(string id)
     {
@@ -316,6 +335,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         finally { IsBusy = false; }
     }
 
+    /// <summary>执行 LoadAuditDictAsync 逻辑。</summary>
     private async Task LoadAuditDictAsync()
     {
         // 你已有：/normalService/pda/pmsWorkOrder/getWorkProcessTaskDictList
@@ -332,6 +352,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 LoadDetailAsync 逻辑。</summary>
     private async Task LoadDetailAsync(string id)
     {
         var resp = await _api.GetWorkProcessTaskDetailAsync(id);
@@ -414,6 +435,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 LoadShiftsAsync 逻辑。</summary>
     private async Task LoadShiftsAsync()
     {
         ShiftOptions.Clear();
@@ -430,6 +452,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 LoadDevicesAsync 逻辑。</summary>
     private async Task LoadDevicesAsync()
     {
         DeviceOptions.Clear();
@@ -445,6 +468,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 LoadMaterialInputsAsync 逻辑。</summary>
     private async Task LoadMaterialInputsAsync()
     {
         // ② 调用接口
@@ -466,6 +490,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 LoadOutputInputsAsync 逻辑。</summary>
     private async Task LoadOutputInputsAsync()
     {
         // ② 调用接口
@@ -486,6 +511,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 OutputRecords.Add(item);
         }
     }
+    /// <summary>执行 UpdateShiftAsync 逻辑。</summary>
     private async Task UpdateShiftAsync(StatusOption? opt)
     {
         if (opt == null || string.IsNullOrWhiteSpace(Detail?.id))
@@ -513,6 +539,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 UpdateDeviceAsync 逻辑。</summary>
     private async Task UpdateDeviceAsync(StatusOption? opt)
     {
         // 基本校验：必须有任务ID和选中项
@@ -542,9 +569,11 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
+    /// <summary>执行 ShowTip 逻辑。</summary>
     private Task ShowTip(string message) =>
            Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
+    /// <summary>执行 SubmitReportQtyAsync 逻辑。</summary>
     [RelayCommand]
     private async Task SubmitReportQtyAsync()
     {
@@ -572,6 +601,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
     // 点击“新增投料”
+    /// <summary>执行 AddMaterialInputAsync 逻辑。</summary>
     [RelayCommand]
     private async Task AddMaterialInputAsync()
     {
@@ -635,6 +665,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
 
     // 删除（仅前端）
+    /// <summary>执行 DeleteMaterialInput 逻辑。</summary>
     [RelayCommand]
     private async void DeleteMaterialInput(MaterialAuRecord row)
     {
@@ -650,6 +681,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
     // 新增产出：只用选中行 + 弹窗返回的数量/备注
+    /// <summary>执行 AddOutputAsync 逻辑。</summary>
     [RelayCommand]
     private async Task AddOutputAsync()
     {
@@ -719,6 +751,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
     // 删除（前端移除；如需后端删除在此补接口）
+    /// <summary>执行 DeleteOutput 逻辑。</summary>
     [RelayCommand]
     private async void DeleteOutput(OutputAuRecord row)
     {
@@ -733,6 +766,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    /// <summary>执行 MaterialItemSelected 逻辑。</summary>
     [RelayCommand]
     private void MaterialItemSelected(TaskMaterialInput? item)
     {
@@ -740,6 +774,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             SelectedMaterialItem = item;
     }
 
+    /// <summary>执行 OutputItemSelected 逻辑。</summary>
     [RelayCommand]
     private void OutputItemSelected(TaskMaterialOutput? item)
     {
@@ -747,6 +782,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             SelectedOutputItem = item;
     }
 
+    /// <summary>执行 EditMaterialRawDate 逻辑。</summary>
     [RelayCommand]
     private async Task EditMaterialRawDate(MaterialAuRecord row)
     {

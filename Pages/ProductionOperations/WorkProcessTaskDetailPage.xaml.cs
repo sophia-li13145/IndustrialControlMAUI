@@ -6,8 +6,10 @@ namespace IndustrialControlMAUI.Pages;
 public partial class WorkProcessTaskDetailPage : ContentPage
 {
     private readonly WorkProcessTaskDetailViewModel _vm;
+    /// <summary>æ‰§è¡Œ WorkProcessTaskDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public WorkProcessTaskDetailPage() : this(ServiceHelper.GetService<WorkProcessTaskDetailViewModel>()) { }
 
+    /// <summary>æ‰§è¡Œ WorkProcessTaskDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public WorkProcessTaskDetailPage(WorkProcessTaskDetailViewModel vm)
     {
         InitializeComponent();
@@ -18,39 +20,44 @@ public partial class WorkProcessTaskDetailPage : ContentPage
         Seg.SizeChanged += (_, __) => ApplyTab(vm.ActiveTab);
     }
 
+    /// <summary>æ‰§è¡Œ ApplyTab é€»è¾‘ã€‚</summary>
     private void ApplyTab(DetailTab tab)
     {
         Grid.SetColumn(Knob, tab == DetailTab.Input ? 0 : 1);
     }
 
 
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
 
-        // ³õ´ÎÍ¬²½Ò»´Î
+        // åŒæ­¥ä¸€æ¬¡
         SyncSegWidth();
 
-        // ÊÓ¿Ú±ä»¯Ê±£¨Ğı×ª/´°¿Úµ÷Õû/Ê×´Î²¼¾Ö£©£¬¶¼Í¬²½Ò»´Î
+        // è§†å£å˜åŒ–æ—¶é‡æ–°åŒæ­¥ï¼ˆæ—‹è½¬/ç¼©æ”¾/çŠ¶æ€æ å˜åŒ–ï¼‰
         BodyScroll.SizeChanged += OnViewportSizeChanged;
 
-        // ÄãµÄ Tab ³õÊ¼»¯£¨Èç¹ûÓĞ£©
+        //  Tab åˆå§‹æ ¡æ­£
         if (BindingContext is WorkProcessTaskDetailViewModel vm)
             ApplyTab(vm.ActiveTab);
     }
 
+    /// <summary>æ‰§è¡Œ OnViewportSizeChanged é€»è¾‘ã€‚</summary>
     private void OnViewportSizeChanged(object? sender, EventArgs e) => SyncSegWidth();
 
+    /// <summary>æ‰§è¡Œ SyncSegWidth é€»è¾‘ã€‚</summary>
     private void SyncSegWidth()
     {
-        // ScrollView ¿É¼ûÇøÓò¿í¶È£¨È¥µôÄÚ±ß¾à£©
+        // ScrollView å¯è§†å®½åº¦ï¼ˆå»é™¤è¾¹è·ï¼‰
         var viewport = BodyScroll.Width
                        - BodyScroll.Padding.Left - BodyScroll.Padding.Right;
 
         if (viewport > 0)
-            Seg.WidthRequest = viewport; // Ç¿ÖÆÓëÊÓ¿ÚµÈ¿í -> ×ÏÉ«µ×ÆÌÂú
+            Seg.WidthRequest = viewport; // å¼ºåˆ¶ä¸è§†å£ç­‰å®½
     }
 
+    /// <summary>æ‰§è¡Œ OnReportQtyCompleted é€»è¾‘ã€‚</summary>
     private void OnReportQtyCompleted(object sender, EventArgs e)
     {
 

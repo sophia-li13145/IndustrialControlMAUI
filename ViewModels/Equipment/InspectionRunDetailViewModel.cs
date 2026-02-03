@@ -29,18 +29,24 @@ namespace IndustrialControlMAUI.ViewModels
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
         private const long MaxFileBytes = 20L * 1024 * 1024;   // 20MB
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderInspectionAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderInspectionAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<InspectionItem> Items { get; } = new();                    // 明细
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<StatusOption> InspectResultOptions { get; } = new();           // 合格/不合格
 
         [ObservableProperty] private bool isBusy;
         public DictInspection dicts = new DictInspection();
 
         // ==== 检验员输入 + 下拉 ====
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isInspectorDropdownOpen;    // 默认关闭
         [ObservableProperty] private double inspectorDropdownOffset = 40; // Entry 高度 + 间距
         public List<UserInfoDto> AllUsers { get; private set; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<UserInfoDto> InspectorSuggestions { get; } = new();
 
         private string? inspectorText;
@@ -82,7 +88,9 @@ namespace IndustrialControlMAUI.ViewModels
                 }
             }
         }
+        /// <summary>执行 Equals 逻辑。</summary>
         public bool IsInspectionSelected => string.Equals(SelectedInspectResult?.Value, "合格");
+        /// <summary>执行 Equals 逻辑。</summary>
         public bool IsUnqualifiedSelected => string.Equals(SelectedInspectResult?.Value, "不合格");
 
         // 可编辑开关
@@ -94,11 +102,13 @@ namespace IndustrialControlMAUI.ViewModels
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<WorkflowVmItem> WorkflowSteps { get; } = new();
 
         [ObservableProperty] private InspectDetailDto? detail;
 
 
+        /// <summary>执行 InspectionRunDetailViewModel 初始化逻辑。</summary>
         public InspectionRunDetailViewModel(IEquipmentApi api, IAuthApi authApi, IAttachmentApi attachmentApi)
         {
             _api = api;
@@ -108,6 +118,7 @@ namespace IndustrialControlMAUI.ViewModels
             AllUsers = new List<UserInfoDto>();
         }
 
+        /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
             if (query.TryGetValue("id", out var v))
@@ -116,6 +127,7 @@ namespace IndustrialControlMAUI.ViewModels
                 _ = LoadAsync();
             }
         }
+        /// <summary>执行 LoadDictsAsync 逻辑。</summary>
         private async Task LoadDictsAsync()
         {
             try
@@ -146,6 +158,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // ==== 数据加载 ====
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -225,6 +238,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadInspectorsAsync 逻辑。</summary>
         [RelayCommand]
         public async Task LoadInspectorsAsync()
         {
@@ -264,6 +278,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 FilterInspectorSuggestions 逻辑。</summary>
         private void FilterInspectorSuggestions(string? keyword)
         {
             InspectorSuggestions.Clear();
@@ -282,6 +297,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 PickInspector 逻辑。</summary>
         [RelayCommand]
         private void PickInspector(UserInfoDto? user)
         {
@@ -294,6 +310,7 @@ namespace IndustrialControlMAUI.ViewModels
             InspectorSuggestions.Clear();
         }
 
+        /// <summary>执行 ClearInspector 逻辑。</summary>
         [RelayCommand]
         private void ClearInspector()
         {
@@ -304,6 +321,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // ======= 一键合格 =======
+        /// <summary>执行 SetAllInspection 逻辑。</summary>
         [RelayCommand]
         private async Task SetAllInspection()
         {
@@ -334,6 +352,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // ======= 保存/完成 =======
+        /// <summary>执行 Save 逻辑。</summary>
         [RelayCommand]
         private async Task Save()
         {
@@ -365,6 +384,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 Complete 逻辑。</summary>
         [RelayCommand]
         private async Task Complete()
         {
@@ -406,6 +426,7 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand] public async Task PickImagesAsync() => await PickAndUploadAsync(isImage: true);
         [RelayCommand] public async Task PickFilesAsync() => await PickAndUploadAsync(isImage: false);
 
+        /// <summary>执行 PickAndUploadAsync 逻辑。</summary>
         private async Task PickAndUploadAsync(bool isImage)
         {
             try
@@ -509,6 +530,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             var list = ImageAttachments
@@ -541,6 +563,7 @@ namespace IndustrialControlMAUI.ViewModels
             );
         }
 
+        /// <summary>执行 DetectContentType 逻辑。</summary>
         private static string? DetectContentType(string? ext) => ext?.ToLowerInvariant() switch
         {
             "jpg" or "jpeg" => "image/jpeg",
@@ -559,9 +582,11 @@ namespace IndustrialControlMAUI.ViewModels
             _ => null
         };
 
+        /// <summary>执行 IsImageExt 逻辑。</summary>
         private static bool IsImageExt(string? ext) =>
             ext is "jpg" or "jpeg" or "png" or "gif" or "bmp" or "webp";
 
+        /// <summary>执行 IsAllowedFile 逻辑。</summary>
         private static bool IsAllowedFile(string? ext) =>
             IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
 
@@ -613,6 +638,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         }
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderInspectionAttachmentItem? item)
         {
@@ -640,6 +666,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 DeleteAttachmentAsync 逻辑。</summary>
         [RelayCommand]
         private async Task DeleteAttachmentAsync(OrderInspectionAttachmentItem? item)
         {
@@ -679,6 +706,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 

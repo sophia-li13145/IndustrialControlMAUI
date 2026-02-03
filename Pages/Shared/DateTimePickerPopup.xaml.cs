@@ -14,22 +14,25 @@ public class DateTimePopupResult
 
 public partial class DateTimePickerPopup : Popup
 {
+    /// <summary>执行 DateTimePickerPopup 初始化逻辑。</summary>
     public DateTimePickerPopup(string title, DateTime? initial)
     {
         InitializeComponent();
         BindingContext = new Vm(title, initial, CloseWithResult);
     }
 
+    /// <summary>执行 CloseWithResult 逻辑。</summary>
     private void CloseWithResult(DateTimePopupResult result) => Close(result);
 
     public partial class Vm : ObservableObject
     {
         private readonly Action<DateTimePopupResult> _close;
 
-        [ObservableProperty] private string title = "ѡ��ʱ��";
+        [ObservableProperty] private string title = "选择时间";
         [ObservableProperty] private DateTime pickDate;
         [ObservableProperty] private TimeSpan pickTime;
 
+        /// <summary>执行 Vm 初始化逻辑。</summary>
         public Vm(string title, DateTime? initial, Action<DateTimePopupResult> close)
         {
             _close = close;
@@ -40,6 +43,7 @@ public partial class DateTimePickerPopup : Popup
             PickTime = dt.TimeOfDay;
         }
 
+        /// <summary>执行 Ok 逻辑。</summary>
         [RelayCommand]
         private void Ok()
         {
@@ -47,12 +51,14 @@ public partial class DateTimePickerPopup : Popup
             _close(new DateTimePopupResult { Value = dt });
         }
 
+        /// <summary>执行 Cancel 逻辑。</summary>
         [RelayCommand]
         private void Cancel()
         {
             _close(new DateTimePopupResult { IsCanceled = true });
         }
 
+        /// <summary>执行 Clear 逻辑。</summary>
         [RelayCommand]
         private void Clear()
         {

@@ -35,8 +35,11 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // 列表数据源
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<string> AvailableBins { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OutScannedItem> ScannedList { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OutPendingItem> PendingList { get; } = new();
 
         [ObservableProperty] private OutScannedItem? selectedScanItem;
@@ -55,6 +58,7 @@ namespace IndustrialControlMAUI.ViewModels
         public IRelayCommand ShowPendingCommand { get; }
         public IRelayCommand ShowScannedCommand { get; }
 
+        /// <summary>执行 OutboundMaterialViewModel 初始化逻辑。</summary>
         public OutboundMaterialViewModel(IOutboundMaterialService api)
         {
             _api = api;
@@ -87,6 +91,7 @@ namespace IndustrialControlMAUI.ViewModels
             SwitchTab(true);
         }
 
+        /// <summary>执行 SwitchTab 逻辑。</summary>
         public void SwitchTab(bool showPending)
         {
             IsPendingVisible = showPending;
@@ -103,6 +108,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPendingAsync 逻辑。</summary>
         private async Task LoadPendingAsync()
         {
             PendingList.Clear();
@@ -130,6 +136,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 首次加载
+        /// <summary>执行 LoadScannedAsync 逻辑。</summary>
         private async Task LoadScannedAsync(int versionGuard = 0)
         {
             if (string.IsNullOrWhiteSpace(OutstockId))
@@ -181,6 +188,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // Diff 版：后续刷新一律用它
+        /// <summary>执行 LoadScannedAsyncDiff 逻辑。</summary>
         private async Task LoadScannedAsyncDiff(int versionGuard = 0)
         {
             if (string.IsNullOrWhiteSpace(OutstockId))
@@ -225,6 +233,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 UpsertScannedLocalThreadSafe 逻辑。</summary>
         private void UpsertScannedLocalThreadSafe(string barcode)
         {
             if (string.IsNullOrWhiteSpace(barcode)) return;
@@ -259,6 +268,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // 把聚合后的行差量写回 ScannedList
+        /// <summary>执行 ApplyScannedDiff 逻辑。</summary>
         private void ApplyScannedDiff(List<OutScannedItem> newItems)
         {
             var oldMap = ScannedList.ToDictionary(x => x.Barcode ?? "", StringComparer.OrdinalIgnoreCase);
@@ -300,8 +310,10 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 Normalize 逻辑。</summary>
         private static string Normalize(string? s) => (s ?? "").Trim();
 
+        /// <summary>执行 ShouldDrop 逻辑。</summary>
         private bool ShouldDrop(string code)
         {
             var now = Environment.TickCount64;
@@ -317,6 +329,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 PassScan 逻辑。</summary>
         [RelayCommand]
         private async Task PassScan()
         {
@@ -337,6 +350,7 @@ namespace IndustrialControlMAUI.ViewModels
             await ShowTip("已确认通过。");
         }
 
+        /// <summary>执行 CancelScan 逻辑。</summary>
         [RelayCommand]
         private async Task CancelScan()
         {
@@ -357,6 +371,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 HandleScannedAsync 逻辑。</summary>
         public async Task HandleScannedAsync(string data, string symbology)
         {
             var barcode = (data ?? string.Empty).Trim();
@@ -459,17 +474,21 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string message) =>
             Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
 
+        /// <summary>执行 ClearScan 逻辑。</summary>
         public void ClearScan() => ScannedList.Clear();
+        /// <summary>执行 ClearAll 逻辑。</summary>
         public void ClearAll()
         {
             PendingList.Clear();
             ScannedList.Clear();
         }
 
+        /// <summary>执行 SetItemBin 逻辑。</summary>
         public void SetItemBin(object row, string bin)
         {
             if (row is OutScannedItem item) { item.Location = bin; return; }
@@ -482,6 +501,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ConfirmOutboundAsync 逻辑。</summary>
         public async Task<bool> ConfirmOutboundAsync()
         {
             if (string.IsNullOrWhiteSpace(OutstockId))
@@ -512,6 +532,7 @@ namespace IndustrialControlMAUI.ViewModels
             return true;
         }
 
+        /// <summary>执行 UpdateRowLocationAsync 逻辑。</summary>
         public async Task<bool> UpdateRowLocationAsync(object row, BinInfo bin, CancellationToken ct = default)
         {
             if (row is null || bin is null) return false;
@@ -553,6 +574,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             return true;
         }
+        /// <summary>执行 UpdateQuantityForRowAsync 逻辑。</summary>
         public async Task<bool> UpdateQuantityForRowAsync(OutScannedItem row, CancellationToken ct = default)
         {
             if (row is null) return false;

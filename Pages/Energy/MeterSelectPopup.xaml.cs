@@ -6,6 +6,7 @@ namespace IndustrialControlMAUI.Pages;
 
 public partial class MeterSelectPopup : Popup
 {
+    /// <summary>æ‰§è¡Œ MeterSelectPopup åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public MeterSelectPopup(MeterSelectViewModel vm)
     {
         InitializeComponent();
@@ -13,15 +14,16 @@ public partial class MeterSelectPopup : Popup
         this.Opened += async (_, __) => await vm.EnsureInitAsync();
     }
 
+    /// <summary>æ‰§è¡Œ OnConfirmClicked é€»è¾‘ã€‚</summary>
     private async void OnConfirmClicked(object sender, EventArgs e)
     {
         if (BindingContext is MeterSelectViewModel vm && vm.SelectedRow is EnergyMeterUiRow row)
         {
-            Close(row); // ½«Ñ¡ÖĞĞĞ×÷Îª½á¹û·µ»Ø
+            Close(row); // é€‰ä¸­é¡¹
         }
         else
         {
-            await Application.Current!.MainPage!.DisplayAlert("ÌáÊ¾", "ÇëÏÈÑ¡ÔñÒ»ĞĞ", "OK");
+            await Application.Current!.MainPage!.DisplayAlert("æç¤º", "è¯·é€‰æ‹©ä¸€ä¸ª", "OK");
         }
     }
 }

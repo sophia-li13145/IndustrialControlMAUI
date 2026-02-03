@@ -5,8 +5,10 @@ namespace IndustrialControlMAUI.Pages;
 public partial class InspectionRunDetailPage : ContentPage
 {
     private readonly InspectionRunDetailViewModel _vm;
+    /// <summary>æ‰§è¡Œ InspectionRunDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public InspectionRunDetailPage() : this(ServiceHelper.GetService<InspectionRunDetailViewModel>()) { }
 
+    /// <summary>æ‰§è¡Œ InspectionRunDetailPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public InspectionRunDetailPage(InspectionRunDetailViewModel vm)
     {
         InitializeComponent();
@@ -20,13 +22,15 @@ public partial class InspectionRunDetailPage : ContentPage
     private async void OnPickFileClicked(object sender, EventArgs e)
         => await _vm.PickFilesAsync();
 
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        // ÕâÀï±£Áô¿Õ¼´¿É£¬Ò³ÃæÍ¨¹ı Shell Query ²ÎÊı´¥·¢ LoadAsync
+        // ä¿ç•™ï¼šé¡µé¢é€šè¿‡ Shell Query è°ƒç”¨ LoadAsync
     }
 
-    // ÔÚ Entry Íê³ÉÊ±×öÒ»´Î¡°¾«È·Æ¥Åä»òÎ¨Ò»ºòÑ¡×Ô¶¯Ñ¡Ôñ¡±£¬·ñÔòÕ¹¿ªÏÂÀ­
+    //  Entry å®Œæˆæ—¶ä¼˜å…ˆç²¾ç¡®åŒ¹é…ï¼Œå¦åˆ™å±•å¼€å€™é€‰
+    /// <summary>æ‰§è¡Œ OnInspectorEntryCompleted é€»è¾‘ã€‚</summary>
     private void OnInspectorEntryCompleted(object? sender, EventArgs e)
     {
         if (BindingContext is not InspectionRunDetailViewModel vm) return;

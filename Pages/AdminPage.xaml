@@ -20,6 +20,10 @@
             <Label Text="服务名" />
             <Entry Text="{Binding ServiceName}" />
 
+            <!-- 服务路径 -->
+            <Label Text="服务路径" />
+            <Entry Text="{Binding ServicePath}" />
+
             <!-- 预览 BaseUrl -->
             <Frame BackgroundColor="#eef" Padding="8">
                 <Label Text="{Binding BaseUrl}" />

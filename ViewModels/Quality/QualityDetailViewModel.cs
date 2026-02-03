@@ -19,8 +19,11 @@ namespace IndustrialControlMAUI.ViewModels
         private const string Folder = "quality";
         private const string LocationFile = "table";
         private const string LocationImage = "main";
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<WorkflowVmItem> WorkflowSteps { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
         [ObservableProperty] private bool isBusy;
@@ -31,6 +34,7 @@ namespace IndustrialControlMAUI.ViewModels
         private double inspectorDropdownOffset = 40; // Entry 高度 + 间距
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<QualityItem> Items { get; } = new();
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
@@ -41,6 +45,7 @@ namespace IndustrialControlMAUI.ViewModels
         public int Index { get; set; }
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
+        /// <summary>执行 QualityDetailViewModel 初始化逻辑。</summary>
         public QualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi)
         {
             _api = api;
@@ -68,6 +73,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -167,6 +173,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -207,6 +214,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 预览附件
         /// </summary>
+        /// <summary>执行 PreviewAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task PreviewAttachment(QualityAttachment? att)
         {
@@ -230,6 +238,7 @@ namespace IndustrialControlMAUI.ViewModels
             => ext is "jpg" or "jpeg" or "png" or "gif" or "bmp" or "webp";
 
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderQualityAttachmentItem? item)
         {
@@ -266,6 +275,7 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip($"下载/打开失败：{ex.Message}");
             }
         }
+        /// <summary>执行 LoadWorkflowAsync 逻辑。</summary>
         private async Task LoadWorkflowAsync(string id)
         {
             try
@@ -312,6 +322,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 OpenDefectPicker 逻辑。</summary>
         [RelayCommand]
         private async Task OpenDefectPicker(QualityItem? row)
         {
@@ -347,6 +358,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // --------- 工具方法 ----------
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 

@@ -18,6 +18,7 @@ namespace IndustrialControlMAUI.ViewModels
         private string? _pendingLastProcessValue;
         private readonly IWorkOrderApi _workapi;
 
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? keyword;
         [ObservableProperty] private DateTime startDate = DateTime.Today.AddDays(-7);
@@ -28,6 +29,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isLoadingMore;
         [ObservableProperty] private bool hasMore = true;
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private StatusOption? selectedStatusOption;
         public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedProcessOption;
@@ -36,11 +38,13 @@ namespace IndustrialControlMAUI.ViewModels
         readonly Dictionary<string, string> _orderstatusMap = new();    // 工序：code→name
         private bool _dictsLoaded = false;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<ProcessTask> Orders { get; } = new();
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
 
+        /// <summary>执行 ProcessTaskSearchViewModel 初始化逻辑。</summary>
         public ProcessTaskSearchViewModel(IWorkOrderApi workapi)
         {
             _workapi = workapi;
@@ -53,6 +57,7 @@ namespace IndustrialControlMAUI.ViewModels
             _ = EnsureDictsLoadedAsync();   // fire-and-forget
            
         }
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;
@@ -127,6 +132,7 @@ namespace IndustrialControlMAUI.ViewModels
                 _dictsLoaded = true;
             }
         }
+        /// <summary>执行 ApplyLastProcessSelectionIfAny 逻辑。</summary>
         private void ApplyLastProcessSelectionIfAny()
         {
             if (ProcessOptions.Count == 0) return;
@@ -146,6 +152,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // ★ 当用户改变工序下拉时，立刻持久化
+        /// <summary>执行 OnSelectedProcessOptionChanged 逻辑。</summary>
         partial void OnSelectedProcessOptionChanged(StatusOption? oldValue, StatusOption? newValue)
         {
             if (newValue == null) return;
@@ -153,6 +160,7 @@ namespace IndustrialControlMAUI.ViewModels
             Preferences.Set(PrefKey_LastProcessText, newValue.Text ?? string.Empty);
         }
 
+        /// <summary>执行 SearchAsync 逻辑。</summary>
         public async Task SearchAsync()
         {
             if (IsBusy) return;
@@ -179,6 +187,7 @@ namespace IndustrialControlMAUI.ViewModels
             finally { IsBusy = false; }
         }
 
+        /// <summary>执行 LoadMoreAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadMoreAsync()
         {
@@ -199,6 +208,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<ProcessTask>> LoadPageAsync(int pageNo)
         {
             var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
@@ -229,9 +239,11 @@ namespace IndustrialControlMAUI.ViewModels
 
             return records;
         }
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string message) =>
            Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
+        /// <summary>执行 ClearFilters 逻辑。</summary>
         private void ClearFilters()
         {
             Keyword = string.Empty;
@@ -246,6 +258,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // 点击一条工单进入执行页
+        /// <summary>执行 GoExecuteAsync 逻辑。</summary>
         [RelayCommand]
         private async Task GoExecuteAsync(ProcessTask? item)
         {

@@ -18,8 +18,10 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty] private bool showPassword; // false=默认隐藏
     [ObservableProperty] private bool rememberPassword; // 新增：记住密码
 
+    /// <summary>执行 new 逻辑。</summary>
     private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
+    /// <summary>执行 LoginViewModel 初始化逻辑。</summary>
     public LoginViewModel(IConfigLoader cfg)
     {
         _cfg = cfg;
@@ -30,6 +32,7 @@ public partial class LoginViewModel : ObservableObject
         RememberPassword = Preferences.Get("RememberPassword", false);
     }
 
+    /// <summary>执行 LoginAsync 逻辑。</summary>
     [RelayCommand]
     public async Task LoginAsync()
     {
@@ -109,9 +112,11 @@ public partial class LoginViewModel : ObservableObject
         }
     }
 
+    /// <summary>执行 TogglePassword 逻辑。</summary>
     [RelayCommand]
     private void TogglePassword() => ShowPassword = !ShowPassword;
 
+    /// <summary>执行 ClearHistory 逻辑。</summary>
     [RelayCommand]
     private void ClearHistory()
     {

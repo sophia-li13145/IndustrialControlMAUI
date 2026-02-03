@@ -7,6 +7,7 @@ namespace IndustrialControlMAUI.Pages
 {
     public partial class HomePage : ContentPage
     {
+        /// <summary>执行 HomePage 初始化逻辑。</summary>
         public HomePage() => InitializeComponent();
 
         // —— 最近使用 / 生产作业 示例 —— 
@@ -82,6 +83,7 @@ namespace IndustrialControlMAUI.Pages
         => await Shell.Current.GoToAsync(nameof(ExceptionSubmissionSearchPage));
 
         // —— 能源：手动抄表 ——（与首页其它方法同风格）
+        /// <summary>执行 OnEnergyManualRead 逻辑。</summary>
         private async void OnEnergyManualRead(object? s, TappedEventArgs e)
         {
             // 弹出“仪表选择”弹窗
@@ -98,6 +100,7 @@ namespace IndustrialControlMAUI.Pages
             }
         }
         // ✅ 退出登录
+        /// <summary>执行 OnLogoutClicked 逻辑。</summary>
         private async void OnLogoutClicked(object? sender, EventArgs e)
         {
             await TokenStorage.ClearAsync();   // 清除 token

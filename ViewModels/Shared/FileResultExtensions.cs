@@ -8,6 +8,7 @@ namespace IndustrialControlMAUI.ViewModels
 {
     public static class FileResultExtensions
     {
+        /// <summary>执行 CopyToTempAndLenAsync 逻辑。</summary>
         public static async Task<(string tempPath, long len)> CopyToTempAndLenAsync(this Stream s)
         {
             var tmp = Path.Combine(FileSystem.CacheDirectory, $"up_{Guid.NewGuid():N}.bin");

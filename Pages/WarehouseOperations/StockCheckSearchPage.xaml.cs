@@ -6,12 +6,14 @@ public partial class StockCheckSearchPage : ContentPage
 {
     private readonly StockCheckSearchViewModel _vm;
 
+    /// <summary>æ‰§è¡Œ StockCheckSearchPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public StockCheckSearchPage(StockCheckSearchViewModel vm)
     {
         InitializeComponent();
         BindingContext = _vm = vm;
     }
 
+    /// <summary>æ‰§è¡Œ OnScanClicked é€»è¾‘ã€‚</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();
@@ -21,19 +23,20 @@ public partial class StockCheckSearchPage : ContentPage
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        // °ÑÉ¨Âë½á¹ûĞ´Èë²éÑ¯Ìõ¼ş
+        // æ‰«ç æŸ¥è¯¢
         _vm.SearchCheckNo = result.Trim();
 
-        // ÖØĞÂ°´µ±Ç°Ìõ¼ş²éµÚÒ»Ò³ 10 Ìõ
+        // é‡æ–°åŠ è½½ç¬¬ä¸€é¡µ 
         await _vm.SearchAsync();
 
-        // Çå¿ÕÊäÈë¿ò²¢¾Û½¹
+        // æ¸…ç©ºå¹¶èšç„¦
         OrderEntry.Text = string.Empty;
         OrderEntry.Focus();
     }
 
 
 
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();

@@ -8,6 +8,7 @@ namespace IndustrialControlMAUI.Pages
         private readonly InboundMoldViewModel _vm;
         private readonly IServiceProvider _sp;
 
+        /// <summary>执行 InboundMoldPage 初始化逻辑。</summary>
         public InboundMoldPage(IServiceProvider sp, InboundMoldViewModel vm)
         {
             InitializeComponent();
@@ -16,17 +17,20 @@ namespace IndustrialControlMAUI.Pages
             vm.PickLocationAsync = () => WarehouseLocationPickerPage.ShowAsync(sp, this);
         }
 
+        /// <summary>执行 OnAppearing 逻辑。</summary>
         protected override void OnAppearing()
         {
             base.OnAppearing();
             ScanEntry?.Focus();
         }
 
+        /// <summary>执行 OnDisappearing 逻辑。</summary>
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
         }
 
+        /// <summary>执行 OnRowCheckedChanged 逻辑。</summary>
         private void OnRowCheckedChanged(object sender, CheckedChangedEventArgs e)
         {
             if (!e.Value) return; // 只在勾上时选中
@@ -36,11 +40,13 @@ namespace IndustrialControlMAUI.Pages
             }
         }
 
+        /// <summary>执行 OnScanCompleted 逻辑。</summary>
         private void OnScanCompleted(object sender, EventArgs e)
         {
             _vm.ScanSubmitCommand.Execute(null);
         }
 
+        /// <summary>执行 OnScanClicked 逻辑。</summary>
         private async void OnScanClicked(object sender, EventArgs e)
         {
             var tcs = new TaskCompletionSource<string>();

@@ -8,36 +8,41 @@ namespace IndustrialControlMAUI.Pages
     {
         private readonly FlexibleStockCheckViewModel _vm;
 
+        /// <summary>æ‰§è¡Œ FlexibleStockCheckPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
         public FlexibleStockCheckPage(FlexibleStockCheckViewModel vm)
         {
             InitializeComponent();
             BindingContext = _vm = vm;
         }
 
+        /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
         protected override async void OnAppearing()
         {
             base.OnAppearing();
 
-            // Ê×´Î½øÈë£¬¸ù¾İÉÏÒ»¸öÒ³Ãæ´«À´µÄÅÌµãµ¥ºÅ + ¿âÎ»ºÅ×Ô¶¯¼ÓÔØÁĞ±í
+            // åˆå§‹åŒ–ï¼šåŠ è½½ç›˜ç‚¹å•ä¸åº“ä½åˆ—è¡¨
             await _vm.InitialLoadAsync();
 
             LocationEntry?.Focus();
         }
 
-        // ====== Entry Completed ÊÂ¼ş£º»Ø³µ²éÑ¯ ======
+        // ====== Entry Completed è§¦å‘æŸ¥è¯¢ ======
 
+        /// <summary>æ‰§è¡Œ OnLocationCompleted é€»è¾‘ã€‚</summary>
         private void OnLocationCompleted(object sender, EventArgs e)
         {
             _vm.ScanLocationSubmitCommand.Execute(null);
         }
 
+        /// <summary>æ‰§è¡Œ OnMaterialCompleted é€»è¾‘ã€‚</summary>
         private void OnMaterialCompleted(object sender, EventArgs e)
         {
             _vm.ScanMaterialSubmitCommand.Execute(null);
         }
 
-        // ====== É¨Âë°´Å¥ ======
+        // ====== æ‰«ç æŒ‰é’® ======
 
+        /// <summary>æ‰§è¡Œ OnLocationScanClicked é€»è¾‘ã€‚</summary>
         private async void OnLocationScanClicked(object sender, EventArgs e)
         {
             var tcs = new TaskCompletionSource<string>();
@@ -59,6 +64,7 @@ namespace IndustrialControlMAUI.Pages
             LocationEntry.Focus();
         }
 
+        /// <summary>æ‰§è¡Œ OnMaterialScanClicked é€»è¾‘ã€‚</summary>
         private async void OnMaterialScanClicked(object sender, EventArgs e)
         {
             var tcs = new TaskCompletionSource<string>();

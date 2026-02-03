@@ -12,6 +12,7 @@ public partial class InspectionDataPopupViewModel : ObservableObject
     private readonly IQualityApi _api;
     private readonly InspectionDetailQuery _query;
 
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<InspectionDataRow> Rows { get; } = new();
 
     [ObservableProperty] private bool isBusy;
@@ -19,6 +20,7 @@ public partial class InspectionDataPopupViewModel : ObservableObject
     [ObservableProperty] private int pageSize = 10;
     [ObservableProperty] private long total;
 
+    /// <summary>执行 InspectionDataPopupViewModel 初始化逻辑。</summary>
     public InspectionDataPopupViewModel(IQualityApi api, InspectionDetailQuery query)
     {
         _api = api;
@@ -27,8 +29,10 @@ public partial class InspectionDataPopupViewModel : ObservableObject
 
     public string PageInfo => $"第 {PageNo} 页 / 共 {TotalPages} 页";
 
+    /// <summary>执行 Max 逻辑。</summary>
     private int TotalPages => PageSize <= 0 ? 1 : (int)Math.Max(1, Math.Ceiling(Total * 1.0 / PageSize));
 
+    /// <summary>执行 LoadAsync 逻辑。</summary>
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -77,6 +81,7 @@ public partial class InspectionDataPopupViewModel : ObservableObject
         }
     }
 
+    /// <summary>执行 PrevAsync 逻辑。</summary>
     [RelayCommand]
     private async Task PrevAsync()
     {
@@ -85,6 +90,7 @@ public partial class InspectionDataPopupViewModel : ObservableObject
         await LoadAsync();
     }
 
+    /// <summary>执行 NextAsync 逻辑。</summary>
     [RelayCommand]
     private async Task NextAsync()
     {

@@ -16,10 +16,14 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IAuthApi _authapi;
         private readonly CancellationTokenSource _cts = new();
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderExceptAttachmentItem> ErrorAttachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderExceptAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderExceptAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<ExceptWorkflowVmItem> WorkflowSteps { get; } = new();
 
         [ObservableProperty] private bool isBusy;
@@ -28,6 +32,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MaintainWorkOrderItemDomain> Items { get; } = new();
 
 
@@ -43,6 +48,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> urgentDict = new();
         [ObservableProperty] private List<DictItem> devStatusDict = new();
 
+        /// <summary>执行 ExceptionSubmissionViewModel 初始化逻辑。</summary>
         public ExceptionSubmissionViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IAuthApi authapi)
         {
             _api = api;
@@ -50,6 +56,7 @@ namespace IndustrialControlMAUI.ViewModels
             _authapi = authapi;
         }
 
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;
@@ -70,6 +77,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 GetAllUsers 逻辑。</summary>
         public async Task GetAllUsers()
         {
             try
@@ -93,6 +101,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -183,6 +192,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -224,6 +234,7 @@ namespace IndustrialControlMAUI.ViewModels
 
        
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderExceptAttachmentItem? item)
         {
@@ -264,9 +275,11 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // --------- 工具方法 ----------
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
+        /// <summary>执行 LoadWorkflowAsync 逻辑。</summary>
         private async Task LoadWorkflowAsync(string id)
         {
             try

@@ -8,6 +8,7 @@ namespace IndustrialControlMAUI.Pages
         private readonly InventorySearchViewModel _vm;
         private readonly IServiceProvider _sp;
 
+        /// <summary>执行 InventorySearchPage 初始化逻辑。</summary>
         public InventorySearchPage(IServiceProvider sp, InventorySearchViewModel vm)
         {
             InitializeComponent();
@@ -15,18 +16,21 @@ namespace IndustrialControlMAUI.Pages
             _sp = sp;
         }
 
+        /// <summary>执行 OnAppearing 逻辑。</summary>
         protected override void OnAppearing()
         {
             base.OnAppearing();
             ScanEntry?.Focus();
         }
 
+        /// <summary>执行 OnDisappearing 逻辑。</summary>
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
         }
 
 
+        /// <summary>执行 OnScanCompleted 逻辑。</summary>
         private void OnScanCompleted(object sender, EventArgs e)
         {
             _vm.ScanSubmitCommand.Execute(null);
@@ -34,6 +38,7 @@ namespace IndustrialControlMAUI.Pages
 
         private bool _isScanning;
 
+        /// <summary>执行 OnScanClicked 逻辑。</summary>
         private async void OnScanClicked(object sender, EventArgs e)
         {
             if (_isScanning) return;   // 防止连点

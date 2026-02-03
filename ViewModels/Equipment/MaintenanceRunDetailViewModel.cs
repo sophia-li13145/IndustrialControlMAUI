@@ -34,22 +34,29 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string actionButtonText = "提交";   // 新建态是提交，待保养态是完成保养
 
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderMaintenanceAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderMaintenanceAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<WorkflowVmItem> WorkflowSteps { get; } = new();
         public DictMaintenance dicts = new DictMaintenance();
 
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private MaintenanceDetailDto? detail;
         public ObservableCollection<UserInfoDto> UpkeepOperatorSuggestions { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public List<UserInfoDto> AllUsers { get; private set; } = new();
 
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MaintenanceItem> Items { get; } = new();
 
         // 检验结果下拉（合格 / 不合格）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<StatusOption> MaintenanceResultOptions { get; } = new();
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
@@ -83,6 +90,7 @@ namespace IndustrialControlMAUI.ViewModels
         public int Index { get; set; }
         public IReadOnlyList<string> MaintenanceResultTextList { get; } = new[] { "完成", "未完成" };
 
+        /// <summary>执行 MaintenanceRunDetailViewModel 初始化逻辑。</summary>
         public MaintenanceRunDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi,IAuthApi authApi)
         {
             _api = api;
@@ -92,6 +100,7 @@ namespace IndustrialControlMAUI.ViewModels
             AllUsers = new List<UserInfoDto>();
         }
 
+        /// <summary>执行 FilterUpkeepOperatorSuggestions 逻辑。</summary>
         private void FilterUpkeepOperatorSuggestions(string? keyword)
         {
             UpkeepOperatorSuggestions.Clear();
@@ -121,6 +130,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadUpkeepOperatorsAsync 逻辑。</summary>
         [RelayCommand]
         public async Task LoadUpkeepOperatorsAsync()
         {
@@ -161,6 +171,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 LoadDictsAsync 逻辑。</summary>
         private async Task LoadDictsAsync()
         {
             try
@@ -192,6 +203,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -307,6 +319,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -349,6 +362,7 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand] public async Task PickImagesAsync() => await PickAndUploadAsync(isImage: true);
         [RelayCommand] public async Task PickFilesAsync() => await PickAndUploadAsync(isImage: false);
 
+        /// <summary>执行 PickAndUploadAsync 逻辑。</summary>
         private async Task PickAndUploadAsync(bool isImage)
         {
             try
@@ -451,8 +465,10 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip($"选择/上传异常：{ex.Message}");
             }
         }
+        /// <summary>执行 IsAllowedFile 逻辑。</summary>
         private static bool IsAllowedFile(string? ext) =>
                    IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
+        /// <summary>执行 DetectContentType 逻辑。</summary>
         private static string? DetectContentType(string? ext) => ext?.ToLowerInvariant() switch
         {
             "jpg" or "jpeg" => "image/jpeg",
@@ -473,6 +489,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 预览附件
         /// </summary>
+        /// <summary>执行 PreviewAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task PreviewAttachment(MaintenanceAttachment? att)
         {
@@ -493,6 +510,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderMaintenanceAttachmentItem? item)
         {
@@ -530,10 +548,12 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
 
+        /// <summary>执行 PickUpkeepOperator 逻辑。</summary>
         [RelayCommand]
         private void PickUpkeepOperator(UserInfoDto? user)
         {
@@ -550,6 +570,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ClearUpkeepOperator 逻辑。</summary>
         [RelayCommand]
         private void ClearUpkeepOperator()
         {
@@ -561,6 +582,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // ======= 一键合格 =======
+        /// <summary>执行 SetAllUpkeep 逻辑。</summary>
         [RelayCommand]
         private async Task SetAllUpkeep()
         {
@@ -600,6 +622,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // ======= 保存/完成 =======
+        /// <summary>执行 Save 逻辑。</summary>
         [RelayCommand]
         private async Task Save()
         {
@@ -631,6 +654,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 Complete 逻辑。</summary>
         [RelayCommand]
         private async Task Complete()
         {
@@ -668,6 +692,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 PreparePayloadFromUi 逻辑。</summary>
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;

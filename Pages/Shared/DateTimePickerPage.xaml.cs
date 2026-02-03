@@ -7,6 +7,7 @@ public partial class DateTimePickerPage : ContentPage
 {
     private TaskCompletionSource<DateTime?>? _tcs;
 
+    /// <summary>执行 DateTimePickerPage 初始化逻辑。</summary>
     public DateTimePickerPage(DateTime? initial)
     {
         InitializeComponent();
@@ -16,6 +17,7 @@ public partial class DateTimePickerPage : ContentPage
     }
 
     // ✅ 不再需要 IServiceProvider
+    /// <summary>执行 ShowAsync 逻辑。</summary>
     public static async Task<DateTime?> ShowAsync(DateTime? initial)
     {
         var page = new DateTimePickerPage(initial);
@@ -31,12 +33,14 @@ public partial class DateTimePickerPage : ContentPage
         return await tcs.Task;
     }
 
+    /// <summary>执行 OnCancel 逻辑。</summary>
     private async void OnCancel(object? sender, EventArgs e)
     {
         _tcs?.TrySetResult(null);
         await Application.Current.MainPage.Navigation.PopModalAsync();
     }
 
+    /// <summary>执行 OnOk 逻辑。</summary>
     private async void OnOk(object? sender, EventArgs e)
     {
         var dt = Dp.Date + Tp.Time;

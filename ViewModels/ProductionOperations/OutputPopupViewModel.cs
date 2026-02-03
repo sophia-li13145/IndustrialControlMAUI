@@ -8,6 +8,7 @@ namespace IndustrialControlMAUI.ViewModels
 {
     public partial class OutputPopupViewModel : ObservableObject
     {
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<TaskMaterialOutput> MaterialOptions { get; } = new();
 
         [ObservableProperty] private TaskMaterialOutput? selectedMaterial;
@@ -16,9 +17,11 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isPickerEnabled = true;
         private TaskCompletionSource<OutputPopupResult?>? _tcs;
 
+        /// <summary>执行 OutputPopupViewModel 初始化逻辑。</summary>
         public OutputPopupViewModel() { }
 
         // 你要求的签名
+        /// <summary>执行 Init 逻辑。</summary>
         public void Init(IEnumerable<TaskMaterialOutput> materialOutputList, TaskMaterialOutput? presetMaterialCode = null)
         {
             MaterialOptions.Clear();
@@ -49,6 +52,7 @@ namespace IndustrialControlMAUI.ViewModels
         private static bool IsSame(TaskMaterialOutput a, TaskMaterialOutput b)
             => string.Equals(a?.materialCode, b?.materialCode, StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>执行 Confirm 逻辑。</summary>
         [RelayCommand]
         private async Task Confirm()
         {
@@ -90,6 +94,7 @@ namespace IndustrialControlMAUI.ViewModels
             => _tcs?.TrySetResult(result);
 
 
+        /// <summary>执行 Cancel 逻辑。</summary>
         [RelayCommand]
         private async Task Cancel()
         {

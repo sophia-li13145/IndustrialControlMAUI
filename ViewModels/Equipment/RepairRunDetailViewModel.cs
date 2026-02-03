@@ -17,16 +17,21 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly CancellationTokenSource _cts = new();
         private bool _isInitializing = false;   // ★ 初始化保护开关
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderRepairAttachmentItem> ErrorAttachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderRepairAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderRepairAttachmentItem> ImageAttachments { get; } = new();
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<RepairWorkflowVmItem> WorkflowSteps { get; } = new();
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private RepairDetailDto? detail;
 
         // 全部用户
+        /// <summary>执行 new 逻辑。</summary>
         public List<UserInfoDto> AllUsers { get; private set; } = new();
 
         // ===== 主/辅维修人：模糊查询下拉 =====
@@ -42,14 +47,18 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isAssistRepairUserDropdownOpen = false;
 
         // 下拉候选列表
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<UserInfoDto> MainRepairUserSuggestions { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<UserInfoDto> AssistRepairUserSuggestions { get; } = new();
 
         // 已选辅维修人标签
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<UserInfoDto> SelectedAssistRepairUsers { get; } = new();
 
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MaintainWorkOrderItemDomain> Items { get; } = new();
 
 
@@ -73,6 +82,7 @@ namespace IndustrialControlMAUI.ViewModels
         private const int MaxImageCount = 9;
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
         private const long MaxFileBytes = 20L * 1024 * 1024;   // 20MB
+        /// <summary>执行 RepairRunDetailViewModel 初始化逻辑。</summary>
         public RepairRunDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IAuthApi authapi)
         {
             _api = api;
@@ -80,6 +90,7 @@ namespace IndustrialControlMAUI.ViewModels
             _authapi = authapi;
         }
 
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded) return;
@@ -100,6 +111,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 GetAllUsers 逻辑。</summary>
         public async Task GetAllUsers()
         {
             try
@@ -123,6 +135,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -305,6 +318,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -340,6 +354,7 @@ namespace IndustrialControlMAUI.ViewModels
             );
         }
 
+        /// <summary>执行 LoadErrorPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadErrorPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -381,6 +396,7 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand] public async Task PickImagesAsync() => await PickAndUploadAsync(isImage: true);
         [RelayCommand] public async Task PickFilesAsync() => await PickAndUploadAsync(isImage: false);
 
+        /// <summary>执行 PickAndUploadAsync 逻辑。</summary>
         private async Task PickAndUploadAsync(bool isImage)
         {
             try
@@ -487,6 +503,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 预览附件
         /// </summary>
+        /// <summary>执行 PreviewAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task PreviewAttachment(RepairAttachment? att)
         {
@@ -512,6 +529,7 @@ namespace IndustrialControlMAUI.ViewModels
 
        
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderRepairAttachmentItem? item)
         {
@@ -552,9 +570,11 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // --------- 工具方法 ----------
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
+        /// <summary>执行 FilterMainRepairUserSuggestions 逻辑。</summary>
         private void FilterMainRepairUserSuggestions(string? keyword)
         {
             if (_isInitializing) return;  // 新增：阻止初始化时展开
@@ -589,6 +609,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 FilterAssistRepairUserSuggestions 逻辑。</summary>
         private void FilterAssistRepairUserSuggestions(string? keyword)
         {
             if (_isInitializing) return;
@@ -631,18 +652,21 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 OnMainRepairUserTextChanged 逻辑。</summary>
         partial void OnMainRepairUserTextChanged(string? value)
         {
             if (_isInitializing) return;   // 初始化阶段禁止下拉
             FilterMainRepairUserSuggestions(value);
         }
 
+        /// <summary>执行 OnAssitRepairUsersTextChanged 逻辑。</summary>
         partial void OnAssitRepairUsersTextChanged(string? value)
         {
             if (_isInitializing) return;   // 初始化阶段禁止下拉
             FilterAssistRepairUserSuggestions(value);
         }
 
+        /// <summary>执行 PickMainRepairUser 逻辑。</summary>
         [RelayCommand]
         private void PickMainRepairUser(UserInfoDto? user)
         {
@@ -658,6 +682,7 @@ namespace IndustrialControlMAUI.ViewModels
             IsMainRepairUserDropdownOpen = false;
             MainRepairUserSuggestions.Clear();
         }
+        /// <summary>执行 ToggleAssistRepairUser 逻辑。</summary>
         [RelayCommand]
         private void ToggleAssistRepairUser(UserInfoDto? user)
         {
@@ -709,6 +734,7 @@ namespace IndustrialControlMAUI.ViewModels
             FilterAssistRepairUserSuggestions(AssitRepairUsersText);
         }
 
+        /// <summary>执行 ClearAssistRepairUsers 逻辑。</summary>
         [RelayCommand]
         private void ClearAssistRepairUsers()
         {
@@ -723,6 +749,7 @@ namespace IndustrialControlMAUI.ViewModels
             IsAssistRepairUserDropdownOpen = false;
         }
         // ======= 保存/完成 =======
+        /// <summary>执行 Save 逻辑。</summary>
         [RelayCommand]
         private async Task Save()
         {
@@ -754,6 +781,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 Complete 逻辑。</summary>
         [RelayCommand]
         private async Task Complete()
         {
@@ -791,6 +819,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 PreparePayloadFromUi 逻辑。</summary>
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;
@@ -824,9 +853,11 @@ namespace IndustrialControlMAUI.ViewModels
         private static bool IsCompletedStatus(string? s)
    => string.Equals(s, "3", StringComparison.OrdinalIgnoreCase)|| string.Equals(s, "4", StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>执行 IsAllowedFile 逻辑。</summary>
         private static bool IsAllowedFile(string? ext) =>
                 IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
 
+        /// <summary>执行 DetectContentType 逻辑。</summary>
         private static string? DetectContentType(string? ext) => ext?.ToLowerInvariant() switch
         {
             "jpg" or "jpeg" => "image/jpeg",

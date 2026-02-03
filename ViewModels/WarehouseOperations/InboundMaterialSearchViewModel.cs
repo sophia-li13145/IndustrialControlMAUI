@@ -18,6 +18,7 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
     // 仅用于“高亮选中”
     [ObservableProperty] private InboundOrderSummary? selectedOrder;
 
+    /// <summary>执行 InboundMaterialSearchViewModel 初始化逻辑。</summary>
     public InboundMaterialSearchViewModel(IInboundMaterialService dataSvc)
     {
         _dataSvc = dataSvc;
@@ -26,6 +27,7 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
 
     public ObservableCollection<InboundOrderSummary> Orders { get; }
 
+    /// <summary>执行 SearchAsync 逻辑。</summary>
     [RelayCommand]
     private async Task SearchAsync()
     {
@@ -67,11 +69,13 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
     }
 
     // === 方案A：命令接收“当前项”作为参数，不依赖 SelectedOrder ===
+    /// <summary>执行 GoInboundAsync 逻辑。</summary>
     [RelayCommand(CanExecute = nameof(CanGoInbound))]
     private async Task GoInboundAsync(InboundOrderSummary? item)
     {
         if (item is null) return;
 
+        /// <summary>执行 E 逻辑。</summary>
         static string E(string? v) => Uri.EscapeDataString(v ?? "");
 
         var o = item;
@@ -93,6 +97,7 @@ public partial class InboundMaterialSearchViewModel : ObservableObject
     }
 
     // 与命令同签名的 CanExecute
+    /// <summary>执行 CanGoInbound 逻辑。</summary>
     private bool CanGoInbound(InboundOrderSummary? item) => item != null;
 }
 

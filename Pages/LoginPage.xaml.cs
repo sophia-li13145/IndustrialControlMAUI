@@ -6,31 +6,35 @@ public partial class LoginPage : ContentPage
 {
     private readonly LoginViewModel _vm;
 
+    /// <summary>æ‰§è¡Œ LoginPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public LoginPage(LoginViewModel vm)
     {
         InitializeComponent();
         BindingContext = _vm = vm;
 
-        // ¿ÉÑ¡£º¼àÌıÒ³Ãæ³öÏÖÊÂ¼ş
+        // é¡µé¢å‡ºç°æ—¶æ³¨å†Œäº‹ä»¶
         this.Appearing += OnPageAppearing;
     }
 
+    /// <summary>æ‰§è¡Œ OnPageAppearing é€»è¾‘ã€‚</summary>
     private void OnPageAppearing(object? sender, EventArgs e)
     {
-        // Ò³Ãæ³öÏÖÊ±£¬±ÈÈç×Ô¶¯¾Û½¹ÓÃ»§ÃûÊäÈë¿ò
+        // é¡µé¢å‡ºç°æ—¶é»˜è®¤èšç„¦ç”¨æˆ·å
         if (this.FindByName<Entry>("UserNameEntry") is Entry entry)
         {
             entry.Focus();
         }
     }
 
-    // Èç¹ûÄã²»Ê¹ÓÃ XAML µÄ Command£¬¶øÊÇÒªÔÚ C# ÀïĞ´ÊÂ¼ş£¬¿ÉÒÔÕâÑù£º
+    // ä¸ä½¿ç”¨ XAML Commandï¼Œæ”¹ç”¨ C# ç»‘å®š
+    /// <summary>æ‰§è¡Œ OnLoginClicked é€»è¾‘ã€‚</summary>
     private async void OnLoginClicked(object sender, EventArgs e)
     {
         if (_vm.LoginCommand.CanExecute(null))
             _vm.LoginCommand.Execute(null);
     }
 
+    /// <summary>æ‰§è¡Œ OnClearHistoryTapped é€»è¾‘ã€‚</summary>
     private void OnClearHistoryTapped(object sender, TappedEventArgs e)
     {
         if (_vm.ClearHistoryCommand.CanExecute(null))

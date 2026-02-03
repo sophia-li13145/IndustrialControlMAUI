@@ -23,17 +23,20 @@ namespace IndustrialControlMAUI.ViewModels
         public Func<Task<SharedLocationVM?>>? PickLocationAsync { get; set; }
 
 
+        /// <summary>执行 InboundMoldViewModel 初始化逻辑。</summary>
         public InboundMoldViewModel(IMoldApi api)
         {
             _api = api;
         }
 
         // 绿色卡片列表（扫描成功且“使用中”的模具）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MoldScanRow> MoldStatusList { get; } = new();
 
         [ObservableProperty] private MoldScanRow? selectedRow;
 
         // ============== 确认入库：弹出库位→组包→提交 ==============
+        /// <summary>执行 ConfirmInbound 逻辑。</summary>
         [RelayCommand]
         private async Task ConfirmInbound()
         {
@@ -109,6 +112,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // ============== 取消一条扫描 ==============
+        /// <summary>执行 CancelScan 逻辑。</summary>
         [RelayCommand]
         private async Task CancelScan()
         {
@@ -128,9 +132,11 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ClearScan 逻辑。</summary>
         public void ClearScan() => MoldStatusList.Clear();
 
         // ============== 扫描回调：查询→分支处理 ==============
+        /// <summary>执行 ScanSubmit 逻辑。</summary>
         [RelayCommand]
         private async Task ScanSubmit()
         {
@@ -139,6 +145,7 @@ namespace IndustrialControlMAUI.ViewModels
                 await HandleScannedAsync(text, "");
             ScanCode = string.Empty;
         }
+        /// <summary>执行 HandleScannedAsync 逻辑。</summary>
         public async Task HandleScannedAsync(string data, string symbology)
         {
             var code = (data ?? string.Empty).Trim();
@@ -197,6 +204,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 本地根据 MoldCode 做 Upsert：有就用旧的，没有就占位插入一条（不重复）
+        /// <summary>执行 UpsertLocalByMoldCode 逻辑。</summary>
         private MoldScanRow UpsertLocalByMoldCode(string moldCode)
         {
             var exist = MoldStatusList.FirstOrDefault(x =>
@@ -229,6 +237,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 只更新字段，不替换对象（避免 UI “删除→新增”导致的闪一下）
+        /// <summary>执行 ApplyRow 逻辑。</summary>
         private static void ApplyRow(MoldScanRow target, MoldScanRow src)
         {
             if (!string.Equals(target.MoldModel, src.MoldModel, StringComparison.Ordinal)) target.MoldModel = src.MoldModel;
@@ -241,6 +250,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ToYmd 逻辑。</summary>
         private static string ToYmd(string? s)
         {
             if (string.IsNullOrWhiteSpace(s)) return "";
@@ -250,6 +260,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string msg) =>
             Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask;
 

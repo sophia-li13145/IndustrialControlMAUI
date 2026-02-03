@@ -16,10 +16,14 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IEnergyApi _energyApi;
         private readonly CancellationTokenSource _cts = new();
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderExceptAttachmentItem> ErrorAttachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderExceptAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderExceptAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<ExceptWorkflowVmItem> WorkflowSteps { get; } = new();
 
         [ObservableProperty] private bool isBusy;
@@ -28,6 +32,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isEditMode;  // 编辑 = true
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MaintainWorkOrderItemDomain> Items { get; } = new();
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
@@ -37,6 +42,7 @@ namespace IndustrialControlMAUI.ViewModels
         private List<DevItem> _devList = new();
 
         // 设备下拉列表数据源
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<DevItem> DevOptions { get; } = new();
 
         // 当前选中的设备
@@ -82,6 +88,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         #region 字典与下拉
 
+        /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
             if (_dictsLoaded || DevStatusDict.Count > 0)
@@ -116,6 +123,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 选设备
+        /// <summary>执行 OnSelectedDevChanged 逻辑。</summary>
         async partial void OnSelectedDevChanged(DevItem? value)
         {
             if (Detail is null || value is null) return;
@@ -131,6 +139,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 选设备状态
+        /// <summary>执行 OnSelectedDevStatusChanged 逻辑。</summary>
         partial void OnSelectedDevStatusChanged(DictItem? value)
         {
             if (Detail is null || value is null) return;
@@ -142,6 +151,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 选紧急程度
+        /// <summary>执行 OnSelectedUrgentChanged 逻辑。</summary>
         partial void OnSelectedUrgentChanged(DictItem? value)
         {
             if (Detail is null || value is null) return;
@@ -183,6 +193,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 InitForCreateAsync 逻辑。</summary>
         private async Task InitForCreateAsync()
         {
             await EnsureDictsLoadedAsync();  // 加载下拉字典等
@@ -205,6 +216,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         #region 详情加载
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -319,9 +331,11 @@ namespace IndustrialControlMAUI.ViewModels
 
         #region 附件：选择/上传/预览/下载
 
+        /// <summary>执行 PickImagesAsync 逻辑。</summary>
         [RelayCommand]
         public async Task PickImagesAsync() => await PickAndUploadAsync();
 
+        /// <summary>执行 PickAndUploadAsync 逻辑。</summary>
         private async Task PickAndUploadAsync()
         {
             try
@@ -414,6 +428,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             var list = ImageAttachments
@@ -457,6 +472,7 @@ namespace IndustrialControlMAUI.ViewModels
             );
         }
 
+        /// <summary>执行 PreviewAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task PreviewAttachment(RepairAttachment? att)
         {
@@ -476,6 +492,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderRepairAttachmentItem? item)
         {
@@ -515,6 +532,7 @@ namespace IndustrialControlMAUI.ViewModels
         private static bool IsImageExt(string? ext)
             => ext is "jpg" or "jpeg" or "png" or "gif" or "bmp" or "webp";
 
+        /// <summary>执行 DetectContentType 逻辑。</summary>
         private static string? DetectContentType(string? ext) => ext?.ToLowerInvariant() switch
         {
             "jpg" or "jpeg" => "image/jpeg",
@@ -538,10 +556,12 @@ namespace IndustrialControlMAUI.ViewModels
         #region 保存 / 报修 / 新增
 
         // --------- 工具方法 ----------
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
         // 从 Detail & 附件集合构造 BuildExceptRequest
+        /// <summary>执行 CreateExceptPayload 逻辑。</summary>
         private BuildExceptRequest CreateExceptPayload(bool ensureExpectedRepairDateNow = false)
         {
             if (Detail is null)
@@ -588,6 +608,7 @@ namespace IndustrialControlMAUI.ViewModels
             };
         }
 
+        /// <summary>执行 Save 逻辑。</summary>
         [RelayCommand]
         private async Task Save()
         {
@@ -625,6 +646,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 报修（编辑页）
+        /// <summary>执行 Complete 逻辑。</summary>
         [RelayCommand]
         private async Task Complete()
         {
@@ -665,6 +687,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 新增时的“确定”按钮
+        /// <summary>执行 ConfirmAsync 逻辑。</summary>
         [RelayCommand]
         private async Task ConfirmAsync()
         {
@@ -703,6 +726,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 PreparePayloadFromUi 逻辑。</summary>
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;

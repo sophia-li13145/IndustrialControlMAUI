@@ -28,8 +28,10 @@ public partial class StockCheckSearchViewModel : ObservableObject
 
     private CancellationTokenSource? _searchCts;
 
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<StockCheckOrderItem> Orders { get; } = new();
 
+    /// <summary>执行 StockCheckSearchViewModel 初始化逻辑。</summary>
     public StockCheckSearchViewModel(IWorkOrderApi api)
     {
         _api = api;
@@ -37,6 +39,7 @@ public partial class StockCheckSearchViewModel : ObservableObject
 
     #region 查询第一页
 
+    /// <summary>执行 SearchAsync 逻辑。</summary>
     [RelayCommand]
     public async Task SearchAsync()
     {
@@ -88,6 +91,7 @@ public partial class StockCheckSearchViewModel : ObservableObject
 
     #region 上拉加载更多
 
+    /// <summary>执行 LoadMoreAsync 逻辑。</summary>
     [RelayCommand]
     public async Task LoadMoreAsync()
     {
@@ -133,12 +137,14 @@ public partial class StockCheckSearchViewModel : ObservableObject
 
     #region 灵活盘点（原来的保持不变）
 
+    /// <summary>执行 OpenFlexibleCheckAsync 逻辑。</summary>
     [RelayCommand]
     private async Task OpenFlexibleCheckAsync()
     {
         await Shell.Current.GoToAsync(nameof(FlexibleStockCheckPage));
     }
 
+    /// <summary>执行 GoFlexibleAsync 逻辑。</summary>
     [RelayCommand]
     private async Task GoFlexibleAsync(StockCheckOrderItem? item)
     {

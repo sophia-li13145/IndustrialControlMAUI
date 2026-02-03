@@ -11,6 +11,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         public string TodayPath => _logSvc.TodayLogPath;
 
+        /// <summary>执行 LogsViewModel 初始化逻辑。</summary>
         public LogsViewModel(LogService logSvc)
         {
             _logSvc = logSvc;
@@ -18,18 +19,22 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         // 页面显示时启动日志服务
+        /// <summary>执行 OnAppearing 逻辑。</summary>
         public void OnAppearing() => _logSvc.Start();
 
         // 页面隐藏时停止日志服务
+        /// <summary>执行 OnDisappearing 逻辑。</summary>
         public void OnDisappearing() => _logSvc.Stop();
 
         // 外部调用更新日志的方法
+        /// <summary>执行 AddLog 逻辑。</summary>
         public void AddLog(string message)
         {
             _logSvc.WriteLog(message);  // 调用 LogService 的写日志方法
         }
 
         // 外部调用更新错误日志的方法
+        /// <summary>执行 AddErrorLog 逻辑。</summary>
         public void AddErrorLog(Exception ex)
         {
             _logSvc.WriteLog($"错误日志: {ex.Message}");  // 调用 LogService 的写错误日志方法

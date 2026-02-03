@@ -15,6 +15,7 @@ namespace IndustrialControlMAUI.ViewModels
         private bool _inited;
         private EnergyMeterUiRow? _lastSelected;
 
+        /// <summary>执行 MeterSelectViewModel 初始化逻辑。</summary>
         public MeterSelectViewModel(IEnergyApi api)
         {
             _api = api;
@@ -23,17 +24,21 @@ namespace IndustrialControlMAUI.ViewModels
         // ===== 顶部筛选（已按要求去掉“部门/设备”） =====
         [ObservableProperty] private string? filterCode;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OptionItem> EnergyTypeOptions { get; } = new();
         [ObservableProperty] private OptionItem? selectedEnergyType;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<IdNameOption> WorkshopOptions { get; } = new();
         [ObservableProperty] private IdNameOption? selectedWorkshop;
 
         // 如果暂时不做产线，以下两行可以删除
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<IdNameOption> LineOptions { get; } = new();
         [ObservableProperty] private IdNameOption? selectedLine;
 
         // ===== 列表数据 =====
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<EnergyMeterUiRow> Rows { get; } = new();
         [ObservableProperty] private EnergyMeterUiRow? selectedRow;
         [ObservableProperty] private bool isLoadingMore;
@@ -69,6 +74,7 @@ namespace IndustrialControlMAUI.ViewModels
             _inited = true;
         }
 
+        /// <summary>执行 Query 逻辑。</summary>
         [RelayCommand]
         private async Task Query()
         {
@@ -81,6 +87,7 @@ namespace IndustrialControlMAUI.ViewModels
             HasMore = records.Count >= PageSize;
         }
 
+        /// <summary>执行 LoadMoreAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadMoreAsync()
         {
@@ -101,6 +108,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<EnergyMeterUiRow>> LoadPageAsync(int pageNo)
         {
             var resp = await _api.MeterPageQueryAsync(
@@ -131,6 +139,7 @@ namespace IndustrialControlMAUI.ViewModels
             return mapped;
         }
 
+        /// <summary>执行 SelectRow 逻辑。</summary>
         [RelayCommand]
         private void SelectRow(EnergyMeterUiRow row)
         {

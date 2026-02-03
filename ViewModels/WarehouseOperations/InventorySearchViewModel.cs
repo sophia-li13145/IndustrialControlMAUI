@@ -15,6 +15,7 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IWorkOrderApi _api;
         private readonly SemaphoreSlim _scanLock = new(1, 1);
 
+        /// <summary>执行 InventorySearchViewModel 初始化逻辑。</summary>
         public InventorySearchViewModel(IWorkOrderApi api)
         {
             _api = api;
@@ -38,10 +39,12 @@ namespace IndustrialControlMAUI.ViewModels
         private int _pageNo = 0;      // 当前已加载到第几页
         private string? _currentBarcode; // 当前查询使用的条码
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<InventoryRecord> InventoryList { get; } = new();
 
         // ================== 命令：扫码提交 ==================
 
+        /// <summary>执行 ScanSubmit 逻辑。</summary>
         [RelayCommand]
         private async Task ScanSubmit()
         {
@@ -56,6 +59,7 @@ namespace IndustrialControlMAUI.ViewModels
             ScanCode = string.Empty;
         }
 
+        /// <summary>执行 Search 逻辑。</summary>
         [RelayCommand]
         private Task Search() => ScanSubmit();
 
@@ -75,6 +79,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 上拉加载更多命令，绑定给 CollectionView
         /// </summary>
+        /// <summary>执行 LoadMoreAsync 逻辑。</summary>
         [RelayCommand]
         public async Task LoadMoreAsync()
         {
@@ -86,6 +91,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // ================== 核心分页加载逻辑 ==================
 
+        /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task LoadPageAsync(string barcode, bool append)
         {
             await _scanLock.WaitAsync();
@@ -164,6 +170,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // ================== 辅助方法 ==================
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string msg) =>
             Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask;
     }

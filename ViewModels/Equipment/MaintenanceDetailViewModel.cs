@@ -16,9 +16,12 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IAttachmentApi _attachmentApi;
         private readonly CancellationTokenSource _cts = new();
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderMaintenanceAttachmentItem> Attachments { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderMaintenanceAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<WorkflowVmItem> WorkflowSteps { get; } = new();
         public DictMaintenance dicts = new DictMaintenance();
 
@@ -27,9 +30,11 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // 明细与附件集合（用于列表绑定）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MaintenanceItem> Items { get; } = new();
 
         // 检验结果下拉（合格 / 不合格）
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<StatusOption> MaintenanceResultOptions { get; } = new();
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
@@ -44,6 +49,7 @@ namespace IndustrialControlMAUI.ViewModels
         public int Index { get; set; }
         public IReadOnlyList<string> MaintenanceResultTextList { get; } = new[] { "合格", "不合格" };
 
+        /// <summary>执行 MaintenanceDetailViewModel 初始化逻辑。</summary>
         public MaintenanceDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi)
         {
             _api = api;
@@ -68,6 +74,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 LoadAsync 逻辑。</summary>
         [RelayCommand]
         private async Task LoadAsync()
         {
@@ -141,6 +148,7 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+        /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
             // 只处理“图片且当前没有 PreviewUrl，但有 AttachmentUrl 的项”
@@ -183,6 +191,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>
         /// 预览附件
         /// </summary>
+        /// <summary>执行 PreviewAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task PreviewAttachment(MaintenanceAttachment? att)
         {
@@ -203,6 +212,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
         private async Task DownloadAttachment(OrderMaintenanceAttachmentItem? item)
         {
@@ -240,9 +250,11 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private static Task ShowTip(string msg) =>
             Application.Current?.MainPage?.DisplayAlert("提示", msg, "OK") ?? Task.CompletedTask;
 
+        /// <summary>执行 LoadWorkflowAsync 逻辑。</summary>
         private async Task LoadWorkflowAsync(string id)
         {
             try

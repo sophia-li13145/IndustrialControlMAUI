@@ -15,6 +15,7 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly SemaphoreSlim _scanLock = new(1, 1);
         private readonly CancellationTokenSource _cts = new();
 
+        /// <summary>执行 FlexibleStockCheckViewModel 初始化逻辑。</summary>
         public FlexibleStockCheckViewModel(IWorkOrderApi api)
         {
             _api = api;
@@ -83,6 +84,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         private StockCheckDetailItem? _lastSelectedItem;
 
+        /// <summary>执行 OnAuditStatusChanged 逻辑。</summary>
         partial void OnAuditStatusChanged(string? value)
         {
             CanEdit = !string.Equals(value, "2");   // 已完成不能编辑
@@ -90,6 +92,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // ========== Shell 传参 ==========
+        /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
             // 是否带了 CheckNo，如果带了就是“普通盘点”模式
@@ -126,6 +129,7 @@ namespace IndustrialControlMAUI.ViewModels
             return Task.CompletedTask;
         }
 
+        /// <summary>执行 ScanLocationSubmit 逻辑。</summary>
         [RelayCommand]
         private async Task ScanLocationSubmit()
         {
@@ -145,6 +149,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 ScanMaterialSubmit 逻辑。</summary>
         [RelayCommand]
         private async Task ScanMaterialSubmit()
         {
@@ -165,6 +170,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         /// <summary>点击列表某一行</summary>
+        /// <summary>执行 OpenEditDialog 逻辑。</summary>
         [RelayCommand]
         private async Task OpenEditDialog(StockCheckDetailItem item)
         {
@@ -202,6 +208,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         /// <summary>弹窗点“取消”</summary>
+        /// <summary>执行 CancelEdit 逻辑。</summary>
         [RelayCommand]
         private void CancelEdit()
         {
@@ -212,6 +219,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         /// <summary>弹窗点“确认” —— 普通盘点调接口，灵活盘点只改本地缓存</summary>
+        /// <summary>执行 ConfirmEdit 逻辑。</summary>
         [RelayCommand]
         private async Task ConfirmEdit()
         {
@@ -321,6 +329,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 SettleAsync 逻辑。</summary>
         [RelayCommand]
         private async Task SettleAsync()
         {
@@ -488,6 +497,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
 
+        /// <summary>执行 QueryDetailsAsync 逻辑。</summary>
         public async Task QueryDetailsAsync(string? location, string? materialBarcode)
         {
             if (!IsFlexibleMode && string.IsNullOrWhiteSpace(CheckNo))
@@ -549,6 +559,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
 
+        /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string msg) =>
             Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask;
     }

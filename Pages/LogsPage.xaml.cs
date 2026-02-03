@@ -2,12 +2,14 @@ namespace IndustrialControlMAUI.Pages
 {
     public partial class LogsPage : ContentPage
     {
+        /// <summary>æ‰§è¡Œ LogsPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
         public LogsPage(ViewModels.LogsViewModel vm)
         {
             InitializeComponent();
             BindingContext = vm;
         }
 
+        /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
         protected override void OnAppearing()
         {
             base.OnAppearing();
@@ -15,6 +17,7 @@ namespace IndustrialControlMAUI.Pages
                 vm.OnAppearing();
         }
 
+        /// <summary>æ‰§è¡Œ OnDisappearing é€»è¾‘ã€‚</summary>
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
@@ -22,21 +25,23 @@ namespace IndustrialControlMAUI.Pages
                 vm.OnDisappearing();
         }
 
-        // µã»÷°´Å¥Ê±Ìí¼ÓÈÕÖ¾
+        // ç‚¹å‡»æ—¶æ·»åŠ æ—¥å¿—
+        /// <summary>æ‰§è¡Œ OnAddLogButtonClicked é€»è¾‘ã€‚</summary>
         private void OnAddLogButtonClicked(object sender, EventArgs e)
         {
             if (BindingContext is ViewModels.LogsViewModel vm)
             {
-                vm.AddLog("ÕâÊÇÒ»ÌõĞÂÔöµÄÈÕÖ¾");
+                vm.AddLog("ä¸€æ¡æ—¥å¿—");
             }
         }
 
-        // µã»÷°´Å¥Ê±Ìí¼Ó´íÎóÈÕÖ¾
+        // ç‚¹å‡»æ—¶æ·»åŠ å¼‚å¸¸æ—¥å¿—
+        /// <summary>æ‰§è¡Œ OnAddErrorLogButtonClicked é€»è¾‘ã€‚</summary>
         private void OnAddErrorLogButtonClicked(object sender, EventArgs e)
         {
             if (BindingContext is ViewModels.LogsViewModel vm)
             {
-                vm.AddErrorLog(new Exception("ÕâÊÇÒ»Ìõ´íÎóÈÕÖ¾"));
+                vm.AddErrorLog(new Exception("ä¸€æ¡æ—¥å¿—"));
             }
         }
     }

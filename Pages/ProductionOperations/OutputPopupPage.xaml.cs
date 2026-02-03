@@ -7,6 +7,7 @@ public partial class OutputPopupPage : ContentPage
 {
     private readonly OutputPopupViewModel _vm;
 
+    /// <summary>æ‰§è¡Œ OutputPopupPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public OutputPopupPage(OutputPopupViewModel vm)
     {
         InitializeComponent();
@@ -14,9 +15,9 @@ public partial class OutputPopupPage : ContentPage
     }
 
     /// <summary>
-    /// ´ò¿ª¡°Í¶ÈëÎïÁÏ¡±µ¯´°£º
-    /// - presetMaterial != null Ê±£ºÎïÁÏÒÑÔ¤Éè£¬µ¯´°ÀïÖ»ÈÃÌîÊıÁ¿/±¸×¢£¨ÏÂÀ­½ûÓÃ£©
-    /// - presetMaterial == null Ê±£º¸ù¾İ materialInputList ÈÃÓÃ»§Ñ¡ÔñÎïÁÏ
+    /// æ‰“å¼€å¼¹çª—
+    /// - presetMaterial != null æ—¶é¢„é€‰ï¼Œä»…ç”¨äºæŸ¥çœ‹/ç¼–è¾‘
+    /// - presetMaterial == null æ—¶ materialInputList æœªé€‰æ‹©
     /// </summary>
     public static async Task<OutputPopupResult?> ShowAsync(
         IServiceProvider? sp,
@@ -25,7 +26,7 @@ public partial class OutputPopupPage : ContentPage
     {
         var tcs = new TaskCompletionSource<OutputPopupResult?>();
 
-        // 1) È¡µÃ ServiceProvider£¨²ÎÊıÓÅÏÈ£¬Æä´ÎÈ«¾Ö£¬×îºóÖ±½Ó new£©
+        // 1) å– ServiceProviderï¼ˆä¼˜å…ˆå…¨å±€ï¼Œå¦åˆ™ç›´æ¥ newï¼‰
         var provider = sp ?? Application.Current?.Handler?.MauiContext?.Services;
 
         OutputPopupViewModel vm =
@@ -33,16 +34,16 @@ public partial class OutputPopupPage : ContentPage
                 ? ActivatorUtilities.CreateInstance<OutputPopupViewModel>(provider)
                 : new OutputPopupViewModel();
 
-        // 2) ³õÊ¼»¯ VM & ½á¹û»Ø´«
+        // 2) åˆå§‹åŒ– VM å¹¶ç»‘å®š
         vm.Init(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial);
         vm.SetResultTcs(tcs);
 
-        // 3) ´ò¿ªµ¯´°£¨½¨Òé await£¬·ÀÖ¹µ¼º½Òì³£±»ÍÌ£©
+        // 3) æ‰“å¼€å¼¹çª—å¹¶ç­‰å¾…ç»“æœ
         var page = new OutputPopupPage(vm);
         if (Application.Current?.MainPage?.Navigation is not null)
             await Application.Current.MainPage.Navigation.PushModalAsync(page);
 
-        // 4) ·µ»ØµÈ´ı½á¹û£¨µ÷ÓÃ·½ await£©
+        // 4) è¿”å›ç»“æœ
         return await tcs.Task;
     }
 }

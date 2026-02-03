@@ -8,6 +8,7 @@ public partial class WarehouseLocationPickerPage : ContentPage
     private static TaskCompletionSource<SharedLocationVM>? _tcs;
     private bool _expanderBusy;
 
+    /// <summary>执行 WarehouseLocationPickerPage 初始化逻辑。</summary>
     public WarehouseLocationPickerPage(IWarehouseService svc)
     {
         var vm = new WarehouseLocationPickerViewModel(svc);
@@ -33,6 +34,7 @@ public partial class WarehouseLocationPickerPage : ContentPage
     public Task<SharedLocationVM> WaitForResultAsync()
        => (_tcs = new TaskCompletionSource<SharedLocationVM>()).Task;
 
+    /// <summary>执行 CloseWithResultAsync 逻辑。</summary>
     public async Task CloseWithResultAsync(SharedLocationVM? vm)
     {
         if (Navigation?.ModalStack?.Any() == true)
@@ -40,6 +42,7 @@ public partial class WarehouseLocationPickerPage : ContentPage
         _tcs?.TrySetResult(vm);
     }
 
+    /// <summary>执行 OnBackButtonPressed 逻辑。</summary>
     protected override bool OnBackButtonPressed()
     {
         _tcs?.TrySetResult(null);
@@ -83,6 +86,7 @@ public partial class WarehouseLocationPickerPage : ContentPage
         // 等待结果（Select 时完成；或外部关闭可自行在外层 TrySetResult(null)）
         return await tcs.Task.ConfigureAwait(false);
     }
+    /// <summary>执行 OnExpanderExpanded 逻辑。</summary>
     private async void OnExpanderExpanded(object sender, EventArgs e)
     {
         if (_expanderBusy) return;

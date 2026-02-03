@@ -15,6 +15,7 @@ namespace IndustrialControlMAUI.ViewModels
 {
     public partial class WarehouseLocationPickerViewModel : ObservableObject
     {
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<WarehouseVM> Warehouses { get; } = new();
 
         [ObservableProperty] private string? scanText;
@@ -28,12 +29,14 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>初始化任务：完成“查询所有仓库并填充列表”。后续逻辑需先 await 它。</summary>
         public Task Initialization { get; }
 
+        /// <summary>执行 WarehouseLocationPickerViewModel 初始化逻辑。</summary>
         public WarehouseLocationPickerViewModel(IWarehouseService svc)
         {
             _svc = svc;
             Initialization = InitAsync();
         }
 
+        /// <summary>执行 InitAsync 逻辑。</summary>
         private async Task InitAsync()
         {
             try
@@ -70,6 +73,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // —— Commands ——
 
+        /// <summary>执行 ToggleExpand 逻辑。</summary>
         [RelayCommand]
         private async Task ToggleExpand(WarehouseVM? vm)
         {
@@ -92,6 +96,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+        /// <summary>执行 SelectLocation 逻辑。</summary>
         [RelayCommand]
         private async Task SelectLocation(LocationVM vm)
         {
@@ -102,6 +107,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // WarehouseLocationPickerViewModel.cs
 
+        /// <summary>执行 TryParseWarehouseAndLocation 逻辑。</summary>
         private static bool TryParseWarehouseAndLocation(string raw, out string warehouseCode, out string locationCode)
         {
             warehouseCode = "";
@@ -117,6 +123,7 @@ namespace IndustrialControlMAUI.ViewModels
             return !string.IsNullOrEmpty(warehouseCode) && !string.IsNullOrEmpty(locationCode);
         }
 
+        /// <summary>执行 ScanSubmit 逻辑。</summary>
         [RelayCommand]
         private async Task ScanSubmit()
         {
@@ -171,6 +178,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         // 小工具：把库位高亮 1.2 秒
+        /// <summary>执行 HighlightAsync 逻辑。</summary>
         private static async Task HighlightAsync(LocationVM vm)
         {
             vm.IsHighlighted = true;
@@ -184,11 +192,13 @@ namespace IndustrialControlMAUI.ViewModels
     public partial class WarehouseVM : ObservableObject
     {
         private static readonly SemaphoreSlim _globalSerial = new(1, 1); // ⬅️ 所有仓库加载串行
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<LocationGroupVM> Groups { get; } = new(); // ✅ 新增：分组集合
         public string Code { get; }
         public string Name { get; }
         public string Title => Name;
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<LocationVM> Locations { get; } = new();
         public IRelayCommand ToggleCommand { get; }
 
@@ -203,6 +213,7 @@ namespace IndustrialControlMAUI.ViewModels
         private Task? _firstLoad;
 
 
+        /// <summary>执行 WarehouseVM 初始化逻辑。</summary>
         public WarehouseVM(string code, string name, IWarehouseService svc)
         {
             Code = code;
@@ -233,6 +244,7 @@ namespace IndustrialControlMAUI.ViewModels
             await _firstLoad.ConfigureAwait(false);
         }
 
+        /// <summary>执行 LoadOnceCoreAsync 逻辑。</summary>
         private async Task LoadOnceCoreAsync(CancellationToken ct)
         {
             if (IsLoaded || IsLoading) return;
@@ -267,6 +279,7 @@ namespace IndustrialControlMAUI.ViewModels
             finally { IsLoading = false; }
         }
 
+        /// <summary>执行 OnIsExpandedChanged 逻辑。</summary>
         partial void OnIsExpandedChanged(bool value)
         {
             if (value)
@@ -288,8 +301,10 @@ namespace IndustrialControlMAUI.ViewModels
         public string InventoryStatus { get; }
         [ObservableProperty] private bool isHighlighted;
 
+        /// <summary>执行 IsNullOrWhiteSpace 逻辑。</summary>
         public string DisplayText => string.IsNullOrWhiteSpace(Location) ? $"{Rack}-{Layer}" : Location;
 
+        /// <summary>执行 LocationVM 初始化逻辑。</summary>
         public LocationVM(LocationItem m)
         {
             WarehouseCode = m.WarehouseCode;
@@ -305,11 +320,13 @@ namespace IndustrialControlMAUI.ViewModels
     public partial class LocationGroupVM : ObservableCollection<LocationVM>
     {
         public string Zone { get; }
+        /// <summary>执行 IsNullOrWhiteSpace 逻辑。</summary>
         public string Title => string.IsNullOrWhiteSpace(Zone) ? " " : Zone;
 
         // 是否为第一组（用来控制是否显示顶部虚线分隔）
         public bool IsFirst { get; set; }
 
+        /// <summary>执行 LocationGroupVM 初始化逻辑。</summary>
         public LocationGroupVM(string zone, IEnumerable<LocationVM> items) : base(items)
         {
             Zone = zone ?? "";

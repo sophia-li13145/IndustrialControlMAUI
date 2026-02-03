@@ -10,16 +10,18 @@ public partial class DefectPickerPopup : CommunityToolkit.Maui.Views.Popup
     private readonly DefectPickerViewModel _vm;
     private readonly TaskCompletionSource<List<DefectRecord>?> _tcs = new();
 
+    /// <summary>æ‰§è¡Œ DefectPickerPopup åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public DefectPickerPopup(IQualityApi api, IEnumerable<string>? preselectedCodes)
     {
         InitializeComponent();
         _vm = new DefectPickerViewModel(api, preselectedCodes);
         BindingContext = _vm;
 
-        // Popup ´ò¿ªÊ±¼ÓÔØÊı¾İ£¨´úÌæ OnOpened£©
+        // Popup æ˜¾ç¤ºæ—¶è§¦å‘ OnOpened
         this.Opened += async (s, e) => await _vm.LoadAsync();
     }
 
+    /// <summary>æ‰§è¡Œ ShowAsync é€»è¾‘ã€‚</summary>
     public static Task<List<DefectRecord>?> ShowAsync(IQualityApi api, IEnumerable<string>? preselectedCodes)
     {
         var popup = new DefectPickerPopup(api, preselectedCodes);
@@ -28,12 +30,14 @@ public partial class DefectPickerPopup : CommunityToolkit.Maui.Views.Popup
     }
 
 
+    /// <summary>æ‰§è¡Œ OnCancel é€»è¾‘ã€‚</summary>
     private void OnCancel(object? sender, EventArgs e)
     {
         _tcs.TrySetResult(null);
         Close();
     }
 
+    /// <summary>æ‰§è¡Œ OnConfirm é€»è¾‘ã€‚</summary>
     private void OnConfirm(object? sender, EventArgs e)
     {
         var picked = _vm.Rows

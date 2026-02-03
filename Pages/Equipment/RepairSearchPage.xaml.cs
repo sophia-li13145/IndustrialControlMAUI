@@ -7,6 +7,7 @@ public partial class RepairSearchPage : ContentPage
 {
     private readonly RepairSearchViewModel _vm;
 
+    /// <summary>æ‰§è¡Œ RepairSearchPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public RepairSearchPage(RepairSearchViewModel vm, ScanService scanSvc)
     {
         InitializeComponent();
@@ -14,37 +15,40 @@ public partial class RepairSearchPage : ContentPage
         _vm = vm;
     }
 
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
         QualityNoEntry.Focus();
     }
 
+    /// <summary>æ‰§è¡Œ OnDisappearing é€»è¾‘ã€‚</summary>
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
     }
 
-    // ĞÂÔö£ºÉ¨Âë°´Å¥ÊÂ¼ş
+    // æ‰«ç æŒ‰é’®ç‚¹å‡»
+    /// <summary>æ‰§è¡Œ OnScanClicked é€»è¾‘ã€‚</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();
         await Navigation.PushAsync(new QrScanPage(tcs));
 
-        // µÈ´ıÉ¨Âë½á¹û
+        // ç­‰å¾…æ‰«ç ç»“æœ
         var result = await tcs.Task;
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        // »ØÌîµ½ÊäÈë¿ò
+        // å›å¡«æ‰«ç ç»“æœ
         QualityNoEntry.Text = result.Trim();
 
-        // Í¬²½µ½ ViewModel
+        // åŒæ­¥ ViewModel
         if (BindingContext is RepairSearchViewModel vm)
         {
             vm.Keyword = result.Trim();
 
-            // ¿ÉÑ¡£ºÉ¨Âëºó×Ô¶¯´¥·¢²éÑ¯
+            // ä½¿ç”¨æ‰«ç ç»“æœæŸ¥è¯¢
             if (vm.SearchCommand.CanExecute(null))
                 vm.SearchCommand.Execute(null);
         }

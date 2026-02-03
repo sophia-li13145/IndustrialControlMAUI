@@ -9,6 +9,7 @@ public partial class OutboundMoldPage : ContentPage
     public string? WorkOrderNo { get; set; }
     CancellationTokenSource? _lifecycleCts;
     private bool _loadedOnce = false;
+    /// <summary>æ‰§è¡Œ OutboundMoldPage åˆå§‹åŒ–é€»è¾‘ã€‚</summary>
     public OutboundMoldPage(OutboundMoldViewModel vm)
     {
         _vm = vm;
@@ -16,7 +17,8 @@ public partial class OutboundMoldPage : ContentPage
         BindingContext = _vm;
     }
 
-    // É¾µô _lifecycleCts?.Cancel(); ºÍ Dispose(); ¡ª¡ª ²»ÒªÔÚ OnDisappearing Àï¶¯ CTS
+    // ä¸åœ¨æ­¤å¤„å–æ¶ˆ CTSï¼Œäº¤ç»™ OnDisappearing å¤„ç†
+    /// <summary>æ‰§è¡Œ OnAppearing é€»è¾‘ã€‚</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -32,16 +34,18 @@ public partial class OutboundMoldPage : ContentPage
         ScanEntry?.Focus();
     }
 
+    /// <summary>æ‰§è¡Œ OnDisappearing é€»è¾‘ã€‚</summary>
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        // ²»Òª Cancel/Dispose Ò³Ãæ¼¶ CTS£¨±ÜÃâ·µ»ØË²¼ä±ÀÀ££©
+        // éœ€è¦å–æ¶ˆå¹¶é‡Šæ”¾é¡µé¢çº§ CTS
     }
 
 
 
     bool _submitting = false;
 
+    /// <summary>æ‰§è¡Œ ScanEntry_Completed é€»è¾‘ã€‚</summary>
     private async void ScanEntry_Completed(object? sender, EventArgs e)
     {
         if (_submitting) return;
@@ -49,17 +53,18 @@ public partial class OutboundMoldPage : ContentPage
         try
         {
             if (_vm.ScanSubmitCommand.CanExecute(null))
-                await _vm.ScanSubmitCommand.ExecuteAsync(null); // ¡ï await Òì²½ÃüÁî
+                await _vm.ScanSubmitCommand.ExecuteAsync(null); //  await å¼‚æ­¥æ‰§è¡Œ
         }
         finally
         {
             _submitting = false;
             await Task.Delay(30);
             ScanEntry.Text = string.Empty;
-            ScanEntry?.Focus(); // Á¬ĞøÉ¨Ãè¸üË³ÊÖ
+            ScanEntry?.Focus(); // æ‰«ç åé‡æ–°èšç„¦
         }
     }
-    // ĞÂÔö£ºÉ¨Âë°´Å¥ÊÂ¼ş
+    // æ‰«ç æŒ‰é’®ç‚¹å‡»
+    /// <summary>æ‰§è¡Œ OnScanClicked é€»è¾‘ã€‚</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         try
@@ -81,7 +86,7 @@ public partial class OutboundMoldPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("´íÎó", $"É¨ÂëÊ±³öÏÖÒì³££º{ex.Message}", "ÖªµÀÁË");
+            await DisplayAlert("", $"æ‰«ç å¼‚å¸¸{ex.Message}", "çŸ¥é“äº†");
         }
     }
 

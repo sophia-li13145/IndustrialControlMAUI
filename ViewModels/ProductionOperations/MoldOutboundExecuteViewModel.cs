@@ -21,9 +21,13 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
     [ObservableProperty] private string? bomCode;         // BOM编号
     [ObservableProperty] private string? routeName;       // 工艺路线名称
 
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<BaseInfoItem> BaseInfos { get; } = new();
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<MoldOutboundDetailRow> ScanDetails { get; } = new();
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<WoStep> WorkflowSteps { get; } = new();
+    /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<UiProcessTask> ProcessTasks { get; } = new();
 
     private Dictionary<string, string> _auditMap = new();
@@ -39,16 +43,19 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
     "5"  // 终结
 };
 
+    /// <summary>执行 GetStatusOrder 逻辑。</summary>
     private static int GetStatusOrder(string statusValue)
     {
         var idx = Array.IndexOf(WorkflowStatusOrder, statusValue);
         return idx >= 0 ? idx : int.MaxValue;
     }
+    /// <summary>执行 MoldOutboundExecuteViewModel 初始化逻辑。</summary>
     public MoldOutboundExecuteViewModel(IWorkOrderApi api)
     {
         _api = api;
     }
 
+    /// <summary>执行 LoadAsync 逻辑。</summary>
     public async Task LoadAsync(string orderNo, string? orderId = null)
     {
         OrderNo = orderNo;
@@ -65,6 +72,7 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
     }
 
 
+    /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
     private async Task EnsureDictsLoadedAsync()
     {
         var bundle = await _api.GetWorkOrderDictsAsync();
@@ -74,6 +82,7 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
     }
 
 
+    /// <summary>执行 LoadProcessTasksAsync 逻辑。</summary>
     private async Task LoadProcessTasksAsync()
     {
         ProcessTasks.Clear();
@@ -191,6 +200,7 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
 
 
     // 用字典生成步骤后，记得打上首尾标记
+    /// <summary>执行 InitWorkflowStepsFromDict 逻辑。</summary>
     private void InitWorkflowStepsFromDict()
     {
         WorkflowSteps.Clear();
@@ -246,6 +256,7 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
 
 
     // 从接口把 statusTime 灌到对应节点上（保证 Time 有值就能显示）
+    /// <summary>执行 FillWorkflowTimesFromApi 逻辑。</summary>
     private async Task FillWorkflowTimesFromApi()
     {
         if (string.IsNullOrWhiteSpace(OrderId)) return;
@@ -266,6 +277,7 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
 
 
 
+    /// <summary>执行 ApplyStatusFromSearch 逻辑。</summary>
     private void ApplyStatusFromSearch(string? statusText)
     {
         if (string.IsNullOrWhiteSpace(statusText)) return;
@@ -317,6 +329,7 @@ public partial class WoStep : ObservableObject
     [ObservableProperty] private bool isLast;    // 用于隐藏右连接线
 
     // 给 XAML 用的已格式化文本（只保留到“日”）
+    /// <summary>执行 ToString 逻辑。</summary>
     public string TimeText => time.HasValue ? time.Value.ToString("yyyy-MM-dd") : string.Empty;
 }
 

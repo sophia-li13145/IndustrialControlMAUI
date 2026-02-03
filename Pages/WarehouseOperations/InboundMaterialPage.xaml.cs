@@ -29,6 +29,7 @@ public partial class InboundMaterialPage : ContentPage
     private bool _loadedOnce = false;
     private readonly IServiceProvider _sp;
 
+    /// <summary>执行 InboundMaterialPage 初始化逻辑。</summary>
     public InboundMaterialPage(IServiceProvider sp, InboundMaterialViewModel vm,IDialogService dialogs)
     {
         InitializeComponent();
@@ -41,6 +42,7 @@ public partial class InboundMaterialPage : ContentPage
 
     }
 
+    /// <summary>执行 OnScanEntryCompleted 逻辑。</summary>
     private async void OnScanEntryCompleted(object? sender, EventArgs e)
     {
         // 取输入框内容
@@ -61,6 +63,7 @@ public partial class InboundMaterialPage : ContentPage
         ScanEntry.Focus();
     }
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -98,6 +101,7 @@ public partial class InboundMaterialPage : ContentPage
         ScanEntry.Focus();
     }
 
+    /// <summary>执行 OnDisappearing 逻辑。</summary>
     protected override void OnDisappearing()
     {
 
@@ -126,6 +130,7 @@ public partial class InboundMaterialPage : ContentPage
         }
     }
 
+    /// <summary>执行 OnBinTapped 逻辑。</summary>
     private async void OnBinTapped(object? sender, TappedEventArgs e)
     {
         // 1) 取到行对象
@@ -184,6 +189,7 @@ public partial class InboundMaterialPage : ContentPage
 
 
 
+    /// <summary>执行 OnQtyCompleted 逻辑。</summary>
     private async void OnQtyCompleted(object sender, EventArgs e)
     {
         if (sender is not Entry entry) return;
@@ -199,6 +205,7 @@ public partial class InboundMaterialPage : ContentPage
         await _vm.UpdateQuantityForRowAsync(row);
     }
 
+    /// <summary>执行 OnScanClicked 逻辑。</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();

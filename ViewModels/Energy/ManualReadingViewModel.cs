@@ -17,11 +17,13 @@ namespace IndustrialControl.ViewModels.Energy
         private List<IdNameOption> _allUsers = new();
         private bool _suppressSearch = false; // true 表示暂时不触发下拉
 
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<MeterPointItem> MeterPoints { get; } = new();
 
         [ObservableProperty] private MeterPointItem? selectedMeterPoint;
         [ObservableProperty] private bool isBusy;
 
+        /// <summary>执行 ManualReadingViewModel 初始化逻辑。</summary>
         public ManualReadingViewModel(IEnergyApi api)
         {
             _api = api;
@@ -29,13 +31,16 @@ namespace IndustrialControl.ViewModels.Energy
 
         [ObservableProperty] private ManualReadingForm form = new();
 
+        /// <summary>执行 ToString 逻辑。</summary>
         public string ReadingTimeText => Form.ReadingTime.ToString("yyyy-MM-dd HH:mm:ss");
 
         // ===== 抄表人模糊搜索 =====
+        /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private string? readerQuery;
         public ObservableCollection<IdNameOption> ReaderSuggestions { get; } = new();
         [ObservableProperty] private bool isReaderDropdownOpen;
 
+        /// <summary>执行 OnReaderQueryChanged 逻辑。</summary>
         partial void OnReaderQueryChanged(string? value)
         {
             // 如果当前是代码赋值（初始化阶段），直接跳过搜索
@@ -50,6 +55,7 @@ namespace IndustrialControl.ViewModels.Energy
         }
 
 
+        /// <summary>执行 OnSearchTimerElapsed 逻辑。</summary>
         private async void OnSearchTimerElapsed(object? s, System.Timers.ElapsedEventArgs e)
         {
             try
@@ -74,6 +80,7 @@ namespace IndustrialControl.ViewModels.Energy
             catch { /* ignore */ }
         }
 
+        /// <summary>执行 PickReader 逻辑。</summary>
         [RelayCommand]
         private void PickReader(IdNameOption option)
         {
@@ -83,9 +90,11 @@ namespace IndustrialControl.ViewModels.Energy
             OnPropertyChanged(nameof(Form));
         }
 
+        /// <summary>执行 CloseReaderDropdown 逻辑。</summary>
         [RelayCommand]
         private void CloseReaderDropdown() => IsReaderDropdownOpen = false;
 
+        /// <summary>执行 EnsureUsersAsync 逻辑。</summary>
         public async Task EnsureUsersAsync()
         {
             if (_allUsers.Count == 0)
@@ -115,6 +124,7 @@ namespace IndustrialControl.ViewModels.Energy
 
 
         // ===== 接收图1的选中行并回填 =====
+        /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
             if (query.TryGetValue("meter", out var obj) && obj is EnergyMeterUiRow m)
@@ -137,6 +147,7 @@ namespace IndustrialControl.ViewModels.Energy
             }
         }
 
+        /// <summary>执行 OnSelectedMeterPointChanged 逻辑。</summary>
         partial void OnSelectedMeterPointChanged(MeterPointItem? value)
         {
             if (value == null) return;
@@ -154,6 +165,7 @@ namespace IndustrialControl.ViewModels.Energy
             _ = LoadLastReadingAsync(Form.MeterCode, value.meterPointCode ?? "");
         }
 
+        /// <summary>执行 LoadMeterPointsAsync 逻辑。</summary>
         private async Task LoadMeterPointsAsync(string meterCode, CancellationToken ct)
         {
             var list = await _api.GetMeterPointsByMeterCodeAsync(meterCode, ct);
@@ -168,6 +180,7 @@ namespace IndustrialControl.ViewModels.Energy
             }
         }
 
+        /// <summary>执行 ApplyMeterPoints 逻辑。</summary>
         private void ApplyMeterPoints(IReadOnlyList<MeterPointItem> list)
         {
             MeterPoints.Clear();
@@ -180,6 +193,7 @@ namespace IndustrialControl.ViewModels.Energy
 
 
 
+        /// <summary>执行 LoadLastReadingAsync 逻辑。</summary>
         private async Task LoadLastReadingAsync(string meterCode, string meterPointCode)
         {
             var data = await _api.GetLastReadingAsync(meterCode, meterPointCode, _cts.Token);
@@ -188,6 +202,7 @@ namespace IndustrialControl.ViewModels.Energy
         }
 
 
+        /// <summary>执行 Save 逻辑。</summary>
         [RelayCommand]
         private async Task Save()
         {

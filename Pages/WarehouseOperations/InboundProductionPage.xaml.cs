@@ -33,6 +33,7 @@ public partial class InboundProductionPage : ContentPage
 
     private readonly IDialogService _dialogs;
 
+    /// <summary>执行 InboundProductionPage 初始化逻辑。</summary>
     public InboundProductionPage(IServiceProvider sp,InboundProductionViewModel vm,  IDialogService dialogs)
     {
         InitializeComponent();
@@ -43,6 +44,7 @@ public partial class InboundProductionPage : ContentPage
         _sp = sp;
 
     }
+    /// <summary>执行 OnScanEntryCompleted 逻辑。</summary>
     private async void OnScanEntryCompleted(object? sender, EventArgs e)
     {
         // 取输入框内容
@@ -63,6 +65,7 @@ public partial class InboundProductionPage : ContentPage
         ScanEntry.Focus();
     }
 
+    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -98,6 +101,7 @@ public partial class InboundProductionPage : ContentPage
         ScanEntry.Focus();
     }
 
+    /// <summary>执行 OnDisappearing 逻辑。</summary>
     protected override void OnDisappearing()
     {
 
@@ -105,6 +109,7 @@ public partial class InboundProductionPage : ContentPage
     }
 
     // 扫码按钮事件
+    /// <summary>执行 OnScanClicked 逻辑。</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();
@@ -145,6 +150,7 @@ public partial class InboundProductionPage : ContentPage
     }
 
 
+    /// <summary>执行 OnBinTapped 逻辑。</summary>
     private async void OnBinTapped(object? sender, TappedEventArgs e)
     {
         // ① 一定要从 sender 的 BindingContext 拿当前行
@@ -184,6 +190,7 @@ public partial class InboundProductionPage : ContentPage
 
 
 
+    /// <summary>执行 OnQtyCompleted 逻辑。</summary>
     private async void OnQtyCompleted(object sender, EventArgs e)
     {
         if (sender is not Entry entry) return;

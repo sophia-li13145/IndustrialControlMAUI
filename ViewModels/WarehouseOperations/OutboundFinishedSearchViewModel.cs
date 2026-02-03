@@ -16,6 +16,7 @@ public partial class OutboundFinishedSearchViewModel : ObservableObject
     // 仅用于“高亮选中”
     [ObservableProperty] private OutboundOrderSummary? selectedOrder;
 
+    /// <summary>执行 OutboundFinishedSearchViewModel 初始化逻辑。</summary>
     public OutboundFinishedSearchViewModel(IOutboundMaterialService dataSvc)
     {
         _dataSvc = dataSvc;
@@ -24,6 +25,7 @@ public partial class OutboundFinishedSearchViewModel : ObservableObject
 
     public ObservableCollection<OutboundOrderSummary> Orders { get; }
 
+    /// <summary>执行 SearchAsync 逻辑。</summary>
     [RelayCommand]
     private async Task SearchAsync()
     {
@@ -64,11 +66,13 @@ public partial class OutboundFinishedSearchViewModel : ObservableObject
     }
 
     // === 方案A：命令接收“当前项”作为参数，不依赖 SelectedOrder ===
+    /// <summary>执行 GoOutboundAsync 逻辑。</summary>
     [RelayCommand(CanExecute = nameof(CanGoOutbound))]
     private async Task GoOutboundAsync(OutboundOrderSummary? item)
     {
         if (item is null) return;
 
+        /// <summary>执行 E 逻辑。</summary>
         static string E(string? v) => Uri.EscapeDataString(v ?? "");
 
         var o = item;
@@ -89,6 +93,7 @@ public partial class OutboundFinishedSearchViewModel : ObservableObject
     }
 
     // 与命令同签名的 CanExecute
+    /// <summary>执行 CanGoOutbound 逻辑。</summary>
     private bool CanGoOutbound(OutboundOrderSummary? item) => item != null;
 }
 
