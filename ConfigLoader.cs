@@ -123,15 +123,18 @@ public static class ConfigLoaderStatic
         }
 
         var svcName = ExtractServiceName(userName, defaultServiceName);
+        var inferredPath = svcName == defaultServiceName
+            ? NormalizePath(defaultServicePath, "/normalService")
+            : NormalizePath($"/{svcName}", $"/{svcName}");
 
         // 如果该服务名没有路径，则补默认路径
         if (services[svcName] is null)
         {
-            services[svcName] = defaultServicePath;
+            services[svcName] = inferredPath;
         }
 
         // 记录当前生效服务名
-        services["current"] = svcName.Replace("Service","") + "Service";
+        services["current"] = svcName;
 
         // 持久化
         Save(node);
@@ -146,11 +149,10 @@ public static class ConfigLoaderStatic
         var services = cfg?["services"] as JsonObject;
 
         var current = services?["current"]?.GetValue<string>() ?? "normalService";
-        var servicePath = services?["current"]?.GetValue<string>()
+        var servicePath = services?[current]?.GetValue<string>()
                           ?? services?["normalService"]?.GetValue<string>()
                           ?? "/normalService";
-
-        if (!servicePath.StartsWith("/")) servicePath = "/" + servicePath;
+        servicePath = NormalizePath(servicePath, "/normalService");
 
         return $"{scheme}://{host}{servicePath}";
     }
@@ -162,7 +164,7 @@ public static class ConfigLoaderStatic
     {
         var cfg = Load();
         var api = cfg?["apiEndpoints"];
-        if (api is null) return NormalizePath(fallback);
+        if (api is null) return NormalizePath(fallback, fallback);
 
         string? val = null;
         var parts = dottedPath.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -177,8 +179,12 @@ public static class ConfigLoaderStatic
         }
 
         val ??= fallback;
-        return NormalizePath(val);
+        return NormalizePath(val, fallback);
+    }
 
-        static string NormalizePath(string p) => p.StartsWith("/") ? p : "/" + p;
+    private static string NormalizePath(string p, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(p)) return fallback;
+        return p.StartsWith("/") ? p : "/" + p;
     }
 }
