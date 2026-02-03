@@ -123,6 +123,11 @@ public static class ConfigLoaderStatic
         }
 
         var svcName = ExtractServiceName(userName, defaultServiceName);
+        if (!svcName.EndsWith("service", StringComparison.OrdinalIgnoreCase))
+        {
+            svcName += "Service";
+        }
+
         var inferredPath = svcName == defaultServiceName
             ? NormalizePath(defaultServicePath, "/normalService")
             : NormalizePath($"/{svcName}", $"/{svcName}");
