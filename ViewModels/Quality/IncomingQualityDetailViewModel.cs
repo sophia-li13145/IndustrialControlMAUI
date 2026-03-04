@@ -7,6 +7,7 @@ using IndustrialControlMAUI.Popups;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -155,6 +156,21 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var device in resp.result)
                     {
                         InspectDeviceList.Add(device);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(Detail?.devCode))
+                    {
+                        var defaultDevice = InspectDeviceList.FirstOrDefault(d =>
+                            string.Equals(d.devCode, Detail.devCode, StringComparison.OrdinalIgnoreCase));
+
+                        if (defaultDevice is not null)
+                        {
+                            foreach (var item in Items)
+                            {
+                                if (item.selectedInspectDevice is null)
+                                    item.selectedInspectDevice = defaultDevice;
+                            }
+                        }
                     }
                 });
             }
@@ -382,6 +398,22 @@ namespace IndustrialControlMAUI.ViewModels
             item.PropertyChanged -= HandleItemPropertyChanged;
             item.PropertyChanged += HandleItemPropertyChanged;
 
+            if (string.IsNullOrWhiteSpace(item.inspectStartTime) && !string.IsNullOrWhiteSpace(Detail?.inspectStartTime))
+            {
+                item.inspectStartTime = Detail.inspectStartTime;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.inspectEndTime) && !string.IsNullOrWhiteSpace(Detail?.inspectEndTime))
+            {
+                item.inspectEndTime = Detail.inspectEndTime;
+            }
+
+            if (item.actualValue is null && !string.IsNullOrWhiteSpace(Detail?.inspectValue)
+                && decimal.TryParse(Detail.inspectValue, out var inspectValue))
+            {
+                item.actualValue = inspectValue;
+            }
+
             if (!string.IsNullOrWhiteSpace(item.deviceCode))
             {
                 item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.deviceCode);
@@ -427,10 +459,14 @@ namespace IndustrialControlMAUI.ViewModels
                         item.InspectParamOptions.Add(param);
                     }
 
-                    if (!string.IsNullOrWhiteSpace(item.paramCode))
+                    var targetParamCode = !string.IsNullOrWhiteSpace(item.paramCode)
+                        ? item.paramCode
+                        : Detail?.paramCode;
+
+                    if (!string.IsNullOrWhiteSpace(targetParamCode))
                     {
                         item.selectedInspectParam = item.InspectParamOptions
-                            .FirstOrDefault(p => p.paramCode == item.paramCode);
+                            .FirstOrDefault(p => string.Equals(p.paramCode, targetParamCode, StringComparison.OrdinalIgnoreCase));
                     }
                 });
             }
@@ -862,6 +898,26 @@ namespace IndustrialControlMAUI.ViewModels
                 // 让 DTO 里的 defect = “名称1,名称2”
                 it.defect = string.Join(",", it.SelectedDefects.Select(d => d.Name ));
                 // 如需传编码，再加 it.defectCodeList = it.SelectedDefects.Select(d => d.Code).ToList();
+            }
+
+            // 4) 同步“详情级默认字段”，确保保存/完成接口能拿到可用值
+            var detailItems = Detail.orderQualityDetailList ?? new List<QualityItem>();
+
+            static string? FirstNonEmpty(IEnumerable<string?> values)
+                => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v))?.Trim();
+
+            Detail.devCode = FirstNonEmpty(detailItems.Select(x => x.deviceCode)) ?? Detail.devCode;
+            Detail.paramCode = FirstNonEmpty(detailItems.Select(x => x.paramCode)) ?? Detail.paramCode;
+            Detail.inspectStartTime = FirstNonEmpty(detailItems.Select(x => x.inspectStartTime)) ?? Detail.inspectStartTime;
+            Detail.inspectEndTime = FirstNonEmpty(detailItems.Select(x => x.inspectEndTime)) ?? Detail.inspectEndTime;
+
+            var firstActualValue = detailItems
+                .FirstOrDefault(x => x.actualValue is not null)
+                ?.actualValue;
+
+            if (firstActualValue is not null)
+            {
+                Detail.inspectValue = firstActualValue.Value.ToString(CultureInfo.InvariantCulture);
             }
 
         }

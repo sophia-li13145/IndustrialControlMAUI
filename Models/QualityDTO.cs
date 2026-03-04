@@ -111,6 +111,11 @@ public class QualityDetailDto : ObservableObject
     public string? modifiedTime { get; set; }
     public string? factoryName { get; set; }
     public string? factoryCode { get; set; }
+    public string? devCode { get; set; }
+    public string? paramCode { get; set; }
+    public string? inspectStartTime { get; set; }
+    public string? inspectEndTime { get; set; }
+    public string? inspectValue { get; set; }
     public string? inspecter { get; set; }         // 检验人
 
     // === 参与计算的字段（带通知 + 触发重算） ===
