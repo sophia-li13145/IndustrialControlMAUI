@@ -380,9 +380,9 @@ namespace IndustrialControlMAUI.ViewModels
             item.PropertyChanged -= HandleItemPropertyChanged;
             item.PropertyChanged += HandleItemPropertyChanged;
 
-            if (!string.IsNullOrWhiteSpace(item.deviceCode))
+            if (!string.IsNullOrWhiteSpace(item.devCode))
             {
-                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.deviceCode);
+                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.devCode);
             }
         }
 

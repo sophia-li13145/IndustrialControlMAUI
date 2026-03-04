@@ -243,11 +243,6 @@ public class QualityMaterial
     public string QtyWithUnit => string.IsNullOrWhiteSpace(unit) ? $"{qty:G29}" : $"{qty:G29} {unit}";
     public string InstockQtyWithUnit => string.IsNullOrWhiteSpace(unit) ? $"{instockQty:G29}" : $"{instockQty:G29} {unit}";
     public string CompletedQtyWithUnit => string.IsNullOrWhiteSpace(unit) ? $"{completedQty:G29}" : $"{completedQty:G29} {unit}";
-    public string? devCode { get; set; }
-    public string? paramCode { get; set; }
-    public string? inspectStartTime { get; set; }
-    public string? inspectEndTime { get; set; }
-    public string? inspectValue { get; set; }
 
 }
 
@@ -272,6 +267,7 @@ public partial class QualityItem : ObservableObject
     public string? devCode { get; set; }
     public string? devName { get; set; }
     public string? paramCode { get; set; }
+    public string? paramName { get; set; }
     public string? inspectValue { get; set; }
 
     private string? _inspectStartTime;
@@ -296,7 +292,7 @@ public partial class QualityItem : ObservableObject
         }
     }
 
-    public string? paramName { get; set; }
+
 
     private InspectDeviceOption? _selectedInspectDevice;
     [JsonIgnore]
@@ -333,16 +329,6 @@ public partial class QualityItem : ObservableObject
     [JsonIgnore]
     public ObservableCollection<InspectParamOption> InspectParamOptions { get; set; } = new();
 
-    private decimal? _actualValue;
-    public decimal? actualValue
-    {
-        get => _actualValue;
-        set
-        {
-            if (SetProperty(ref _actualValue, value))
-                OnPropertyChanged(nameof(IsAutoInspectEnabled));
-        }
-    }
 
     private bool _isEditing = true;
     [JsonIgnore]
@@ -363,7 +349,7 @@ public partial class QualityItem : ObservableObject
         && selectedInspectParam is not null
         && !string.IsNullOrWhiteSpace(inspectStartTime)
         && !string.IsNullOrWhiteSpace(inspectEndTime)
-        && actualValue is not null;
+        && inspectValue is not null;
 
 
     // 已选缺陷（用于标签显示与保存）
