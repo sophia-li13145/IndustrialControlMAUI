@@ -156,6 +156,21 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         InspectDeviceList.Add(device);
                     }
+
+                    if (!string.IsNullOrWhiteSpace(Detail?.devCode))
+                    {
+                        var defaultDevice = InspectDeviceList.FirstOrDefault(d =>
+                            string.Equals(d.devCode, Detail.devCode, StringComparison.OrdinalIgnoreCase));
+
+                        if (defaultDevice is not null)
+                        {
+                            foreach (var item in Items)
+                            {
+                                if (item.selectedInspectDevice is null)
+                                    item.selectedInspectDevice = defaultDevice;
+                            }
+                        }
+                    }
                 });
             }
             catch (Exception ex)
@@ -382,6 +397,22 @@ namespace IndustrialControlMAUI.ViewModels
             item.PropertyChanged -= HandleItemPropertyChanged;
             item.PropertyChanged += HandleItemPropertyChanged;
 
+            if (string.IsNullOrWhiteSpace(item.inspectStartTime) && !string.IsNullOrWhiteSpace(Detail?.inspectStartTime))
+            {
+                item.inspectStartTime = Detail.inspectStartTime;
+            }
+
+            if (string.IsNullOrWhiteSpace(item.inspectEndTime) && !string.IsNullOrWhiteSpace(Detail?.inspectEndTime))
+            {
+                item.inspectEndTime = Detail.inspectEndTime;
+            }
+
+            if (item.actualValue is null && !string.IsNullOrWhiteSpace(Detail?.inspectValue)
+                && decimal.TryParse(Detail.inspectValue, out var inspectValue))
+            {
+                item.actualValue = inspectValue;
+            }
+
             if (!string.IsNullOrWhiteSpace(item.deviceCode))
             {
                 item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.deviceCode);
@@ -427,10 +458,14 @@ namespace IndustrialControlMAUI.ViewModels
                         item.InspectParamOptions.Add(param);
                     }
 
-                    if (!string.IsNullOrWhiteSpace(item.paramCode))
+                    var targetParamCode = !string.IsNullOrWhiteSpace(item.paramCode)
+                        ? item.paramCode
+                        : Detail?.paramCode;
+
+                    if (!string.IsNullOrWhiteSpace(targetParamCode))
                     {
                         item.selectedInspectParam = item.InspectParamOptions
-                            .FirstOrDefault(p => p.paramCode == item.paramCode);
+                            .FirstOrDefault(p => string.Equals(p.paramCode, targetParamCode, StringComparison.OrdinalIgnoreCase));
                     }
                 });
             }
