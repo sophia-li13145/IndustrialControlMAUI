@@ -900,35 +900,24 @@ namespace IndustrialControlMAUI.ViewModels
                 // 如需传编码，再加 it.defectCodeList = it.SelectedDefects.Select(d => d.Code).ToList();
             }
 
-            // 4) 同步“详情级默认字段”，确保保存/完成接口能拿到最新值（仅在明细中唯一时覆盖）
+            // 4) 同步“详情级默认字段”，确保保存/完成接口能拿到可用值
             var detailItems = Detail.orderQualityDetailList ?? new List<QualityItem>();
-            static string? PickUniqueNonEmpty(IEnumerable<string?> values)
+
+            static string? FirstNonEmpty(IEnumerable<string?> values)
+                => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v))?.Trim();
+
+            Detail.devCode = FirstNonEmpty(detailItems.Select(x => x.deviceCode)) ?? Detail.devCode;
+            Detail.paramCode = FirstNonEmpty(detailItems.Select(x => x.paramCode)) ?? Detail.paramCode;
+            Detail.inspectStartTime = FirstNonEmpty(detailItems.Select(x => x.inspectStartTime)) ?? Detail.inspectStartTime;
+            Detail.inspectEndTime = FirstNonEmpty(detailItems.Select(x => x.inspectEndTime)) ?? Detail.inspectEndTime;
+
+            var firstActualValue = detailItems
+                .FirstOrDefault(x => x.actualValue is not null)
+                ?.actualValue;
+
+            if (firstActualValue is not null)
             {
-                var list = values
-                    .Where(v => !string.IsNullOrWhiteSpace(v))
-                    .Select(v => v!.Trim())
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Take(2)
-                    .ToList();
-
-                return list.Count == 1 ? list[0] : null;
-            }
-
-            Detail.devCode = PickUniqueNonEmpty(detailItems.Select(x => x.deviceCode)) ?? Detail.devCode;
-            Detail.paramCode = PickUniqueNonEmpty(detailItems.Select(x => x.paramCode)) ?? Detail.paramCode;
-            Detail.inspectStartTime = PickUniqueNonEmpty(detailItems.Select(x => x.inspectStartTime)) ?? Detail.inspectStartTime;
-            Detail.inspectEndTime = PickUniqueNonEmpty(detailItems.Select(x => x.inspectEndTime)) ?? Detail.inspectEndTime;
-
-            var uniqueActualValue = detailItems
-                .Where(x => x.actualValue is not null)
-                .Select(x => x.actualValue!.Value)
-                .Distinct()
-                .Take(2)
-                .ToList();
-
-            if (uniqueActualValue.Count == 1)
-            {
-                Detail.inspectValue = uniqueActualValue[0].ToString(CultureInfo.InvariantCulture);
+                Detail.inspectValue = firstActualValue.Value.ToString(CultureInfo.InvariantCulture);
             }
 
         }
