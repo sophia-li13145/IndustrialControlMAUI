@@ -7,6 +7,7 @@ using IndustrialControlMAUI.Popups;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -897,6 +898,37 @@ namespace IndustrialControlMAUI.ViewModels
                 // 让 DTO 里的 defect = “名称1,名称2”
                 it.defect = string.Join(",", it.SelectedDefects.Select(d => d.Name ));
                 // 如需传编码，再加 it.defectCodeList = it.SelectedDefects.Select(d => d.Code).ToList();
+            }
+
+            // 4) 同步“详情级默认字段”，确保保存/完成接口能拿到最新值（仅在明细中唯一时覆盖）
+            var detailItems = Detail.orderQualityDetailList ?? new List<QualityItem>();
+            static string? PickUniqueNonEmpty(IEnumerable<string?> values)
+            {
+                var list = values
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .Select(v => v!.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Take(2)
+                    .ToList();
+
+                return list.Count == 1 ? list[0] : null;
+            }
+
+            Detail.devCode = PickUniqueNonEmpty(detailItems.Select(x => x.deviceCode)) ?? Detail.devCode;
+            Detail.paramCode = PickUniqueNonEmpty(detailItems.Select(x => x.paramCode)) ?? Detail.paramCode;
+            Detail.inspectStartTime = PickUniqueNonEmpty(detailItems.Select(x => x.inspectStartTime)) ?? Detail.inspectStartTime;
+            Detail.inspectEndTime = PickUniqueNonEmpty(detailItems.Select(x => x.inspectEndTime)) ?? Detail.inspectEndTime;
+
+            var uniqueActualValue = detailItems
+                .Where(x => x.actualValue is not null)
+                .Select(x => x.actualValue!.Value)
+                .Distinct()
+                .Take(2)
+                .ToList();
+
+            if (uniqueActualValue.Count == 1)
+            {
+                Detail.inspectValue = uniqueActualValue[0].ToString(CultureInfo.InvariantCulture);
             }
 
         }
