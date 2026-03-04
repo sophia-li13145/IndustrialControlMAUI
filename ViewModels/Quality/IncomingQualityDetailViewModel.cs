@@ -157,6 +157,15 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         InspectDeviceList.Add(device);
                     }
+
+                    // 设备列表刷新后，按每条明细的 devCode 重新回填选中项（用于页面循环绑定后的回显）
+                    foreach (var item in Items)
+                    {
+                        if (string.IsNullOrWhiteSpace(item.devCode)) continue;
+
+                        item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
+                            string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
+                    }
                 });
             }
             catch (Exception ex)
@@ -383,7 +392,11 @@ namespace IndustrialControlMAUI.ViewModels
             item.PropertyChanged -= HandleItemPropertyChanged;
             item.PropertyChanged += HandleItemPropertyChanged;
 
-           
+            if (!string.IsNullOrWhiteSpace(item.devCode))
+            {
+                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
+                    string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         /// <summary>执行 HandleItemPropertyChanged 逻辑。</summary>
@@ -423,6 +436,12 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var param in resp.result)
                     {
                         item.InspectParamOptions.Add(param);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(item.paramCode))
+                    {
+                        item.selectedInspectParam = item.InspectParamOptions
+                            .FirstOrDefault(p => p.paramCode == item.paramCode);
                     }
                 });
             }

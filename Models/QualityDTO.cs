@@ -427,7 +427,7 @@ public class InspectDeviceOption
     public string? devProducer { get; set; }
 
     [JsonIgnore]
-    public string? Name => devName;
+    public string? Name => string.IsNullOrWhiteSpace(devName) ? devCode : devName;
 }
 
 public class InspectParamOption
@@ -439,7 +439,7 @@ public class InspectParamOption
     public string? deviceCode { get; set; }
 
     [JsonIgnore]
-    public string? Name => paramName;
+    public string? Name => string.IsNullOrWhiteSpace(paramName) ? paramCode : paramName;
 }
 
 public class InspectionDetailRecord

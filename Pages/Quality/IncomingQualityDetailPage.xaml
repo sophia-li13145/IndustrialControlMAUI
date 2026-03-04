@@ -399,7 +399,7 @@
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="1"
                                     Title="请选择"
-                                    ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectDeviceList}"
+                                    ItemsSource="{Binding Source={x:Reference ThisPage}, Path=BindingContext.InspectDeviceList}"
                                     ItemDisplayBinding="{Binding Name}"
                                     SelectedItem="{Binding selectedInspectDevice, Mode=TwoWay}"
                                     IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
