@@ -156,6 +156,14 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         InspectDeviceList.Add(device);
                     }
+
+                    foreach (var item in Items)
+                    {
+                        if (string.IsNullOrWhiteSpace(item.devCode)) continue;
+
+                        item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
+                            string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
+                    }
                 });
             }
             catch (Exception ex)
@@ -383,7 +391,8 @@ namespace IndustrialControlMAUI.ViewModels
 
             if (!string.IsNullOrWhiteSpace(item.devCode))
             {
-                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.devCode);
+                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
+                    string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -429,7 +438,7 @@ namespace IndustrialControlMAUI.ViewModels
                     if (!string.IsNullOrWhiteSpace(item.paramCode))
                     {
                         item.selectedInspectParam = item.InspectParamOptions
-                            .FirstOrDefault(p => p.paramCode == item.paramCode);
+                            .FirstOrDefault(p => string.Equals(p.paramCode, item.paramCode, StringComparison.OrdinalIgnoreCase));
                     }
                 });
             }

@@ -461,7 +461,7 @@
                                             <Label Grid.Column="0" Text="实际值：" Style="{StaticResource FieldLabel}" />
                                             <Entry Grid.Column="1"
                                    Placeholder="请输入"
-                                   Text="{Binding actualValue, Mode=TwoWay, Converter={StaticResource DecConv}}"
+                                   Text="{Binding inspectValue, Mode=TwoWay, Converter={StaticResource DecConv}}"
                                    Keyboard="Numeric"
                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
