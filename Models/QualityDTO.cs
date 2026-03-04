@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static Android.Net.Http.SslCertificate;
 
 namespace IndustrialControlMAUI.Models;
 
@@ -111,11 +112,6 @@ public class QualityDetailDto : ObservableObject
     public string? modifiedTime { get; set; }
     public string? factoryName { get; set; }
     public string? factoryCode { get; set; }
-    public string? devCode { get; set; }
-    public string? paramCode { get; set; }
-    public string? inspectStartTime { get; set; }
-    public string? inspectEndTime { get; set; }
-    public string? inspectValue { get; set; }
     public string? inspecter { get; set; }         // 检验人
 
     // === 参与计算的字段（带通知 + 触发重算） ===
@@ -247,6 +243,11 @@ public class QualityMaterial
     public string QtyWithUnit => string.IsNullOrWhiteSpace(unit) ? $"{qty:G29}" : $"{qty:G29} {unit}";
     public string InstockQtyWithUnit => string.IsNullOrWhiteSpace(unit) ? $"{instockQty:G29}" : $"{instockQty:G29} {unit}";
     public string CompletedQtyWithUnit => string.IsNullOrWhiteSpace(unit) ? $"{completedQty:G29}" : $"{completedQty:G29} {unit}";
+    public string? devCode { get; set; }
+    public string? paramCode { get; set; }
+    public string? inspectStartTime { get; set; }
+    public string? inspectEndTime { get; set; }
+    public string? inspectValue { get; set; }
 
 }
 
@@ -268,7 +269,10 @@ public partial class QualityItem : ObservableObject
         get => _inspectResult;
         set => SetProperty(ref _inspectResult, value);
     }
-
+    public string? devCode { get; set; }
+    public string? devName { get; set; }
+    public string? paramCode { get; set; }
+    public string? inspectValue { get; set; }
 
     private string? _inspectStartTime;
     public string? inspectStartTime
@@ -292,9 +296,6 @@ public partial class QualityItem : ObservableObject
         }
     }
 
-    public string? deviceCode { get; set; }
-    public string? deviceName { get; set; }
-    public string? paramCode { get; set; }
     public string? paramName { get; set; }
 
     private InspectDeviceOption? _selectedInspectDevice;
@@ -306,8 +307,8 @@ public partial class QualityItem : ObservableObject
         {
             if (SetProperty(ref _selectedInspectDevice, value))
             {
-                deviceCode = value?.devCode;
-                deviceName = value?.devName;
+                devCode = value?.devCode;
+                devName = value?.devName;
                 OnPropertyChanged(nameof(IsAutoInspectEnabled));
             }
         }

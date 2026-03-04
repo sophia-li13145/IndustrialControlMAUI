@@ -157,21 +157,6 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         InspectDeviceList.Add(device);
                     }
-
-                    if (!string.IsNullOrWhiteSpace(Detail?.devCode))
-                    {
-                        var defaultDevice = InspectDeviceList.FirstOrDefault(d =>
-                            string.Equals(d.devCode, Detail.devCode, StringComparison.OrdinalIgnoreCase));
-
-                        if (defaultDevice is not null)
-                        {
-                            foreach (var item in Items)
-                            {
-                                if (item.selectedInspectDevice is null)
-                                    item.selectedInspectDevice = defaultDevice;
-                            }
-                        }
-                    }
                 });
             }
             catch (Exception ex)
@@ -398,26 +383,7 @@ namespace IndustrialControlMAUI.ViewModels
             item.PropertyChanged -= HandleItemPropertyChanged;
             item.PropertyChanged += HandleItemPropertyChanged;
 
-            if (string.IsNullOrWhiteSpace(item.inspectStartTime) && !string.IsNullOrWhiteSpace(Detail?.inspectStartTime))
-            {
-                item.inspectStartTime = Detail.inspectStartTime;
-            }
-
-            if (string.IsNullOrWhiteSpace(item.inspectEndTime) && !string.IsNullOrWhiteSpace(Detail?.inspectEndTime))
-            {
-                item.inspectEndTime = Detail.inspectEndTime;
-            }
-
-            if (item.actualValue is null && !string.IsNullOrWhiteSpace(Detail?.inspectValue)
-                && decimal.TryParse(Detail.inspectValue, out var inspectValue))
-            {
-                item.actualValue = inspectValue;
-            }
-
-            if (!string.IsNullOrWhiteSpace(item.deviceCode))
-            {
-                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d => d.devCode == item.deviceCode);
-            }
+           
         }
 
         /// <summary>执行 HandleItemPropertyChanged 逻辑。</summary>
@@ -457,16 +423,6 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var param in resp.result)
                     {
                         item.InspectParamOptions.Add(param);
-                    }
-
-                    var targetParamCode = !string.IsNullOrWhiteSpace(item.paramCode)
-                        ? item.paramCode
-                        : Detail?.paramCode;
-
-                    if (!string.IsNullOrWhiteSpace(targetParamCode))
-                    {
-                        item.selectedInspectParam = item.InspectParamOptions
-                            .FirstOrDefault(p => string.Equals(p.paramCode, targetParamCode, StringComparison.OrdinalIgnoreCase));
                     }
                 });
             }
@@ -570,12 +526,11 @@ namespace IndustrialControlMAUI.ViewModels
             try
             {
                 var resp = await _api.CheckQcItemLimitAsync(
-                    row.deviceCode!,
+                    row.devCode!,
                     row.paramCode!,
                     row.id!,
                     row.inspectStartTime,
                     row.inspectEndTime,
-                    row.actualValue,
                     _cts.Token);
 
                 if (resp?.success != true)
@@ -905,21 +860,6 @@ namespace IndustrialControlMAUI.ViewModels
 
             static string? FirstNonEmpty(IEnumerable<string?> values)
                 => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v))?.Trim();
-
-            Detail.devCode = FirstNonEmpty(detailItems.Select(x => x.deviceCode)) ?? Detail.devCode;
-            Detail.paramCode = FirstNonEmpty(detailItems.Select(x => x.paramCode)) ?? Detail.paramCode;
-            Detail.inspectStartTime = FirstNonEmpty(detailItems.Select(x => x.inspectStartTime)) ?? Detail.inspectStartTime;
-            Detail.inspectEndTime = FirstNonEmpty(detailItems.Select(x => x.inspectEndTime)) ?? Detail.inspectEndTime;
-
-            var firstActualValue = detailItems
-                .FirstOrDefault(x => x.actualValue is not null)
-                ?.actualValue;
-
-            if (firstActualValue is not null)
-            {
-                Detail.inspectValue = firstActualValue.Value.ToString(CultureInfo.InvariantCulture);
-            }
-
         }
 
         /// <summary>执行 DownloadAttachment 逻辑。</summary>

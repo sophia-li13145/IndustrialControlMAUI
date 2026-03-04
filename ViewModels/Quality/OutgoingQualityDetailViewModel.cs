@@ -533,12 +533,11 @@ namespace IndustrialControlMAUI.ViewModels
             try
             {
                 var resp = await _api.CheckQcItemLimitAsync(
-                    row.deviceCode!,
+                    row.devCode!,
                     row.paramCode!,
                     row.id!,
                     row.inspectStartTime,
                     row.inspectEndTime,
-                    row.actualValue,
                     _cts.Token);
 
                 if (resp?.success != true)

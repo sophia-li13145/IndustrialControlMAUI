@@ -206,7 +206,6 @@ public class QualityApi : IQualityApi
             string qsOrderItemId,
             string? collectTimeBegin,
             string? collectTimeEnd,
-            decimal? actualValue,
             CancellationToken ct = default)
         {
             var p = new Dictionary<string, string>
@@ -217,8 +216,7 @@ public class QualityApi : IQualityApi
             };
             if (!string.IsNullOrWhiteSpace(collectTimeBegin)) p["collectTimeBegin"] = collectTimeBegin!;
             if (!string.IsNullOrWhiteSpace(collectTimeEnd)) p["collectTimeEnd"] = collectTimeEnd!;
-            if (actualValue is not null) p["actualValue"] = actualValue.Value.ToString("G29", CultureInfo.InvariantCulture);
-
+            
             var url = _autoInspectPath + "?" + BuildQuery(p);
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 

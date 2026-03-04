@@ -48,7 +48,6 @@ namespace IndustrialControlMAUI.Services
             string qsOrderItemId,
             string? collectTimeBegin,
             string? collectTimeEnd,
-            decimal? actualValue,
             CancellationToken ct = default);
         Task<PageResponeResult<InspectionDetailRecord>?> GetInspectionDetailPageAsync(
             string deviceCode,
