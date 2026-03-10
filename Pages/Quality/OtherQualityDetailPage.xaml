@@ -109,11 +109,18 @@
                         <Label Grid.Row="0" Grid.Column="3" Text="{Binding Detail.qualityTypeName}" Style="{StaticResource FieldValue}" />
 
                         <!-- 第二行 -->
-                        <Label Grid.Row="1" Grid.Column="0" Text="检查对象：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.processName}" Style="{StaticResource FieldValue}" />
-
+                        <Label Grid.Row="1" Grid.Column="0"  Style="{StaticResource FieldLabel}" >
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
+                                    <Span Text=" 检查对象: " />
+                            </FormattedString>
+                        </Label.FormattedText>
+                        </Label>
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Detail.inspectionObject}" IsEnabled="{Binding IsEditing}" />
+                        
                         <Label Grid.Row="1" Grid.Column="2" Text="数据来源：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.orderNumber}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.dataSource}" Style="{StaticResource FieldValue}" />
 
                         <!-- 第三行 -->
                         <Label Grid.Row="2" Grid.Column="0" Text="质检方案：" Style="{StaticResource FieldLabel}" />
@@ -350,14 +357,14 @@
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="1"
                                     ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectDeviceList}"
-                                    ItemDisplayBinding="{Binding Name}"
+                                    ItemDisplayBinding="{Binding name}"
                                     SelectedItem="{Binding selectedInspectDevice, Mode=TwoWay}"
                                     IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
                                             <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="3"
                                     ItemsSource="{Binding InspectParamOptions}"
-                                    ItemDisplayBinding="{Binding Name}"
+                                    ItemDisplayBinding="{Binding name}"
                                     SelectedItem="{Binding selectedInspectParam, Mode=TwoWay}"
                                     IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
                                         </Grid>
@@ -399,9 +406,26 @@
                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
                                             <HorizontalStackLayout Grid.Column="2" Spacing="8">
-                                                <Button Text="自动检验" BackgroundColor="#22C55E" TextColor="White" CornerRadius="6" Padding="10,6"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AutoInspectCommand}"
-                                        CommandParameter="{Binding .}" IsEnabled="{Binding IsAutoInspectEnabled}" />
+                                                <Button
+                                                    Text="自动检验"
+                                                    BackgroundColor="#22C55E"
+                                                    TextColor="White"
+                                                    CornerRadius="6"
+                                                    Padding="10,6"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AutoInspectCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    IsEnabled="{Binding IsAutoInspectEnabled}">     
+
+                                                    <Button.Triggers>
+                                                        <Trigger TargetType="Button"
+                                                                 Property="IsEnabled"
+                                                                 Value="False"> 
+                                                            <Setter Property="BackgroundColor" Value="#C0C0C0"/>
+                                                            <Setter Property="TextColor" Value="#666666"/>
+                                                        </Trigger>
+                                                    </Button.Triggers>
+
+                                                </Button>
                                                 <Button Text="查看检验详细数据" BackgroundColor="Transparent" TextColor="#2563EB" Padding="6,6"
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewInspectDetailCommand}"
                                         CommandParameter="{Binding .}" IsEnabled="{Binding IsAutoInspectEnabled}" />

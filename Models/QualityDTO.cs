@@ -93,26 +93,35 @@ public class DictQuality
 
 public class QualityDetailDto : ObservableObject
 {
-    public string? id { get; set; }
+    public decimal? arrivalQty { get; set; }
+    public string id { get; set; } = "";
+    public string inspectRemark { get; set; } = "";
+    public string inspectResult { get; set; } = "";
+    public string inspectTime { get; set; } = "";          // "yyyy-MM-dd HH:mm:ss"
+    public string inspecter { get; set; } = "";
+    public decimal? inspectionLossQty { get; set; }
+    public string dataSource { get; set; } = "";
+    
+    public string inspectionObject { get; set; } = "";
+    public string inspectionSchemeName { get; set; } = "";
+    public string inspectionSchemeTypeName { get; set; } = "";
+    public string orderNumber { get; set; } = "";
+    public string processCode { get; set; } = "";
+    public string processName { get; set; } = "";
+    public string qualityType { get; set; } = "";
+    public string qualityTypeName { get; set; } = "";
+    public string retainedSampleNumber { get; set; } = "";
+    public decimal? retainedSampleQty { get; set; }
+    public string supplierName { get; set; } = "";
     public string? qualityNo { get; set; }
-    public string? qualityType { get; set; }
-    public string? qualityTypeName { get; set; }
-    public string? processCode { get; set; }
-    public string? processName { get; set; }
-    public string? orderNumber { get; set; }
-    public string? supplierName { get; set; }
     public string? inspectStatus { get; set; }     // 0/1/2/3
-    public string? inspectResult { get; set; }     // 合格/不合格
-    public string? inspectRemark { get; set; }
 
-    public string? inspectionSchemeName { get; set; }
-
-    public string? inspectTime { get; set; }
     public string? createdTime { get; set; }
     public string? modifiedTime { get; set; }
+    public string? creator { get; set; }
+    public string? modifier { get; set; }
     public string? factoryName { get; set; }
     public string? factoryCode { get; set; }
-    public string? inspecter { get; set; }         // 检验人
 
     // === 参与计算的字段（带通知 + 触发重算） ===
     private decimal? _totalQualified;
@@ -258,17 +267,29 @@ public partial class QualityItem : ObservableObject
     public string? lowerLimit { get; set; }
     public string? badCause { get; set; }
     public string? defect { get; set; }
+
     private string? _inspectResult;
     public string? inspectResult
     {
         get => _inspectResult;
         set => SetProperty(ref _inspectResult, value);
     }
+
     public string? devCode { get; set; }
     public string? devName { get; set; }
     public string? paramCode { get; set; }
     public string? paramName { get; set; }
-    public string? inspectValue { get; set; }
+
+    private string? _inspectValue;
+    public string? inspectValue
+    {
+        get => _inspectValue;
+        set
+        {
+            if (SetProperty(ref _inspectValue, value))
+                OnPropertyChanged(nameof(IsAutoInspectEnabled));
+        }
+    }
 
     private string? _inspectStartTime;
     public string? inspectStartTime
@@ -291,8 +312,6 @@ public partial class QualityItem : ObservableObject
                 OnPropertyChanged(nameof(IsAutoInspectEnabled));
         }
     }
-
-
 
     private InspectDeviceOption? _selectedInspectDevice;
     [JsonIgnore]
@@ -329,7 +348,6 @@ public partial class QualityItem : ObservableObject
     [JsonIgnore]
     public ObservableCollection<InspectParamOption> InspectParamOptions { get; set; } = new();
 
-
     private bool _isEditing = true;
     [JsonIgnore]
     public bool IsEditing
@@ -348,17 +366,12 @@ public partial class QualityItem : ObservableObject
         && selectedInspectDevice is not null
         && selectedInspectParam is not null
         && !string.IsNullOrWhiteSpace(inspectStartTime)
-        && !string.IsNullOrWhiteSpace(inspectEndTime)
-        && inspectValue is not null;
+        && !string.IsNullOrWhiteSpace(inspectEndTime);
 
-
-    // 已选缺陷（用于标签显示与保存）
     public ObservableCollection<DefectChip> SelectedDefects { get; set; } = new();
 
-    // 便捷：把缺陷名称拼成逗号串，保存时可回写给 defect 字段
     public string SelectedDefectNames => string.Join(",", SelectedDefects.Select(x => x.Name));
 
-    // === 自动计算部分 ===
     private decimal? _sampleQty;
     public decimal? sampleQty
     {
@@ -388,7 +401,6 @@ public partial class QualityItem : ObservableObject
         set => SetProperty(ref _badRate, value);
     }
 
-    // 计算不良率 = 不良数 / 抽样数 * 100%
     private void RecalcBadRate()
     {
         var s = sampleQty ?? 0m;

@@ -7,7 +7,7 @@ public partial class QualitySearchPage : ContentPage
 {
     private readonly QualitySearchViewModel _vm;
 
-    /// <summary>执行 QualitySearchPage 初始化逻辑。</summary>
+    /// <summary>执行 QualitySearchPage 初始化逻辑。</summary>`
     public QualitySearchPage(QualitySearchViewModel vm)
     {
         InitializeComponent();
@@ -20,7 +20,7 @@ public partial class QualitySearchPage : ContentPage
     {
         base.OnAppearing();
 
-        if (BindingContext is ProcessQualitySearchViewModel vm)
+        if (BindingContext is QualitySearchViewModel vm)
         {
             // 从详情返回后自动刷新
             if (!vm.IsBusy)
@@ -53,7 +53,7 @@ public partial class QualitySearchPage : ContentPage
         QualityNoEntry.Text = result.Trim();
 
         // 同步 ViewModel
-        if (BindingContext is ProcessQualitySearchViewModel vm)
+        if (BindingContext is QualitySearchViewModel vm)
         {
             vm.Keyword = result.Trim();
 

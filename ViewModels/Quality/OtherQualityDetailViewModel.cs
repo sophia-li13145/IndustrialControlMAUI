@@ -282,8 +282,14 @@ namespace IndustrialControlMAUI.ViewModels
                     return;
                 }
 
-                Detail = resp.result;
+                var dto = resp.result;
 
+                if (string.IsNullOrWhiteSpace(dto.inspectTime))
+                {
+                    dto.inspectTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+                Detail = dto;
                 // —— 只在这里手动触发一次计算，保证初值显示一致 ——
                 Detail?.Recalc();
                 IsEditing = !IsCompletedStatus(Detail?.inspectStatus);
@@ -529,7 +535,7 @@ namespace IndustrialControlMAUI.ViewModels
             if (row is null) return;
             if (!row.IsAutoInspectEnabled)
             {
-                await ShowTip("请先选择设备、参数、开始/结束时间并填写实际值。");
+                await ShowTip("请先选择设备、参数、开始/结束时间。");
                 return;
             }
 

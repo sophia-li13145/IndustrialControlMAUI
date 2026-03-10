@@ -9,23 +9,24 @@ public partial class InspectionDataPopup : Popup
 {
     private readonly InspectionDataPopupViewModel _vm;
 
-    /// <summary>执行 InspectionDataPopup 初始化逻辑。</summary>
-    public InspectionDataPopup(IQualityApi api, InspectionDetailQuery query)
+    public InspectionDataPopup(InspectionDataPopupViewModel vm)
     {
         InitializeComponent();
-        _vm = new InspectionDataPopupViewModel(api, query);
+        _vm = vm;
         BindingContext = _vm;
-        Opened += async (_, _) => await _vm.LoadAsync();
     }
 
-    /// <summary>执行 ShowAsync 逻辑。</summary>
-    public static Task ShowAsync(IQualityApi api, InspectionDetailQuery query)
+    public static async Task ShowAsync(IQualityApi api, InspectionDetailQuery query)
     {
-        var popup = new InspectionDataPopup(api, query);
-        Application.Current?.MainPage?.ShowPopup(popup);
-        return Task.CompletedTask;
+        var vm = new InspectionDataPopupViewModel(api, query);
+        var popup = new InspectionDataPopup(vm);
+
+        await vm.LoadAsync();
+        await Shell.Current.CurrentPage.ShowPopupAsync(popup);
     }
 
-    /// <summary>执行 OnClose 逻辑。</summary>
-    private void OnClose(object? sender, EventArgs e) => Close();
+    private void OnCloseClicked(object? sender, EventArgs e)
+    {
+        Close();
+    }
 }

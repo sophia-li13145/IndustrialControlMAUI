@@ -4,84 +4,124 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    Size="900,600">
+    xmlns:vm="clr-namespace:IndustrialControlMAUI.ViewModels"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+    x:DataType="vm:InspectionDataPopupViewModel"
+    CanBeDismissedByTappingOutsideOfPopup="False">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="16" BackgroundColor="White">
-        <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto">
-            <Label Text="检验详细数据" FontAttributes="Bold" FontSize="16" VerticalTextAlignment="Center" />
-            <Button Grid.Column="1"
-                    Text="×"
-                    FontSize="16"
-                    Padding="4"
-                    BackgroundColor="Transparent"
-                    TextColor="#6B7280"
-                    Clicked="OnClose"/>
-        </Grid>
+    <Border
+        WidthRequest="760"
+        HeightRequest="620"
+        Padding="12"
+        BackgroundColor="White"
+        Stroke="#D9E2F1"
+        StrokeThickness="1"
+        StrokeShape="RoundRectangle 12">
 
-        <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" RowSpacing="12" Margin="0,12,0,0">
-            <CollectionView Grid.Row="0"
+        <Grid RowDefinitions="Auto,280,Auto,*,Auto"
+              RowSpacing="10">
+
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <Label Text="检验详细数据"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#1F2937"
+                       VerticalOptions="Center" />
+
+                <Button Grid.Column="1"
+                        Text="关闭"
+                        Clicked="OnCloseClicked"
+                        BackgroundColor="#E5E7EB"
+                        TextColor="#111827"
+                        CornerRadius="8"
+                        Padding="16,8"
+                        FontSize="14"/>
+            </Grid>
+
+            <Border Grid.Row="1"
+                    Padding="8"
+                    BackgroundColor="#FAFAFA"
+                    Stroke="#E5E7EB"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10">
+
+                <Grid>
+                    <lvc:CartesianChart
+                        Series="{Binding Series}"
+                        XAxes="{Binding XAxes}"
+                        YAxes="{Binding YAxes}" />
+
+                    <Label Text="暂无图表数据"
+                           IsVisible="{Binding NoChartDataVisible}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="#9CA3AF"
+                           FontSize="15"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2"
+                  ColumnDefinitions="60,2*,*,2*"
+                  Padding="8,8"
+                  BackgroundColor="#F3F4F6">
+                <Label Text="序号" FontAttributes="Bold" TextColor="#111827" />
+                <Label Grid.Column="1" Text="采集参数" FontAttributes="Bold" TextColor="#111827" />
+                <Label Grid.Column="2" Text="数值" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="#111827" />
+                <Label Grid.Column="3" Text="采集时间" FontAttributes="Bold" HorizontalTextAlignment="End" TextColor="#111827" />
+            </Grid>
+
+            <CollectionView Grid.Row="3"
                             ItemsSource="{Binding Rows}"
                             SelectionMode="None"
-                            HeightRequest="180">
-                <CollectionView.Header>
-                    <Grid ColumnDefinitions="60,*,120,160"
-                          Padding="10,8" BackgroundColor="#F5F7FA">
-                        <Label Grid.Column="0" Text="序号"/>
-                        <Label Grid.Column="1" Text="采集参数"/>
-                        <Label Grid.Column="2" Text="数值"/>
-                        <Label Grid.Column="3" Text="采集时间"/>
-                    </Grid>
-                </CollectionView.Header>
-                <CollectionView.EmptyView>
-                    <Grid Padding="24">
-                        <Label Text="暂无数据" TextColor="#9CA3AF" HorizontalOptions="Center" />
-                    </Grid>
-                </CollectionView.EmptyView>
+                            VerticalOptions="FillAndExpand">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="60,*,120,160" Padding="10,10">
-                            <Label Grid.Column="0" Text="{Binding RowNo}"/>
-                            <Label Grid.Column="1" Text="{Binding ParamName}"/>
-                            <Label Grid.Column="2" Text="{Binding Value}"/>
-                            <Label Grid.Column="3" Text="{Binding CollectTime}"/>
+                    <DataTemplate x:DataType="vm:InspectionDataRow">
+                        <Grid ColumnDefinitions="60,2*,*,2*"
+                              Padding="8,10">
+                            <Label Text="{Binding RowNo}" TextColor="#374151" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding ParamName}"
+                                   TextColor="#374151"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="2"
+                                   Text="{Binding Value}"
+                                   TextColor="#374151"
+                                   HorizontalTextAlignment="Center"/>
+                            <Label Grid.Column="3"
+                                   Text="{Binding CollectTime}"
+                                   TextColor="#374151"
+                                   HorizontalTextAlignment="End"
+                                   LineBreakMode="TailTruncation"/>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Frame Grid.Row="1"
-                   BorderColor="#E5E7EB"
-                   BackgroundColor="White"
-                   CornerRadius="6"
-                   HasShadow="False"
-                   Padding="12">
-                <Grid RowDefinitions="Auto,*">
-                    <Label Text="数据趋势" FontAttributes="Bold" />
-                    <Grid Grid.Row="1">
-                        <Frame BorderColor="#D1D5DB"
-                               CornerRadius="4"
-                               HasShadow="False"
-                               Padding="0">
-                            <Grid>
-                                <Label Text="暂无趋势图" TextColor="#9CA3AF" HorizontalOptions="Center" VerticalOptions="Center"/>
-                            </Grid>
-                        </Frame>
-                        <HorizontalStackLayout VerticalOptions="End" HorizontalOptions="Center" Spacing="6" Margin="0,6,0,0">
-                            <Label Text="•" TextColor="#6366F1" FontSize="14" />
-                            <Label Text="数值" TextColor="#6B7280" />
-                            <Label Text="采集时间" TextColor="#6B7280" Margin="20,0,0,0"/>
-                        </HorizontalStackLayout>
-                    </Grid>
-                </Grid>
-            </Frame>
+            <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Button Text="上一页"
+                        Command="{Binding PrevCommand}"
+                        BackgroundColor="#E5E7EB"
+                        TextColor="#111827"
+                        CornerRadius="8"
+                        Padding="18,8"
+                        FontSize="14"/>
 
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto,8,Auto" Margin="0,12,0,0">
-                <Label Text="{Binding PageInfo}" VerticalTextAlignment="Center" />
-                <Button Grid.Column="1" Text="上一页" Command="{Binding PrevCommand}" />
-                <Button Grid.Column="3" Text="下一页" Command="{Binding NextCommand}" />
+                <Label Grid.Column="1"
+                       Text="{Binding PageInfo}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="#4B5563"
+                       FontSize="14"/>
+
+                <Button Grid.Column="2"
+                        Text="下一页"
+                        Command="{Binding NextCommand}"
+                        BackgroundColor="#3B82F6"
+                        TextColor="White"
+                        CornerRadius="8"
+                        Padding="18,8"
+                        FontSize="14"/>
             </Grid>
         </Grid>
-
-        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-    </Grid>
+    </Border>
 </toolkit:Popup>

@@ -56,7 +56,8 @@ namespace IndustrialControlMAUI.ViewModels
                 // 如果你需要将字典转为下拉选项绑定到 Picker：
                 StatusOptions.Clear();
                 foreach (var d in InspectStatusDict)
-                    StatusOptions.Add(new StatusOption { Text = d.dictItemName ?? "", Value = d.dictItemValue });
+                    if (d.dictItemName != "新建")
+                        StatusOptions.Add(new StatusOption { Text = d.dictItemName ?? "", Value = d.dictItemValue });
                 _dictsLoaded = true;
             }
             catch (Exception ex)

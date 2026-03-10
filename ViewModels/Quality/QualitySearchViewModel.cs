@@ -168,7 +168,8 @@ namespace IndustrialControlMAUI.ViewModels
                     QualityTypeText = t.qualityTypeText,
                     OrderNumber = t.orderNumber,
                     ProcessName = t.processName,
-                    CreatedTime = ParseDate(t.createdTime)
+                    CreatedTime = ParseDate(t.createdTime),
+                    InspectTime = ParseDate(t.inspectTime)
                 });
             }
 
@@ -199,7 +200,16 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task GoDetailAsync(QualityOrderItem? item)
         {
             if (item is null) return;
-            await Shell.Current.GoToAsync(nameof(QualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            if(item.QualityType == "IQC")
+            await Shell.Current.GoToAsync(nameof(IncomingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            else if (item.QualityType == "IPQC")
+            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            else if (item.QualityType == "FQC")
+            await Shell.Current.GoToAsync(nameof(FinishedQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            else if (item.QualityType == "OQC")
+            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            else 
+            await Shell.Current.GoToAsync(nameof(OtherQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
         }
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）

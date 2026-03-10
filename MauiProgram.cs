@@ -4,8 +4,10 @@ using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.Tools;
 using IndustrialControlMAUI.ViewModels;
+using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using ZXing.Net.Maui;
 using ZXing.Net.Maui.Controls;
 
@@ -20,6 +22,8 @@ namespace IndustrialControlMAUI
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
+                .UseSkiaSharp()
+                .UseLiveCharts()
                 .UseBarcodeReader()
                 .ConfigureFonts(fonts =>
                 {
@@ -66,7 +70,6 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.ProcessTaskSearchViewModel>();
             builder.Services.AddTransient<ViewModels.WarehouseLocationPickerViewModel>();
             builder.Services.AddTransient<ViewModels.WorkProcessTaskDetailViewModel>();
-            builder.Services.AddTransient<ViewModels.QualityDetailViewModel>();
             builder.Services.AddTransient<ViewModels.QualitySearchViewModel>();
             builder.Services.AddTransient<ViewModels.IncomingQualityDetailViewModel>();
             builder.Services.AddTransient<ViewModels.IncomingQualitySearchViewModel>();
@@ -122,7 +125,6 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.ProcessTaskSearchPage>();
             builder.Services.AddTransient<Pages.WorkProcessTaskDetailPage>();
             builder.Services.AddTransient<Pages.QualitySearchPage>();
-            builder.Services.AddTransient<Pages.QualityDetailPage>();
             builder.Services.AddTransient<Pages.IncomingQualitySearchPage>();
             builder.Services.AddTransient<Pages.IncomingQualityDetailPage>();
             builder.Services.AddTransient<Pages.ProcessQualitySearchPage>();
