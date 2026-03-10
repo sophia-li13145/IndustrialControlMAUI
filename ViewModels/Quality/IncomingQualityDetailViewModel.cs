@@ -70,6 +70,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 导航入参
         private string? _id;
+        private bool _forceReadOnly;
         public int Index { get; set; }
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
@@ -267,8 +268,13 @@ namespace IndustrialControlMAUI.ViewModels
             if (query.TryGetValue("id", out var v))
             {
                 _id = v?.ToString();
-                _ = LoadAsync();
             }
+
+            _forceReadOnly = query.TryGetValue("readonly", out var ro)
+                && (string.Equals(ro?.ToString(), "1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(ro?.ToString(), "true", StringComparison.OrdinalIgnoreCase));
+
+            _ = LoadAsync();
         }
 
         /// <summary>执行 LoadAsync 逻辑。</summary>
@@ -297,7 +303,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                 // —— 只在这里手动触发一次计算，保证初值显示一致 ——
                 Detail?.Recalc();
-                IsEditing = !IsCompletedStatus(Detail?.inspectStatus);
+                IsEditing = !_forceReadOnly && !IsCompletedStatus(Detail?.inspectStatus);
 
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();
