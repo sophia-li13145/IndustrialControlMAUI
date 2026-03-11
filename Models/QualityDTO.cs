@@ -417,6 +417,35 @@ public class InspectDeviceOption
 {
     public string? devCode { get; set; }
     public string? devName { get; set; }
+
+    // 兼容不同接口字段命名（deviceCode/deviceName/code/name）
+    [JsonPropertyName("deviceCode")]
+    public string? DeviceCodeAlias
+    {
+        get => devCode;
+        set => devCode = value;
+    }
+
+    [JsonPropertyName("deviceName")]
+    public string? DeviceNameAlias
+    {
+        get => devName;
+        set => devName = value;
+    }
+
+    [JsonPropertyName("code")]
+    public string? CodeAlias
+    {
+        get => devCode;
+        set => devCode = value;
+    }
+
+    [JsonPropertyName("name")]
+    public string? NameAlias
+    {
+        get => devName;
+        set => devName = value;
+    }
     public string? devModel { get; set; }
     public string? devTypeId { get; set; }
     public string? devTypeCode { get; set; }

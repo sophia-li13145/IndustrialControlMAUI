@@ -144,7 +144,7 @@ namespace IndustrialControlMAUI.ViewModels
             try
             {
                 var resp = await _api.GetInspectDevicesAsync();
-                if (resp?.success != true || resp.result is null)
+                if (!IsApiSuccess(resp) || resp!.result is null)
                 {
                     await ShowTip($"加载检验设备失败：{resp?.message ?? "接口返回失败"}");
                     return;
@@ -171,6 +171,13 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 await ShowTip($"加载检验设备失败：{ex.Message}");
             }
+        }
+
+
+        private static bool IsApiSuccess<T>(ApiResp<T>? resp)
+        {
+            if (resp is null) return false;
+            return resp.success || resp.code == 0;
         }
 
         /// <summary>执行 PickStartDateTimeAsync 逻辑。</summary>
@@ -432,7 +439,7 @@ namespace IndustrialControlMAUI.ViewModels
             try
             {
                 var resp = await _api.GetInspectParamsAsync(deviceCode!);
-                if (resp?.success != true || resp.result is null)
+                if (!IsApiSuccess(resp) || resp!.result is null)
                 {
                     await ShowTip($"加载设备参数失败：{resp?.message ?? "接口返回失败"}");
                     return;
@@ -561,7 +568,7 @@ namespace IndustrialControlMAUI.ViewModels
                     row.inspectEndTime,
                     _cts.Token);
 
-                if (resp?.success != true)
+                if (!IsApiSuccess(resp))
                 {
                     await ShowTip($"自动检验失败：{resp?.message ?? "接口返回失败"}");
                     return;
