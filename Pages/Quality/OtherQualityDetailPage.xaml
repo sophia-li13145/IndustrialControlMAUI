@@ -357,14 +357,14 @@
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="1"
                                     ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectDeviceList}"
-                                    ItemDisplayBinding="{Binding name}"
+                                    ItemDisplayBinding="{Binding Name}"
                                     SelectedItem="{Binding selectedInspectDevice, Mode=TwoWay}"
                                     IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
                                             <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="3"
                                     ItemsSource="{Binding InspectParamOptions}"
-                                    ItemDisplayBinding="{Binding name}"
+                                    ItemDisplayBinding="{Binding Name}"
                                     SelectedItem="{Binding selectedInspectParam, Mode=TwoWay}"
                                     IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
                                         </Grid>
