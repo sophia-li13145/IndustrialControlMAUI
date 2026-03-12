@@ -35,6 +35,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private QualityDetailDto? detail;
+        [ObservableProperty] private string dataSourceDisplay = string.Empty;
         [ObservableProperty]
         private bool isInspectorDropdownOpen = false; // 检验员下拉列表框默认关闭
         [ObservableProperty]
@@ -71,6 +72,7 @@ namespace IndustrialControlMAUI.ViewModels
         // 导航入参
         private string? _id;
         private bool _forceReadOnly;
+        private Dictionary<string, string> _dataSourceMap = new(StringComparer.OrdinalIgnoreCase);
         public int Index { get; set; }
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
@@ -166,6 +168,28 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+
+        private async Task EnsureDataSourceDictLoadedAsync()
+        {
+            if (_dataSourceMap.Count > 0) return;
+
+            var dicts = await _api.GetQualityDictsAsync();
+            _dataSourceMap = dicts.DataSources?
+                .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
+                .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .ToDictionary(
+                    k => k.dictItemValue!,
+                    v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
+                    StringComparer.OrdinalIgnoreCase)
+                ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private string ResolveDataSourceName(string? source)
+        {
+            if (string.IsNullOrWhiteSpace(source)) return string.Empty;
+            return _dataSourceMap.TryGetValue(source, out var name) ? name : source;
+        }
 
         private static bool IsApiSuccess<T>(ApiResp<T>? resp)
         {
@@ -299,6 +323,9 @@ namespace IndustrialControlMAUI.ViewModels
                 // —— 只在这里手动触发一次计算，保证初值显示一致 ——
                 Detail?.Recalc();
                 IsEditing = !_forceReadOnly && !IsCompletedStatus(Detail?.inspectStatus);
+
+                await EnsureDataSourceDictLoadedAsync();
+                DataSourceDisplay = ResolveDataSourceName(Detail?.dataSource);
 
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();

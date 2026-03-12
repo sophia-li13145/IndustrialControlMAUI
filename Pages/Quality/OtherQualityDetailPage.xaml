@@ -120,7 +120,7 @@
                         <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Detail.inspectionObject}" IsEnabled="{Binding IsEditing}" />
                         
                         <Label Grid.Row="1" Grid.Column="2" Text="数据来源：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding Detail.dataSource}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="1" Grid.Column="3" Text="{Binding DataSourceDisplay}" Style="{StaticResource FieldValue}" />
 
                         <!-- 第三行 -->
                         <Label Grid.Row="2" Grid.Column="0" Text="质检方案：" Style="{StaticResource FieldLabel}" />
