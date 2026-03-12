@@ -88,6 +88,7 @@ public class DictQuality
 {
     public List<DictItem> InspectStatus { get; set; } = new();
     public List<DictItem> QualityTypes { get; set; } = new();
+    public List<DictItem> DataSources { get; set; } = new();
 }
 
 
