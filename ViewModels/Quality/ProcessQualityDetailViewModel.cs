@@ -312,10 +312,19 @@ namespace IndustrialControlMAUI.ViewModels
                     int i = 1;
                     foreach (var it in Detail.orderQualityDetailList ?? new())
                     {
-                        it.index = i++; // 1,2,3...
-                        InitializeItem(it);
+                        it.index = i++;
                         Items.Add(it);
                     }
+
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        await Task.Delay(50);
+
+                        foreach (var it in Items)
+                        {
+                            InitializeItem(it);
+                        }
+                    });
                 });
                 Color[] palette =
             {
@@ -404,10 +413,21 @@ namespace IndustrialControlMAUI.ViewModels
 
             if (!string.IsNullOrWhiteSpace(item.devCode))
             {
-                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
+                item.IsInitializingDevice = true;
+
+                var match = InspectDeviceList.FirstOrDefault(d =>
                     string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
+
+                item.selectedInspectDevice = match;
+
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(150);
+                    item.IsInitializingDevice = false;
+                });
             }
         }
+
 
         /// <summary>执行 HandleItemPropertyChanged 逻辑。</summary>
         private async void HandleItemPropertyChanged(object? sender, PropertyChangedEventArgs e)

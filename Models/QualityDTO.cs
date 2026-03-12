@@ -313,17 +313,29 @@ public partial class QualityItem : ObservableObject
         }
     }
 
+    [JsonIgnore]
+    public bool IsInitializingDevice { get; set; }
+
     private InspectDeviceOption? _selectedInspectDevice;
+
     [JsonIgnore]
     public InspectDeviceOption? selectedInspectDevice
     {
         get => _selectedInspectDevice;
         set
         {
+            if (IsInitializingDevice && value is null && _selectedInspectDevice is not null)
+                return;
+
             if (SetProperty(ref _selectedInspectDevice, value))
             {
-                devCode = value?.devCode;
-                devName = value?.devName;
+                if (value != null)
+                {
+                    devCode = value.devCode;
+                    devName = value.devName;
+                }
+
+                OnPropertyChanged(nameof(selectedInspectDevice));
                 OnPropertyChanged(nameof(IsAutoInspectEnabled));
             }
         }

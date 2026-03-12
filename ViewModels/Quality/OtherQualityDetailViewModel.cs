@@ -27,6 +27,7 @@ namespace IndustrialControlMAUI.ViewModels
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
         private const long MaxFileBytes = 20L * 1024 * 1024;  // 20MB
 
+
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> Attachments { get; } = new();
         /// <summary>执行 new 逻辑。</summary>
@@ -156,14 +157,6 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var device in resp.result)
                     {
                         InspectDeviceList.Add(device);
-                    }
-
-                    foreach (var item in Items)
-                    {
-                        if (string.IsNullOrWhiteSpace(item.devCode)) continue;
-
-                        item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
-                            string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
                     }
                 });
             }
@@ -317,10 +310,19 @@ namespace IndustrialControlMAUI.ViewModels
                     int i = 1;
                     foreach (var it in Detail.orderQualityDetailList ?? new())
                     {
-                        it.index = i++; // 1,2,3...
-                        InitializeItem(it);
+                        it.index = i++;
                         Items.Add(it);
                     }
+
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        await Task.Delay(50);
+
+                        foreach (var it in Items)
+                        {
+                            InitializeItem(it);
+                        }
+                    });
                 });
                 Color[] palette =
             {
@@ -408,8 +410,18 @@ namespace IndustrialControlMAUI.ViewModels
 
             if (!string.IsNullOrWhiteSpace(item.devCode))
             {
-                item.selectedInspectDevice = InspectDeviceList.FirstOrDefault(d =>
+                item.IsInitializingDevice = true;
+
+                var match = InspectDeviceList.FirstOrDefault(d =>
                     string.Equals(d.devCode, item.devCode, StringComparison.OrdinalIgnoreCase));
+
+                item.selectedInspectDevice = match;
+
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(150);
+                    item.IsInitializingDevice = false;
+                });
             }
         }
 
