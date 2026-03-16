@@ -289,6 +289,12 @@
 		<MauiXaml Update="Pages\ProductionOperations\ProcessTaskSearchPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Pages\ProductionOperations\DeviceScanBindPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\ProductionOperations\ManualDeviceBindPopup.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Pages\ProductionOperations\WorkOrderSearchPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
@@ -391,4 +397,3 @@
 	</ItemGroup>
 
 </Project>
-

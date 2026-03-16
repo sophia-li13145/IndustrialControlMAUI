@@ -42,6 +42,7 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<List<DevicesInfo>>> GetDeviceOptionsAsync(
         string factoryCode,
         string processCode,
+        string? line = null,
         CancellationToken ct = default);
         Task<SimpleOk> UpdateWorkProcessTaskAsync(
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default);
@@ -86,6 +87,17 @@ namespace IndustrialControlMAUI.Services
             decimal? qty = null,
             string? memo = null,
             string? rawMaterialProductionDate = null,
+            CancellationToken ct = default);
+
+        Task<ApiResp<List<WorkOrderDeviceBindItem>>> GetWorkOrderDeviceListAsync(
+            string factoryCode,
+            string processCode,
+            string schemeNo,
+            string workOrderNo,
+            CancellationToken ct = default);
+
+        Task<ApiResp<bool>> BindWorkOrderDeviceAsync(
+            BindWorkOrderDeviceReq req,
             CancellationToken ct = default);
 
         Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default);

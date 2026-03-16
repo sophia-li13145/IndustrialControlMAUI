@@ -431,6 +431,31 @@ public class WorkProcessTaskDeviceUpdateReq
     public string? schemeNo { get; set; }
 }
 
+public class BindWorkOrderDeviceReq
+{
+    public string deviceCode { get; set; } = "";
+    public string factoryCode { get; set; } = "";
+    public string? platPlanNo { get; set; }
+    public string processCode { get; set; } = "";
+    public string schemeNo { get; set; } = "";
+    public string workOrderNo { get; set; } = "";
+}
+
+public class WorkOrderDeviceBindItem
+{
+    public string? id { get; set; }
+    public string? deviceCode { get; set; }
+    public string? deviceName { get; set; }
+    public string? operateTime { get; set; }
+    public string? startTime { get; set; }
+    public string? endTime { get; set; }
+    public string? factoryCode { get; set; }
+    public string? processCode { get; set; }
+    public string? schemeNo { get; set; }
+    public string? workOrderNo { get; set; }
+    public string? platPlanNo { get; set; }
+}
+
 public class AddWorkProcessTaskMaterialInputReq
 {
     public string? materialClassName { get; set; }
