@@ -17,6 +17,8 @@ namespace IndustrialControlMAUI.Pages
             => await Shell.Current.GoToAsync(nameof(InboundProductionPage));
         private async void OnInProcess(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(ProcessTaskSearchPage));             //工序任务执行
+        private async void OnDeviceScanBind(object? s, TappedEventArgs e)
+            => await Shell.Current.GoToAsync($"{nameof(ProcessTaskSearchPage)}?entryMode=deviceBinding");
         private async void OnWorkOrder(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(WorkOrderSearchPage));
         

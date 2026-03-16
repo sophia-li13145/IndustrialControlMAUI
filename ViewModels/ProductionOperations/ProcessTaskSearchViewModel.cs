@@ -37,6 +37,7 @@ namespace IndustrialControlMAUI.ViewModels
         readonly Dictionary<string, string> _statusMap = new();      // 状态：值→中文
         readonly Dictionary<string, string> _orderstatusMap = new();    // 工序：code→name
         private bool _dictsLoaded = false;
+        private bool _navigateToDeviceBind;
 
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<ProcessTask> Orders { get; } = new();
@@ -263,7 +264,21 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task GoExecuteAsync(ProcessTask? item)
         {
             if (item is null) return;
+            if (_navigateToDeviceBind)
+            {
+                await Shell.Current.GoToAsync(nameof(DeviceScanBindPage), new Dictionary<string, object>
+                {
+                    ["task"] = item
+                });
+                return;
+            }
+
             await Shell.Current.GoToAsync(nameof(WorkProcessTaskDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+        }
+
+        public void SetEntryMode(string? mode)
+        {
+            _navigateToDeviceBind = string.Equals(mode, "deviceBinding", StringComparison.OrdinalIgnoreCase);
         }
     }
 

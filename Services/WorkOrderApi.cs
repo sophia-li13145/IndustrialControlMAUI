@@ -37,6 +37,8 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
+        private readonly string _workOrderDeviceListEndpoint;
+        private readonly string _bindWorkOrderDeviceEndpoint;
         private readonly string _workOrderDomainEndpoint;
         private readonly string _inventoryPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
@@ -103,6 +105,10 @@ public class WorkOrderApi : IWorkOrderApi
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskOutput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput"), servicePath);
             _editWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.editWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"), servicePath);
+            _workOrderDeviceListEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.getWorkOrderDeviceList", "/pda/pmsWorkOrder/getWorkOrderDeviceList"), servicePath);
+            _bindWorkOrderDeviceEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.bindWorkOrderDevice", "/pda/pmsWorkOrder/bindWorkOrderDevice"), servicePath);
             _workOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
         configLoader.GetApiPath("workOrder.domain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
         servicePath);
@@ -318,13 +324,15 @@ public class WorkOrderApi : IWorkOrderApi
         public async Task<ApiResp<List<DevicesInfo>>> GetDeviceOptionsAsync(
             string factoryCode,
             string processCode,
+            string? line = null,
             CancellationToken ct = default)
         {
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deviceEndpoint);
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["factoryCode"] = factoryCode,
-                ["processCode"] = processCode
+                ["processCode"] = processCode,
+                ["line"] = line
             });
 
             var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
@@ -680,6 +688,58 @@ public class WorkOrderApi : IWorkOrderApi
             var data = await JsonSerializer.DeserializeAsync<ApiResp<bool>>(stream, _json, ct);
 
             return data ?? new ApiResp<bool> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<List<WorkOrderDeviceBindItem>>> GetWorkOrderDeviceListAsync(
+            string factoryCode,
+            string processCode,
+            string schemeNo,
+            string workOrderNo,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _workOrderDeviceListEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["factoryCode"] = factoryCode,
+                ["processCode"] = processCode,
+                ["schemeNo"] = schemeNo,
+                ["workOrderNo"] = workOrderNo
+            });
+            var url = string.IsNullOrWhiteSpace(query) ? full : $"{full}?{query}";
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<List<WorkOrderDeviceBindItem>>
+                {
+                    success = false,
+                    message = $"HTTP {(int)res.StatusCode}",
+                    result = new List<WorkOrderDeviceBindItem>()
+                };
+
+            return JsonSerializer.Deserialize<ApiResp<List<WorkOrderDeviceBindItem>>>(json, _json)
+                   ?? new ApiResp<List<WorkOrderDeviceBindItem>> { success = false, message = "反序列化失败", result = new List<WorkOrderDeviceBindItem>() };
+        }
+
+        public async Task<ApiResp<bool>> BindWorkOrderDeviceAsync(
+            BindWorkOrderDeviceReq req,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _bindWorkOrderDeviceEndpoint);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = JsonContent.Create(req)
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                   ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
         }
 
         public async Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default)
