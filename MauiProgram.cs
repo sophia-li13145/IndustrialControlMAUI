@@ -68,6 +68,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.WorkOrderSearchViewModel>();
             builder.Services.AddTransient<ViewModels.MoldOutboundExecuteViewModel>();
             builder.Services.AddTransient<ViewModels.ProcessTaskSearchViewModel>();
+            builder.Services.AddTransient<ViewModels.DeviceScanBindViewModel>();
             builder.Services.AddTransient<ViewModels.WarehouseLocationPickerViewModel>();
             builder.Services.AddTransient<ViewModels.WorkProcessTaskDetailViewModel>();
             builder.Services.AddTransient<ViewModels.QualitySearchViewModel>();
@@ -123,6 +124,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.WorkOrderSearchPage>();
             builder.Services.AddTransient<Pages.MoldOutboundExecutePage>();
             builder.Services.AddTransient<Pages.ProcessTaskSearchPage>();
+            builder.Services.AddTransient<Pages.DeviceScanBindPage>();
             builder.Services.AddTransient<Pages.WorkProcessTaskDetailPage>();
             builder.Services.AddTransient<Pages.QualitySearchPage>();
             builder.Services.AddTransient<Pages.IncomingQualitySearchPage>();
@@ -247,4 +249,3 @@ namespace IndustrialControlMAUI
         }
     }
 }
-

@@ -253,6 +253,25 @@
                     </Frame.GestureRecognizers>
                 </Frame>
 
+                <!-- 设备扫描绑定 -->
+                <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                     BackgroundColor="#4CAF50"
+                     StrokeShape="RoundRectangle 32">
+                            <Image Source="action_key.svg"
+                        HeightRequest="28" WidthRequest="28"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="设备扫描绑定" FontSize="12" Margin="0,6,0,0"
+                    HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDeviceScanBind"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
                
 
             </Grid>

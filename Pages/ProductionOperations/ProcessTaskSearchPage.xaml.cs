@@ -3,9 +3,10 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class ProcessTaskSearchPage : ContentPage
+public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
 {
     private readonly ProcessTaskSearchViewModel _vm;
+    private string? _entryMode;
 
     /// <summary>执行 ProcessTaskSearchPage 初始化逻辑。</summary>
     public ProcessTaskSearchPage(ProcessTaskSearchViewModel vm)
@@ -19,7 +20,19 @@ public partial class ProcessTaskSearchPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        _vm.SetEntryMode(_entryMode);
         OrderEntry.Focus();
+    }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        _entryMode = null;
+        if (query.TryGetValue("entryMode", out var mode))
+        {
+            _entryMode = mode?.ToString();
+        }
+
+        _vm.SetEntryMode(_entryMode);
     }
 
     /// <summary>执行 OnDisappearing 逻辑。</summary>

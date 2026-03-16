@@ -60,7 +60,9 @@
 
       "deleteWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput",
       "deleteWorkProcessTaskOutput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput",
-      "editWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"
+      "editWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput",
+      "getWorkOrderDeviceList": "/pda/pmsWorkOrder/getWorkOrderDeviceList",
+      "bindWorkOrderDevice": "/pda/pmsWorkOrder/bindWorkOrderDevice"
     },
     "mold": {
       "inStockScanQuery": "/pda/mold/inStockScanQuery",
