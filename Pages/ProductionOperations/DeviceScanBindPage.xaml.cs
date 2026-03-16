@@ -14,6 +14,9 @@ public partial class DeviceScanBindPage : ContentPage
 
     private async void OnScanDeviceClicked(object sender, EventArgs e)
     {
+        if (BindingContext is not DeviceScanBindViewModel vm)
+            return;
+
         var tcs = new TaskCompletionSource<string>();
         await Navigation.PushAsync(new QrScanPage(tcs));
 
@@ -22,6 +25,15 @@ public partial class DeviceScanBindPage : ContentPage
             return;
 
         DeviceCodeEntry.Text = result.Trim();
+        await vm.BindByInputCodeAsync(result.Trim());
+    }
+
+    private async void OnDeviceCodeCompleted(object sender, EventArgs e)
+    {
+        if (BindingContext is not DeviceScanBindViewModel vm)
+            return;
+
+        await vm.BindByInputCodeAsync(DeviceCodeEntry.Text?.Trim());
     }
 
     private async void OnManualBindClicked(object sender, EventArgs e)

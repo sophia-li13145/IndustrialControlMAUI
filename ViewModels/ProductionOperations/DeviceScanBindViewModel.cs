@@ -9,6 +9,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkOrderApi _api;
+    private readonly List<DevicesInfo> _deviceCache = new();
 
     [ObservableProperty] private string workOrderNo = string.Empty;
     [ObservableProperty] private string workOrderName = string.Empty;
@@ -70,7 +71,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     private async Task LoadBoundDevicesAsync()
     {
-        if (IsBusy || !CanCallApi()) return;
+        if (!CanCallApi()) return;
 
         try
         {
@@ -96,13 +97,32 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     [RelayCommand]
     private async Task BindScanDeviceAsync()
     {
-        if (string.IsNullOrWhiteSpace(DeviceCodeInput))
+        await BindByInputCodeAsync(DeviceCodeInput);
+    }
+
+    public async Task BindByInputCodeAsync(string? code)
+    {
+        var inputCode = code?.Trim();
+        if (string.IsNullOrWhiteSpace(inputCode))
         {
             await ShowTip("请先输入或扫码设备编号");
             return;
         }
 
-        await BindDeviceAsync(DeviceCodeInput.Trim());
+        var matched = _deviceCache.FirstOrDefault(x =>
+            string.Equals(x.deviceCode?.Trim(), inputCode, StringComparison.OrdinalIgnoreCase));
+
+        if (matched is null || string.IsNullOrWhiteSpace(matched.deviceCode))
+        {
+            await ShowTip("此设备不在系统中");
+            return;
+        }
+
+        DeviceCodeInput = matched.deviceCode;
+        SelectedDeviceOption = DeviceOptions.FirstOrDefault(x =>
+            string.Equals(x.Value, matched.deviceCode, StringComparison.OrdinalIgnoreCase));
+
+        await BindDeviceAsync(matched.deviceCode);
     }
 
     public async Task BindManualDeviceByCodeAsync(string? code)
@@ -119,6 +139,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private async Task BindDeviceAsync(string deviceCode)
     {
         if (IsBusy || !CanCallApi()) return;
+        var bindOk = false;
 
         try
         {
@@ -136,9 +157,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             var resp = await _api.BindWorkOrderDeviceAsync(req);
             if (resp?.success == true && resp.result)
             {
+                bindOk = true;
                 await ShowTip("绑定成功");
                 DeviceCodeInput = string.Empty;
-                await LoadBoundDevicesAsync();
             }
             else
             {
@@ -153,10 +174,14 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         {
             IsBusy = false;
         }
+
+        if (bindOk)
+            await LoadBoundDevicesAsync();
     }
 
     private async Task LoadDevicesAsync()
     {
+        _deviceCache.Clear();
         DeviceOptions.Clear();
         DeviceOptions.Add(new StatusOption { Text = "请选择设备", Value = null });
 
@@ -174,6 +199,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
                 foreach (var d in resp.result)
                 {
                     if (string.IsNullOrWhiteSpace(d.deviceCode)) continue;
+                    _deviceCache.Add(d);
                     DeviceOptions.Add(new StatusOption
                     {
                         Text = d.deviceName ?? d.deviceCode!,
