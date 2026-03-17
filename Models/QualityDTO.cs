@@ -335,8 +335,6 @@ public partial class QualityItem : ObservableObject
                     devCode = value.devCode;
                     devName = value.devName;
                 }
-
-                OnPropertyChanged(nameof(selectedInspectDevice));
                 OnPropertyChanged(nameof(IsAutoInspectEnabled));
             }
         }
