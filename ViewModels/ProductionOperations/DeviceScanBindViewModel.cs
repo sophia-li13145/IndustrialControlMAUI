@@ -45,6 +45,8 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         MaterialName = task.MaterialName ?? string.Empty;
         ProcessName = task.ProcessName ?? string.Empty;
         ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
+        FactoryCode = task.FactoryCode ?? string.Empty;
+        ProcessCode = task.ProcessCode ?? string.Empty;
 
         if (!string.IsNullOrWhiteSpace(task.Id))
         {
@@ -52,7 +54,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             if (detailResp?.success == true && detailResp.result is not null)
             {
                 var detail = detailResp.result;
-                FactoryCode = detail.factoryCode ?? string.Empty;
+                FactoryCode = detail.factoryCode ?? task.FactoryCode ?? string.Empty;
                 ProcessCode = detail.processCode ?? task.ProcessCode ?? string.Empty;
                 LineCode = detail.line;
                 SchemeNo = detail.schemeNo ?? string.Empty;
@@ -60,6 +62,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             }
             else
             {
+                FactoryCode = task.FactoryCode ?? string.Empty;
                 ProcessCode = task.ProcessCode ?? string.Empty;
             }
         }

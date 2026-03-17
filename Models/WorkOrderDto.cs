@@ -223,6 +223,8 @@ public sealed class PageResult<T>
 public class ProcessTask
 {
     public string? Id { get; set; }
+    [JsonPropertyName("factoryCode")]
+    public string? FactoryCode { get; set; }
     public string? ProcessCode { get; set; }
     public string? ProcessName { get; set; }
     public string? MaterialName { get; set; }
