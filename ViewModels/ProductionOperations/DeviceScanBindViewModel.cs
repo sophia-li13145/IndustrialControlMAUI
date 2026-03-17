@@ -112,20 +112,20 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var matched = _deviceCache.FirstOrDefault(x =>
-            string.Equals(x.deviceCode?.Trim(), inputCode, StringComparison.OrdinalIgnoreCase));
+        //var matched = _deviceCache.FirstOrDefault(x =>
+        //    string.Equals(x.deviceCode?.Trim(), inputCode, StringComparison.OrdinalIgnoreCase));
 
-        if (matched is null || string.IsNullOrWhiteSpace(matched.deviceCode))
-        {
-            await ShowTip("此设备不在系统中");
-            return;
-        }
+        //if (matched is null || string.IsNullOrWhiteSpace(matched.deviceCode))
+        //{
+        //    await ShowTip("此设备不在系统中");
+        //    return;
+        //}
 
-        DeviceCodeInput = matched.deviceCode;
+        DeviceCodeInput = inputCode;
         SelectedDeviceOption = DeviceOptions.FirstOrDefault(x =>
-            string.Equals(x.Value, matched.deviceCode, StringComparison.OrdinalIgnoreCase));
+            string.Equals(x.Value, inputCode, StringComparison.OrdinalIgnoreCase));
 
-        await BindDeviceAsync(matched.deviceCode);
+        await BindDeviceAsync(inputCode);
     }
 
     public async Task BindManualDeviceByCodeAsync(string? code)

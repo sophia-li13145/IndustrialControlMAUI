@@ -331,8 +331,7 @@ public class WorkOrderApi : IWorkOrderApi
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["factoryCode"] = factoryCode,
-                ["processCode"] = processCode,
-                ["line"] = line
+                ["processCode"] = processCode
             });
 
             var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
@@ -738,8 +737,52 @@ public class WorkOrderApi : IWorkOrderApi
             if (!res.IsSuccessStatusCode)
                 return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
 
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                   ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                var success = root.TryGetProperty("success", out var sEl)
+                    && (sEl.ValueKind == JsonValueKind.True
+                        || (sEl.ValueKind == JsonValueKind.String && bool.TryParse(sEl.GetString(), out var sb) && sb));
+
+                var message = root.TryGetProperty("message", out var mEl) ? mEl.GetString() : null;
+
+                var result = success;
+                if (root.TryGetProperty("result", out var rEl))
+                {
+                    result = rEl.ValueKind switch
+                    {
+                        JsonValueKind.True => true,
+                        JsonValueKind.False => false,
+                        JsonValueKind.Number => rEl.TryGetInt32(out var n) ? n != 0 : success,
+                        JsonValueKind.String => bool.TryParse(rEl.GetString(), out var b)
+                            ? b
+                            : (int.TryParse(rEl.GetString(), out var sn) ? sn != 0 : success),
+                        JsonValueKind.Null => success,
+                        JsonValueKind.Object => success,
+                        JsonValueKind.Array => success,
+                        _ => success
+                    };
+                }
+
+                var code = root.TryGetProperty("code", out var cEl) && cEl.TryGetInt32(out var c)
+                    ? c
+                    : (int?)null;
+
+                return new ApiResp<bool>
+                {
+                    success = success,
+                    message = message,
+                    code = code,
+                    result = result
+                };
+            }
+            catch
+            {
+                return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                       ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
+            }
         }
 
         public async Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default)
