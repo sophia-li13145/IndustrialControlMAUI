@@ -3,102 +3,365 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="IndustrialControlMAUI.Pages.DeviceScanBindPage"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="#D1D5DC">
+             BackgroundColor="#D9DEE5">
 
-    <Grid RowDefinitions="56,*">
-        <Grid Grid.Row="0" BackgroundColor="#007BFF" Padding="16,0">
+    <Grid RowDefinitions="58,*">
+
+        <!-- 顶部蓝条 -->
+        <Grid Grid.Row="0"
+              BackgroundColor="#0B7BEE"
+              Padding="12,0">
             <Label Text="生产管理系统"
                    VerticalOptions="Center"
+                   HorizontalOptions="Start"
                    TextColor="White"
-                   FontSize="18"
+                   FontSize="16"
                    FontAttributes="Bold" />
         </Grid>
 
+        <!-- 页面主体 -->
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout Padding="8" Spacing="10">
-                <Label Text="▍工单基础信息" TextColor="#1E6EDC" FontSize="18"/>
-                <Border Stroke="#B6BBC5" BackgroundColor="White" Padding="0">
-                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" RowSpacing="0" ColumnSpacing="0">
-                        <Border Stroke="#B6BBC5" StrokeThickness="0,0,1,1" Padding="8,10">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <Label Text="工单编号：" />
-                                <Label Grid.Column="1" Text="{Binding WorkOrderNo}" />
-                            </Grid>
-                        </Border>
-                        <Border Grid.Column="1" Stroke="#B6BBC5" StrokeThickness="0,0,0,1" Padding="8,10">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <Label Text="产品名称：" />
-                                <Label Grid.Column="1" Text="{Binding MaterialName}" />
-                            </Grid>
-                        </Border>
-                        <Border Grid.Row="1" Stroke="#B6BBC5" StrokeThickness="0,0,1,1" Padding="8,10">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <Label Text="工单名称：" />
-                                <Label Grid.Column="1" Text="{Binding WorkOrderName}" />
-                            </Grid>
-                        </Border>
-                        <Border Grid.Row="1" Grid.Column="1" Stroke="#B6BBC5" StrokeThickness="0,0,0,1" Padding="8,10">
-                            <Grid ColumnDefinitions="Auto,*">
-                                <Label Text="生产数量：" />
-                                <Label Grid.Column="1" Text="{Binding ScheQty}" />
-                            </Grid>
-                        </Border>
-                        <Border Grid.Row="2" Grid.ColumnSpan="2" Stroke="#B6BBC5" StrokeThickness="0" Padding="8,10">
-                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
-                                <Label Text="工序：" FontAttributes="Bold" />
-                                <Label Text="{Binding ProcessName}" FontAttributes="Bold" />
+            <VerticalStackLayout Padding="10,10,10,20"
+                                 Spacing="10">
+
+                <!-- 工单基础信息标题 -->
+                <HorizontalStackLayout Spacing="4">
+                    <BoxView WidthRequest="4"
+                             HeightRequest="20"
+                             Color="#1E7AF0"
+                             VerticalOptions="Center" />
+                    <Label Text="工单基础信息"
+                           FontSize="15"
+                           TextColor="#4A4A4A"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Border Stroke="#B6BBC5"
+        BackgroundColor="White"
+        Padding="0">
+                    <Grid RowDefinitions="Auto,Auto,Auto"
+          ColumnDefinitions="*,*"
+          RowSpacing="0"
+          ColumnSpacing="0">
+
+                        <!-- 第一行：工单编号 -->
+                        <Grid Padding="8,10"
+              BackgroundColor="White">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Text="工单编号："
+                   TextColor="#333333"
+                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                   Text="{Binding WorkOrderNo}"
+                   TextColor="#333333"
+                   LineBreakMode="TailTruncation"
+                   VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- 第一行：产品名称 -->
+                        <Grid Grid.Column="1"
+              Padding="8,10"
+              BackgroundColor="White">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Text="产品名称："
+                   TextColor="#333333"
+                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                   Text="{Binding MaterialName}"
+                   TextColor="#333333"
+                   LineBreakMode="TailTruncation"
+                   VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- 第二行：工单名称 -->
+                        <Grid Grid.Row="1"
+              Padding="8,10"
+              BackgroundColor="White">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Text="工单名称："
+                   TextColor="#333333"
+                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                   Text="{Binding WorkOrderName}"
+                   TextColor="#333333"
+                   LineBreakMode="TailTruncation"
+                   VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- 第二行：生产数量 -->
+                        <Grid Grid.Row="1"
+              Grid.Column="1"
+              Padding="8,10"
+              BackgroundColor="White">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Text="生产数量："
+                   TextColor="#333333"
+                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                   Text="{Binding ScheQty}"
+                   TextColor="#333333"
+                   VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- 中间竖线 -->
+                        <BoxView Grid.RowSpan="2"
+                 Grid.Column="1"
+                 WidthRequest="1"
+                 BackgroundColor="#B6BBC5"
+                 HorizontalOptions="Start" />
+
+                        <!-- 第一行横线 -->
+                        <BoxView Grid.ColumnSpan="2"
+                 HeightRequest="1"
+                 BackgroundColor="#B6BBC5"
+                 VerticalOptions="End" />
+
+                        <!-- 第二行横线 -->
+                        <BoxView Grid.Row="1"
+                 Grid.ColumnSpan="2"
+                 HeightRequest="1"
+                 BackgroundColor="#B6BBC5"
+                 VerticalOptions="End" />
+
+                        <!-- 第三行：工序 -->
+                        <Grid Grid.Row="2"
+              Grid.ColumnSpan="2"
+              Padding="8,10"
+              BackgroundColor="White">
+                            <HorizontalStackLayout HorizontalOptions="Center"
+                                   Spacing="6">
+                                <Label Text="工序:"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#111111" />
+                                <Label Text="{Binding ProcessName}"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#111111" />
                             </HorizontalStackLayout>
-                        </Border>
+                        </Grid>
                     </Grid>
                 </Border>
 
-                <Label Text="▍添加关联设备" TextColor="#1E6EDC" FontSize="18"/>
-                <Border Stroke="#B6BBC5" BackgroundColor="White" Padding="8">
+                <!-- 添加关联设备标题 -->
+                <HorizontalStackLayout Margin="0,6,0,0"
+                                       Spacing="4">
+                    <BoxView WidthRequest="4"
+                             HeightRequest="20"
+                             Color="#1E7AF0"
+                             VerticalOptions="Center" />
+                    <Label Text="添加关联设备"
+                           FontSize="15"
+                           TextColor="#4A4A4A"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <!-- 设备区域 -->
+                <Border Stroke="#B8B8B8"
+                        StrokeThickness="1"
+                        BackgroundColor="#F7F7F7"
+                        Padding="8">
                     <VerticalStackLayout Spacing="8">
-                        <Grid ColumnDefinitions="Auto,*,44" ColumnSpacing="8">
-                            <Label Text="设备编号" VerticalOptions="Center" />
-                            <Entry x:Name="DeviceCodeEntry"
-                                   Grid.Column="1"
-                                   Placeholder="请输入"
-                                   Text="{Binding DeviceCodeInput}"
-                                   Completed="OnDeviceCodeCompleted" />
-                            <ImageButton Grid.Column="2"
-                                         Source="scan_button.png"
-                                         BackgroundColor="Transparent"
-                                         Clicked="OnScanDeviceClicked" />
+
+                        <!-- 输入行 -->
+                        <Grid ColumnDefinitions="72,*,52"
+                              ColumnSpacing="8"
+                              VerticalOptions="Center">
+                            <Label Text="设备编号"
+                                   FontSize="15"
+                                   TextColor="#333333"
+                                   VerticalTextAlignment="Center"
+                                   HeightRequest="40" />
+
+                            <Border Grid.Column="1"
+                                    Stroke="#B8B8B8"
+                                    StrokeThickness="1"
+                                    BackgroundColor="White"
+                                    HeightRequest="40"
+                                    Padding="8,0">
+                                <Entry x:Name="DeviceCodeEntry"
+                                       Text="{Binding DeviceCodeInput}"
+                                       Placeholder="请输入"
+                                       FontSize="14"
+                                       TextColor="#333333"
+                                       BackgroundColor="Transparent"
+                                       ClearButtonVisibility="WhileEditing"
+                                       VerticalOptions="Center"
+                                       Completed="OnDeviceCodeCompleted" />
+                            </Border>
+
+                            <Border Grid.Column="2"
+                                    Stroke="#B8B8B8"
+                                    StrokeThickness="1"
+                                    BackgroundColor="White"
+                                    HeightRequest="40"
+                                    WidthRequest="48"
+                                    Padding="0">
+                                <ImageButton Source="scan_button.png"
+                                             BackgroundColor="Transparent"
+                                             Clicked="OnScanDeviceClicked"
+                                             Aspect="AspectFit"
+                                             Padding="6" />
+                            </Border>
                         </Grid>
 
+                        <!-- 手动绑定按钮 -->
                         <Button Text="＋ 手动绑定"
+                                Clicked="OnManualBindClicked"
                                 HorizontalOptions="Start"
                                 BackgroundColor="Transparent"
-                                TextColor="#1869F5"
-                                Clicked="OnManualBindClicked"/>
+                                BorderColor="#2D73FF"
+                                BorderWidth="1"
+                                CornerRadius="2"
+                                Padding="10,4"
+                                FontSize="14"
+                                TextColor="#2D73FF" />
 
-                        <Label Text="工单关联设备：" FontSize="16" />
+                        <!-- 表格标题 -->
+                        <Label Text="工单关联设备："
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#222222"
+                               Margin="0,2,0,0" />
 
-                        <Grid ColumnDefinitions="*,*,*,Auto" BackgroundColor="#F8F8F8" Padding="4" ColumnSpacing="0">
-                            <Border Stroke="#B6BBC5" StrokeThickness="1"><Label Text="设备名称" HorizontalTextAlignment="Center"/></Border>
-                            <Border Grid.Column="1" Stroke="#B6BBC5" StrokeThickness="0,1,1,1"><Label Text="开始时间" HorizontalTextAlignment="Center"/></Border>
-                            <Border Grid.Column="2" Stroke="#B6BBC5" StrokeThickness="0,1,1,1"><Label Text="结束时间" HorizontalTextAlignment="Center"/></Border>
-                            <Border Grid.Column="3" Stroke="#B6BBC5" StrokeThickness="0,1,1,1" Padding="12,0"><Label Text="操作" HorizontalTextAlignment="Center"/></Border>
+                        <!-- 表头 -->
+                        <Grid ColumnDefinitions="*,*,*,80"
+                              ColumnSpacing="0"
+                              RowSpacing="0">
+
+                            <Border Stroke="#B8B8B8"
+                                    StrokeThickness="1,1,1,1"
+                                    BackgroundColor="#FAFAFA"
+                                    Padding="4,12">
+                                <Label Text="设备名称"
+                                       FontSize="14"
+                                       TextColor="#333333"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalTextAlignment="Center" />
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    Stroke="#B8B8B8"
+                                    StrokeThickness="0,1,1,1"
+                                    BackgroundColor="#FAFAFA"
+                                    Padding="4,12">
+                                <Label Text="开始时间"
+                                       FontSize="14"
+                                       TextColor="#333333"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalTextAlignment="Center" />
+                            </Border>
+
+                            <Border Grid.Column="2"
+                                    Stroke="#B8B8B8"
+                                    StrokeThickness="0,1,1,1"
+                                    BackgroundColor="#FAFAFA"
+                                    Padding="4,12">
+                                <Label Text="结束时间"
+                                       FontSize="14"
+                                       TextColor="#333333"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalTextAlignment="Center" />
+                            </Border>
+
+                            <Border Grid.Column="3"
+                                    Stroke="#B8B8B8"
+                                    StrokeThickness="0,1,1,1"
+                                    BackgroundColor="#FAFAFA"
+                                    Padding="4,12">
+                                <Label Text="操作"
+                                       FontSize="14"
+                                       TextColor="#333333"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalTextAlignment="Center" />
+                            </Border>
                         </Grid>
 
-                        <CollectionView ItemsSource="{Binding BoundDevices}" EmptyView="暂无绑定设备">
+                        <!-- 数据列表 -->
+                        <CollectionView ItemsSource="{Binding BoundDevices}"
+                                        SelectionMode="None"
+                                        EmptyView="暂无绑定设备">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="0">
-                                        <Border Stroke="#B6BBC5" StrokeThickness="1,0,1,1" Padding="4"><Label Text="{Binding deviceName}" HorizontalTextAlignment="Center"/></Border>
-                                        <Border Grid.Column="1" Stroke="#B6BBC5" StrokeThickness="0,0,1,1" Padding="4"><Label Text="{Binding startTime}" HorizontalTextAlignment="Center"/></Border>
-                                        <Border Grid.Column="2" Stroke="#B6BBC5" StrokeThickness="0,0,1,1" Padding="4"><Label Text="{Binding endTime}" HorizontalTextAlignment="Center"/></Border>
-                                        <Border Grid.Column="3" Stroke="#B6BBC5" StrokeThickness="0,0,1,1" Padding="12,4">
-                                            <Label Text="删除" TextColor="Red"/>
+                                    <Grid ColumnDefinitions="*,*,*,80"
+                                          ColumnSpacing="0"
+                                          RowSpacing="0">
+
+                                        <Border Stroke="#B8B8B8"
+                                                StrokeThickness="1,0,1,1"
+                                                BackgroundColor="White"
+                                                Padding="4,14">
+                                            <Label Text="{Binding deviceName}"
+                                                   FontSize="14"
+                                                   TextColor="#333333"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center"
+                                                   LineBreakMode="WordWrap" />
+                                        </Border>
+
+                                        <Border Grid.Column="1"
+                                                Stroke="#B8B8B8"
+                                                StrokeThickness="0,0,1,1"
+                                                BackgroundColor="White"
+                                                Padding="4,14">
+                                            <Label Text="{Binding startTime}"
+                                                   FontSize="14"
+                                                   TextColor="#333333"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center"
+                                                   LineBreakMode="WordWrap" />
+                                        </Border>
+
+                                        <Border Grid.Column="2"
+                                                Stroke="#B8B8B8"
+                                                StrokeThickness="0,0,1,1"
+                                                BackgroundColor="White"
+                                                Padding="4,14">
+                                            <Label Text="{Binding endTime}"
+                                                   FontSize="14"
+                                                   TextColor="#333333"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center"
+                                                   LineBreakMode="WordWrap" />
+                                        </Border>
+
+                                        <Border Grid.Column="3"
+                                                Stroke="#B8B8B8"
+                                                StrokeThickness="0,0,1,1"
+                                                BackgroundColor="White"
+                                                Padding="4,14">
+                                            <Label Text="删除"
+                                                   FontSize="14"
+                                                   TextColor="#FF4D4F"
+                                                   HorizontalTextAlignment="Center"
+                                                   VerticalTextAlignment="Center" />
                                         </Border>
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+
+                        <!-- 留一点底部空间，接近截图视觉 -->
+                        <BoxView HeightRequest="40"
+                                 Color="Transparent" />
                     </VerticalStackLayout>
                 </Border>
+
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
