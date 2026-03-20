@@ -65,7 +65,7 @@ public partial class DeviceScanBindPage : ContentPage
             return;
 
         var resp = await vm.EditBoundDeviceTimeAsync(item, editResult.StartTime, editResult.EndTime);
-        if (resp?.success == true && resp.result)
+        if (resp?.success == true && resp.result == true)
         {
             await DisplayAlert("提示", "编辑成功", "确定");
             await vm.LoadBoundDevicesCommand.ExecuteAsync(null);

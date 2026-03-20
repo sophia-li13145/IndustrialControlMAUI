@@ -133,26 +133,26 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         await BindDeviceAsync(code.Trim(), startTime, endTime);
     }
 
-    public async Task<ApiResp<bool>> EditBoundDeviceTimeAsync(
+    public async Task<ApiResp<bool?>> EditBoundDeviceTimeAsync(
         WorkOrderDeviceBindItem? item,
         DateTime? startTime,
         DateTime? endTime)
     {
         if (item is null)
-            return new ApiResp<bool> { success = false, message = "缺少设备信息", result = false };
+            return new ApiResp<bool?> { success = false, message = "缺少设备信息", result = false };
 
         var deviceCode = item.deviceCode?.Trim();
         if (string.IsNullOrWhiteSpace(deviceCode))
-            return new ApiResp<bool> { success = false, message = "缺少设备编号", result = false };
+            return new ApiResp<bool?> { success = false, message = "缺少设备编号", result = false };
 
         if (!startTime.HasValue || !endTime.HasValue)
-            return new ApiResp<bool> { success = false, message = "请选择开始时间和结束时间", result = false };
+            return new ApiResp<bool?> { success = false, message = "请选择开始时间和结束时间", result = false };
 
         if (startTime > endTime)
-            return new ApiResp<bool> { success = false, message = "开始时间不能晚于结束时间", result = false };
+            return new ApiResp<bool?> { success = false, message = "开始时间不能晚于结束时间", result = false };
 
         if (IsBusy || !CanCallApi())
-            return new ApiResp<bool> { success = false, message = "当前无法提交编辑", result = false };
+            return new ApiResp<bool?> { success = false, message = "当前无法提交编辑", result = false };
 
         try
         {
@@ -168,17 +168,17 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             };
 
             var resp = await _api.EditWorkOrderDeviceBindTimeAsync(req);
-            if (resp?.success == true && resp.result)
+            if (resp?.success == true && resp.result == true)
             {
                 item.startTime = req.startTime;
                 item.endTime = req.endTime;
             }
 
-            return resp ?? new ApiResp<bool> { success = false, message = "编辑失败", result = false };
+            return resp ?? new ApiResp<bool?> { success = false, message = "编辑失败", result = false };
         }
         catch (Exception ex)
         {
-            return new ApiResp<bool> { success = false, message = $"编辑失败：{ex.Message}", result = false };
+            return new ApiResp<bool?> { success = false, message = $"编辑失败：{ex.Message}", result = false };
         }
         finally
         {
@@ -223,7 +223,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             };
 
             var resp = await _api.UnbindWorkOrderDeviceAsync(req);
-            if (resp?.success == true && resp.result)
+            if (resp?.success == true && resp.result == true)
             {
                 BoundDevices.Remove(item);
                 await ShowTip("解绑成功");
@@ -274,7 +274,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             };
 
             var resp = await _api.EditWorkOrderDeviceBindTimeAsync(req);
-            if (resp?.success == true && resp.result)
+            if (resp?.success == true && resp.result == true)
             {
                 bindOk = true;
                 await ShowTip("绑定成功");
