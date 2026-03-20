@@ -725,7 +725,7 @@ public class WorkOrderApi : IWorkOrderApi
                    ?? new ApiResp<List<WorkOrderDeviceBindItem>> { success = false, message = "反序列化失败", result = new List<WorkOrderDeviceBindItem>() };
         }
 
-        public async Task<ApiResp<bool>> UnbindWorkOrderDeviceAsync(
+        public async Task<ApiResp<bool?>> UnbindWorkOrderDeviceAsync(
             UnbindWorkOrderDeviceReq req,
             CancellationToken ct = default)
         {
@@ -738,13 +738,13 @@ public class WorkOrderApi : IWorkOrderApi
             using var res = await _http.SendAsync(msg, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
             if (!res.IsSuccessStatusCode)
-                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
 
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                   ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
         }
 
-        public async Task<ApiResp<bool>> EditWorkOrderDeviceBindTimeAsync(
+        public async Task<ApiResp<bool?>> EditWorkOrderDeviceBindTimeAsync(
             EditWorkOrderDeviceBindTimeReq req,
             CancellationToken ct = default)
         {
@@ -757,10 +757,10 @@ public class WorkOrderApi : IWorkOrderApi
             using var res = await _http.SendAsync(msg, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
             if (!res.IsSuccessStatusCode)
-                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
 
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                   ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
         }
 
         public async Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default)

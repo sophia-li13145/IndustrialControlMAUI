@@ -96,11 +96,11 @@ namespace IndustrialControlMAUI.Services
             string workOrderNo,
             CancellationToken ct = default);
 
-        Task<ApiResp<bool>> EditWorkOrderDeviceBindTimeAsync(
+        Task<ApiResp<bool?>> EditWorkOrderDeviceBindTimeAsync(
             EditWorkOrderDeviceBindTimeReq req,
             CancellationToken ct = default);
 
-        Task<ApiResp<bool>> UnbindWorkOrderDeviceAsync(
+        Task<ApiResp<bool?>> UnbindWorkOrderDeviceAsync(
             UnbindWorkOrderDeviceReq req,
             CancellationToken ct = default);
 
