@@ -433,6 +433,16 @@ public class WorkProcessTaskDeviceUpdateReq
     public string? schemeNo { get; set; }
 }
 
+public class BindWorkOrderDeviceReq
+{
+    public string deviceCode { get; set; } = "";
+    public string factoryCode { get; set; } = "";
+    public string? platPlanNo { get; set; }
+    public string processCode { get; set; } = "";
+    public string schemeNo { get; set; } = "";
+    public string workOrderNo { get; set; } = "";
+}
+
 public class UnbindWorkOrderDeviceReq
 {
     public string deviceCode { get; set; } = "";
