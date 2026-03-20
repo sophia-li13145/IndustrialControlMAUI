@@ -128,13 +128,17 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         SelectedDeviceOption = matchedOption;
 
         var existedItem = FindBoundDevice(inputCode);
-        var startTime = TryParseDateTime(existedItem?.startTime) ?? operationTime;
-        var endTime = operationTime;
+        if (existedItem is null)
+        {
+            await BindNewDeviceAsync(inputCode);
+            return;
+        }
 
-        await BindDeviceAsync(inputCode, startTime, endTime);
+        var startTime = TryParseDateTime(existedItem.startTime) ?? operationTime;
+        await UpdateBoundDeviceTimeAsync(inputCode, startTime, operationTime);
     }
 
-    public async Task BindManualDeviceByCodeAsync(string? code, DateTime operationTime)
+    public async Task BindManualDeviceByCodeAsync(string? code)
     {
         var inputCode = code?.Trim();
         if (string.IsNullOrWhiteSpace(inputCode))
@@ -151,7 +155,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         }
 
         SelectedDeviceOption = matchedOption;
-        await BindDeviceAsync(inputCode, operationTime, operationTime);
+        await BindNewDeviceAsync(inputCode);
     }
 
     public async Task<ApiResp<bool?>> EditBoundDeviceTimeAsync(
@@ -263,9 +267,55 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         }
     }
 
-    private async Task BindDeviceAsync(string deviceCode, DateTime startTime, DateTime endTime)
+    private async Task BindNewDeviceAsync(string deviceCode)
     {
-        if (IsBusy || !CanCallApi()) return;
+        if (IsBusy || !CanCallApi())
+            return;
+
+        var bindOk = false;
+
+        try
+        {
+            IsBusy = true;
+            var req = new BindWorkOrderDeviceReq
+            {
+                deviceCode = deviceCode,
+                factoryCode = FactoryCode,
+                processCode = ProcessCode,
+                schemeNo = SchemeNo,
+                workOrderNo = WorkOrderNo,
+                platPlanNo = PlatPlanNo
+            };
+
+            var resp = await _api.BindWorkOrderDeviceAsync(req);
+            if (resp?.success == true && resp.result)
+            {
+                bindOk = true;
+                await ShowTip("绑定成功");
+                DeviceCodeInput = string.Empty;
+            }
+            else
+            {
+                await ShowTip(resp?.message ?? "绑定失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowTip($"绑定失败：{ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        if (bindOk)
+            await LoadBoundDevicesAsync();
+    }
+
+    private async Task UpdateBoundDeviceTimeAsync(string deviceCode, DateTime startTime, DateTime endTime)
+    {
+        if (IsBusy || !CanCallApi())
+            return;
 
         if (startTime > endTime)
         {

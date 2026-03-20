@@ -54,7 +54,7 @@ public partial class DeviceScanBindPage : ContentPage
             || string.IsNullOrWhiteSpace(opt.Value))
             return;
 
-        await vm.BindManualDeviceByCodeAsync(opt.Value, confirmResult.OperationTime);
+        await vm.BindManualDeviceByCodeAsync(opt.Value);
     }
 
     private async void OnEditBoundDeviceClicked(object sender, EventArgs e)

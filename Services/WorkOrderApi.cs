@@ -38,6 +38,7 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
         private readonly string _workOrderDeviceListEndpoint;
+        private readonly string _bindWorkOrderDeviceEndpoint;
         private readonly string _editWorkOrderDeviceBindTimeEndpoint;
         private readonly string _unbindWorkOrderDeviceEndpoint;
         private readonly string _workOrderDomainEndpoint;
@@ -108,6 +109,8 @@ public class WorkOrderApi : IWorkOrderApi
                     configLoader.GetApiPath("workOrder.editWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"), servicePath);
             _workOrderDeviceListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.getWorkOrderDeviceList", "/pda/pmsWorkOrder/getWorkOrderDeviceList"), servicePath);
+            _bindWorkOrderDeviceEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.bindWorkOrderDevice", "/pda/pmsWorkOrder/bindWorkOrderDevice"), servicePath);
             _editWorkOrderDeviceBindTimeEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.editWorkOrderDeviceBindTime", "/pda/pmsWorkOrder/editWorkOrderDeviceBindTime"), servicePath);
             _unbindWorkOrderDeviceEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -723,6 +726,58 @@ public class WorkOrderApi : IWorkOrderApi
 
             return JsonSerializer.Deserialize<ApiResp<List<WorkOrderDeviceBindItem>>>(json, _json)
                    ?? new ApiResp<List<WorkOrderDeviceBindItem>> { success = false, message = "反序列化失败", result = new List<WorkOrderDeviceBindItem>() };
+        }
+
+        public async Task<ApiResp<bool>> BindWorkOrderDeviceAsync(
+            BindWorkOrderDeviceReq req,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _bindWorkOrderDeviceEndpoint);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = JsonContent.Create(req)
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                var success = root.TryGetProperty("success", out var sEl)
+                    && (sEl.ValueKind == JsonValueKind.True
+                        || (sEl.ValueKind == JsonValueKind.String && bool.TryParse(sEl.GetString(), out var sb) && sb));
+
+                var message = root.TryGetProperty("message", out var mEl) ? mEl.GetString() : null;
+
+                bool result = false;
+                if (root.TryGetProperty("result", out var rEl))
+                {
+                    result = rEl.ValueKind switch
+                    {
+                        JsonValueKind.True => true,
+                        JsonValueKind.False => false,
+                        JsonValueKind.Number => rEl.TryGetInt32(out var n) && n != 0,
+                        JsonValueKind.String => bool.TryParse(rEl.GetString(), out var b) && b,
+                        _ => false
+                    };
+                }
+
+                return new ApiResp<bool>
+                {
+                    success = success,
+                    message = message,
+                    result = result
+                };
+            }
+            catch
+            {
+                return new ApiResp<bool> { success = false, message = "绑定响应解析失败", result = false };
+            }
         }
 
         public async Task<ApiResp<bool?>> UnbindWorkOrderDeviceAsync(
