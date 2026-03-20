@@ -105,9 +105,9 @@ public partial class DeviceScanBindPage : ContentPage
             title: "确认绑定");
 
         var result = await this.ShowPopupAsync(popup);
-        if (result is not DeviceBindConfirmResult confirmResult)
+        if (result is not DeviceBindConfirmResult)
             return;
 
-        await vm.BindByInputCodeAsync(deviceCode, confirmResult.OperationTime);
+        await vm.BindByInputCodeAsync(deviceCode);
     }
 }

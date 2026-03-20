@@ -108,7 +108,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             && string.Equals(x.Value, inputCode, StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task BindByInputCodeAsync(string? code, DateTime operationTime)
+    public async Task BindByInputCodeAsync(string? code)
     {
         var inputCode = code?.Trim();
         if (string.IsNullOrWhiteSpace(inputCode))
@@ -126,16 +126,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
         DeviceCodeInput = inputCode;
         SelectedDeviceOption = matchedOption;
-
-        var existedItem = FindBoundDevice(inputCode);
-        if (existedItem is null)
-        {
-            await BindNewDeviceAsync(inputCode);
-            return;
-        }
-
-        var startTime = TryParseDateTime(existedItem.startTime) ?? operationTime;
-        await UpdateBoundDeviceTimeAsync(inputCode, startTime, operationTime);
+        await BindNewDeviceAsync(inputCode);
     }
 
     public async Task BindManualDeviceByCodeAsync(string? code)
@@ -399,14 +390,6 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
         SelectedDeviceOption = DeviceOptions.FirstOrDefault();
     }
-
-    private WorkOrderDeviceBindItem? FindBoundDevice(string deviceCode) =>
-        BoundDevices.FirstOrDefault(x =>
-            !string.IsNullOrWhiteSpace(x.deviceCode)
-            && string.Equals(x.deviceCode.Trim(), deviceCode.Trim(), StringComparison.OrdinalIgnoreCase));
-
-    private static DateTime? TryParseDateTime(string? value) =>
-        DateTime.TryParse(value, out var dt) ? dt : null;
 
     private bool CanCallApi()
     {
