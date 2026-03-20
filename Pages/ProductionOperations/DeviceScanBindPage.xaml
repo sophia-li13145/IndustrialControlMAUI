@@ -256,7 +256,7 @@
                         <VerticalStackLayout Spacing="0">
 
                             <!-- 表头 -->
-                            <Grid ColumnDefinitions="*,*,*,80"
+                            <Grid ColumnDefinitions="*,*,*,120"
       ColumnSpacing="0"
       RowSpacing="0">
 
@@ -323,7 +323,7 @@
 
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid ColumnDefinitions="*,*,*,80"
+                                            <Grid ColumnDefinitions="*,*,*,120"
               ColumnSpacing="0"
               RowSpacing="0">
 
@@ -380,12 +380,31 @@
                     BackgroundColor="White"
                     Padding="4,8"
                     MinimumHeightRequest="42">
-                                                <Label Text="删除"
-                       FontSize="14"
-                       TextColor="#FF4D4F"
-                       HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center"
-                       VerticalOptions="Center" />
+                                                <HorizontalStackLayout HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"
+                                                                       Spacing="12">
+                                                    <Button Text="编辑"
+                                                            FontSize="13"
+                                                            TextColor="#2D73FF"
+                                                            BackgroundColor="#EEF5FF"
+                                                            BorderColor="#2D73FF"
+                                                            BorderWidth="1"
+                                                            CornerRadius="4"
+                                                            Padding="8,2"
+                                                            Clicked="OnEditBoundDeviceClicked"
+                                                            CommandParameter="{Binding .}" />
+
+                                                    <Button Text="删除"
+                                                            FontSize="13"
+                                                            TextColor="#FF4D4F"
+                                                            BackgroundColor="#FFF1F0"
+                                                            BorderColor="#FF4D4F"
+                                                            BorderWidth="1"
+                                                            CornerRadius="4"
+                                                            Padding="8,2"
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteBoundDeviceCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                </HorizontalStackLayout>
                                             </Border>
                                         </Grid>
                                     </DataTemplate>
