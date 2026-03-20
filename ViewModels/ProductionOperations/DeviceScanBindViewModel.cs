@@ -117,15 +117,12 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var matchedOption = FindDeviceOptionByCode(inputCode);
-        if (matchedOption is null || string.IsNullOrWhiteSpace(matchedOption.Value))
-        {
-            await ShowTip("此设备不在当前工序可绑定设备列表中");
-            return;
-        }
-
         DeviceCodeInput = inputCode;
-        SelectedDeviceOption = matchedOption;
+        SelectedDeviceOption = FindDeviceOptionByCode(inputCode) ?? new StatusOption
+        {
+            Text = inputCode,
+            Value = inputCode
+        };
         await BindNewDeviceAsync(inputCode);
     }
 
@@ -138,14 +135,11 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var matchedOption = FindDeviceOptionByCode(inputCode);
-        if (matchedOption is null || string.IsNullOrWhiteSpace(matchedOption.Value))
+        SelectedDeviceOption = FindDeviceOptionByCode(inputCode) ?? new StatusOption
         {
-            await ShowTip("请选择有效设备");
-            return;
-        }
-
-        SelectedDeviceOption = matchedOption;
+            Text = inputCode,
+            Value = inputCode
+        };
         await BindNewDeviceAsync(inputCode);
     }
 

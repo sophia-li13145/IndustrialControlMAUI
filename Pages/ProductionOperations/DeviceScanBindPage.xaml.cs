@@ -91,12 +91,11 @@ public partial class DeviceScanBindPage : ContentPage
             return;
         }
 
-        var selectedOption = vm.FindDeviceOptionByCode(deviceCode);
-        if (selectedOption is null || string.IsNullOrWhiteSpace(selectedOption.Value))
+        var selectedOption = vm.FindDeviceOptionByCode(deviceCode) ?? new StatusOption
         {
-            await DisplayAlert("提示", "此设备不在当前工序可绑定设备列表中", "确定");
-            return;
-        }
+            Text = deviceCode.Trim(),
+            Value = deviceCode.Trim()
+        };
 
         var popup = new ManualDeviceBindPopup(
             new[] { selectedOption },
