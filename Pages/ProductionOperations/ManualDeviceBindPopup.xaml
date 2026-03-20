@@ -4,18 +4,31 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    Size="340,220">
+    Size="340,240">
 
     <Border BackgroundColor="White" Stroke="#DDDDDD" StrokeShape="RoundRectangle 10" Padding="16">
         <VerticalStackLayout Spacing="12">
-            <Label Text="手动绑定" FontSize="18" FontAttributes="Bold" />
+            <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
 
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                <Label Text="设备列表" VerticalOptions="Center" />
+                <Label Text="设备名称" VerticalOptions="Center" />
+
                 <Picker Grid.Column="1"
+                        IsVisible="{Binding AllowDeviceSelection}"
                         ItemsSource="{Binding DeviceOptions}"
                         ItemDisplayBinding="{Binding Text}"
                         SelectedItem="{Binding SelectedDeviceOption, Mode=TwoWay}" />
+
+                <Border Grid.Column="1"
+                        IsVisible="{Binding IsReadonlyDeviceVisible}"
+                        Stroke="#D1D5DB"
+                        StrokeThickness="1"
+                        BackgroundColor="#F3F4F6"
+                        Padding="10,8">
+                    <Label Text="{Binding SelectedDeviceName}"
+                           TextColor="#374151"
+                           VerticalOptions="Center" />
+                </Border>
             </Grid>
 
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
