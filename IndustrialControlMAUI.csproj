@@ -295,6 +295,9 @@
 		<MauiXaml Update="Pages\ProductionOperations\ManualDeviceBindPopup.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Pages\ProductionOperations\DeviceBindTimeEditPopup.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Pages\ProductionOperations\WorkOrderSearchPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

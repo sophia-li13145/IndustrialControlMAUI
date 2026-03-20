@@ -97,13 +97,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         }
     }
 
-    [RelayCommand]
-    private async Task BindScanDeviceAsync()
-    {
-        await BindByInputCodeAsync(DeviceCodeInput);
-    }
-
-    public async Task BindByInputCodeAsync(string? code)
+    public async Task BindByInputCodeAsync(string? code, DateTime? startTime, DateTime? endTime)
     {
         var inputCode = code?.Trim();
         if (string.IsNullOrWhiteSpace(inputCode))
@@ -125,10 +119,10 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         SelectedDeviceOption = DeviceOptions.FirstOrDefault(x =>
             string.Equals(x.Value, inputCode, StringComparison.OrdinalIgnoreCase));
 
-        await BindDeviceAsync(inputCode);
+        await BindDeviceAsync(inputCode, startTime, endTime);
     }
 
-    public async Task BindManualDeviceByCodeAsync(string? code)
+    public async Task BindManualDeviceByCodeAsync(string? code, DateTime? startTime, DateTime? endTime)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
@@ -136,28 +130,150 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        await BindDeviceAsync(code.Trim());
+        await BindDeviceAsync(code.Trim(), startTime, endTime);
     }
 
-    private async Task BindDeviceAsync(string deviceCode)
+    public async Task<ApiResp<bool>> EditBoundDeviceTimeAsync(
+        WorkOrderDeviceBindItem? item,
+        DateTime? startTime,
+        DateTime? endTime)
+    {
+        if (item is null)
+            return new ApiResp<bool> { success = false, message = "缺少设备信息", result = false };
+
+        var deviceCode = item.deviceCode?.Trim();
+        if (string.IsNullOrWhiteSpace(deviceCode))
+            return new ApiResp<bool> { success = false, message = "缺少设备编号", result = false };
+
+        if (!startTime.HasValue || !endTime.HasValue)
+            return new ApiResp<bool> { success = false, message = "请选择开始时间和结束时间", result = false };
+
+        if (startTime > endTime)
+            return new ApiResp<bool> { success = false, message = "开始时间不能晚于结束时间", result = false };
+
+        if (IsBusy || !CanCallApi())
+            return new ApiResp<bool> { success = false, message = "当前无法提交编辑", result = false };
+
+        try
+        {
+            IsBusy = true;
+            var req = new EditWorkOrderDeviceBindTimeReq
+            {
+                deviceCode = deviceCode,
+                factoryCode = item.factoryCode?.Trim() ?? FactoryCode,
+                processCode = item.processCode?.Trim() ?? ProcessCode,
+                workOrderNo = item.workOrderNo?.Trim() ?? WorkOrderNo,
+                startTime = startTime.Value.ToString("yyyy-MM-dd HH:mm:ss"),
+                endTime = endTime.Value.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            var resp = await _api.EditWorkOrderDeviceBindTimeAsync(req);
+            if (resp?.success == true && resp.result)
+            {
+                item.startTime = req.startTime;
+                item.endTime = req.endTime;
+            }
+
+            return resp ?? new ApiResp<bool> { success = false, message = "编辑失败", result = false };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResp<bool> { success = false, message = $"编辑失败：{ex.Message}", result = false };
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteBoundDeviceAsync(WorkOrderDeviceBindItem? item)
+    {
+        if (item is null)
+            return;
+
+        var deviceCode = item.deviceCode?.Trim();
+        if (string.IsNullOrWhiteSpace(deviceCode))
+        {
+            await ShowTip("缺少设备编号，无法解绑");
+            return;
+        }
+
+        if (IsBusy || !CanCallApi())
+            return;
+
+        var confirm = await (Shell.Current?.DisplayAlert(
+            "删除提醒",
+            $"确认删除设备【{item.deviceName ?? deviceCode}】的绑定关系吗？",
+            "确定",
+            "取消") ?? Task.FromResult(false));
+
+        if (!confirm)
+            return;
+
+        try
+        {
+            IsBusy = true;
+            var req = new UnbindWorkOrderDeviceReq
+            {
+                deviceCode = deviceCode,
+                factoryCode = item.factoryCode?.Trim() ?? FactoryCode,
+                processCode = item.processCode?.Trim() ?? ProcessCode,
+                workOrderNo = item.workOrderNo?.Trim() ?? WorkOrderNo
+            };
+
+            var resp = await _api.UnbindWorkOrderDeviceAsync(req);
+            if (resp?.success == true && resp.result)
+            {
+                BoundDevices.Remove(item);
+                await ShowTip("解绑成功");
+                return;
+            }
+
+            await ShowTip(resp?.message ?? "解绑失败");
+        }
+        catch (Exception ex)
+        {
+            await ShowTip($"解绑失败：{ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task BindDeviceAsync(string deviceCode, DateTime? startTime, DateTime? endTime)
     {
         if (IsBusy || !CanCallApi()) return;
+
+        if (!startTime.HasValue || !endTime.HasValue)
+        {
+            await ShowTip("请选择开始时间和结束时间");
+            return;
+        }
+
+        if (startTime > endTime)
+        {
+            await ShowTip("开始时间不能晚于结束时间");
+            return;
+        }
+
         var bindOk = false;
 
         try
         {
             IsBusy = true;
-            var req = new BindWorkOrderDeviceReq
+            var req = new EditWorkOrderDeviceBindTimeReq
             {
                 deviceCode = deviceCode,
                 factoryCode = FactoryCode,
                 processCode = ProcessCode,
-                schemeNo = SchemeNo,
                 workOrderNo = WorkOrderNo,
-                platPlanNo = PlatPlanNo
+                startTime = startTime.Value.ToString("yyyy-MM-dd HH:mm:ss"),
+                endTime = endTime.Value.ToString("yyyy-MM-dd HH:mm:ss")
             };
 
-            var resp = await _api.BindWorkOrderDeviceAsync(req);
+            var resp = await _api.EditWorkOrderDeviceBindTimeAsync(req);
             if (resp?.success == true && resp.result)
             {
                 bindOk = true;

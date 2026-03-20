@@ -38,7 +38,8 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
         private readonly string _workOrderDeviceListEndpoint;
-        private readonly string _bindWorkOrderDeviceEndpoint;
+        private readonly string _editWorkOrderDeviceBindTimeEndpoint;
+        private readonly string _unbindWorkOrderDeviceEndpoint;
         private readonly string _workOrderDomainEndpoint;
         private readonly string _inventoryPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
@@ -107,8 +108,10 @@ public class WorkOrderApi : IWorkOrderApi
                     configLoader.GetApiPath("workOrder.editWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput"), servicePath);
             _workOrderDeviceListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.getWorkOrderDeviceList", "/pda/pmsWorkOrder/getWorkOrderDeviceList"), servicePath);
-            _bindWorkOrderDeviceEndpoint = ServiceUrlHelper.NormalizeRelative(
-                    configLoader.GetApiPath("workOrder.bindWorkOrderDevice", "/pda/pmsWorkOrder/bindWorkOrderDevice"), servicePath);
+            _editWorkOrderDeviceBindTimeEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.editWorkOrderDeviceBindTime", "/pda/pmsWorkOrder/editWorkOrderDeviceBindTime"), servicePath);
+            _unbindWorkOrderDeviceEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.unbindWorkOrderDevice", "/pda/pmsWorkOrder/unbindWorkOrderDevice"), servicePath);
             _workOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
         configLoader.GetApiPath("workOrder.domain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
         servicePath);
@@ -722,11 +725,11 @@ public class WorkOrderApi : IWorkOrderApi
                    ?? new ApiResp<List<WorkOrderDeviceBindItem>> { success = false, message = "反序列化失败", result = new List<WorkOrderDeviceBindItem>() };
         }
 
-        public async Task<ApiResp<bool>> BindWorkOrderDeviceAsync(
-            BindWorkOrderDeviceReq req,
+        public async Task<ApiResp<bool>> UnbindWorkOrderDeviceAsync(
+            UnbindWorkOrderDeviceReq req,
             CancellationToken ct = default)
         {
-            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _bindWorkOrderDeviceEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _unbindWorkOrderDeviceEndpoint);
             using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             {
                 Content = JsonContent.Create(req)
@@ -737,52 +740,27 @@ public class WorkOrderApi : IWorkOrderApi
             if (!res.IsSuccessStatusCode)
                 return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
 
-            try
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                   ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
+        }
+
+        public async Task<ApiResp<bool>> EditWorkOrderDeviceBindTimeAsync(
+            EditWorkOrderDeviceBindTimeReq req,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _editWorkOrderDeviceBindTimeEndpoint);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             {
-                using var doc = JsonDocument.Parse(json);
-                var root = doc.RootElement;
+                Content = JsonContent.Create(req)
+            };
 
-                var success = root.TryGetProperty("success", out var sEl)
-                    && (sEl.ValueKind == JsonValueKind.True
-                        || (sEl.ValueKind == JsonValueKind.String && bool.TryParse(sEl.GetString(), out var sb) && sb));
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
 
-                var message = root.TryGetProperty("message", out var mEl) ? mEl.GetString() : null;
-
-                var result = success;
-                if (root.TryGetProperty("result", out var rEl))
-                {
-                    result = rEl.ValueKind switch
-                    {
-                        JsonValueKind.True => true,
-                        JsonValueKind.False => false,
-                        JsonValueKind.Number => rEl.TryGetInt32(out var n) ? n != 0 : success,
-                        JsonValueKind.String => bool.TryParse(rEl.GetString(), out var b)
-                            ? b
-                            : (int.TryParse(rEl.GetString(), out var sn) ? sn != 0 : success),
-                        JsonValueKind.Null => success,
-                        JsonValueKind.Object => success,
-                        JsonValueKind.Array => success,
-                        _ => success
-                    };
-                }
-
-                var code = root.TryGetProperty("code", out var cEl) && cEl.TryGetInt32(out var c)
-                    ? c
-                    : (int?)null;
-
-                return new ApiResp<bool>
-                {
-                    success = success,
-                    message = message,
-                    code = code,
-                    result = result
-                };
-            }
-            catch
-            {
-                return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                       ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
-            }
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                   ?? new ApiResp<bool> { success = false, message = "反序列化失败", result = false };
         }
 
         public async Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default)
