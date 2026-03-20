@@ -62,6 +62,7 @@
       "deleteWorkProcessTaskOutput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput",
       "editWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/editWorkProcessTaskMaterialInput",
       "getWorkOrderDeviceList": "/pda/pmsWorkOrder/getWorkOrderDeviceList",
+      "bindWorkOrderDevice": "/pda/pmsWorkOrder/bindWorkOrderDevice",
       "editWorkOrderDeviceBindTime": "/pda/pmsWorkOrder/editWorkOrderDeviceBindTime",
       "unbindWorkOrderDevice": "/pda/pmsWorkOrder/unbindWorkOrderDevice"
     },
