@@ -108,7 +108,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             && string.Equals(x.Value, inputCode, StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task BindByInputCodeAsync(string? code, DateTime operationTime)
+    public async Task BindByInputCodeAsync(string? code)
     {
         var inputCode = code?.Trim();
         if (string.IsNullOrWhiteSpace(inputCode))
@@ -117,25 +117,13 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var matchedOption = FindDeviceOptionByCode(inputCode);
-        if (matchedOption is null || string.IsNullOrWhiteSpace(matchedOption.Value))
-        {
-            await ShowTip("此设备不在当前工序可绑定设备列表中");
-            return;
-        }
-
         DeviceCodeInput = inputCode;
-        SelectedDeviceOption = matchedOption;
-
-        var existedItem = FindBoundDevice(inputCode);
-        if (existedItem is null)
+        SelectedDeviceOption = FindDeviceOptionByCode(inputCode) ?? new StatusOption
         {
-            await BindNewDeviceAsync(inputCode);
-            return;
-        }
-
-        var startTime = TryParseDateTime(existedItem.startTime) ?? operationTime;
-        await UpdateBoundDeviceTimeAsync(inputCode, startTime, operationTime);
+            Text = inputCode,
+            Value = inputCode
+        };
+        await BindNewDeviceAsync(inputCode);
     }
 
     public async Task BindManualDeviceByCodeAsync(string? code)
@@ -147,14 +135,11 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             return;
         }
 
-        var matchedOption = FindDeviceOptionByCode(inputCode);
-        if (matchedOption is null || string.IsNullOrWhiteSpace(matchedOption.Value))
+        SelectedDeviceOption = FindDeviceOptionByCode(inputCode) ?? new StatusOption
         {
-            await ShowTip("请选择有效设备");
-            return;
-        }
-
-        SelectedDeviceOption = matchedOption;
+            Text = inputCode,
+            Value = inputCode
+        };
         await BindNewDeviceAsync(inputCode);
     }
 
@@ -399,14 +384,6 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
         SelectedDeviceOption = DeviceOptions.FirstOrDefault();
     }
-
-    private WorkOrderDeviceBindItem? FindBoundDevice(string deviceCode) =>
-        BoundDevices.FirstOrDefault(x =>
-            !string.IsNullOrWhiteSpace(x.deviceCode)
-            && string.Equals(x.deviceCode.Trim(), deviceCode.Trim(), StringComparison.OrdinalIgnoreCase));
-
-    private static DateTime? TryParseDateTime(string? value) =>
-        DateTime.TryParse(value, out var dt) ? dt : null;
 
     private bool CanCallApi()
     {
