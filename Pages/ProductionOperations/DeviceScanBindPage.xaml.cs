@@ -24,8 +24,9 @@ public partial class DeviceScanBindPage : ContentPage
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        DeviceCodeEntry.Text = result.Trim();
-        await PromptBindTimeAndBindAsync(vm, result.Trim(), isManualSelect: false);
+        var deviceCode = result.Trim();
+        DeviceCodeEntry.Text = deviceCode;
+        await PromptScanConfirmAndBindAsync(vm, deviceCode);
     }
 
     private async void OnDeviceCodeCompleted(object sender, EventArgs e)
@@ -33,7 +34,7 @@ public partial class DeviceScanBindPage : ContentPage
         if (BindingContext is not DeviceScanBindViewModel vm)
             return;
 
-        await PromptBindTimeAndBindAsync(vm, DeviceCodeEntry.Text?.Trim(), isManualSelect: false);
+        await PromptScanConfirmAndBindAsync(vm, DeviceCodeEntry.Text?.Trim());
     }
 
     private async void OnManualBindClicked(object sender, EventArgs e)
@@ -41,12 +42,19 @@ public partial class DeviceScanBindPage : ContentPage
         if (BindingContext is not DeviceScanBindViewModel vm)
             return;
 
-        var popup = new ManualDeviceBindPopup(vm.DeviceOptions, vm.SelectedDeviceOption);
+        var popup = new ManualDeviceBindPopup(
+            vm.DeviceOptions,
+            vm.SelectedDeviceOption,
+            allowDeviceSelection: true,
+            title: "确认绑定");
+
         var result = await this.ShowPopupAsync(popup);
-        if (result is not StatusOption opt || string.IsNullOrWhiteSpace(opt.Value))
+        if (result is not DeviceBindConfirmResult confirmResult
+            || confirmResult.SelectedDeviceOption is not StatusOption opt
+            || string.IsNullOrWhiteSpace(opt.Value))
             return;
 
-        await PromptBindTimeAndBindAsync(vm, opt.Value, isManualSelect: true);
+        await vm.BindManualDeviceByCodeAsync(opt.Value, confirmResult.OperationTime);
     }
 
     private async void OnEditBoundDeviceClicked(object sender, EventArgs e)
@@ -75,28 +83,31 @@ public partial class DeviceScanBindPage : ContentPage
         await DisplayAlert("提示", resp?.message ?? "编辑失败", "确定");
     }
 
-    private async Task PromptBindTimeAndBindAsync(
-        DeviceScanBindViewModel vm,
-        string? deviceCode,
-        bool isManualSelect)
+    private async Task PromptScanConfirmAndBindAsync(DeviceScanBindViewModel vm, string? deviceCode)
     {
         if (string.IsNullOrWhiteSpace(deviceCode))
         {
-            await DisplayAlert("提示", isManualSelect ? "请先选择设备" : "请先输入或扫码设备编号", "确定");
+            await DisplayAlert("提示", "请先输入或扫码设备编号", "确定");
             return;
         }
 
-        var popup = new DeviceBindTimeEditPopup(DateTime.Now, DateTime.Now);
-        var result = await this.ShowPopupAsync(popup);
-        if (result is not DeviceBindTimeEditResult editResult || !editResult.Confirmed)
-            return;
-
-        if (isManualSelect)
+        var selectedOption = vm.FindDeviceOptionByCode(deviceCode);
+        if (selectedOption is null || string.IsNullOrWhiteSpace(selectedOption.Value))
         {
-            await vm.BindManualDeviceByCodeAsync(deviceCode, editResult.StartTime, editResult.EndTime);
+            await DisplayAlert("提示", "此设备不在当前工序可绑定设备列表中", "确定");
             return;
         }
 
-        await vm.BindByInputCodeAsync(deviceCode, editResult.StartTime, editResult.EndTime);
+        var popup = new ManualDeviceBindPopup(
+            new[] { selectedOption },
+            selectedOption,
+            allowDeviceSelection: false,
+            title: "确认绑定");
+
+        var result = await this.ShowPopupAsync(popup);
+        if (result is not DeviceBindConfirmResult confirmResult)
+            return;
+
+        await vm.BindByInputCodeAsync(deviceCode, confirmResult.OperationTime);
     }
 }
