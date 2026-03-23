@@ -10,6 +10,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 {
     private readonly IWorkOrderApi _api;
     private readonly List<DevicesInfo> _deviceCache = new();
+    private string? _loadedTaskId;
 
     [ObservableProperty] private string workOrderNo = string.Empty;
     [ObservableProperty] private string workOrderName = string.Empty;
@@ -40,11 +41,12 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private async Task ApplyQueryAttributesAsync(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("task", out var obj) || obj is not ProcessTask task)
-            return;
-
         try
         {
+            var task = BuildTaskFromQuery(query);
+            if (task is null)
+                return;
+
             WorkOrderNo = task.WorkOrderNo ?? string.Empty;
             WorkOrderName = task.WorkOrderName ?? string.Empty;
             MaterialName = task.MaterialName ?? string.Empty;
@@ -56,8 +58,10 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             SchemeNo = string.Empty;
             PlatPlanNo = null;
 
-            if (!string.IsNullOrWhiteSpace(task.Id))
+            if (!string.IsNullOrWhiteSpace(task.Id) &&
+                !string.Equals(_loadedTaskId, task.Id, StringComparison.Ordinal))
             {
+                _loadedTaskId = task.Id;
                 var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
                 if (detailResp?.success == true && detailResp.result is not null)
                 {
@@ -68,6 +72,10 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
                     SchemeNo = detail.schemeNo ?? string.Empty;
                     PlatPlanNo = detail.platPlanNo;
                 }
+            }
+            else if (string.IsNullOrWhiteSpace(task.Id))
+            {
+                _loadedTaskId = null;
             }
 
             await LoadDevicesAsync();
@@ -420,4 +428,44 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private static Task ShowTip(string message)
         => Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
+
+    private static ProcessTask? BuildTaskFromQuery(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue("task", out var obj) && obj is ProcessTask task)
+            return task;
+
+        var taskId = GetQueryString(query, "taskId");
+        var workOrderNo = GetQueryString(query, "workOrderNo");
+        var workOrderName = GetQueryString(query, "workOrderName");
+        var materialName = GetQueryString(query, "materialName");
+        var processName = GetQueryString(query, "processName");
+        var factoryCode = GetQueryString(query, "factoryCode");
+        var processCode = GetQueryString(query, "processCode");
+        var scheQtyText = GetQueryString(query, "scheQty");
+
+        if (string.IsNullOrWhiteSpace(taskId) &&
+            string.IsNullOrWhiteSpace(workOrderNo) &&
+            string.IsNullOrWhiteSpace(factoryCode) &&
+            string.IsNullOrWhiteSpace(processCode))
+            return null;
+
+        decimal? scheQty = null;
+        if (decimal.TryParse(scheQtyText, out var qty))
+            scheQty = qty;
+
+        return new ProcessTask
+        {
+            Id = taskId,
+            WorkOrderNo = workOrderNo,
+            WorkOrderName = workOrderName,
+            MaterialName = materialName,
+            ProcessName = processName,
+            FactoryCode = factoryCode,
+            ProcessCode = processCode,
+            ScheQty = scheQty
+        };
+    }
+
+    private static string? GetQueryString(IDictionary<string, object> query, string key)
+        => query.TryGetValue(key, out var value) ? value?.ToString() : null;
 }

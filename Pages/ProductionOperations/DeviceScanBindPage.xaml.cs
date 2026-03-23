@@ -4,15 +4,21 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class DeviceScanBindPage : ContentPage
+public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
 {
+    private readonly DeviceScanBindViewModel _vm;
+
     public DeviceScanBindPage() : this(ServiceHelper.GetService<DeviceScanBindViewModel>()) { }
 
     public DeviceScanBindPage(DeviceScanBindViewModel vm)
     {
         InitializeComponent();
-        BindingContext = vm ?? throw new ArgumentNullException(nameof(vm));
+        _vm = vm ?? throw new ArgumentNullException(nameof(vm));
+        BindingContext = _vm;
     }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+        => _vm.ApplyQueryAttributes(query);
 
     private async void OnScanDeviceClicked(object sender, EventArgs e)
     {
