@@ -38,6 +38,7 @@ namespace IndustrialControlMAUI.ViewModels
         readonly Dictionary<string, string> _orderstatusMap = new();    // 工序：code→name
         private bool _dictsLoaded = false;
         private bool _navigateToDeviceBind;
+        private bool _isNavigating;
 
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<ProcessTask> Orders { get; } = new();
@@ -264,16 +265,38 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task GoExecuteAsync(ProcessTask? item)
         {
             if (item is null) return;
-            if (_navigateToDeviceBind)
-            {
-                await Shell.Current.GoToAsync(nameof(DeviceScanBindPage), new Dictionary<string, object>
-                {
-                    ["task"] = item
-                });
-                return;
-            }
+            if (_isNavigating) return;
 
-            await Shell.Current.GoToAsync(nameof(WorkProcessTaskDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            try
+            {
+                _isNavigating = true;
+
+                if (_navigateToDeviceBind)
+                {
+                    await Shell.Current.GoToAsync(nameof(DeviceScanBindPage), new Dictionary<string, object>
+                    {
+                        ["taskId"] = item.Id ?? string.Empty,
+                        ["workOrderNo"] = item.WorkOrderNo ?? string.Empty,
+                        ["workOrderName"] = item.WorkOrderName ?? string.Empty,
+                        ["materialName"] = item.MaterialName ?? string.Empty,
+                        ["processName"] = item.ProcessName ?? string.Empty,
+                        ["scheQty"] = item.ScheQty?.ToString("G29") ?? string.Empty,
+                        ["factoryCode"] = item.FactoryCode ?? string.Empty,
+                        ["processCode"] = item.ProcessCode ?? string.Empty
+                    });
+                    return;
+                }
+
+                await Shell.Current.GoToAsync(nameof(WorkProcessTaskDetailPage) + $"?id={Uri.EscapeDataString(item.Id ?? string.Empty)}");
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"页面跳转失败：{ex.Message}");
+            }
+            finally
+            {
+                _isNavigating = false;
+            }
         }
 
         public void SetEntryMode(string? mode)
