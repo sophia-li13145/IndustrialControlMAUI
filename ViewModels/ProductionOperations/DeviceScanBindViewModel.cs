@@ -35,40 +35,48 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         _api = api;
     }
 
-    public async void ApplyQueryAttributes(IDictionary<string, object> query)
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+        => _ = ApplyQueryAttributesAsync(query);
+
+    private async Task ApplyQueryAttributesAsync(IDictionary<string, object> query)
     {
         if (!query.TryGetValue("task", out var obj) || obj is not ProcessTask task)
             return;
 
-        WorkOrderNo = task.WorkOrderNo ?? string.Empty;
-        WorkOrderName = task.WorkOrderName ?? string.Empty;
-        MaterialName = task.MaterialName ?? string.Empty;
-        ProcessName = task.ProcessName ?? string.Empty;
-        ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
-        FactoryCode = task.FactoryCode ?? string.Empty;
-        ProcessCode = task.ProcessCode ?? string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(task.Id))
+        try
         {
-            var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
-            if (detailResp?.success == true && detailResp.result is not null)
-            {
-                var detail = detailResp.result;
-                FactoryCode = detail.factoryCode ?? task.FactoryCode ?? string.Empty;
-                ProcessCode = detail.processCode ?? task.ProcessCode ?? string.Empty;
-                LineCode = detail.line;
-                SchemeNo = detail.schemeNo ?? string.Empty;
-                PlatPlanNo = detail.platPlanNo;
-            }
-            else
-            {
-                FactoryCode = task.FactoryCode ?? string.Empty;
-                ProcessCode = task.ProcessCode ?? string.Empty;
-            }
-        }
+            WorkOrderNo = task.WorkOrderNo ?? string.Empty;
+            WorkOrderName = task.WorkOrderName ?? string.Empty;
+            MaterialName = task.MaterialName ?? string.Empty;
+            ProcessName = task.ProcessName ?? string.Empty;
+            ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
+            FactoryCode = task.FactoryCode ?? string.Empty;
+            ProcessCode = task.ProcessCode ?? string.Empty;
+            LineCode = null;
+            SchemeNo = string.Empty;
+            PlatPlanNo = null;
 
-        await LoadDevicesAsync();
-        await LoadBoundDevicesAsync();
+            if (!string.IsNullOrWhiteSpace(task.Id))
+            {
+                var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
+                if (detailResp?.success == true && detailResp.result is not null)
+                {
+                    var detail = detailResp.result;
+                    FactoryCode = detail.factoryCode ?? task.FactoryCode ?? string.Empty;
+                    ProcessCode = detail.processCode ?? task.ProcessCode ?? string.Empty;
+                    LineCode = detail.line;
+                    SchemeNo = detail.schemeNo ?? string.Empty;
+                    PlatPlanNo = detail.platPlanNo;
+                }
+            }
+
+            await LoadDevicesAsync();
+            await LoadBoundDevicesAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowTip($"设备绑定页面加载失败：{ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -80,12 +88,15 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         {
             IsBusy = true;
             var resp = await _api.GetWorkOrderDeviceListAsync(FactoryCode, ProcessCode, SchemeNo, WorkOrderNo);
-            BoundDevices.Clear();
-            if (resp?.result != null)
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
+                BoundDevices.Clear();
+                if (resp?.result == null)
+                    return;
+
                 foreach (var item in resp.result)
                     BoundDevices.Add(item);
-            }
+            });
         }
         catch (Exception ex)
         {
@@ -351,8 +362,11 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private async Task LoadDevicesAsync()
     {
         _deviceCache.Clear();
-        DeviceOptions.Clear();
-        DeviceOptions.Add(new StatusOption { Text = "请选择设备", Value = null });
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            DeviceOptions.Clear();
+            DeviceOptions.Add(new StatusOption { Text = "请选择设备", Value = null });
+        });
 
         if (string.IsNullOrWhiteSpace(FactoryCode) || string.IsNullOrWhiteSpace(ProcessCode))
         {
@@ -365,16 +379,23 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             var resp = await _api.GetDeviceOptionsAsync(FactoryCode, ProcessCode, LineCode);
             if (resp?.result != null)
             {
+                var options = new List<StatusOption>();
                 foreach (var d in resp.result)
                 {
                     if (string.IsNullOrWhiteSpace(d.deviceCode)) continue;
                     _deviceCache.Add(d);
-                    DeviceOptions.Add(new StatusOption
+                    options.Add(new StatusOption
                     {
                         Text = d.deviceName ?? d.deviceCode!,
                         Value = d.deviceCode
                     });
                 }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var option in options)
+                        DeviceOptions.Add(option);
+                });
             }
         }
         catch
