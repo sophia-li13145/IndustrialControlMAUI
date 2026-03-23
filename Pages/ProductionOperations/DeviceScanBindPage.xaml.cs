@@ -6,10 +6,12 @@ namespace IndustrialControlMAUI.Pages;
 
 public partial class DeviceScanBindPage : ContentPage
 {
+    public DeviceScanBindPage() : this(ServiceHelper.GetService<DeviceScanBindViewModel>()) { }
+
     public DeviceScanBindPage(DeviceScanBindViewModel vm)
     {
         InitializeComponent();
-        BindingContext = vm;
+        BindingContext = vm ?? throw new ArgumentNullException(nameof(vm));
     }
 
     private async void OnScanDeviceClicked(object sender, EventArgs e)
