@@ -242,6 +242,9 @@ public class ProcessTask
     [JsonPropertyName("WorkOrderAuditStatus")]
     public string? WorkOrderAuditStatus { get; set; }
 
+    [JsonIgnore]
+    public string? WorkOrderAuditStatusName { get; set; }
+
     [JsonPropertyName("AuditStatus")]
     public string? AuditStatus { get; set; } // 接口返回的原始值
     [JsonIgnore] // 不参与序列化
