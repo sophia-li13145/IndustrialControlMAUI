@@ -29,6 +29,7 @@
             </Style>
             <converters:NullToBoolConverter x:Key="NullToBoolConverter" xmlns:converters="clr-namespace:IndustrialControlMAUI.Converters" />
             <converters:IntConverter x:Key="IntConverter" xmlns:converters="clr-namespace:IndustrialControlMAUI.Converters" />
+            <converters:ZeroToBoolConverter x:Key="ZeroToBoolConverter" xmlns:converters="clr-namespace:IndustrialControlMAUI.Converters" />
             <converters:BoolToExpandIconConverter x:Key="BoolToExpandIcon" Expanded="▾" Collapsed="▸"  xmlns:converters="clr-namespace:IndustrialControlMAUI.Converters"/>
         </ResourceDictionary>
     </Application.Resources>
