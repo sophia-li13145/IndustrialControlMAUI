@@ -117,9 +117,9 @@ namespace IndustrialControlMAUI.ViewModels
                 //3)工单状态
                 var orderstatus = await _workapi.GetWorkOrderDictsAsync();
                 _orderstatusMap.Clear();
-                foreach (var d in orderstatus.AuditStatus)
+                foreach (var d in orderstatus.AuditStatus ?? Enumerable.Empty<DictItem>())
                     if (!string.IsNullOrWhiteSpace(d.dictItemValue))
-                        _orderstatusMap[d.dictItemValue!] = d.dictItemName ?? d.dictItemValue!;
+                        _orderstatusMap[d.dictItemValue!.Trim()] = d.dictItemName ?? d.dictItemValue!;
                 // 3) ★ 应用“上一次的工序选择”
                 ApplyLastProcessSelectionIfAny();
                 _dictsLoaded = true;
@@ -234,12 +234,30 @@ namespace IndustrialControlMAUI.ViewModels
                 if (!string.IsNullOrWhiteSpace(t.AuditStatus) &&
                 _statusMap.TryGetValue(t.AuditStatus, out var sName))
                     t.AuditStatusName = sName;
-                if (!string.IsNullOrWhiteSpace(t.WorkOrderAuditStatus) &&
-               _orderstatusMap.TryGetValue(t.WorkOrderAuditStatus, out var sName2))
-                    t.WorkOrderAuditStatus = sName2;
+
+                t.WorkOrderAuditStatusName = GetWorkOrderAuditStatusName(t.WorkOrderAuditStatus);
             }
 
             return records;
+        }
+
+        private string? GetWorkOrderAuditStatusName(string? statusCode)
+        {
+            var code = statusCode?.Trim();
+            if (string.IsNullOrWhiteSpace(code))
+                return code;
+
+            if (_orderstatusMap.TryGetValue(code, out var statusName) && !string.IsNullOrWhiteSpace(statusName))
+                return statusName;
+
+            return code switch
+            {
+                "0" => "待执行",
+                "1" => "执行中",
+                "2" => "入库中",
+                "3" => "已完成",
+                _ => code
+            };
         }
         /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string message) =>
