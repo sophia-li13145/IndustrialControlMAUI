@@ -425,5 +425,32 @@
 
             </VerticalStackLayout>
         </ScrollView>
+
+        <!-- 工单上下文加载遮罩 -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding IsContextLoading}"
+              BackgroundColor="#66000000"
+              InputTransparent="False">
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="20,16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="12"
+                                       VerticalOptions="Center">
+                    <ActivityIndicator IsRunning="{Binding IsContextLoading}"
+                                       Color="#0B7BEE"
+                                       WidthRequest="26"
+                                       HeightRequest="26" />
+                    <Label Text="工单信息加载中..."
+                           TextColor="#333333"
+                           VerticalTextAlignment="Center"
+                           FontSize="14" />
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
     </Grid>
 </ContentPage>
