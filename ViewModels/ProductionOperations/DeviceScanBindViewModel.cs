@@ -428,10 +428,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private bool CanCallApi()
     {
         if (IsContextLoading)
-        {
-            _ = ShowTip("页面仍在加载工单信息，请稍后再试");
             return false;
-        }
 
         if (!string.IsNullOrWhiteSpace(FactoryCode)
             && !string.IsNullOrWhiteSpace(ProcessCode)
