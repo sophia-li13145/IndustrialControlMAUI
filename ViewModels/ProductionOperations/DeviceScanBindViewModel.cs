@@ -11,6 +11,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private readonly IWorkOrderApi _api;
     private readonly List<DevicesInfo> _deviceCache = new();
     private string? _loadedTaskId;
+    [ObservableProperty] private bool isContextLoading;
 
     [ObservableProperty] private string workOrderNo = string.Empty;
     [ObservableProperty] private string workOrderName = string.Empty;
@@ -41,6 +42,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private async Task ApplyQueryAttributesAsync(IDictionary<string, object> query)
     {
+        IsContextLoading = true;
         try
         {
             var task = BuildTaskFromQuery(query);
@@ -61,7 +63,6 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             if (!string.IsNullOrWhiteSpace(task.Id) &&
                 !string.Equals(_loadedTaskId, task.Id, StringComparison.Ordinal))
             {
-                _loadedTaskId = task.Id;
                 var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
                 if (detailResp?.success == true && detailResp.result is not null)
                 {
@@ -71,6 +72,11 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
                     LineCode = detail.line;
                     SchemeNo = detail.schemeNo ?? string.Empty;
                     PlatPlanNo = detail.platPlanNo;
+                    _loadedTaskId = task.Id;
+                }
+                else
+                {
+                    _loadedTaskId = null;
                 }
             }
             else if (string.IsNullOrWhiteSpace(task.Id))
@@ -79,11 +85,16 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             }
 
             await LoadDevicesAsync();
+            IsContextLoading = false;
             await LoadBoundDevicesAsync();
         }
         catch (Exception ex)
         {
             await ShowTip($"设备绑定页面加载失败：{ex.Message}");
+        }
+        finally
+        {
+            IsContextLoading = false;
         }
     }
 
@@ -416,6 +427,12 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private bool CanCallApi()
     {
+        if (IsContextLoading)
+        {
+            _ = ShowTip("页面仍在加载工单信息，请稍后再试");
+            return false;
+        }
+
         if (!string.IsNullOrWhiteSpace(FactoryCode)
             && !string.IsNullOrWhiteSpace(ProcessCode)
             && !string.IsNullOrWhiteSpace(SchemeNo)
