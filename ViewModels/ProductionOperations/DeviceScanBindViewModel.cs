@@ -56,9 +56,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
             FactoryCode = task.FactoryCode ?? string.Empty;
             ProcessCode = task.ProcessCode ?? string.Empty;
-            LineCode = null;
-            SchemeNo = string.Empty;
-            PlatPlanNo = null;
+            LineCode = task.Line;
+            SchemeNo = task.SchemeNo ?? string.Empty;
+            PlatPlanNo = task.PlatPlanNo;
 
             if (!string.IsNullOrWhiteSpace(task.Id) &&
                 !string.Equals(_loadedTaskId, task.Id, StringComparison.Ordinal))
@@ -455,6 +455,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         var processName = GetQueryString(query, "processName");
         var factoryCode = GetQueryString(query, "factoryCode");
         var processCode = GetQueryString(query, "processCode");
+        var schemeNo = GetQueryString(query, "schemeNo");
+        var platPlanNo = GetQueryString(query, "platPlanNo");
+        var lineCode = GetQueryString(query, "lineCode");
         var scheQtyText = GetQueryString(query, "scheQty");
 
         if (string.IsNullOrWhiteSpace(taskId) &&
@@ -476,6 +479,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             ProcessName = processName,
             FactoryCode = factoryCode,
             ProcessCode = processCode,
+            SchemeNo = schemeNo,
+            PlatPlanNo = platPlanNo,
+            Line = lineCode,
             ScheQty = scheQty
         };
     }

@@ -300,7 +300,10 @@ namespace IndustrialControlMAUI.ViewModels
                         ["processName"] = item.ProcessName ?? string.Empty,
                         ["scheQty"] = item.ScheQty?.ToString("G29") ?? string.Empty,
                         ["factoryCode"] = item.FactoryCode ?? string.Empty,
-                        ["processCode"] = item.ProcessCode ?? string.Empty
+                        ["processCode"] = item.ProcessCode ?? string.Empty,
+                        ["schemeNo"] = item.SchemeNo ?? string.Empty,
+                        ["platPlanNo"] = item.PlatPlanNo ?? string.Empty,
+                        ["lineCode"] = item.Line ?? string.Empty
                     });
                     return;
                 }
