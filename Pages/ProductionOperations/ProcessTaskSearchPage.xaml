@@ -43,13 +43,38 @@
             <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8">
                 <DatePicker Date="{Binding StartDate}" />
                 <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
-                <Picker 
-                    Grid.Column="2"
-         Title="状态"
-         WidthRequest="120"
-         ItemsSource="{Binding StatusOptions}"
-         ItemDisplayBinding="{Binding Text}"
-         SelectedItem="{Binding SelectedStatusOption}" />
+                <VerticalStackLayout Grid.Column="2" WidthRequest="120" Spacing="4">
+                    <Button Text="{Binding SelectedStatusSummary}"
+                            HeightRequest="40"
+                            FontSize="13"
+                            Padding="8,6"
+                            BackgroundColor="White"
+                            TextColor="#333333"
+                            BorderColor="#D1D5DB"
+                            BorderWidth="1"
+                            Command="{Binding ToggleStatusDropdownCommand}" />
+                    <Border IsVisible="{Binding IsStatusDropdownOpen}"
+                            Stroke="#D1D5DB"
+                            StrokeThickness="1"
+                            BackgroundColor="White"
+                            Padding="8"
+                            MaximumHeightRequest="180">
+                        <ScrollView>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding StatusOptions}" Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                            <CheckBox IsChecked="{Binding IsSelected}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Text}"
+                                                   VerticalTextAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </ScrollView>
+                    </Border>
+                </VerticalStackLayout>
                 <Picker Grid.Column="3"
         Title="工序"
         WidthRequest="120"
