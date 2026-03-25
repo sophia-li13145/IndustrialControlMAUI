@@ -11,7 +11,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private readonly IWorkOrderApi _api;
     private readonly List<DevicesInfo> _deviceCache = new();
     private string? _loadedTaskId;
-    private bool _isContextLoading;
+    [ObservableProperty] private bool isContextLoading;
 
     [ObservableProperty] private string workOrderNo = string.Empty;
     [ObservableProperty] private string workOrderName = string.Empty;
@@ -42,7 +42,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private async Task ApplyQueryAttributesAsync(IDictionary<string, object> query)
     {
-        _isContextLoading = true;
+        IsContextLoading = true;
         try
         {
             var task = BuildTaskFromQuery(query);
@@ -85,6 +85,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             }
 
             await LoadDevicesAsync();
+            IsContextLoading = false;
             await LoadBoundDevicesAsync();
         }
         catch (Exception ex)
@@ -93,7 +94,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         }
         finally
         {
-            _isContextLoading = false;
+            IsContextLoading = false;
         }
     }
 
@@ -426,9 +427,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private bool CanCallApi()
     {
-        if (_isContextLoading)
+        if (IsContextLoading)
         {
-            _ = ShowTip("工单上下文加载中，请稍后重试");
+            _ = ShowTip("页面仍在加载工单信息，请稍后再试");
             return false;
         }
 
