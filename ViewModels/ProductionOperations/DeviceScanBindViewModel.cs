@@ -11,6 +11,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private readonly IWorkOrderApi _api;
     private readonly List<DevicesInfo> _deviceCache = new();
     private string? _loadedTaskId;
+    [ObservableProperty] private bool isContextLoading;
 
     [ObservableProperty] private string workOrderNo = string.Empty;
     [ObservableProperty] private string workOrderName = string.Empty;
@@ -41,6 +42,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private async Task ApplyQueryAttributesAsync(IDictionary<string, object> query)
     {
+        IsContextLoading = true;
         try
         {
             var task = BuildTaskFromQuery(query);
@@ -54,14 +56,13 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
             FactoryCode = task.FactoryCode ?? string.Empty;
             ProcessCode = task.ProcessCode ?? string.Empty;
-            LineCode = null;
-            SchemeNo = string.Empty;
-            PlatPlanNo = null;
+            LineCode = task.Line;
+            SchemeNo = task.SchemeNo ?? string.Empty;
+            PlatPlanNo = task.PlatPlanNo;
 
             if (!string.IsNullOrWhiteSpace(task.Id) &&
                 !string.Equals(_loadedTaskId, task.Id, StringComparison.Ordinal))
             {
-                _loadedTaskId = task.Id;
                 var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
                 if (detailResp?.success == true && detailResp.result is not null)
                 {
@@ -71,6 +72,11 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
                     LineCode = detail.line;
                     SchemeNo = detail.schemeNo ?? string.Empty;
                     PlatPlanNo = detail.platPlanNo;
+                    _loadedTaskId = task.Id;
+                }
+                else
+                {
+                    _loadedTaskId = null;
                 }
             }
             else if (string.IsNullOrWhiteSpace(task.Id))
@@ -79,11 +85,16 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             }
 
             await LoadDevicesAsync();
+            IsContextLoading = false;
             await LoadBoundDevicesAsync();
         }
         catch (Exception ex)
         {
             await ShowTip($"设备绑定页面加载失败：{ex.Message}");
+        }
+        finally
+        {
+            IsContextLoading = false;
         }
     }
 
@@ -416,6 +427,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private bool CanCallApi()
     {
+        if (IsContextLoading)
+            return false;
+
         if (!string.IsNullOrWhiteSpace(FactoryCode)
             && !string.IsNullOrWhiteSpace(ProcessCode)
             && !string.IsNullOrWhiteSpace(SchemeNo)
@@ -441,6 +455,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         var processName = GetQueryString(query, "processName");
         var factoryCode = GetQueryString(query, "factoryCode");
         var processCode = GetQueryString(query, "processCode");
+        var schemeNo = GetQueryString(query, "schemeNo");
+        var platPlanNo = GetQueryString(query, "platPlanNo");
+        var lineCode = GetQueryString(query, "lineCode");
         var scheQtyText = GetQueryString(query, "scheQty");
 
         if (string.IsNullOrWhiteSpace(taskId) &&
@@ -462,6 +479,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             ProcessName = processName,
             FactoryCode = factoryCode,
             ProcessCode = processCode,
+            SchemeNo = schemeNo,
+            PlatPlanNo = platPlanNo,
+            Line = lineCode,
             ScheQty = scheQty
         };
     }
