@@ -28,7 +28,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isLoadingMore;
         [ObservableProperty] private bool hasMore = true;
         public ObservableCollection<StatusFilterOption> StatusOptions { get; } = new();
-        [ObservableProperty] private string selectedStatusSummary = "待执行, 执行中";
+        [ObservableProperty] private string selectedStatusSummary = "待执行";
         [ObservableProperty] private bool isStatusDropdownOpen;
         public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedProcessOption;
@@ -288,7 +288,7 @@ namespace IndustrialControlMAUI.ViewModels
         private void UpdateSelectedStatusSummary()
         {
             var selected = StatusOptions.Where(x => x.IsSelected).Select(x => x.Text).ToList();
-            SelectedStatusSummary = selected.Count == 0 ? "请选择状态" : string.Join("、", selected);
+            SelectedStatusSummary = selected.Count == 0 ? "请选择状态" : selected[0];
         }
 
 
