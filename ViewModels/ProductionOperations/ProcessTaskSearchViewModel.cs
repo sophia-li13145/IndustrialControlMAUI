@@ -23,14 +23,13 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string? keyword;
         [ObservableProperty] private DateTime startDate = DateTime.Today.AddDays(-7);
         [ObservableProperty] private DateTime endDate = DateTime.Today;
-        [ObservableProperty] private string? selectedStatus = "全部";
         [ObservableProperty] private int pageIndex = 1;
         [ObservableProperty] private int pageSize = 10;
         [ObservableProperty] private bool isLoadingMore;
         [ObservableProperty] private bool hasMore = true;
-        public ObservableCollection<StatusOption> StatusOptions { get; } = new();
-        /// <summary>执行 new 逻辑。</summary>
-        [ObservableProperty] private StatusOption? selectedStatusOption;
+        public ObservableCollection<StatusFilterOption> StatusOptions { get; } = new();
+        [ObservableProperty] private string selectedStatusSummary = "待执行, 执行中";
+        [ObservableProperty] private bool isStatusDropdownOpen;
         public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedProcessOption;
 
@@ -45,6 +44,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
+        public IRelayCommand ToggleStatusDropdownCommand { get; }
 
         /// <summary>执行 ProcessTaskSearchViewModel 初始化逻辑。</summary>
         public ProcessTaskSearchViewModel(IWorkOrderApi workapi)
@@ -56,6 +56,7 @@ namespace IndustrialControlMAUI.ViewModels
             _pendingLastProcessValue = lastVal ?? lastText;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
+            ToggleStatusDropdownCommand = new RelayCommand(() => IsStatusDropdownOpen = !IsStatusDropdownOpen);
             _ = EnsureDictsLoadedAsync();   // fire-and-forget
            
         }
@@ -83,17 +84,17 @@ namespace IndustrialControlMAUI.ViewModels
 
                         var name = d.dictItemName ?? val;
                         _statusMap[val] = name; // ★ 建立码→名映射
-                        if (name == "待执行" || name == "执行中") {
-                            StatusOptions.Add(new StatusOption
-                            {
-                                Text = name,
-                                Value = val
-                            });
-                        } 
+                        var option = new StatusFilterOption
+                        {
+                            Text = name,
+                            Value = val,
+                            IsSelected = name == "待执行" || name == "执行中"
+                        };
+                        option.PropertyChanged += OnStatusOptionPropertyChanged;
+                        StatusOptions.Add(option);
                     }
-                    
                 }
-                SelectedStatusOption ??= StatusOptions.FirstOrDefault();
+                UpdateSelectedStatusSummary();
 
                 // 2) 工序下拉：来自 PmsProcessInfoList?status=1
                 var proResp = await _workapi.GetProcessInfoListAsync();
@@ -214,13 +215,14 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task<List<ProcessTask>> LoadPageAsync(int pageNo)
         {
             var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
-            var statusList = string.IsNullOrWhiteSpace(SelectedStatusOption?.Value)
-            ? null
-            : new[] { SelectedStatusOption.Value };
+            var statusList = StatusOptions
+                .Where(x => x.IsSelected && !string.IsNullOrWhiteSpace(x.Value))
+                .Select(x => x.Value!)
+                .ToArray();
 
             var page = await _workapi.PageWorkProcessTasksAsync(
                 workOrderNo: byOrderNo ? Keyword?.Trim() : null,
-                auditStatusList: statusList,
+                auditStatusList: statusList.Length == 0 ? null : statusList,
                 processCode: SelectedProcessOption?.Value,
                 createdTimeStart: byOrderNo ? null : StartDate.Date,
                 createdTimeEnd: byOrderNo ? null : EndDate.Date.AddDays(1).AddSeconds(-1),
@@ -267,13 +269,26 @@ namespace IndustrialControlMAUI.ViewModels
         private void ClearFilters()
         {
             Keyword = string.Empty;
-            SelectedStatus = "全部";
             StartDate = DateTime.Today.AddDays(-7);
             EndDate = DateTime.Today;
             PageIndex = 1;
             HasMore = true;
-            SelectedStatusOption = StatusOptions.FirstOrDefault();
+            foreach (var opt in StatusOptions)
+                opt.IsSelected = opt.Text == "待执行" || opt.Text == "执行中";
+            UpdateSelectedStatusSummary();
             Orders.Clear();
+        }
+
+        private void OnStatusOptionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(StatusFilterOption.IsSelected))
+                UpdateSelectedStatusSummary();
+        }
+
+        private void UpdateSelectedStatusSummary()
+        {
+            var selected = StatusOptions.Where(x => x.IsSelected).Select(x => x.Text).ToList();
+            SelectedStatusSummary = selected.Count == 0 ? "请选择状态" : string.Join("、", selected);
         }
 
 
@@ -324,6 +339,13 @@ namespace IndustrialControlMAUI.ViewModels
         {
             _navigateToDeviceBind = string.Equals(mode, "deviceBinding", StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    public partial class StatusFilterOption : ObservableObject
+    {
+        public string Text { get; set; } = "";
+        public string? Value { get; set; }
+        [ObservableProperty] private bool isSelected;
     }
 
 }
