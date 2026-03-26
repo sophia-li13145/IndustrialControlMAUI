@@ -32,7 +32,7 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        var deviceCode = result.Trim();
+        var deviceCode = ExtractDeviceCode(result);
         DeviceCodeEntry.Text = deviceCode;
         await PromptScanConfirmAndBindAsync(vm, deviceCode);
     }
@@ -42,7 +42,9 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
         if (BindingContext is not DeviceScanBindViewModel vm)
             return;
 
-        await PromptScanConfirmAndBindAsync(vm, DeviceCodeEntry.Text?.Trim());
+        var deviceCode = ExtractDeviceCode(DeviceCodeEntry.Text);
+        DeviceCodeEntry.Text = deviceCode;
+        await PromptScanConfirmAndBindAsync(vm, deviceCode);
     }
 
     private async void OnManualBindClicked(object sender, EventArgs e)
@@ -116,5 +118,22 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
             return;
 
         await vm.BindByInputCodeAsync(deviceCode);
+    }
+
+    private static string? ExtractDeviceCode(string? raw)
+    {
+        var text = raw?.Trim();
+        if (string.IsNullOrWhiteSpace(text))
+            return text;
+
+        var parts = text.Split("#%", StringSplitOptions.None);
+        if (parts.Length >= 2)
+        {
+            var extracted = parts[^1]?.Trim();
+            if (!string.IsNullOrWhiteSpace(extracted))
+                return extracted;
+        }
+
+        return text;
     }
 }
