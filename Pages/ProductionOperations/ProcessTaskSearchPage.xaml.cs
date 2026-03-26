@@ -66,4 +66,10 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
                 vm.SearchCommand.Execute(null);
         }
     }
+
+    private void OnStatusDropdownClicked(object sender, EventArgs e)
+    {
+        if (BindingContext is ProcessTaskSearchViewModel vm)
+            vm.IsStatusDropdownOpen = !vm.IsStatusDropdownOpen;
+    }
 }
