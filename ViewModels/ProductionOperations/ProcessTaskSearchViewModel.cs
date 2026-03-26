@@ -29,6 +29,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool hasMore = true;
         public ObservableCollection<StatusFilterOption> StatusOptions { get; } = new();
         [ObservableProperty] private string selectedStatusSummary = "待执行";
+        [ObservableProperty] private bool isStatusDropdownOpen;
         public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedProcessOption;
 
