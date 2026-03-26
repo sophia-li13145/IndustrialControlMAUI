@@ -43,13 +43,53 @@
             <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8">
                 <DatePicker Date="{Binding StartDate}" />
                 <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
-                <Picker 
-                    Grid.Column="2"
-         Title="状态"
-         WidthRequest="120"
-         ItemsSource="{Binding StatusOptions}"
-         ItemDisplayBinding="{Binding Text}"
-         SelectedItem="{Binding SelectedStatusOption}" />
+                <Grid Grid.Column="2"
+                      WidthRequest="120"
+                      HeightRequest="40"
+                      IsClippedToBounds="False"
+                      ZIndex="20">
+                    <Border BackgroundColor="#F5F5F5"
+                            Stroke="#D0D0D0"
+                            StrokeThickness="1"
+                            Padding="10,6">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnStatusDropdownClicked" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding SelectedStatusSummary}"
+                                   FontSize="16"
+                                   TextColor="#111111"
+                                   VerticalTextAlignment="Center" />
+                            <Label Grid.Column="1"
+                                   Text="⌄"
+                                   FontSize="16"
+                                   TextColor="#666666"
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <Border IsVisible="{Binding IsStatusDropdownOpen}"
+                            BackgroundColor="White"
+                            Padding="8"
+                            MaximumHeightRequest="180"
+                            Margin="0,44,0,0"
+                            VerticalOptions="Start"
+                            ZIndex="30">
+                        <ScrollView>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding StatusOptions}" Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                            <CheckBox IsChecked="{Binding IsSelected}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Text}"
+                                                   VerticalTextAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </ScrollView>
+                    </Border>
+                </Grid>
                 <Picker Grid.Column="3"
         Title="工序"
         WidthRequest="120"
