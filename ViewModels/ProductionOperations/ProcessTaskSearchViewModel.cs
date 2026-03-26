@@ -44,6 +44,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         public IAsyncRelayCommand SearchCommand { get; }
         public IRelayCommand ClearCommand { get; }
+        public IRelayCommand ToggleStatusDropdownCommand { get; }
 
         /// <summary>执行 ProcessTaskSearchViewModel 初始化逻辑。</summary>
         public ProcessTaskSearchViewModel(IWorkOrderApi workapi)
@@ -55,6 +56,7 @@ namespace IndustrialControlMAUI.ViewModels
             _pendingLastProcessValue = lastVal ?? lastText;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
+            ToggleStatusDropdownCommand = new RelayCommand(() => IsStatusDropdownOpen = !IsStatusDropdownOpen);
             _ = EnsureDictsLoadedAsync();   // fire-and-forget
            
         }
