@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="IndustrialControlMAUI.Pages.StatusMultiSelectPopup"
+               CanBeDismissedByTappingOutsideOfPopup="True">
+    <Border BackgroundColor="White"
+            Stroke="#D1D5DB"
+            StrokeThickness="1"
+            Padding="12"
+            WidthRequest="220">
+        <VerticalStackLayout Spacing="10">
+            <Label Text="选择状态" FontAttributes="Bold" FontSize="15" TextColor="#111111" />
+            <ScrollView MaximumHeightRequest="220">
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding}" Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <CheckBox IsChecked="{Binding IsSelected}" />
+                                <Label Grid.Column="1" Text="{Binding Text}" VerticalTextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+            <Button Text="完成"
+                    HeightRequest="36"
+                    BackgroundColor="#2D73FF"
+                    TextColor="White"
+                    Clicked="OnDoneClicked" />
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>

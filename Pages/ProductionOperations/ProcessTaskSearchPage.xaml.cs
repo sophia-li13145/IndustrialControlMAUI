@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.ViewModels;
 
@@ -66,4 +67,11 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
                 vm.SearchCommand.Execute(null);
         }
     }
+
+    private async void OnStatusFilterClicked(object sender, EventArgs e)
+    {
+        if (BindingContext is ProcessTaskSearchViewModel vm)
+            await this.ShowPopupAsync(new StatusMultiSelectPopup(vm.StatusOptions));
+    }
+
 }
