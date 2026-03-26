@@ -46,7 +46,7 @@
                 <Grid Grid.Column="2"
                       WidthRequest="120"
                       HeightRequest="40"
-                      ClipToBounds="False"
+                      IsClippedToBounds="False"
                       ZIndex="20">
                     <Button Text="{Binding SelectedStatusSummary}"
                             HeightRequest="40"
