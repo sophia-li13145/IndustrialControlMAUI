@@ -48,13 +48,25 @@
                       HeightRequest="40"
                       IsClippedToBounds="False"
                       ZIndex="20">
-                    <Button Text="{Binding SelectedStatusSummary}"
-                            HeightRequest="40"
-                            FontSize="13"
-                            Padding="8,6"
-                            BackgroundColor="White"
-                            TextColor="#333333"
-                            Clicked="OnStatusDropdownClicked" />
+                    <Border BackgroundColor="#F5F5F5"
+                            Stroke="#D0D0D0"
+                            StrokeThickness="1"
+                            Padding="10,6">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnStatusDropdownClicked" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding SelectedStatusSummary}"
+                                   FontSize="16"
+                                   TextColor="#111111"
+                                   VerticalTextAlignment="Center" />
+                            <Label Grid.Column="1"
+                                   Text="⌄"
+                                   FontSize="16"
+                                   TextColor="#666666"
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Border>
                     <Border IsVisible="{Binding IsStatusDropdownOpen}"
                             BackgroundColor="White"
                             Padding="8"

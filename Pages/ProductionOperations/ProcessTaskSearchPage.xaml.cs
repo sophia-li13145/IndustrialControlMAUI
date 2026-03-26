@@ -67,7 +67,7 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
         }
     }
 
-    private void OnStatusDropdownClicked(object sender, EventArgs e)
+    private void OnStatusDropdownClicked(object sender, TappedEventArgs e)
     {
         if (BindingContext is ProcessTaskSearchViewModel vm)
             vm.IsStatusDropdownOpen = !vm.IsStatusDropdownOpen;
