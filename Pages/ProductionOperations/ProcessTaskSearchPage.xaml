@@ -43,7 +43,11 @@
             <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8">
                 <DatePicker Date="{Binding StartDate}" />
                 <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
-                <VerticalStackLayout Grid.Column="2" WidthRequest="120" Spacing="4">
+                <Grid Grid.Column="2"
+                      WidthRequest="120"
+                      HeightRequest="40"
+                      ClipToBounds="False"
+                      ZIndex="20">
                     <Button Text="{Binding SelectedStatusSummary}"
                             HeightRequest="40"
                             FontSize="13"
@@ -58,7 +62,10 @@
                             StrokeThickness="1"
                             BackgroundColor="White"
                             Padding="8"
-                            MaximumHeightRequest="180">
+                            MaximumHeightRequest="180"
+                            Margin="0,44,0,0"
+                            VerticalOptions="Start"
+                            ZIndex="30">
                         <ScrollView>
                             <VerticalStackLayout BindableLayout.ItemsSource="{Binding StatusOptions}" Spacing="6">
                                 <BindableLayout.ItemTemplate>
@@ -74,7 +81,7 @@
                             </VerticalStackLayout>
                         </ScrollView>
                     </Border>
-                </VerticalStackLayout>
+                </Grid>
                 <Picker Grid.Column="3"
         Title="工序"
         WidthRequest="120"
