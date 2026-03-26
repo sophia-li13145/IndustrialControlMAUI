@@ -54,12 +54,8 @@
                             Padding="8,6"
                             BackgroundColor="White"
                             TextColor="#333333"
-                            BorderColor="#D1D5DB"
-                            BorderWidth="1"
-                            Command="{Binding ToggleStatusDropdownCommand}" />
+                            Clicked="OnStatusDropdownClicked" />
                     <Border IsVisible="{Binding IsStatusDropdownOpen}"
-                            Stroke="#D1D5DB"
-                            StrokeThickness="1"
                             BackgroundColor="White"
                             Padding="8"
                             MaximumHeightRequest="180"
