@@ -226,6 +226,9 @@ public class ProcessTask
     [JsonPropertyName("factoryCode")]
     public string? FactoryCode { get; set; }
     public string? ProcessCode { get; set; }
+    public string? SchemeNo { get; set; }
+    public string? PlatPlanNo { get; set; }
+    public string? Line { get; set; }
     public string? ProcessName { get; set; }
     public string? MaterialName { get; set; }
     public decimal? ScheQty { get; set; }
