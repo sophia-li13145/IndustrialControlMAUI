@@ -70,7 +70,7 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
     private async void OnEditBoundDeviceClicked(object sender, EventArgs e)
     {
         if (BindingContext is not DeviceScanBindViewModel vm
-            || sender is not Button button
+            || sender is not ImageButton button
             || button.CommandParameter is not WorkOrderDeviceBindItem item)
             return;
 

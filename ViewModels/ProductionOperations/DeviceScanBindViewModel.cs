@@ -327,56 +327,7 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             await LoadBoundDevicesAsync();
     }
 
-    private async Task UpdateBoundDeviceTimeAsync(string deviceCode, DateTime startTime, DateTime endTime)
-    {
-        if (IsBusy || !CanCallApi())
-            return;
-
-        if (startTime > endTime)
-        {
-            await ShowTip("开始时间不能晚于结束时间");
-            return;
-        }
-
-        var bindOk = false;
-
-        try
-        {
-            IsBusy = true;
-            var req = new EditWorkOrderDeviceBindTimeReq
-            {
-                deviceCode = deviceCode,
-                factoryCode = FactoryCode,
-                processCode = ProcessCode,
-                workOrderNo = WorkOrderNo,
-                startTime = startTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                endTime = endTime.ToString("yyyy-MM-dd HH:mm:ss")
-            };
-
-            var resp = await _api.EditWorkOrderDeviceBindTimeAsync(req);
-            if (resp?.success == true && resp.result == true)
-            {
-                bindOk = true;
-                await ShowTip("绑定成功");
-                DeviceCodeInput = string.Empty;
-            }
-            else
-            {
-                await ShowTip(resp?.message ?? "绑定失败");
-            }
-        }
-        catch (Exception ex)
-        {
-            await ShowTip($"绑定失败：{ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-
-        if (bindOk)
-            await LoadBoundDevicesAsync();
-    }
+   
 
     private async Task LoadDevicesAsync()
     {

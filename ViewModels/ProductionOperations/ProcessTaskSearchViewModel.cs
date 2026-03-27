@@ -4,6 +4,7 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 
 
@@ -38,6 +39,7 @@ namespace IndustrialControlMAUI.ViewModels
         private bool _dictsLoaded = false;
         private bool _navigateToDeviceBind;
         private bool _isNavigating;
+        private Task? _dictsLoadTask;
 
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<ProcessTask> Orders { get; } = new();
@@ -57,24 +59,37 @@ namespace IndustrialControlMAUI.ViewModels
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
             ToggleStatusDropdownCommand = new RelayCommand(() => IsStatusDropdownOpen = !IsStatusDropdownOpen);
-            _ = EnsureDictsLoadedAsync();   // fire-and-forget
-           
+            _dictsLoadTask = EnsureDictsLoadedAsync();
+
         }
         /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
         {
-            if (_dictsLoaded) return;
+            if (_dictsLoaded)
+                return;
 
+            if (_dictsLoadTask != null && !_dictsLoadTask.IsCompleted )
+            {
+                await _dictsLoadTask;
+                return;
+            }
+
+            _dictsLoadTask = EnsureDictsLoadedCoreAsync();
+            await _dictsLoadTask;
+        }
+
+        private async Task EnsureDictsLoadedCoreAsync()
+        {
             try
             {
-                // 1) 状态下拉：来自 getWorkProcessTaskDictList 的 auditStatus
-                var bundle = await _workapi.GetWorkProcessTaskDictListAsync(); // ← 你已有的方法名若不同，替换为现有的
+                // 1) 状态下拉
+                var bundle = await _workapi.GetWorkProcessTaskDictListAsync();
                 var auditField = bundle?.result?.FirstOrDefault(x =>
                     string.Equals(x.field, "auditStatus", StringComparison.OrdinalIgnoreCase));
 
                 StatusOptions.Clear();
                 _statusMap.Clear();
-                //StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
+
                 if (auditField?.dictItems != null)
                 {
                     foreach (var d in auditField.dictItems)
@@ -83,31 +98,41 @@ namespace IndustrialControlMAUI.ViewModels
                         if (string.IsNullOrWhiteSpace(val)) continue;
 
                         var name = d.dictItemName ?? val;
-                        _statusMap[val] = name; // ★ 建立码→名映射
+                        _statusMap[val] = name;
+
                         var option = new StatusFilterOption
                         {
                             Text = name,
                             Value = val,
-                            IsSelected = name == "待执行" || name == "执行中"
+                            IsSelected = val == "0" || val == "1"
                         };
+
                         option.PropertyChanged += OnStatusOptionPropertyChanged;
                         StatusOptions.Add(option);
                     }
                 }
+
+                // 如果接口没给，至少补默认项，避免首次 statusList 为空
+                if (StatusOptions.Count == 0)
+                {
+                    AddDefaultStatusOption("0", "未执行");
+                    AddDefaultStatusOption("1", "执行中");
+                }
+
                 UpdateSelectedStatusSummary();
 
-                // 2) 工序下拉：来自 PmsProcessInfoList?status=1
+                // 2) 工序下拉
                 var proResp = await _workapi.GetProcessInfoListAsync();
                 ProcessOptions.Clear();
-                ProcessOptions.Add(new StatusOption { Text = "全部", Value = null }); // 或“不限”
-                if (proResp.result != null)
+                ProcessOptions.Add(new StatusOption { Text = "全部", Value = null });
+
+                if (proResp?.result != null)
                 {
                     foreach (var p in proResp.result)
                     {
                         var code = p.processCode?.Trim();
                         if (string.IsNullOrWhiteSpace(code)) continue;
 
-                        var name = p.processName ?? code;
                         ProcessOptions.Add(new StatusOption
                         {
                             Text = p.processName ?? p.processCode,
@@ -115,25 +140,71 @@ namespace IndustrialControlMAUI.ViewModels
                         });
                     }
                 }
-                //3)工单状态
-                var orderstatus = await _workapi.GetWorkOrderDictsAsync();
+
+                // 3) 工单状态字典
                 _orderstatusMap.Clear();
-                foreach (var d in orderstatus.AuditStatus ?? Enumerable.Empty<DictItem>())
-                    if (!string.IsNullOrWhiteSpace(d.dictItemValue))
-                        _orderstatusMap[d.dictItemValue!.Trim()] = d.dictItemName ?? d.dictItemValue!;
-                // 3) ★ 应用“上一次的工序选择”
+                var orderstatus = await _workapi.GetWorkOrderDictsAsync();
+
+                foreach (var d in orderstatus?.AuditStatus ?? Enumerable.Empty<DictItem>())
+                {
+                    var key = d.dictItemValue?.Trim();
+                    if (string.IsNullOrWhiteSpace(key)) continue;
+
+                    _orderstatusMap[key] = d.dictItemName ?? key;
+                }
+
+                // 接口没返回时给默认兜底
+                AddDefaultWorkOrderStatusMap();
+
                 ApplyLastProcessSelectionIfAny();
+
                 _dictsLoaded = true;
             }
-            catch (Exception ex)
+            catch
             {
-                //if (StatusOptions.Count == 0)
-                   // StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
+                // 注意：失败不能标记为已加载成功
+                _dictsLoaded = false;
+
+                if (StatusOptions.Count == 0)
+                {
+                    AddDefaultStatusOption("0", "未执行");
+                    AddDefaultStatusOption("1", "执行中");
+                    UpdateSelectedStatusSummary();
+                }
+
                 if (ProcessOptions.Count == 0)
                     ProcessOptions.Add(new StatusOption { Text = "全部", Value = null });
+
+                AddDefaultWorkOrderStatusMap();
                 ApplyLastProcessSelectionIfAny();
-                _dictsLoaded = true;
+
+                throw;
             }
+        }
+
+        private void AddDefaultStatusOption(string value, string text)
+        {
+            if (_statusMap.ContainsKey(value))
+                return;
+
+            _statusMap[value] = text;
+
+            var option = new StatusFilterOption
+            {
+                Text = text,
+                Value = value,
+                IsSelected = value == "0" || value == "1"
+            };
+            option.PropertyChanged += OnStatusOptionPropertyChanged;
+            StatusOptions.Add(option);
+        }
+
+        private void AddDefaultWorkOrderStatusMap()
+        {
+            if (!_orderstatusMap.ContainsKey("0")) _orderstatusMap["0"] = "待执行";
+            if (!_orderstatusMap.ContainsKey("1")) _orderstatusMap["1"] = "执行中";
+            if (!_orderstatusMap.ContainsKey("2")) _orderstatusMap["2"] = "入库中";
+            if (!_orderstatusMap.ContainsKey("3")) _orderstatusMap["3"] = "已完成";
         }
         /// <summary>执行 ApplyLastProcessSelectionIfAny 逻辑。</summary>
         private void ApplyLastProcessSelectionIfAny()
@@ -214,7 +285,10 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<ProcessTask>> LoadPageAsync(int pageNo)
         {
+            await EnsureDictsLoadedAsync();
+
             var byOrderNo = !string.IsNullOrWhiteSpace(Keyword);
+
             var statusList = StatusOptions
                 .Where(x => x.IsSelected && !string.IsNullOrWhiteSpace(x.Value))
                 .Select(x => x.Value!)
@@ -231,11 +305,14 @@ namespace IndustrialControlMAUI.ViewModels
                 ct: CancellationToken.None);
 
             var records = page?.result?.records ?? new List<ProcessTask>();
+
             foreach (var t in records)
             {
                 if (!string.IsNullOrWhiteSpace(t.AuditStatus) &&
-                _statusMap.TryGetValue(t.AuditStatus, out var sName))
-                    t.AuditStatusName = sName;
+                    _statusMap.TryGetValue(t.AuditStatus.Trim(), out var auditName))
+                {
+                    t.AuditStatusName = auditName;
+                }
 
                 t.WorkOrderAuditStatusName = GetWorkOrderAuditStatusName(t.WorkOrderAuditStatus);
             }
@@ -273,22 +350,44 @@ namespace IndustrialControlMAUI.ViewModels
             EndDate = DateTime.Today;
             PageIndex = 1;
             HasMore = true;
+
             foreach (var opt in StatusOptions)
-                opt.IsSelected = opt.Text == "待执行" || opt.Text == "执行中";
+                opt.IsSelected = opt.Value == "0" || opt.Value == "1";
+
             UpdateSelectedStatusSummary();
             Orders.Clear();
         }
 
-        private void OnStatusOptionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnStatusOptionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(StatusFilterOption.IsSelected))
-                UpdateSelectedStatusSummary();
+            try
+            {
+
+                if (e.PropertyName == nameof(StatusFilterOption.IsSelected))
+                {
+                    UpdateSelectedStatusSummary();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         private void UpdateSelectedStatusSummary()
         {
-            var selected = StatusOptions.Where(x => x.IsSelected).Select(x => x.Text).ToList();
-            SelectedStatusSummary = selected.Count == 0 ? "请选择状态" : selected[0];
+            var selected = StatusOptions
+                .Where(x => x.IsSelected)
+                .Select(x => x.Text)
+                .ToList();
+
+            SelectedStatusSummary = selected.Count switch
+            {
+                0 => "请选择状态",
+                1 => selected[0],
+                2 => string.Join("、", selected),
+                _ => $"已选{selected.Count}项"
+            };
         }
 
 

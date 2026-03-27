@@ -480,6 +480,25 @@ public class WorkOrderDeviceBindItem
     public string? schemeNo { get; set; }
     public string? workOrderNo { get; set; }
     public string? platPlanNo { get; set; }
+    public string StartDatePart => SplitDateTime(startTime).date;
+    public string StartTimePart => SplitDateTime(startTime).time;
+    public string EndDatePart => SplitDateTime(endTime).date;
+    public string EndTimePart => SplitDateTime(endTime).time;
+
+    private static (string date, string time) SplitDateTime(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return ("", "");
+
+        if (DateTime.TryParse(value, out var dt))
+            return (dt.ToString("yyyy-MM-dd"), dt.ToString("HH:mm:ss"));
+
+        var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return (parts[0], parts[1]);
+
+        return (value, "");
+    }
 }
 
 public class AddWorkProcessTaskMaterialInputReq
