@@ -21,6 +21,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [NotifyPropertyChangedFor(nameof(CanStart))]
     [NotifyPropertyChangedFor(nameof(CanPauseResume))]
     [NotifyPropertyChangedFor(nameof(CanFinish))]
+    [NotifyPropertyChangedFor(nameof(CanRework))]
     [NotifyPropertyChangedFor(nameof(PauseResumeText))]
     [NotifyPropertyChangedFor(nameof(IsEditing))]
     private TaskRunState state = TaskRunState.NotStarted;
@@ -30,6 +31,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public bool CanStart => !IsBusy && State == TaskRunState.NotStarted;
     public bool CanPauseResume => !IsBusy && (State == TaskRunState.Running || State == TaskRunState.Paused);
     public bool CanFinish => !IsBusy && State == TaskRunState.Running;
+    public bool CanRework => !IsBusy && State == TaskRunState.Running;
 
     private readonly IServiceProvider _sp;
     public string PauseResumeText => State == TaskRunState.Running ? "暂停" : "复工";
@@ -143,6 +145,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (StartWorkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (PauseResumeCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (FinishCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
     /// <summary>执行 OnActiveTabChanged 逻辑。</summary>
     partial void OnActiveTabChanged(DetailTab value)
@@ -170,6 +173,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanPauseResume));
         OnPropertyChanged(nameof(CanFinish));
+        OnPropertyChanged(nameof(CanRework));
     }
 
     /// <summary>执行 StartWorkAsync 逻辑。</summary>
@@ -300,6 +304,22 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>执行 ReworkAsync 逻辑。</summary>
+    [RelayCommand(CanExecute = nameof(CanRework))]
+    private async Task ReworkAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Detail?.id))
+        {
+            await Shell.Current.DisplayAlert("提示", "缺少工单ID，无法进入返修页面。", "确定");
+            return;
+        }
+
+        await Shell.Current.GoToAsync(nameof(Pages.ReworkOrderPage), new Dictionary<string, object>
+        {
+            ["id"] = Detail.id
+        });
     }
 
 
