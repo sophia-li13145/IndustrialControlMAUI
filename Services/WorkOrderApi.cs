@@ -42,6 +42,8 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _editWorkOrderDeviceBindTimeEndpoint;
         private readonly string _unbindWorkOrderDeviceEndpoint;
         private readonly string _workOrderDomainEndpoint;
+        private readonly string _reworkDictEndpoint;
+        private readonly string _reworkWorkOrderDomainEndpoint;
         private readonly string _inventoryPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
         private readonly string _stockCheckDetailPageEndpoint;
@@ -118,6 +120,12 @@ public class WorkOrderApi : IWorkOrderApi
             _workOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
         configLoader.GetApiPath("workOrder.domain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
         servicePath);
+            _reworkDictEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkDictList", "/pda/pmsReworkOrder/getDictList"),
+    servicePath);
+            _reworkWorkOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
+    servicePath);
             _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
     servicePath);
@@ -833,6 +841,33 @@ public class WorkOrderApi : IWorkOrderApi
             return JsonSerializer.Deserialize<WorkOrderDomainResp>(json,
                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                    ?? new WorkOrderDomainResp();
+        }
+
+        public async Task<ApiResp<List<FieldDict>>> GetReworkDictListAsync(CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkDictEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            await using var stream = await res.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<List<FieldDict>>>(stream, _json, ct);
+            return data ?? new ApiResp<List<FieldDict>> { success = false, message = "empty response", result = new List<FieldDict>() };
+        }
+
+        public async Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string id, CancellationToken ct = default)
+        {
+            var url = _reworkWorkOrderDomainEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ReworkOrderDomainResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ReworkOrderDomainResp>(json,
+                       new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                   ?? new ReworkOrderDomainResp();
         }
 
         public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(

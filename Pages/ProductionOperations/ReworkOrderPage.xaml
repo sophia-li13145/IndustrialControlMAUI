@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.ReworkOrderPage"
+             Title="生产管理系统"
+             BackgroundColor="#F5F6F8">
+    <ScrollView>
+        <VerticalStackLayout Padding="8" Spacing="8">
+            <Label Text="返修单基础信息" FontAttributes="Bold" TextColor="#333" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="保存"
+                        BackgroundColor="#1FC940"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        HeightRequest="36"
+                        CornerRadius="4"
+                        Command="{Binding SaveCommand}" />
+                <Button Text="保存并提交"
+                        BackgroundColor="#1E76FF"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        HeightRequest="36"
+                        CornerRadius="4"
+                        Command="{Binding SaveAndSubmitCommand}" />
+            </HorizontalStackLayout>
+
+            <Frame Padding="8" HasShadow="False" BorderColor="#DADCE0" CornerRadius="0" BackgroundColor="White">
+                <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                    <Label Grid.Row="0" Grid.Column="0" Text="工单编号:" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding WorkOrderNo}" />
+                    <Label Grid.Row="0" Grid.Column="2" Text="产品名称:" />
+                    <Label Grid.Row="0" Grid.Column="3" Text="{Binding MaterialName}" />
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="工单名称:" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding WorkOrderName}" />
+                    <Label Grid.Row="1" Grid.Column="2" Text="生产数量:" />
+                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding QuantityText}" />
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="返修数量:" />
+                    <Entry Grid.Row="2" Grid.Column="1" Placeholder="请输入" Keyboard="Numeric" />
+                    <Label Grid.Row="2" Grid.Column="2" Text="返修类型:" />
+                    <Picker Grid.Row="2" Grid.Column="3"
+                            ItemsSource="{Binding ReworkTypeOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedReworkType}" />
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="返修工序:" />
+                    <Picker Grid.Row="3" Grid.Column="1"
+                            ItemsSource="{Binding ReworkProcessOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedReworkProcess}" />
+                    <Label Grid.Row="3" Grid.Column="2" Text="是否补料:" />
+                    <Picker Grid.Row="3" Grid.Column="3"
+                            ItemsSource="{Binding YesNoOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedNeedSupplement}" />
+
+                    <Label Grid.Row="4" Grid.Column="0" Text="返修备注:" />
+                    <Entry Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Placeholder="请输入" Text="{Binding ReworkNote}" />
+                </Grid>
+            </Frame>
+
+            <Label Text="补料详情" FontAttributes="Bold" TextColor="#333" />
+
+            <CollectionView ItemsSource="{Binding SupplementRows}">
+                <CollectionView.Header>
+                    <Grid BackgroundColor="#DCEAF9" Padding="6,8" ColumnDefinitions="40,*,*,95,95,95">
+                        <Label Text="序号" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="物料名称" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="物料编码" FontAttributes="Bold" />
+                        <Label Grid.Column="3" Text="是否补料" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="4" Text="标准补料数量" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="5" Text="实际补料数量" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="6" ColumnDefinitions="40,*,*,95,95,95" RowDefinitions="Auto,Auto">
+                            <Label Text="{Binding Sequence}" />
+                            <Label Text="{Binding materialName}" Grid.Column="1" />
+                            <Label Text="{Binding materialCode}" Grid.Column="2" />
+                            <Label Grid.Column="3" Text="{Binding NeedSupplementText}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="4" Text="{Binding standardQty}" HorizontalTextAlignment="Center" />
+                            <Entry Grid.Column="5" Text="{Binding ActualQtyText}" Keyboard="Numeric" HorizontalTextAlignment="Center" />
+                            <BoxView Grid.ColumnSpan="6" Grid.Row="1" HeightRequest="1" BackgroundColor="#E5E7EB" VerticalOptions="End" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
