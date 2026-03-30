@@ -121,6 +121,7 @@
             Text="返修"
             Style="{StaticResource BtnRed}"
             Command="{Binding ReworkCommand}"
+            IsVisible="{Binding IsReworkVisible}"
             IsEnabled="{Binding CanRework}" />
         </Grid>
         <!-- 基础信息卡片 -->
