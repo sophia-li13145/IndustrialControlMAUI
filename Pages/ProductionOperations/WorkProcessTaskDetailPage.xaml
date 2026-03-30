@@ -43,6 +43,9 @@
             <Style x:Key="BtnBlue" BasedOn="{StaticResource TopActionButton}" TargetType="Button">
                 <Setter Property="BackgroundColor" Value="#1E76FF" />
             </Style>
+            <Style x:Key="BtnRed" BasedOn="{StaticResource TopActionButton}" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#FF0000" />
+            </Style>
             <!-- 日期“超链接”标签样式 -->
             <Style x:Key="DateActionLabelStyle" TargetType="Label">
                 <Setter Property="TextDecorations" Value="Underline" />
@@ -96,7 +99,7 @@
 
     <Grid x:Name="RootGrid" RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="10">
         <Label Grid.Row="0" Text="工单基础信息" FontAttributes="Bold" Margin="0,8,0,4"/>
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="10">
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="10">
             <Button Text="开工"
             Style="{StaticResource BtnGreen}"
             Command="{Binding StartWorkCommand}"
@@ -113,6 +116,13 @@
             Style="{StaticResource BtnBlue}"
             Command="{Binding FinishCommand}"
             IsEnabled="{Binding CanFinish}" />
+
+            <Button Grid.Column="3"
+            Text="返修"
+            Style="{StaticResource BtnRed}"
+            Command="{Binding ReworkCommand}"
+            IsVisible="{Binding IsReworkVisible}"
+            IsEnabled="{Binding CanRework}" />
         </Grid>
         <!-- 基础信息卡片 -->
         <!-- 可编辑区（开工后启用） -->

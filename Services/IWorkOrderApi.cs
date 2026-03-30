@@ -109,6 +109,8 @@ namespace IndustrialControlMAUI.Services
             CancellationToken ct = default);
 
         Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<List<FieldDict>>> GetReworkDictListAsync(CancellationToken ct = default);
+        Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string id, CancellationToken ct = default);
         Task<PageResp<InventoryRecord>?> PageInventoryAsync(
     string? barcode,          // 库位或者物料条码
     int pageNo = 1,           // 当前页
