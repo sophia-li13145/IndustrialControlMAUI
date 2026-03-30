@@ -124,7 +124,7 @@ public class WorkOrderApi : IWorkOrderApi
     configLoader.GetApiPath("workOrder.reworkDictList", "/pda/pmsReworkOrder/getDictList"),
     servicePath);
             _reworkWorkOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
+    configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo"),
     servicePath);
             _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
@@ -853,9 +853,9 @@ public class WorkOrderApi : IWorkOrderApi
             return data ?? new ApiResp<List<FieldDict>> { success = false, message = "empty response", result = new List<FieldDict>() };
         }
 
-        public async Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string id, CancellationToken ct = default)
+        public async Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string workOrderNo, CancellationToken ct = default)
         {
-            var url = _reworkWorkOrderDomainEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
+            var url = _reworkWorkOrderDomainEndpoint + "?workOrderNo=" + Uri.EscapeDataString(workOrderNo ?? "");
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));

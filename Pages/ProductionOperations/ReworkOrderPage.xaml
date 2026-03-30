@@ -46,10 +46,17 @@
                             SelectedItem="{Binding SelectedReworkType}" />
 
                     <Label Grid.Row="3" Grid.Column="0" Text="返修工序:" />
-                    <Picker Grid.Row="3" Grid.Column="1"
-                            ItemsSource="{Binding ReworkProcessOptions}"
-                            ItemDisplayBinding="{Binding Text}"
-                            SelectedItem="{Binding SelectedReworkProcess}" />
+                    <Grid Grid.Row="3" Grid.Column="1"
+                          HeightRequest="36"
+                          Padding="8,0"
+                          BackgroundColor="Transparent">
+                        <Label Text="{Binding ReworkProcessSummary}"
+                               VerticalTextAlignment="Center"
+                               LineBreakMode="TailTruncation" />
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ChooseReworkProcessCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
                     <Label Grid.Row="3" Grid.Column="2" Text="是否补料:" />
                     <Picker Grid.Row="3" Grid.Column="3"
                             ItemsSource="{Binding YesNoOptions}"

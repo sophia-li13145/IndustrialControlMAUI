@@ -17,7 +17,15 @@ public class ReworkOrderDomain
     public string? workOrderName { get; set; }
     public string? materialName { get; set; }
     public decimal? curQty { get; set; }
+    public List<ReworkProcessResourceDemand> planProcessRouteResourceDemandList { get; set; } = new();
     public List<PlanChildProductSchemeDetailEx> planChildProductSchemeDetailList { get; set; } = new();
+}
+
+public class ReworkProcessResourceDemand
+{
+    public string? id { get; set; }
+    public string? processCode { get; set; }
+    public string? processName { get; set; }
 }
 
 public class PlanChildProductSchemeDetailEx
