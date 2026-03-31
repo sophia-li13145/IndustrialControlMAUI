@@ -32,8 +32,20 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private StatusOption? selectedNeedSupplement;
     [ObservableProperty] private string reworkProcessSummary = "全部";
     [ObservableProperty] private bool isSupplementSectionVisible = true;
-    [ObservableProperty] private bool isReworkQtyInvalid;
-    [ObservableProperty] private bool isReworkTypeInvalid;
+    private bool _isReworkQtyInvalid;
+    private bool _isReworkTypeInvalid;
+
+    public bool IsReworkQtyInvalid
+    {
+        get => _isReworkQtyInvalid;
+        set => SetProperty(ref _isReworkQtyInvalid, value);
+    }
+
+    public bool IsReworkTypeInvalid
+    {
+        get => _isReworkTypeInvalid;
+        set => SetProperty(ref _isReworkTypeInvalid, value);
+    }
 
     private ReworkOrderDomain? _domain;
 
