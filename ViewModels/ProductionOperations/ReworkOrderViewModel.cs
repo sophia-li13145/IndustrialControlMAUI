@@ -144,10 +144,15 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         QuantityText = (domain.curQty ?? 0m).ToString("G29");
         ReworkQtyText = QuantityText;
 
-        foreach (var p in domain.planProcessRouteResourceDemandList
-                     .Where(x => !string.IsNullOrWhiteSpace(x.processCode) || !string.IsNullOrWhiteSpace(x.processName))
-                     .GroupBy(x => x.processCode ?? x.processName)
-                     .Select(g => g.First()))
+        var child = domain.planChildProductSchemeDetailList.FirstOrDefault();
+        var routeDetails = child?.planProcessRoute?.routeDetailList
+            ?.Where(x => !string.IsNullOrWhiteSpace(x.processCode) || !string.IsNullOrWhiteSpace(x.processName))
+            .OrderBy(x => x.sortNumber ?? int.MaxValue)
+            .GroupBy(x => x.processCode ?? x.processName)
+            .Select(g => g.First())
+            .ToList() ?? new List<RouteDetailEx>();
+
+        foreach (var p in routeDetails)
         {
             ReworkProcessOptions.Add(new StatusFilterOption
             {
@@ -285,15 +290,22 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .ToHashSet();
 
-        var processList = domain.planProcessRouteResourceDemandList
+        var routeDetails = domain.planChildProductSchemeDetailList
+            .FirstOrDefault()?
+            .planProcessRoute?
+            .routeDetailList ?? new List<RouteDetailEx>();
+
+        var routeCode = domain.planChildProductSchemeDetailList.FirstOrDefault()?.planProcessRoute?.routeCode;
+
+        var processList = routeDetails
             .Where(x => !string.IsNullOrWhiteSpace(x.processCode) && selectedProcesses.Contains(x.processCode))
             .GroupBy(x => x.processCode)
             .Select(g => g.First())
             .Select(x => new ReworkProcessSaveItem
             {
                 id = x.id,
-                schemeNo = x.schemeNo ?? domain.schemeNo,
-                routeCode = x.routeCode,
+                schemeNo = domain.schemeNo,
+                routeCode = routeCode,
                 processCode = x.processCode,
                 processName = x.processName,
                 sortNumber = x.sortNumber
