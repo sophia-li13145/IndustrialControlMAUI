@@ -100,8 +100,16 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         ReworkTypeOptions.Clear();
 
         var resp = await _api.GetReworkDictListAsync();
+        if (resp.success != true)
+        {
+            await Shell.Current.DisplayAlert("错误", resp.message ?? "返修类型字典加载失败", "确定");
+            SelectedReworkType = null;
+            return;
+        }
+
         var fields = resp.result ?? new List<FieldDict>();
 
+        // 返修类型仅取 field = reworkType 的字典项
         var reworkType = fields.FirstOrDefault(x => string.Equals(x.field, "reworkType", StringComparison.OrdinalIgnoreCase));
         foreach (var item in reworkType?.dictItems ?? new List<DictItem>())
         {
@@ -161,7 +169,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
                 id = m.id,
                 materialCode = m.materialCode,
                 materialName = m.materialName,
-                NeedSupplement = m.needCollect ?? false,
+                NeedSupplement = true,
                 standardQty = m.qty,
                 unit = m.unit,
                 ActualQtyText = m.qty?.ToString("G29")
