@@ -67,6 +67,7 @@
       "unbindWorkOrderDevice": "/pda/pmsWorkOrder/unbindWorkOrderDevice",
       "reworkDictList": "/pda/pmsReworkOrder/getDictList",
       "reworkDomain": "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo",
+      "reworkBomFlatten": "/pda/pmsBom/queryPmsBomDetailFlattenByWorkOrder",
       "reworkSave": "/pda/pmsReworkOrder/save",
       "reworkSaveAndSubmit": "/pda/pmsReworkOrder/saveAndSubmit"
     },

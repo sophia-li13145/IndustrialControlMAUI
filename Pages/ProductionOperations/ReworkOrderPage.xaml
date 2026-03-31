@@ -39,7 +39,7 @@
 
                     <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" ColumnDefinitions="Auto,*" ColumnSpacing="8">
                         <Label Grid.Column="0" Text="缺陷:" VerticalTextAlignment="Center" />
-                        <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
                             <FlexLayout BindableLayout.ItemsSource="{Binding DefectTags}" Direction="Row" Wrap="Wrap" AlignItems="Center">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
@@ -58,7 +58,8 @@
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </FlexLayout>
-                            <Button Text="＋"
+                            <Button Grid.Column="1"
+                                    Text="＋"
                                     WidthRequest="28"
                                     HeightRequest="28"
                                     Padding="0"
@@ -69,7 +70,7 @@
                                     BorderWidth="1"
                                     CornerRadius="6"
                                     Command="{Binding OpenDefectPickerCommand}" />
-                        </HorizontalStackLayout>
+                        </Grid>
                     </Grid>
 
                     <Label Grid.Row="3" Grid.Column="0" Text="返修数量:" />
