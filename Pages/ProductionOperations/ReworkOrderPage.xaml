@@ -137,7 +137,7 @@
                                     ItemsSource="{Binding NeedSupplementOptions}"
                                     ItemDisplayBinding="{Binding Text}"
                                     SelectedItem="{Binding SelectedNeedSupplementOption}" />
-                            <Label Grid.Column="4" Text="{Binding standardQty}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Column="4" Text="{Binding standardQty, StringFormat='{0:F4}'}" HorizontalTextAlignment="Center" />
                             <Entry Grid.Column="5" Text="{Binding ActualQtyText}" Keyboard="Numeric" HorizontalTextAlignment="Center" />
                             <BoxView Grid.ColumnSpan="6" Grid.Row="1" HeightRequest="1" BackgroundColor="#E5E7EB" VerticalOptions="End" />
                         </Grid>
