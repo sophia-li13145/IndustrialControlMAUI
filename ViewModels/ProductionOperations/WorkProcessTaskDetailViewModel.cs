@@ -45,7 +45,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
 
     [ObservableProperty] private WorkProcessTaskDetail? detail;
-    public bool IsReworkVisible => Detail?.auditStatus is "1" or "2";
+    // 返修按钮显示规则：工单状态 0-待执行、1-执行中 时显示
+    public bool IsReworkVisible => (Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "0" or "1";
 
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<TaskMaterialInput> Inputs { get; } = new();
@@ -317,15 +318,15 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [RelayCommand(CanExecute = nameof(CanRework))]
     private async Task ReworkAsync()
     {
-        if (string.IsNullOrWhiteSpace(Detail?.id))
+        if (string.IsNullOrWhiteSpace(Detail?.workOrderNo))
         {
-            await Shell.Current.DisplayAlert("提示", "缺少工单ID，无法进入返修页面。", "确定");
+            await Shell.Current.DisplayAlert("提示", "缺少工单号，无法进入返修页面。", "确定");
             return;
         }
 
         await Shell.Current.GoToAsync(nameof(Pages.ReworkOrderPage), new Dictionary<string, object>
         {
-            ["id"] = Detail.id
+            ["workOrderNo"] = Detail.workOrderNo
         });
     }
 

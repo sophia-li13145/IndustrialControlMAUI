@@ -64,7 +64,12 @@
       "getWorkOrderDeviceList": "/pda/pmsWorkOrder/getWorkOrderDeviceList",
       "bindWorkOrderDevice": "/pda/pmsWorkOrder/bindWorkOrderDevice",
       "editWorkOrderDeviceBindTime": "/pda/pmsWorkOrder/editWorkOrderDeviceBindTime",
-      "unbindWorkOrderDevice": "/pda/pmsWorkOrder/unbindWorkOrderDevice"
+      "unbindWorkOrderDevice": "/pda/pmsWorkOrder/unbindWorkOrderDevice",
+      "reworkDictList": "/pda/pmsReworkOrder/getDictList",
+      "reworkDomain": "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo",
+      "reworkBomFlatten": "/pda/pmsBom/queryPmsBomDetailFlattenByWorkOrder",
+      "reworkSave": "/pda/pmsReworkOrder/save",
+      "reworkSaveAndSubmit": "/pda/pmsReworkOrder/saveAndSubmit"
     },
     "mold": {
       "inStockScanQuery": "/pda/mold/inStockScanQuery",
