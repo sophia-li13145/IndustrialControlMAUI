@@ -11,6 +11,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkOrderApi _api;
+    private readonly IQualityApi _qualityApi;
 
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string? orderId;
@@ -27,6 +28,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     public ObservableCollection<StatusFilterOption> ReworkProcessOptions { get; } = new();
     public ObservableCollection<StatusOption> YesNoOptions { get; } = new();
     public ObservableCollection<ReworkMaterialRow> SupplementRows { get; } = new();
+    public ObservableCollection<DefectChip> DefectTags { get; } = new();
 
     [ObservableProperty] private StatusOption? selectedReworkType;
     [ObservableProperty] private StatusOption? selectedNeedSupplement;
@@ -49,9 +51,10 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
     private ReworkOrderDomain? _domain;
 
-    public ReworkOrderViewModel(IWorkOrderApi api)
+    public ReworkOrderViewModel(IWorkOrderApi api, IQualityApi qualityApi)
     {
         _api = api;
+        _qualityApi = qualityApi;
 
         YesNoOptions.Add(new StatusOption { Text = "是", Value = "1" });
         YesNoOptions.Add(new StatusOption { Text = "否", Value = "0" });
@@ -121,13 +124,14 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             });
         }
 
-        SelectedReworkType = ReworkTypeOptions.FirstOrDefault();
+        SelectedReworkType = null;
     }
 
     private async Task LoadDomainAsync(string id)
     {
         ReworkProcessOptions.Clear();
         SupplementRows.Clear();
+        DefectTags.Clear();
 
         var resp = await _api.GetReworkWorkOrderDomainAsync(id);
         if (resp?.success != true || resp.result == null)
@@ -142,7 +146,8 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         WorkOrderName = domain.workOrderName;
         MaterialName = domain.materialName;
         QuantityText = (domain.curQty ?? 0m).ToString("G29");
-        ReworkQtyText = QuantityText;
+        ReworkQtyText = string.Empty;
+        IsReworkQtyInvalid = false;
 
         var child = domain.planChildProductSchemeDetailList.FirstOrDefault();
         var routeDetails = child?.planProcessRoute?.routeDetailList
@@ -182,6 +187,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         }
 
         IsSupplementSectionVisible = SelectedNeedSupplement?.Value == "1";
+        IsReworkTypeInvalid = false;
     }
 
     [RelayCommand]
@@ -329,6 +335,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         return new SaveReworkOrderReq
         {
             id = domain.id,
+            defectTags = string.Join(",", DefectTags.Select(x => x.Name)),
             hasReworkProcess = processList.Count > 0,
             isFeedSupplement = needSupplement,
             materialCode = domain.materialCode,
@@ -345,6 +352,37 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             workOrderName = domain.workOrderName,
             workOrderNo = domain.workOrderNo
         };
+    }
+
+    [RelayCommand]
+    private async Task OpenDefectPickerAsync()
+    {
+        var preselectedCodes = DefectTags
+            .Select(x => x.Name)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToList();
+
+        var picked = await DefectPickerPopup.ShowAsync(_qualityApi, preselectedCodes);
+        if (picked == null) return;
+
+        DefectTags.Clear();
+        foreach (var d in picked)
+        {
+            var name = d.DefectName ?? d.DefectCode;
+            if (string.IsNullOrWhiteSpace(name)) continue;
+            DefectTags.Add(new DefectChip
+            {
+                Name = name,
+                ColorHex = Color.FromArgb("#EAF3FF")
+            });
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveDefectTag(DefectChip? item)
+    {
+        if (item == null) return;
+        DefectTags.Remove(item);
     }
 
     private bool ValidateRequiredFields()
