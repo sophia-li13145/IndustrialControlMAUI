@@ -317,15 +317,15 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [RelayCommand(CanExecute = nameof(CanRework))]
     private async Task ReworkAsync()
     {
-        if (string.IsNullOrWhiteSpace(Detail?.id))
+        if (string.IsNullOrWhiteSpace(Detail?.workOrderNo))
         {
-            await Shell.Current.DisplayAlert("提示", "缺少工单ID，无法进入返修页面。", "确定");
+            await Shell.Current.DisplayAlert("提示", "缺少工单号，无法进入返修页面。", "确定");
             return;
         }
 
         await Shell.Current.GoToAsync(nameof(Pages.ReworkOrderPage), new Dictionary<string, object>
         {
-            ["id"] = Detail.id
+            ["workOrderNo"] = Detail.workOrderNo
         });
     }
 

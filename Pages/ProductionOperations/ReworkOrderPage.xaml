@@ -38,7 +38,7 @@
                     <Label Grid.Row="1" Grid.Column="3" Text="{Binding QuantityText}" />
 
                     <Label Grid.Row="2" Grid.Column="0" Text="返修数量:" />
-                    <Entry Grid.Row="2" Grid.Column="1" Placeholder="请输入" Keyboard="Numeric" />
+                    <Entry Grid.Row="2" Grid.Column="1" Placeholder="请输入" Keyboard="Numeric" Text="{Binding ReworkQtyText}" />
                     <Label Grid.Row="2" Grid.Column="2" Text="返修类型:" />
                     <Picker Grid.Row="2" Grid.Column="3"
                             ItemsSource="{Binding ReworkTypeOptions}"
@@ -46,10 +46,17 @@
                             SelectedItem="{Binding SelectedReworkType}" />
 
                     <Label Grid.Row="3" Grid.Column="0" Text="返修工序:" />
-                    <Picker Grid.Row="3" Grid.Column="1"
-                            ItemsSource="{Binding ReworkProcessOptions}"
-                            ItemDisplayBinding="{Binding Text}"
-                            SelectedItem="{Binding SelectedReworkProcess}" />
+                    <Grid Grid.Row="3" Grid.Column="1"
+                          HeightRequest="36"
+                          Padding="8,0"
+                          BackgroundColor="Transparent">
+                        <Label Text="{Binding ReworkProcessSummary}"
+                               VerticalTextAlignment="Center"
+                               LineBreakMode="TailTruncation" />
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ChooseReworkProcessCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
                     <Label Grid.Row="3" Grid.Column="2" Text="是否补料:" />
                     <Picker Grid.Row="3" Grid.Column="3"
                             ItemsSource="{Binding YesNoOptions}"
@@ -61,9 +68,9 @@
                 </Grid>
             </Frame>
 
-            <Label Text="补料详情" FontAttributes="Bold" TextColor="#333" />
+            <Label Text="补料详情" FontAttributes="Bold" TextColor="#333" IsVisible="{Binding IsSupplementSectionVisible}" />
 
-            <CollectionView ItemsSource="{Binding SupplementRows}">
+            <CollectionView ItemsSource="{Binding SupplementRows}" IsVisible="{Binding IsSupplementSectionVisible}">
                 <CollectionView.Header>
                     <Grid BackgroundColor="#DCEAF9" Padding="6,8" ColumnDefinitions="40,*,*,95,95,95">
                         <Label Text="序号" FontAttributes="Bold" />
@@ -80,7 +87,10 @@
                             <Label Text="{Binding Sequence}" />
                             <Label Text="{Binding materialName}" Grid.Column="1" />
                             <Label Text="{Binding materialCode}" Grid.Column="2" />
-                            <Label Grid.Column="3" Text="{Binding NeedSupplementText}" HorizontalTextAlignment="Center" />
+                            <Picker Grid.Column="3"
+                                    ItemsSource="{Binding NeedSupplementOptions}"
+                                    ItemDisplayBinding="{Binding Text}"
+                                    SelectedItem="{Binding SelectedNeedSupplementOption}" />
                             <Label Grid.Column="4" Text="{Binding standardQty}" HorizontalTextAlignment="Center" />
                             <Entry Grid.Column="5" Text="{Binding ActualQtyText}" Keyboard="Numeric" HorizontalTextAlignment="Center" />
                             <BoxView Grid.ColumnSpan="6" Grid.Row="1" HeightRequest="1" BackgroundColor="#E5E7EB" VerticalOptions="End" />
