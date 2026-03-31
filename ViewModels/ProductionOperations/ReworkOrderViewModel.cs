@@ -174,6 +174,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             ? (supplementResp.result ?? new List<ReworkBomDetailFlattenItem>())
             : new List<ReworkBomDetailFlattenItem>();
 
+        var child = domain.planChildProductSchemeDetailList.FirstOrDefault();
         var index = 1;
         foreach (var m in bomRows)
         {
