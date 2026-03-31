@@ -169,6 +169,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
         UpdateReworkProcessSummaryInternal();
 
+        var child = domain.planChildProductSchemeDetailList.FirstOrDefault();
         var index = 1;
         foreach (var m in child?.planBom?.bomDetailList ?? new List<PlanBomDetailEx>())
         {
