@@ -45,7 +45,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
 
     [ObservableProperty] private WorkProcessTaskDetail? detail;
-    public bool IsReworkVisible => Detail?.auditStatus is "1" or "2";
+    // 返修按钮显示规则：工单状态 0-待执行、1-执行中 时显示
+    public bool IsReworkVisible => (Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "0" or "1";
 
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<TaskMaterialInput> Inputs { get; } = new();
