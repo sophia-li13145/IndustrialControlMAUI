@@ -339,6 +339,7 @@ public class WorkProcessTaskDetail
     public decimal? scheQty { get; set; }
     public decimal? completedQty { get; set; }
     public string? auditStatus { get; set; }
+    public string? workOrderAuditStatus { get; set; }
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? taskReportedQty { get; set; }

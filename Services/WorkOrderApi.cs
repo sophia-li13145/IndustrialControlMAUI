@@ -44,6 +44,8 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _workOrderDomainEndpoint;
         private readonly string _reworkDictEndpoint;
         private readonly string _reworkWorkOrderDomainEndpoint;
+        private readonly string _reworkSaveEndpoint;
+        private readonly string _reworkSaveAndSubmitEndpoint;
         private readonly string _inventoryPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
         private readonly string _stockCheckDetailPageEndpoint;
@@ -124,7 +126,13 @@ public class WorkOrderApi : IWorkOrderApi
     configLoader.GetApiPath("workOrder.reworkDictList", "/pda/pmsReworkOrder/getDictList"),
     servicePath);
             _reworkWorkOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
+    configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo"),
+    servicePath);
+            _reworkSaveEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkSave", "/pda/pmsReworkOrder/save"),
+    servicePath);
+            _reworkSaveAndSubmitEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkSaveAndSubmit", "/pda/pmsReworkOrder/saveAndSubmit"),
     servicePath);
             _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
@@ -853,9 +861,9 @@ public class WorkOrderApi : IWorkOrderApi
             return data ?? new ApiResp<List<FieldDict>> { success = false, message = "empty response", result = new List<FieldDict>() };
         }
 
-        public async Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string id, CancellationToken ct = default)
+        public async Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string workOrderNo, CancellationToken ct = default)
         {
-            var url = _reworkWorkOrderDomainEndpoint + "?id=" + Uri.EscapeDataString(id ?? "");
+            var url = _reworkWorkOrderDomainEndpoint + "?workOrderNo=" + Uri.EscapeDataString(workOrderNo ?? "");
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
             using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
@@ -868,6 +876,40 @@ public class WorkOrderApi : IWorkOrderApi
             return JsonSerializer.Deserialize<ReworkOrderDomainResp>(json,
                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                    ?? new ReworkOrderDomainResp();
+        }
+
+        public async Task<ApiResp<bool?>> SaveReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkSaveEndpoint);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = JsonContent.Create(req)
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
+        }
+
+        public async Task<ApiResp<bool?>> SaveAndSubmitReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkSaveAndSubmitEndpoint);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = JsonContent.Create(req)
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
         }
 
         public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(
