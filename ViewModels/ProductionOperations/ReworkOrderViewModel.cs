@@ -18,6 +18,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private string? workOrderName;
     [ObservableProperty] private string? materialName;
     [ObservableProperty] private string quantityText = "0";
+    [ObservableProperty] private string reworkQtyText = "";
 
     [ObservableProperty] private string? reworkReason;
     [ObservableProperty] private string? reworkNote;
@@ -30,6 +31,9 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private StatusOption? selectedReworkType;
     [ObservableProperty] private StatusOption? selectedNeedSupplement;
     [ObservableProperty] private string reworkProcessSummary = "全部";
+    [ObservableProperty] private bool isSupplementSectionVisible = true;
+
+    private ReworkOrderDomain? _domain;
 
     public ReworkOrderViewModel(IWorkOrderApi api)
     {
@@ -111,10 +115,12 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         }
 
         var domain = resp.result;
+        _domain = domain;
         WorkOrderNo = domain.workOrderNo;
         WorkOrderName = domain.workOrderName;
         MaterialName = domain.materialName;
         QuantityText = (domain.curQty ?? 0m).ToString("G29");
+        ReworkQtyText = QuantityText;
 
         foreach (var p in domain.planProcessRouteResourceDemandList
                      .Where(x => !string.IsNullOrWhiteSpace(x.processCode) || !string.IsNullOrWhiteSpace(x.processName))
@@ -143,8 +149,43 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
                 materialName = m.materialName,
                 NeedSupplement = m.needCollect ?? false,
                 standardQty = m.qty,
+                unit = m.unit,
                 ActualQtyText = m.qty?.ToString("G29")
             });
+        }
+
+        IsSupplementSectionVisible = SelectedNeedSupplement?.Value == "1";
+    }
+
+    [RelayCommand]
+    private async Task ChooseReworkProcessAsync()
+    {
+        if (Shell.Current.CurrentPage is null) return;
+
+        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(ReworkProcessOptions));
+        RefreshReworkProcessSummary();
+    }
+
+    private void RefreshReworkProcessSummary()
+    {
+        if (ReworkProcessOptions.Count == 0)
+        {
+            ReworkProcessSummary = "请选择";
+            return;
+        }
+
+        var selectedCount = ReworkProcessOptions.Count(x => x.IsSelected);
+        if (selectedCount == 0)
+        {
+            ReworkProcessSummary = "请选择";
+        }
+        else if (selectedCount == ReworkProcessOptions.Count)
+        {
+            ReworkProcessSummary = "全部";
+        }
+        else
+        {
+            ReworkProcessSummary = string.Join("、", ReworkProcessOptions.Where(x => x.IsSelected).Select(x => x.Text));
         }
     }
 
@@ -183,12 +224,117 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     [RelayCommand]
     private async Task SaveAsync()
     {
-        await Shell.Current.DisplayAlert("提示", "已保存（接口待联调）。", "确定");
+        await SubmitInternalAsync(false);
     }
 
     [RelayCommand]
     private async Task SaveAndSubmitAsync()
     {
-        await Shell.Current.DisplayAlert("提示", "已保存并提交（接口待联调）。", "确定");
+        await SubmitInternalAsync(true);
+    }
+
+    partial void OnSelectedNeedSupplementChanged(StatusOption? value)
+    {
+        IsSupplementSectionVisible = value?.Value == "1";
+    }
+
+    private async Task SubmitInternalAsync(bool submit)
+    {
+        if (IsBusy) return;
+        if (_domain == null)
+        {
+            await Shell.Current.DisplayAlert("提示", "数据未初始化完成。", "确定");
+            return;
+        }
+
+        if (!decimal.TryParse(ReworkQtyText, out var reworkQty))
+        {
+            await Shell.Current.DisplayAlert("提示", "请输入正确的返修数量。", "确定");
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var req = BuildSaveRequest(_domain, reworkQty, submit);
+            var resp = submit
+                ? await _api.SaveAndSubmitReworkOrderAsync(req)
+                : await _api.SaveReworkOrderAsync(req);
+
+            if (resp.success && resp.result == true)
+            {
+                await Shell.Current.DisplayAlert("提示", submit ? "保存并提交成功！" : "保存成功！", "确定");
+                return;
+            }
+
+            await Shell.Current.DisplayAlert("错误", resp.message ?? "操作失败", "确定");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("异常", ex.Message, "确定");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private SaveReworkOrderReq BuildSaveRequest(ReworkOrderDomain domain, decimal reworkQty, bool submit)
+    {
+        var needSupplement = SelectedNeedSupplement?.Value == "1";
+        var selectedProcesses = ReworkProcessOptions
+            .Where(x => x.IsSelected)
+            .Select(x => x.Value)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet();
+
+        var processList = domain.planProcessRouteResourceDemandList
+            .Where(x => !string.IsNullOrWhiteSpace(x.processCode) && selectedProcesses.Contains(x.processCode))
+            .GroupBy(x => x.processCode)
+            .Select(g => g.First())
+            .Select(x => new ReworkProcessSaveItem
+            {
+                id = x.id,
+                schemeNo = x.schemeNo ?? domain.schemeNo,
+                routeCode = x.routeCode,
+                processCode = x.processCode,
+                processName = x.processName,
+                sortNumber = x.sortNumber
+            })
+            .ToList();
+
+        var supplementList = needSupplement
+            ? SupplementRows
+                .Where(x => x.NeedSupplement)
+                .Select(x => new ReworkSupplementSaveItem
+                {
+                    actualReplenishmentQty = decimal.TryParse(x.ActualQtyText, out var actual) ? actual : 0m,
+                    materialCode = x.materialCode,
+                    materialName = x.materialName,
+                    standardReplenishmentQty = x.standardQty,
+                    unit = x.unit
+                })
+                .ToList()
+            : new List<ReworkSupplementSaveItem>();
+
+        return new SaveReworkOrderReq
+        {
+            id = domain.id,
+            hasReworkProcess = processList.Count > 0,
+            isFeedSupplement = needSupplement,
+            materialCode = domain.materialCode,
+            materialName = domain.materialName,
+            memo = ReworkNote,
+            planNo = domain.schemeNo,
+            productionOrderNo = domain.platPlanNo,
+            reworkProcessList = processList,
+            reworkQty = reworkQty,
+            reworkType = SelectedReworkType?.Value,
+            reworkTypeName = SelectedReworkType?.Text,
+            submit = submit,
+            supplementList = supplementList,
+            workOrderName = domain.workOrderName,
+            workOrderNo = domain.workOrderNo
+        };
     }
 }
