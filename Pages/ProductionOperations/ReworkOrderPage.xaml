@@ -118,7 +118,7 @@
 
             <CollectionView ItemsSource="{Binding SupplementRows}" IsVisible="{Binding IsSupplementSectionVisible}">
                 <CollectionView.Header>
-                    <Grid BackgroundColor="#DCEAF9" Padding="6,8" ColumnDefinitions="40,*,*,95,95,95">
+                    <Grid BackgroundColor="#DCEAF9" Padding="6,8" ColumnDefinitions="40,80,80,40,60,60">
                         <Label Text="序号" FontAttributes="Bold" />
                         <Label Grid.Column="1" Text="物料名称" FontAttributes="Bold" />
                         <Label Grid.Column="2" Text="物料编码" FontAttributes="Bold" />
@@ -129,7 +129,7 @@
                 </CollectionView.Header>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="6" ColumnDefinitions="40,*,*,95,95,95" RowDefinitions="Auto,Auto">
+                        <Grid Padding="6" ColumnDefinitions="40,80,80,40,60,60" RowDefinitions="Auto,Auto">
                             <Label Text="{Binding Sequence}" />
                             <Label Text="{Binding materialName}" Grid.Column="1" />
                             <Label Text="{Binding materialCode}" Grid.Column="2" />
