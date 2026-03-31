@@ -32,6 +32,8 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private StatusOption? selectedNeedSupplement;
     [ObservableProperty] private string reworkProcessSummary = "全部";
     [ObservableProperty] private bool isSupplementSectionVisible = true;
+    [ObservableProperty] private bool isReworkQtyInvalid;
+    [ObservableProperty] private bool isReworkTypeInvalid;
 
     private ReworkOrderDomain? _domain;
 
@@ -135,7 +137,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             });
         }
 
-        RefreshReworkProcessSummary();
+        UpdateReworkProcessSummaryInternal();
 
         var child = domain.planChildProductSchemeDetailList.FirstOrDefault();
         var index = 1;
@@ -158,47 +160,15 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task ChooseReworkProcessAsync()
+    private async Task OpenReworkProcessSelectorAsync()
     {
         if (Shell.Current.CurrentPage is null) return;
 
         await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(ReworkProcessOptions));
-        RefreshReworkProcessSummary();
+        UpdateReworkProcessSummaryInternal();
     }
 
-    private void RefreshReworkProcessSummary()
-    {
-        if (ReworkProcessOptions.Count == 0)
-        {
-            ReworkProcessSummary = "请选择";
-            return;
-        }
-
-        var selectedCount = ReworkProcessOptions.Count(x => x.IsSelected);
-        if (selectedCount == 0)
-        {
-            ReworkProcessSummary = "请选择";
-        }
-        else if (selectedCount == ReworkProcessOptions.Count)
-        {
-            ReworkProcessSummary = "全部";
-        }
-        else
-        {
-            ReworkProcessSummary = string.Join("、", ReworkProcessOptions.Where(x => x.IsSelected).Select(x => x.Text));
-        }
-    }
-
-    [RelayCommand]
-    private async Task ChooseReworkProcessAsync()
-    {
-        if (Shell.Current.CurrentPage is null) return;
-
-        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(ReworkProcessOptions));
-        RefreshReworkProcessSummary();
-    }
-
-    private void RefreshReworkProcessSummary()
+    private void UpdateReworkProcessSummaryInternal()
     {
         if (ReworkProcessOptions.Count == 0)
         {
@@ -247,9 +217,16 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
-        if (!decimal.TryParse(ReworkQtyText, out var reworkQty))
+        if (!ValidateRequiredFields())
         {
-            await Shell.Current.DisplayAlert("提示", "请输入正确的返修数量。", "确定");
+            await Shell.Current.DisplayAlert("提示", "请先填写返修数量和返修类型。", "确定");
+            return;
+        }
+
+        if (!decimal.TryParse(ReworkQtyText, out var reworkQty) || reworkQty <= 0)
+        {
+            IsReworkQtyInvalid = true;
+            await Shell.Current.DisplayAlert("提示", "请输入大于0的返修数量。", "确定");
             return;
         }
 
@@ -336,5 +313,22 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             workOrderName = domain.workOrderName,
             workOrderNo = domain.workOrderNo
         };
+    }
+
+    private bool ValidateRequiredFields()
+    {
+        IsReworkQtyInvalid = string.IsNullOrWhiteSpace(ReworkQtyText);
+        IsReworkTypeInvalid = SelectedReworkType == null || string.IsNullOrWhiteSpace(SelectedReworkType.Value);
+        return !IsReworkQtyInvalid && !IsReworkTypeInvalid;
+    }
+
+    partial void OnReworkQtyTextChanged(string value)
+    {
+        IsReworkQtyInvalid = string.IsNullOrWhiteSpace(value);
+    }
+
+    partial void OnSelectedReworkTypeChanged(StatusOption? value)
+    {
+        IsReworkTypeInvalid = value == null || string.IsNullOrWhiteSpace(value.Value);
     }
 }

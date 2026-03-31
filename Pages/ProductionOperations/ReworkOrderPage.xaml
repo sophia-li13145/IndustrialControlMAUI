@@ -26,7 +26,7 @@
             </HorizontalStackLayout>
 
             <Frame Padding="8" HasShadow="False" BorderColor="#DADCE0" CornerRadius="0" BackgroundColor="White">
-                <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
                     <Label Grid.Row="0" Grid.Column="0" Text="工单编号:" />
                     <Label Grid.Row="0" Grid.Column="1" Text="{Binding WorkOrderNo}" />
                     <Label Grid.Row="0" Grid.Column="2" Text="产品名称:" />
@@ -44,9 +44,19 @@
                             ItemsSource="{Binding ReworkTypeOptions}"
                             ItemDisplayBinding="{Binding Text}"
                             SelectedItem="{Binding SelectedReworkType}" />
+                    <Label Grid.Row="3" Grid.Column="1"
+                           Text="返修数量必填"
+                           TextColor="Red"
+                           FontSize="12"
+                           IsVisible="{Binding IsReworkQtyInvalid}" />
+                    <Label Grid.Row="3" Grid.Column="3"
+                           Text="返修类型必填"
+                           TextColor="Red"
+                           FontSize="12"
+                           IsVisible="{Binding IsReworkTypeInvalid}" />
 
-                    <Label Grid.Row="3" Grid.Column="0" Text="返修工序:" />
-                    <Grid Grid.Row="3" Grid.Column="1"
+                    <Label Grid.Row="4" Grid.Column="0" Text="返修工序:" />
+                    <Grid Grid.Row="4" Grid.Column="1"
                           HeightRequest="36"
                           Padding="8,0"
                           BackgroundColor="Transparent">
@@ -54,17 +64,17 @@
                                VerticalTextAlignment="Center"
                                LineBreakMode="TailTruncation" />
                         <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding ChooseReworkProcessCommand}" />
+                            <TapGestureRecognizer Command="{Binding OpenReworkProcessSelectorCommand}" />
                         </Grid.GestureRecognizers>
                     </Grid>
-                    <Label Grid.Row="3" Grid.Column="2" Text="是否补料:" />
-                    <Picker Grid.Row="3" Grid.Column="3"
+                    <Label Grid.Row="4" Grid.Column="2" Text="是否补料:" />
+                    <Picker Grid.Row="4" Grid.Column="3"
                             ItemsSource="{Binding YesNoOptions}"
                             ItemDisplayBinding="{Binding Text}"
                             SelectedItem="{Binding SelectedNeedSupplement}" />
 
-                    <Label Grid.Row="4" Grid.Column="0" Text="返修备注:" />
-                    <Entry Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Placeholder="请输入" Text="{Binding ReworkNote}" />
+                    <Label Grid.Row="5" Grid.Column="0" Text="返修备注:" />
+                    <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Placeholder="请输入" Text="{Binding ReworkNote}" />
                 </Grid>
             </Frame>
 
