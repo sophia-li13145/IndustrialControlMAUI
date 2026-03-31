@@ -190,6 +190,38 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
+    private async Task ChooseReworkProcessAsync()
+    {
+        if (Shell.Current.CurrentPage is null) return;
+
+        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(ReworkProcessOptions));
+        RefreshReworkProcessSummary();
+    }
+
+    private void RefreshReworkProcessSummary()
+    {
+        if (ReworkProcessOptions.Count == 0)
+        {
+            ReworkProcessSummary = "请选择";
+            return;
+        }
+
+        var selectedCount = ReworkProcessOptions.Count(x => x.IsSelected);
+        if (selectedCount == 0)
+        {
+            ReworkProcessSummary = "请选择";
+        }
+        else if (selectedCount == ReworkProcessOptions.Count)
+        {
+            ReworkProcessSummary = "全部";
+        }
+        else
+        {
+            ReworkProcessSummary = string.Join("、", ReworkProcessOptions.Where(x => x.IsSelected).Select(x => x.Text));
+        }
+    }
+
+    [RelayCommand]
     private async Task SaveAsync()
     {
         await SubmitInternalAsync(false);
