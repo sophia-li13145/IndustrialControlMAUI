@@ -55,9 +55,8 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     {
         _api = api;
         _qualityApi = qualityApi;
-
-        YesNoOptions.Add(new StatusOption { Text = "是", Value = "1" });
         YesNoOptions.Add(new StatusOption { Text = "否", Value = "0" });
+        YesNoOptions.Add(new StatusOption { Text = "是", Value = "1" });
         SelectedNeedSupplement = YesNoOptions.FirstOrDefault();
     }
 
@@ -142,6 +141,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
         var domain = resp.result;
         _domain = domain;
+        _domain.materialCode = domain.planChildProductSchemeDetailList[0]?.materialCode;
         WorkOrderNo = domain.workOrderNo;
         WorkOrderName = domain.workOrderName;
         MaterialName = domain.materialName;

@@ -39,37 +39,38 @@
 
                     <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" ColumnDefinitions="Auto,*" ColumnSpacing="8">
                         <Label Grid.Column="0" Text="缺陷:" VerticalTextAlignment="Center" />
-                        <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
                             <FlexLayout BindableLayout.ItemsSource="{Binding DefectTags}" Direction="Row" Wrap="Wrap" AlignItems="Center">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="Auto,Auto"
-                                              Padding="8,3"
-                                              Margin="0,0,4,0"
-                                              BackgroundColor="#EAF3FF">
+                          Padding="8,3"
+                          Margin="0,0,4,0"
+                          BackgroundColor="#EAF3FF">
                                             <Label Grid.Column="0" Text="{Binding Name}" TextColor="#1E76FF" FontSize="12" />
                                             <Label Grid.Column="1" Text="✕" TextColor="#5B6470" FontSize="12" Margin="4,0,0,0">
                                                 <Label.GestureRecognizers>
                                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveDefectTagCommand}"
-                                                                          CommandParameter="{Binding .}" />
+                                                      CommandParameter="{Binding .}" />
                                                 </Label.GestureRecognizers>
                                             </Label>
                                         </Grid>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </FlexLayout>
-                            <Button Text="＋"
-                                    WidthRequest="28"
-                                    HeightRequest="28"
-                                    Padding="0"
-                                    FontSize="18"
-                                    TextColor="#4B5563"
-                                    BackgroundColor="White"
-                                    BorderColor="#D1D5DB"
-                                    BorderWidth="1"
-                                    CornerRadius="6"
-                                    Command="{Binding OpenDefectPickerCommand}" />
-                        </HorizontalStackLayout>
+                            <Button Grid.Column="1"
+                Text="＋"
+                WidthRequest="28"
+                HeightRequest="28"
+                Padding="0"
+                FontSize="18"
+                TextColor="#4B5563"
+                BackgroundColor="White"
+                BorderColor="#D1D5DB"
+                BorderWidth="1"
+                CornerRadius="6"
+                Command="{Binding OpenDefectPickerCommand}" />
+                        </Grid>
                     </Grid>
 
                     <Label Grid.Row="3" Grid.Column="0" Text="返修数量:" />
