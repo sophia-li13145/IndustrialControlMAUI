@@ -175,7 +175,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             : new List<ReworkBomDetailFlattenItem>();
 
         var index = 1;
-        foreach (var m in child2?.planBom?.bomDetailList ?? new List<PlanBomDetailEx>())
+        foreach (var m in bomRows)
         {
             SupplementRows.Add(new ReworkMaterialRow
             {
