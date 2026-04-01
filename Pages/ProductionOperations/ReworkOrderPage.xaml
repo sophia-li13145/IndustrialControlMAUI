@@ -9,13 +9,6 @@
             <Label Text="返修单基础信息" FontAttributes="Bold" TextColor="#333" />
 
             <HorizontalStackLayout Spacing="8">
-                <Button Text="保存"
-                        BackgroundColor="#1FC940"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        HeightRequest="36"
-                        CornerRadius="4"
-                        Command="{Binding SaveCommand}" />
                 <Button Text="保存并提交"
                         BackgroundColor="#1E76FF"
                         TextColor="White"

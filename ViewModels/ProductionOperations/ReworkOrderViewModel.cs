@@ -227,15 +227,9 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task SaveAsync()
-    {
-        await SubmitInternalAsync(false);
-    }
-
-    [RelayCommand]
     private async Task SaveAndSubmitAsync()
     {
-        await SubmitInternalAsync(true);
+        await SubmitInternalAsync();
     }
 
     partial void OnSelectedNeedSupplementChanged(StatusOption? value)
@@ -243,7 +237,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         IsSupplementSectionVisible = value?.Value == "1";
     }
 
-    private async Task SubmitInternalAsync(bool submit)
+    private async Task SubmitInternalAsync()
     {
         if (IsBusy) return;
         if (_domain == null)
@@ -268,12 +262,12 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         IsBusy = true;
         try
         {
-            var req = BuildSaveRequest(_domain, reworkQty, submit);
+            var req = BuildSaveRequest(_domain, reworkQty);
             var resp = await _api.SaveAndSubmitReworkOrderAsync(req);
 
             if (resp.success && resp.result == true)
             {
-                await Shell.Current.DisplayAlert("提示", submit ? "保存并提交成功！" : "保存成功！", "确定");
+                await Shell.Current.DisplayAlert("提示", "保存并提交成功！", "确定");
                 return;
             }
 
@@ -289,7 +283,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         }
     }
 
-    private SaveReworkOrderReq BuildSaveRequest(ReworkOrderDomain domain, decimal reworkQty, bool submit)
+    private SaveReworkOrderReq BuildSaveRequest(ReworkOrderDomain domain, decimal reworkQty)
     {
         var needSupplement = SelectedNeedSupplement?.Value == "1";
         var selectedProcesses = ReworkProcessOptions
@@ -336,7 +330,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
         return new SaveReworkOrderReq
         {
-            id = domain.id,
+            id = null,
             defectTags = string.Join(",", DefectTags.Select(x => x.Name)),
             hasReworkProcess = processList.Count > 0,
             isFeedSupplement = needSupplement,
@@ -349,7 +343,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             reworkQty = reworkQty,
             reworkType = SelectedReworkType?.Value,
             reworkTypeName = SelectedReworkType?.Text,
-            submit = submit,
+            submit = true,
             supplementList = supplementList,
             workOrderName = domain.workOrderName,
             workOrderNo = domain.workOrderNo
