@@ -269,9 +269,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         try
         {
             var req = BuildSaveRequest(_domain, reworkQty, submit);
-            var resp = submit
-                ? await _api.SaveAndSubmitReworkOrderAsync(req)
-                : await _api.SaveReworkOrderAsync(req);
+            var resp = await _api.SaveAndSubmitReworkOrderAsync(req);
 
             if (resp.success && resp.result == true)
             {
