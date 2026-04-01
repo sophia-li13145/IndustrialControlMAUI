@@ -152,3 +152,14 @@ public class ReworkSupplementSaveItem
     public decimal? standardReplenishmentQty { get; set; }
     public string? unit { get; set; }
 }
+
+public class ReworkBomDetailFlattenItem
+{
+    public string? id { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public string? materialClassName { get; set; }
+    public bool? needCollect { get; set; }
+    public decimal? qty { get; set; }
+    public string? unit { get; set; }
+}
