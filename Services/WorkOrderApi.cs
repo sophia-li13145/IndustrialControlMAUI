@@ -13,7 +13,7 @@ using AuthState = IndustrialControlMAUI.Tools.AuthState;
 
 namespace IndustrialControlMAUI.Services
 {
-public class WorkOrderApi : IWorkOrderApi
+    public class WorkOrderApi : IWorkOrderApi
     {
         private readonly HttpClient _http;
         private readonly AuthState _auth;
@@ -44,6 +44,7 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _workOrderDomainEndpoint;
         private readonly string _reworkDictEndpoint;
         private readonly string _reworkWorkOrderDomainEndpoint;
+        private readonly string _reworkBomFlattenEndpoint;
         private readonly string _reworkSaveEndpoint;
         private readonly string _reworkSaveAndSubmitEndpoint;
         private readonly string _inventoryPageEndpoint;
@@ -127,6 +128,9 @@ public class WorkOrderApi : IWorkOrderApi
     servicePath);
             _reworkWorkOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo"),
+    servicePath);
+            _reworkBomFlattenEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkBomFlatten", "/pda/pmsBom/queryPmsBomDetailFlattenByWorkOrder"),
     servicePath);
             _reworkSaveEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("workOrder.reworkSave", "/pda/pmsReworkOrder/save"),
@@ -401,8 +405,8 @@ public class WorkOrderApi : IWorkOrderApi
         public Task<SimpleOk> UpdateWorkProcessTaskAsync(
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default)
         {
-            var payload = 
-        new WorkProcessTaskTeamUpdateReq { id = id, productionMachine = productionMachine, productionMachineName = productionMachineName,taskReportedQty = taskReportedQty,teamCode= teamCode,teamName=teamName,workHours = workHours,startDate= startDate,endDate = endDate };
+            var payload =
+        new WorkProcessTaskTeamUpdateReq { id = id, productionMachine = productionMachine, productionMachineName = productionMachineName, taskReportedQty = taskReportedQty, teamCode = teamCode, teamName = teamName, workHours = workHours, startDate = startDate, endDate = endDate };
             return UpdateWorkProcessTaskAsync(payload, ct);
         }
 
@@ -626,7 +630,7 @@ public class WorkOrderApi : IWorkOrderApi
         {
             if (string.IsNullOrWhiteSpace(id))
                 return new ApiResp<bool> { success = false, message = "id 不能为空" };
-            
+
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskMaterialInputEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
@@ -910,6 +914,22 @@ public class WorkOrderApi : IWorkOrderApi
 
             return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
                    ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
+        }
+
+        public async Task<ApiResp<List<ReworkBomDetailFlattenItem>>> GetReworkBomFlattenDetailsAsync(string workOrderNo, CancellationToken ct = default)
+        {
+            var url = _reworkBomFlattenEndpoint + "?workOrderNo=" + Uri.EscapeDataString(workOrderNo ?? "");
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<List<ReworkBomDetailFlattenItem>> { success = false, message = $"HTTP {(int)res.StatusCode}", result = new List<ReworkBomDetailFlattenItem>() };
+
+            return JsonSerializer.Deserialize<ApiResp<List<ReworkBomDetailFlattenItem>>>(json, _json)
+                   ?? new ApiResp<List<ReworkBomDetailFlattenItem>> { success = false, message = "反序列化失败", result = new List<ReworkBomDetailFlattenItem>() };
         }
 
         public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(
