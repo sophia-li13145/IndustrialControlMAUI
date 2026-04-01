@@ -902,9 +902,15 @@ namespace IndustrialControlMAUI.Services
         public async Task<ApiResp<bool?>> SaveAndSubmitReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default)
         {
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkSaveAndSubmitEndpoint);
+            var options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            var body = JsonSerializer.Serialize(req, options);
+
             using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
             {
-                Content = JsonContent.Create(req)
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
             };
 
             using var res = await _http.SendAsync(msg, ct);
