@@ -169,7 +169,11 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
         UpdateReworkProcessSummaryInternal();
 
-        var child2 = domain.planChildProductSchemeDetailList.FirstOrDefault();
+        var supplementResp = await _api.GetReworkBomFlattenDetailsAsync(domain.workOrderNo ?? "");
+        var bomRows = supplementResp.success
+            ? (supplementResp.result ?? new List<ReworkBomDetailFlattenItem>())
+            : new List<ReworkBomDetailFlattenItem>();
+
         var index = 1;
         foreach (var m in child2?.planBom?.bomDetailList ?? new List<PlanBomDetailEx>())
         {
