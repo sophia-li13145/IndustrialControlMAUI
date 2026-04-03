@@ -203,7 +203,10 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         if (IsReworkProcessDisabled) return;
         if (Shell.Current.CurrentPage is null) return;
 
-        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(ReworkProcessOptions, "选择返修工序"));
+        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(
+            ReworkProcessOptions,
+            "选择返修工序",
+            cascadeSelectDownward: true));
         UpdateReworkProcessSummaryInternal();
     }
 
