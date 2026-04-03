@@ -32,8 +32,10 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty] private StatusOption? selectedReworkType;
     [ObservableProperty] private StatusOption? selectedNeedSupplement;
-    [ObservableProperty] private string reworkProcessSummary = "全部";
+    [ObservableProperty] private string reworkProcessSummary = "请选择";
     [ObservableProperty] private bool isSupplementSectionVisible = true;
+    [ObservableProperty] private bool isReworkProcessDisabled;
+    [ObservableProperty] private bool isNeedSupplementDisabled;
     private bool _isReworkQtyInvalid;
     private bool _isReworkTypeInvalid;
 
@@ -192,14 +194,19 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
         IsSupplementSectionVisible = SelectedNeedSupplement?.Value == "1";
         IsReworkTypeInvalid = false;
+        ApplyReworkTypeRules();
     }
 
     [RelayCommand]
     private async Task OpenReworkProcessSelectorAsync()
     {
+        if (IsReworkProcessDisabled) return;
         if (Shell.Current.CurrentPage is null) return;
 
-        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(ReworkProcessOptions));
+        await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(
+            ReworkProcessOptions,
+            "选择返修工序",
+            cascadeSelectDownward: true));
         UpdateReworkProcessSummaryInternal();
     }
 
@@ -234,6 +241,16 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
     partial void OnSelectedNeedSupplementChanged(StatusOption? value)
     {
+        if (IsNeedSupplementDisabled)
+        {
+            if (value?.Value != "0")
+            {
+                SelectedNeedSupplement = YesNoOptions.FirstOrDefault(x => x.Value == "0");
+            }
+            IsSupplementSectionVisible = false;
+            return;
+        }
+
         IsSupplementSectionVisible = value?.Value == "1";
     }
 
@@ -268,6 +285,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             if (resp.success && resp.result == true)
             {
                 await Shell.Current.DisplayAlert("提示", "保存并提交成功！", "确定");
+                await Shell.Current.GoToAsync("..");
                 return;
             }
 
@@ -354,7 +372,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     private async Task OpenDefectPickerAsync()
     {
         var preselectedCodes = DefectTags
-            .Select(x => x.Name)
+            .Select(x => string.IsNullOrWhiteSpace(x.Code) ? x.Name : x.Code)
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .ToList();
 
@@ -368,6 +386,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             if (string.IsNullOrWhiteSpace(name)) continue;
             DefectTags.Add(new DefectChip
             {
+                Code = d.DefectCode ?? string.Empty,
                 Name = name,
                 ColorHex = Color.FromArgb("#EAF3FF")
             });
@@ -396,5 +415,48 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     partial void OnSelectedReworkTypeChanged(StatusOption? value)
     {
         IsReworkTypeInvalid = value == null || string.IsNullOrWhiteSpace(value.Value);
+        ApplyReworkTypeRules();
+    }
+
+    private void ApplyReworkTypeRules()
+    {
+        var isReschedule = IsRescheduleType(SelectedReworkType);
+        IsReworkProcessDisabled = isReschedule;
+        IsNeedSupplementDisabled = isReschedule;
+
+        if (!isReschedule)
+        {
+            if (ReworkProcessOptions.Count > 0 && ReworkProcessOptions.All(x => !x.IsSelected))
+            {
+                foreach (var item in ReworkProcessOptions)
+                {
+                    item.IsSelected = true;
+                }
+                UpdateReworkProcessSummaryInternal();
+            }
+            return;
+        }
+
+        foreach (var item in ReworkProcessOptions)
+        {
+            item.IsSelected = false;
+        }
+        UpdateReworkProcessSummaryInternal();
+
+        var noOption = YesNoOptions.FirstOrDefault(x => x.Value == "0");
+        if (noOption != null)
+        {
+            SelectedNeedSupplement = noOption;
+        }
+        IsSupplementSectionVisible = false;
+    }
+
+    private static bool IsRescheduleType(StatusOption? option)
+    {
+        if (option == null) return false;
+        var text = option.Text?.Trim() ?? string.Empty;
+        var value = option.Value?.Trim() ?? string.Empty;
+        return text.Contains("重新排产", StringComparison.OrdinalIgnoreCase)
+               || value.Equals("重新排产", StringComparison.OrdinalIgnoreCase);
     }
 }

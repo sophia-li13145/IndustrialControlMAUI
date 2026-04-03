@@ -7,12 +7,21 @@ namespace IndustrialControlMAUI.Pages;
 public partial class StatusMultiSelectPopup : Popup
 {
     public ObservableCollection<StatusFilterOption> Options { get; }
+    private readonly bool _cascadeSelectDownward;
 
-    public StatusMultiSelectPopup(ObservableCollection<StatusFilterOption> options)
+    public StatusMultiSelectPopup(
+        ObservableCollection<StatusFilterOption> options,
+        string? title = null,
+        bool cascadeSelectDownward = false)
     {
 
         InitializeComponent();
         Options = options ?? new ObservableCollection<StatusFilterOption>();
+        _cascadeSelectDownward = cascadeSelectDownward;
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            TitleLabel.Text = title;
+        }
         BindingContext = this;
 
     }
@@ -26,7 +35,24 @@ public partial class StatusMultiSelectPopup : Popup
     {
         if (sender is Grid grid && grid.BindingContext is StatusFilterOption item)
         {
-            item.IsSelected = !item.IsSelected;
+            if (!_cascadeSelectDownward)
+            {
+                item.IsSelected = !item.IsSelected;
+                return;
+            }
+
+            var index = Options.IndexOf(item);
+            if (index < 0)
+            {
+                item.IsSelected = !item.IsSelected;
+                return;
+            }
+
+            var nextValue = !item.IsSelected;
+            for (var i = index; i < Options.Count; i++)
+            {
+                Options[i].IsSelected = nextValue;
+            }
         }
     }
 }
