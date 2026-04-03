@@ -88,10 +88,23 @@
                     <Grid Grid.Row="5" Grid.Column="1"
                           HeightRequest="36"
                           Padding="8,0"
-                          BackgroundColor="Transparent">
+                          BackgroundColor="Transparent"
+                          InputTransparent="{Binding IsReworkProcessDisabled}">
+                        <Grid.Triggers>
+                            <DataTrigger TargetType="Grid" Binding="{Binding IsReworkProcessDisabled}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#F3F4F6" />
+                            </DataTrigger>
+                        </Grid.Triggers>
                         <Label Text="{Binding ReworkProcessSummary}"
+                               TextColor="#111827"
                                VerticalTextAlignment="Center"
-                               LineBreakMode="TailTruncation" />
+                               LineBreakMode="TailTruncation">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsReworkProcessDisabled}" Value="True">
+                                    <Setter Property="TextColor" Value="#9CA3AF" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenReworkProcessSelectorCommand}" />
                         </Grid.GestureRecognizers>
@@ -100,7 +113,17 @@
                     <Picker Grid.Row="5" Grid.Column="3"
                             ItemsSource="{Binding YesNoOptions}"
                             ItemDisplayBinding="{Binding Text}"
-                            SelectedItem="{Binding SelectedNeedSupplement}" />
+                            SelectedItem="{Binding SelectedNeedSupplement}"
+                            IsEnabled="True"
+                            BackgroundColor="Transparent">
+                        <Picker.Triggers>
+                            <DataTrigger TargetType="Picker" Binding="{Binding IsNeedSupplementDisabled}" Value="True">
+                                <Setter Property="IsEnabled" Value="False" />
+                                <Setter Property="BackgroundColor" Value="#F3F4F6" />
+                                <Setter Property="TextColor" Value="#9CA3AF" />
+                            </DataTrigger>
+                        </Picker.Triggers>
+                    </Picker>
 
                     <Label Grid.Row="6" Grid.Column="0" Text="返修备注:" />
                     <Entry Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Placeholder="请输入" Text="{Binding ReworkNote}" />
