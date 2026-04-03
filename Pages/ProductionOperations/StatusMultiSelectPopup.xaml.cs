@@ -8,11 +8,15 @@ public partial class StatusMultiSelectPopup : Popup
 {
     public ObservableCollection<StatusFilterOption> Options { get; }
 
-    public StatusMultiSelectPopup(ObservableCollection<StatusFilterOption> options)
+    public StatusMultiSelectPopup(ObservableCollection<StatusFilterOption> options, string? title = null)
     {
 
         InitializeComponent();
         Options = options ?? new ObservableCollection<StatusFilterOption>();
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            TitleLabel.Text = title;
+        }
         BindingContext = this;
 
     }
