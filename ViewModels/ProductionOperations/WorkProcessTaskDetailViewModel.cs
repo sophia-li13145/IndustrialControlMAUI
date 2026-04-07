@@ -45,8 +45,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
 
     [ObservableProperty] private WorkProcessTaskDetail? detail;
+    [ObservableProperty] private string? queryWorkOrderAuditStatus;
     // 返修按钮显示规则：仅工单状态 1-执行中、2-入库中、4-待入库 时显示
-    public bool IsReworkVisible => (Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "1" or "2" or "4";
+    public bool IsReworkVisible => (QueryWorkOrderAuditStatus ?? Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "1" or "2" or "4";
 
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<TaskMaterialInput> Inputs { get; } = new();
@@ -147,6 +148,12 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(CanRework));
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
+    partial void OnQueryWorkOrderAuditStatusChanged(string? value)
+    {
+        OnPropertyChanged(nameof(IsReworkVisible));
+        OnPropertyChanged(nameof(CanRework));
+        (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+    }
     /// <summary>执行 NotifyAllCanExec 逻辑。</summary>
     private void NotifyAllCanExec()
     {
@@ -170,6 +177,11 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        if (query.TryGetValue("workOrderAuditStatus", out var statusObj))
+        {
+            QueryWorkOrderAuditStatus = statusObj?.ToString();
+        }
+
         if (query.TryGetValue("id", out var v) && v is string id && !string.IsNullOrWhiteSpace(id))
         {
             await InitAsync(id);
