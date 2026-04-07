@@ -67,7 +67,12 @@
                     </Grid>
 
                     <Label Grid.Row="3" Grid.Column="0" Text="返修数量:" />
-                    <Entry Grid.Row="3" Grid.Column="1" Placeholder="请输入" Keyboard="Numeric" Text="{Binding ReworkQtyText}" />
+                    <Entry Grid.Row="3"
+                           Grid.Column="1"
+                           Placeholder="请输入"
+                           Keyboard="Numeric"
+                           Text="{Binding ReworkQtyText}"
+                           TextChanged="ReworkQtyEntry_OnTextChanged" />
                     <Label Grid.Row="3" Grid.Column="2" Text="返修类型:" />
                     <Picker Grid.Row="3" Grid.Column="3"
                             ItemsSource="{Binding ReworkTypeOptions}"
