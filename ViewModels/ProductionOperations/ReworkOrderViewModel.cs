@@ -276,6 +276,14 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
             return;
         }
 
+        var maxQty = GetMaxReworkQty();
+        if (maxQty > 0 && reworkQty > maxQty)
+        {
+            IsReworkQtyInvalid = true;
+            await Shell.Current.DisplayAlert("提示", $"返修数量不能大于生产数量（{maxQty:G29}）。", "确定");
+            return;
+        }
+
         IsBusy = true;
         try
         {
@@ -409,7 +417,27 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
 
     partial void OnReworkQtyTextChanged(string value)
     {
-        IsReworkQtyInvalid = string.IsNullOrWhiteSpace(value);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            IsReworkQtyInvalid = true;
+            return;
+        }
+
+        if (!decimal.TryParse(value, out var enteredQty))
+        {
+            IsReworkQtyInvalid = true;
+            return;
+        }
+
+        var maxQty = GetMaxReworkQty();
+        if (maxQty > 0 && enteredQty > maxQty)
+        {
+            ReworkQtyText = maxQty.ToString("G29");
+            IsReworkQtyInvalid = false;
+            return;
+        }
+
+        IsReworkQtyInvalid = enteredQty <= 0;
     }
 
     partial void OnSelectedReworkTypeChanged(StatusOption? value)
@@ -459,4 +487,15 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         return text.Contains("重新排产", StringComparison.OrdinalIgnoreCase)
                || value.Equals("重新排产", StringComparison.OrdinalIgnoreCase);
     }
+
+    private decimal GetMaxReworkQty()
+    {
+        if (_domain?.curQty is decimal curQty && curQty > 0)
+        {
+            return curQty;
+        }
+
+        return decimal.TryParse(QuantityText, out var qty) && qty > 0 ? qty : 0m;
+    }
+
 }
