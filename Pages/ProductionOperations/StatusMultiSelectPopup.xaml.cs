@@ -63,18 +63,22 @@ public partial class StatusMultiSelectPopup : Popup
             }
 
             var nextValue = !item.IsSelected;
-            if (_enforceContinuousSelection && !IsContinuousSelectionAfterToggle(index, nextValue, cascade: true))
+            if (nextValue)
             {
-                if (Shell.Current?.CurrentPage != null)
+                for (var i = index; i < Options.Count; i++)
                 {
-                    await Shell.Current.CurrentPage.DisplayAlert("提示", "返修工序必须连续选择，不能跳过中间工序。", "确定");
+                    Options[i].IsSelected = true;
                 }
                 return;
             }
 
             for (var i = index; i < Options.Count; i++)
             {
-                Options[i].IsSelected = nextValue;
+                Options[i].IsSelected = false;
+            }
+            for (var i = 0; i < index; i++)
+            {
+                Options[i].IsSelected = false;
             }
         }
     }
