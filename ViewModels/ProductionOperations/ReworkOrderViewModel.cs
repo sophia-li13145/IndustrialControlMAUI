@@ -20,6 +20,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     [ObservableProperty] private string? materialName;
     [ObservableProperty] private string quantityText = "0";
     [ObservableProperty] private string reworkQtyText = "";
+    [ObservableProperty] private string reworkQtyErrorText = "返修数量必填";
 
     [ObservableProperty] private string? reworkReason;
     [ObservableProperty] private string? reworkNote;
@@ -150,6 +151,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         QuantityText = (domain.curQty ?? 0m).ToString("G29");
         ReworkQtyText = string.Empty;
         IsReworkQtyInvalid = false;
+        ReworkQtyErrorText = "返修数量必填";
 
         var child = domain.planChildProductSchemeDetailList.FirstOrDefault();
         var routeDetails = child?.planProcessRoute?.routeDetailList
@@ -272,6 +274,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         if (!decimal.TryParse(ReworkQtyText, out var reworkQty) || reworkQty <= 0)
         {
             IsReworkQtyInvalid = true;
+            ReworkQtyErrorText = "请输入大于0的返修数量";
             await Shell.Current.DisplayAlert("提示", "请输入大于0的返修数量。", "确定");
             return;
         }
@@ -280,6 +283,7 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         if (maxQty > 0 && reworkQty > maxQty)
         {
             IsReworkQtyInvalid = true;
+            ReworkQtyErrorText = $"返修数量不能大于生产数量（{maxQty:G29}）";
             await Shell.Current.DisplayAlert("提示", $"返修数量不能大于生产数量（{maxQty:G29}）。", "确定");
             return;
         }
@@ -411,6 +415,10 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
     private bool ValidateRequiredFields()
     {
         IsReworkQtyInvalid = string.IsNullOrWhiteSpace(ReworkQtyText);
+        if (IsReworkQtyInvalid)
+        {
+            ReworkQtyErrorText = "返修数量必填";
+        }
         IsReworkTypeInvalid = SelectedReworkType == null || string.IsNullOrWhiteSpace(SelectedReworkType.Value);
         return !IsReworkQtyInvalid && !IsReworkTypeInvalid;
     }
@@ -420,24 +428,34 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         if (string.IsNullOrWhiteSpace(value))
         {
             IsReworkQtyInvalid = true;
+            ReworkQtyErrorText = "返修数量必填";
             return;
         }
 
         if (!decimal.TryParse(value, out var enteredQty))
         {
             IsReworkQtyInvalid = true;
+            ReworkQtyErrorText = "返修数量格式不正确";
             return;
         }
 
         var maxQty = GetMaxReworkQty();
         if (maxQty > 0 && enteredQty > maxQty)
         {
-            ReworkQtyText = maxQty.ToString("G29");
-            IsReworkQtyInvalid = false;
+            IsReworkQtyInvalid = true;
+            ReworkQtyErrorText = $"返修数量不能大于生产数量（{maxQty:G29}）";
             return;
         }
 
-        IsReworkQtyInvalid = enteredQty <= 0;
+        if (enteredQty <= 0)
+        {
+            IsReworkQtyInvalid = true;
+            ReworkQtyErrorText = "请输入大于0的返修数量";
+            return;
+        }
+
+        IsReworkQtyInvalid = false;
+        ReworkQtyErrorText = "返修数量必填";
     }
 
     partial void OnSelectedReworkTypeChanged(StatusOption? value)
