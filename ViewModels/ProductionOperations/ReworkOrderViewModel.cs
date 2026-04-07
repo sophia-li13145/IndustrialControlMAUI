@@ -206,7 +206,8 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         await Shell.Current.CurrentPage.ShowPopupAsync(new StatusMultiSelectPopup(
             ReworkProcessOptions,
             "选择返修工序",
-            cascadeSelectDownward: true));
+            cascadeSelectDownward: false,
+            enforceContinuousSelection: true));
         UpdateReworkProcessSummaryInternal();
     }
 
@@ -266,6 +267,12 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         if (!ValidateRequiredFields())
         {
             await Shell.Current.DisplayAlert("提示", "请先填写返修数量和返修类型。", "确定");
+            return;
+        }
+
+        if (!ValidateReworkProcessContinuity())
+        {
+            await Shell.Current.DisplayAlert("提示", "返修工序必须连续选择，不能跳过中间工序。", "确定");
             return;
         }
 
@@ -496,5 +503,20 @@ public partial class ReworkOrderViewModel : ObservableObject, IQueryAttributable
         }
 
         return decimal.TryParse(QuantityText, out var qty) && qty > 0 ? qty : 0m;
+    }
+
+    private bool ValidateReworkProcessContinuity()
+    {
+        var selectedIndexes = ReworkProcessOptions
+            .Select((option, index) => new { option.IsSelected, Index = index })
+            .Where(x => x.IsSelected)
+            .Select(x => x.Index)
+            .ToList();
+
+        if (selectedIndexes.Count <= 1) return true;
+
+        var minIndex = selectedIndexes.Min();
+        var maxIndex = selectedIndexes.Max();
+        return selectedIndexes.Count == (maxIndex - minIndex + 1);
     }
 }
