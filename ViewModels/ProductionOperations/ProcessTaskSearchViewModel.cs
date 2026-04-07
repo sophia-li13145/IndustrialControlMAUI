@@ -422,7 +422,11 @@ namespace IndustrialControlMAUI.ViewModels
                     return;
                 }
 
-                await Shell.Current.GoToAsync(nameof(WorkProcessTaskDetailPage) + $"?id={Uri.EscapeDataString(item.Id ?? string.Empty)}");
+                await Shell.Current.GoToAsync(nameof(WorkProcessTaskDetailPage), new Dictionary<string, object>
+                {
+                    ["id"] = item.Id ?? string.Empty,
+                    ["workOrderAuditStatus"] = item.WorkOrderAuditStatus ?? string.Empty
+                });
             }
             catch (Exception ex)
             {
