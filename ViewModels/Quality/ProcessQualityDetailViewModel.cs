@@ -66,7 +66,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
         [ObservableProperty] private bool isEditing = true;
-        public bool IsReworkVisible => !IsEditing && !string.IsNullOrWhiteSpace(Detail?.orderNumber);
+        public bool IsReworkVisible => !string.IsNullOrWhiteSpace(Detail?.orderNumber);
         public bool CanRework => !IsBusy && IsReworkVisible;
 
         // 导航入参
