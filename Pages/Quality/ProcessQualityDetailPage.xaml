@@ -28,6 +28,9 @@
             <Style x:Key="SuccessBtn" TargetType="Button" BasedOn="{StaticResource PrimaryBtn}">
                 <Setter Property="BackgroundColor" Value="#27AE60" />
             </Style>
+            <Style x:Key="BtnRed" BasedOn="{StaticResource PrimaryBtn}" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#FF0000" />
+            </Style>
             <Style x:Key="SectionTitle" TargetType="Label">
                 <Setter Property="FontAttributes" Value="Bold" />
                 <Setter Property="TextColor" Value="#1F2937" />
@@ -90,7 +93,7 @@
                     Command="{Binding CompleteCommand}" IsVisible="{Binding IsEditing}" />
             <Button Grid.Column="3"
                     Text="返修"
-                    Style="{StaticResource SuccessBtn}"
+                    Style="{StaticResource BtnRed}"
                     Command="{Binding ReworkCommand}"
                     IsVisible="{Binding IsReworkVisible}"
                     IsEnabled="{Binding CanRework}" />
