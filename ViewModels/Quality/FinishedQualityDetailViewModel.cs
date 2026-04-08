@@ -67,7 +67,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
         [ObservableProperty] private bool isEditing = true;
-        public bool IsReworkVisible => (Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "1" or "2" or "4";
+        public bool IsReworkVisible => !IsEditing && !string.IsNullOrWhiteSpace(Detail?.orderNumber);
         public bool CanRework => !IsBusy && IsReworkVisible;
 
         // 导航入参
@@ -101,6 +101,10 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 item.IsEditing = value;
             }
+
+            OnPropertyChanged(nameof(IsReworkVisible));
+            OnPropertyChanged(nameof(CanRework));
+            (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         }
 
         partial void OnIsBusyChanged(bool value)
@@ -707,7 +711,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             await Shell.Current.GoToAsync(nameof(ReworkOrderPage), new Dictionary<string, object>
             {
-                ["id"] = workOrderNo
+                ["workOrderNo"] = workOrderNo
             });
         }
 

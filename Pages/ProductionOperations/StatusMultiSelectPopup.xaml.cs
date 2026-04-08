@@ -62,17 +62,17 @@ public partial class StatusMultiSelectPopup : Popup
                 return;
             }
 
-            var nextValue2 = !item.IsSelected;
-            if (nextValue2)
+            var nextValue = !item.IsSelected;
+            if (nextValue)
             {
-                for (var i = index2; i < Options.Count; i++)
+                for (var i = index; i < Options.Count; i++)
                 {
                     Options[i].IsSelected = true;
                 }
                 return;
             }
 
-            for (var i = 0; i <= index2; i++)
+            for (var i = 0; i <= index; i++)
             {
                 Options[i].IsSelected = false;
             }

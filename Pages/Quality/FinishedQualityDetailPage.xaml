@@ -91,7 +91,7 @@
                     Command="{Binding CompleteCommand}"
                     IsVisible="{Binding IsEditing}"/>
             <Button Grid.Column="3"
-                    Text="报修"
+                    Text="返修"
                     Style="{StaticResource SuccessBtn}"
                     Command="{Binding ReworkCommand}"
                     IsVisible="{Binding IsReworkVisible}"
