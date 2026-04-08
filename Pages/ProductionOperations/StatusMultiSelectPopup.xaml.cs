@@ -55,8 +55,8 @@ public partial class StatusMultiSelectPopup : Popup
                 return;
             }
 
-            var index = Options.IndexOf(item);
-            if (index < 0)
+            var index2 = Options.IndexOf(item);
+            if (index2 < 0)
             {
                 item.IsSelected = !item.IsSelected;
                 return;
