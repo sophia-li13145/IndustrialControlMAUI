@@ -89,12 +89,14 @@ public class DictQuality
     public List<DictItem> InspectStatus { get; set; } = new();
     public List<DictItem> QualityTypes { get; set; } = new();
     public List<DictItem> DataSources { get; set; } = new();
+    public List<DictItem> InspectResults { get; set; } = new();
 }
 
 
 public class QualityDetailDto : ObservableObject
 {
     public decimal? arrivalQty { get; set; }
+    public decimal? concessionAcceptQty { get; set; }
     public string id { get; set; } = "";
     public string inspectRemark { get; set; } = "";
     public string inspectResult { get; set; } = "";
