@@ -109,6 +109,7 @@ public class QualityDetailDto : ObservableObject
     public string orderNumber { get; set; } = "";
     public string processCode { get; set; } = "";
     public string processName { get; set; } = "";
+    public string? workOrderStatus { get; set; }
     public string? workOrderAuditStatus { get; set; }
     public string? auditStatus { get; set; }
     public string qualityType { get; set; } = "";
