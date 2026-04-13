@@ -61,9 +61,11 @@ namespace IndustrialControlMAUI.ViewModels
                     // 选中后回写到 Detail.inspectResult（不去改 total*，避免触发连锁）
                     if (Detail != null)
                         Detail.inspectResult = value?.Value ?? value?.Text;
+                    ShowConcessionAcceptQtyInput = IsConcessionAcceptResult(value?.Value ?? value?.Text);
                 }
             }
         }
+        [ObservableProperty] private bool showConcessionAcceptQtyInput;
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
         [ObservableProperty] private bool isEditing = true;
@@ -80,10 +82,6 @@ namespace IndustrialControlMAUI.ViewModels
             _api = api;
             _authApi = authApi;
             _attachmentApi = attachmentApi;
-
-            // 默认选项（也可以从字典接口加载）
-            InspectResultOptions.Add(new StatusOption { Text = "合格", Value = "合格" });
-            InspectResultOptions.Add(new StatusOption { Text = "不合格", Value = "不合格" });
 
             InspectorSuggestions = new ObservableCollection<UserInfoDto>();
             AllUsers = new List<UserInfoDto>();
@@ -312,6 +310,7 @@ namespace IndustrialControlMAUI.ViewModels
                 Detail?.Recalc();
                 IsEditing = !_forceReadOnly && !IsCompletedStatus(Detail?.inspectStatus);
 
+                await LoadInspectResultOptionsAsync();
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();
 
@@ -401,6 +400,7 @@ namespace IndustrialControlMAUI.ViewModels
                     .FirstOrDefault(o =>
                         string.Equals(o.Value, Detail.inspectResult, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(o.Text, Detail.inspectResult, StringComparison.OrdinalIgnoreCase));
+                ShowConcessionAcceptQtyInput = IsConcessionAcceptResult(SelectedInspectResult?.Value ?? SelectedInspectResult?.Text);
                
                 IsInspectorDropdownOpen = false;
             }
@@ -544,6 +544,11 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = true;
                 PreparePayloadFromUi();
+                if (!ValidateQuantitySummary(out var errorMessage))
+                {
+                    await ShowTip(errorMessage);
+                    return;
+                }
 
                 var resp = await _api.ExecuteSaveAsync(Detail);
                 if (resp?.success == true && resp.result == true)
@@ -644,6 +649,11 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = true;
                 PreparePayloadFromUi();
+                if (!ValidateQuantitySummary(out var errorMessage))
+                {
+                    await ShowTip(errorMessage);
+                    return;
+                }
 
                 var resp = await _api.ExecuteCompleteInspectionAsync(Detail);
                 if (resp?.success == true && resp.result == true)
@@ -920,6 +930,89 @@ namespace IndustrialControlMAUI.ViewModels
             static string? FirstNonEmpty(IEnumerable<string?> values)
                 => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v))?.Trim();
         }
+
+        private async Task LoadInspectResultOptionsAsync()
+        {
+            try
+            {
+                var dict = await _api.GetQualityDictsAsync(_cts.Token);
+                var options = (dict?.InspectResults ?? new List<DictItem>())
+                    .Where(x => !string.IsNullOrWhiteSpace(x.dictItemName) || !string.IsNullOrWhiteSpace(x.dictItemValue))
+                    .Select(x => new StatusOption
+                    {
+                        Text = x.dictItemName ?? x.dictItemValue ?? "",
+                        Value = x.dictItemValue ?? x.dictItemName ?? ""
+                    })
+                    .ToList();
+
+                if (options.Count == 0)
+                {
+                    options = new List<StatusOption>
+                    {
+                        new() { Text = "合格", Value = "合格" },
+                        new() { Text = "不合格", Value = "不合格" }
+                    };
+                }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    InspectResultOptions.Clear();
+                    foreach (var op in options)
+                        InspectResultOptions.Add(op);
+                });
+            }
+            catch
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    if (InspectResultOptions.Count == 0)
+                    {
+                        InspectResultOptions.Add(new StatusOption { Text = "合格", Value = "合格" });
+                        InspectResultOptions.Add(new StatusOption { Text = "不合格", Value = "不合格" });
+                    }
+                });
+            }
+        }
+
+        private bool ValidateQuantitySummary(out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            if (Detail is null) return true;
+
+            var arrivalQty = Detail.arrivalQty ?? 0m;
+            var qualified = Detail.totalQualified ?? 0m;
+            var unqualified = Detail.totalUnqualified ?? 0m;
+            var concession = Detail.concessionAcceptQty ?? 0m;
+            var isConcession = IsConcessionAcceptResult(Detail.inspectResult);
+
+            if (arrivalQty <= 0m)
+            {
+                errorMessage = "到货总数必须大于 0。";
+                return false;
+            }
+
+            if (isConcession)
+            {
+                if (qualified + unqualified + concession != arrivalQty)
+                {
+                    errorMessage = "检验结果为让步接收时，需满足：合格总数 + 不合格总数 + 让步接收数 = 到货总数。";
+                    return false;
+                }
+            }
+            else
+            {
+                if (qualified + unqualified != arrivalQty)
+                {
+                    errorMessage = "需满足：合格总数 + 不合格总数 = 到货总数。";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsConcessionAcceptResult(string? inspectResult)
+            => string.Equals(inspectResult?.Trim(), "让步接收", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>执行 DownloadAttachment 逻辑。</summary>
         [RelayCommand]
