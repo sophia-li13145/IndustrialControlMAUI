@@ -208,7 +208,6 @@ public class QualityDetailDto : ObservableObject
         finally { _inRecalc = false; }
     }
 
-    public string? workOrderStatus { get; set; }
 }
 
 
