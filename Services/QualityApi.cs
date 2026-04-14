@@ -156,7 +156,7 @@ public class QualityApi : IQualityApi
        string.Equals(f.field, "dataSource", StringComparison.OrdinalIgnoreCase))
        ?.dictItems ?? new List<DictItem>();
             var inspectResults = all.FirstOrDefault(f =>
-       string.Equals(f.field, "inspectResult", StringComparison.OrdinalIgnoreCase))
+       string.Equals(f.field, "orderInspectResult", StringComparison.OrdinalIgnoreCase))
        ?.dictItems ?? new List<DictItem>();
 
             return new DictQuality
