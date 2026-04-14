@@ -71,11 +71,11 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 SearchAsync 逻辑。</summary>
         public async Task SearchAsync()
         {
-            await EnsureDictsLoadedAsync(); 
             if (IsBusy) return;
             IsBusy = true;
             try
             {
+                await EnsureDictsLoadedAsync();
                 PageIndex = 1;
                 Orders.Clear();
                 var records = await LoadPageAsync(PageIndex);
