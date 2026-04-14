@@ -121,15 +121,15 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<QualityOrderItem>> LoadPageAsync(int pageNo)
         {
-            var statusMap = InspectStatusDict?
-                .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
-                .GroupBy(d => d.dictItemValue!.Trim(), StringComparer.OrdinalIgnoreCase)
-                .Select(g => g.First())
-                .ToDictionary(
-                    k => k.dictItemValue!.Trim(),
-                    v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue!.Trim() : v.dictItemName!,
-                    StringComparer.OrdinalIgnoreCase
-                ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var statusMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var d in InspectStatusDict ?? new List<DictItem>())
+            {
+                var key = d.dictItemValue?.Trim();
+                if (string.IsNullOrWhiteSpace(key)) continue;
+
+                var name = string.IsNullOrWhiteSpace(d.dictItemName) ? key : d.dictItemName.Trim();
+                statusMap[key] = name;
+            }
 
             var qualityNo = string.IsNullOrWhiteSpace(Keyword) ? null : Keyword.Trim();
             var createdTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
