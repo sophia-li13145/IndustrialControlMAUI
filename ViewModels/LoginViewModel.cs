@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -11,6 +12,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class LoginViewModel : ObservableObject
 {
     private readonly IConfigLoader _cfg;
+    private readonly IAppVersionService _appVersionService;
 
     [ObservableProperty] private string userName = string.Empty;
     [ObservableProperty] private string password = string.Empty;
@@ -22,9 +24,10 @@ public partial class LoginViewModel : ObservableObject
     private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
     /// <summary>执行 LoginViewModel 初始化逻辑。</summary>
-    public LoginViewModel(IConfigLoader cfg)
+    public LoginViewModel(IConfigLoader cfg, IAppVersionService appVersionService)
     {
         _cfg = cfg;
+        _appVersionService = appVersionService;
 
         // 启动时加载保存的账号
         UserName = Preferences.Get("UserName", string.Empty);
@@ -95,6 +98,8 @@ public partial class LoginViewModel : ObservableObject
                 Preferences.Remove("Password");
                 Preferences.Set("RememberPassword", false);
             }
+
+            await _appVersionService.ShowCompareResultMessageIfNeededAsync();
 
              App.SwitchToLoggedInShell();
         }
