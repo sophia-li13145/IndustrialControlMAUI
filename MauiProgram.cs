@@ -197,6 +197,9 @@ namespace IndustrialControlMAUI
             builder.Services.AddHttpClient<IAttachmentApi, AttachmentApi>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
+            builder.Services.AddHttpClient<IAppVersionService, AppVersionService>(ConfigureBaseAddress)
+          .AddHttpMessageHandler<AuthHeaderHandler>()
+          .AddHttpMessageHandler<TokenExpiredHandler>();
             builder.Services.AddHttpClient<IEnergyApi, EnergyApi>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
