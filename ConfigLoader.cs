@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
@@ -74,11 +75,11 @@ public static class ConfigLoaderStatic
             localNode = JsonNode.Parse(fs)!;
         }
 
-        int pkgVer = pkgNode?["schemaVersion"]?.GetValue<int?>() ?? 0;
-        int localVer = localNode?["schemaVersion"]?.GetValue<int?>() ?? 0;
+        var pkgVer = pkgNode?["schemaVersion"]?.GetValue<string>() ?? "0";
+        var localVer = localNode?["schemaVersion"]?.GetValue<string>() ?? "0";
 
         // 包内版本更高 → 直接覆盖（整文件替换）
-        if (pkgVer > localVer)
+        if (CompareSchemaVersion(localVer, pkgVer) < 0)
         {
             await File.WriteAllTextAsync(appDataPath, pkgNode.ToJsonString(JsonOpts));
         }
@@ -191,5 +192,60 @@ public static class ConfigLoaderStatic
     {
         if (string.IsNullOrWhiteSpace(p)) return fallback;
         return p.StartsWith("/") ? p : "/" + p;
+    }
+
+    private static int CompareSchemaVersion(string? current, string? package)
+    {
+        var currentParts = SplitVersionParts(current);
+        var packageParts = SplitVersionParts(package);
+        var max = Math.Max(currentParts.Count, packageParts.Count);
+
+        for (var i = 0; i < max; i++)
+        {
+            var left = i < currentParts.Count ? currentParts[i] : "0";
+            var right = i < packageParts.Count ? packageParts[i] : "0";
+
+            var leftIsNum = int.TryParse(left, NumberStyles.Integer, CultureInfo.InvariantCulture, out var leftNum);
+            var rightIsNum = int.TryParse(right, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rightNum);
+
+            int cmp = leftIsNum && rightIsNum
+                ? leftNum.CompareTo(rightNum)
+                : string.Compare(left, right, StringComparison.OrdinalIgnoreCase);
+
+            if (cmp != 0) return cmp;
+        }
+
+        return 0;
+    }
+
+    private static List<string> SplitVersionParts(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return ["0"];
+        }
+
+        var parts = new List<string>();
+        var span = version.AsSpan();
+        var start = 0;
+
+        for (var i = 0; i < span.Length; i++)
+        {
+            if (char.IsLetterOrDigit(span[i])) continue;
+
+            if (i > start)
+            {
+                parts.Add(version[start..i]);
+            }
+
+            start = i + 1;
+        }
+
+        if (start < span.Length)
+        {
+            parts.Add(version[start..]);
+        }
+
+        return parts.Count == 0 ? ["0"] : parts;
     }
 }
