@@ -43,7 +43,7 @@ public class ConfigLoader
         var currJson = await File.ReadAllTextAsync(_configPath).ConfigureAwait(false);
         var currCfg = JsonSerializer.Deserialize<AppConfig>(currJson, _jsonOptions) ?? new AppConfig();
 
-        if (currCfg.SchemaVersion < pkgCfg.SchemaVersion)
+        if (CompareSchemaVersion(currCfg.SchemaVersion, pkgCfg.SchemaVersion) < 0)
         {
             pkgCfg.Server = currCfg.Server;
             Current = pkgCfg;
@@ -75,4 +75,64 @@ public class ConfigLoader
     }
 
     public string GetConfigPath() => _configPath;
+
+    private static int CompareSchemaVersion(string? current, string? package)
+    {
+        var currentParts = SplitVersionParts(current);
+        var packageParts = SplitVersionParts(package);
+        var max = Math.Max(currentParts.Count, packageParts.Count);
+
+        for (var i = 0; i < max; i++)
+        {
+            var left = i < currentParts.Count ? currentParts[i] : "0";
+            var right = i < packageParts.Count ? packageParts[i] : "0";
+
+            var leftIsNum = int.TryParse(left, out var leftNum);
+            var rightIsNum = int.TryParse(right, out var rightNum);
+
+            int cmp;
+            if (leftIsNum && rightIsNum)
+            {
+                cmp = leftNum.CompareTo(rightNum);
+            }
+            else
+            {
+                cmp = string.Compare(left, right, StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (cmp != 0) return cmp;
+        }
+
+        return 0;
+    }
+
+    private static List<string> SplitVersionParts(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return ["0"];
+        }
+
+        var parts = new List<string>();
+        var span = version.AsSpan();
+        var start = 0;
+
+        for (var i = 0; i < span.Length; i++)
+        {
+            if (char.IsLetterOrDigit(span[i])) continue;
+
+            if (i > start)
+            {
+                parts.Add(version[start..i]);
+            }
+            start = i + 1;
+        }
+
+        if (start < span.Length)
+        {
+            parts.Add(version[start..]);
+        }
+
+        return parts.Count == 0 ? ["0"] : parts;
+    }
 }

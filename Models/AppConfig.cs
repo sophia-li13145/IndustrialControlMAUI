@@ -14,7 +14,7 @@ public class LoggingSettings
 }
 public class AppConfig
 {
-    public int SchemaVersion { get; set; } = 3;
+    public string SchemaVersion { get; set; } = "0";
     public ServerSettings Server { get; set; } = new();
     public ApiEndpoints ApiEndpoints { get; set; } = new();
     public LoggingSettings Logging { get; set; } = new();
