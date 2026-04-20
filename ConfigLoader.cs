@@ -87,8 +87,12 @@ public static class ConfigLoaderStatic
     }
 
     /// <summary>读取生效配置（AppData）</summary>
-    public static JsonNode Load() =>
-        JsonNode.Parse(File.ReadAllText(Path.Combine(FileSystem.AppDataDirectory, FileName)))!;
+    public static JsonNode Load()
+    {
+        var path = Path.Combine(FileSystem.AppDataDirectory, FileName);
+        EnsureLocalConfigFile(path);
+        return JsonNode.Parse(File.ReadAllText(path))!;
+    }
 
     /// <summary>保存（如果你在设置页手动修改本地配置）</summary>
     public static void Save(JsonNode node) =>
@@ -247,5 +251,42 @@ public static class ConfigLoaderStatic
         }
 
         return parts.Count == 0 ? ["0"] : parts;
+    }
+
+    private static void EnsureLocalConfigFile(string appDataPath)
+    {
+        if (File.Exists(appDataPath)) return;
+
+        Directory.CreateDirectory(Path.GetDirectoryName(appDataPath)!);
+
+        try
+        {
+            using var s = FileSystem.OpenAppPackageFileAsync(FileName).GetAwaiter().GetResult();
+            using var reader = new StreamReader(s);
+            var content = reader.ReadToEnd();
+            File.WriteAllText(appDataPath, content);
+            return;
+        }
+        catch
+        {
+            // 回退到最小可用配置，避免首次启动因配置缺失而崩溃。
+        }
+
+        var fallback = new JsonObject
+        {
+            ["schemaVersion"] = "0",
+            ["server"] = new JsonObject
+            {
+                ["scheme"] = "http",
+                ["ipAddress"] = "127.0.0.1"
+            },
+            ["services"] = new JsonObject
+            {
+                ["normalService"] = "/normalService",
+                ["current"] = "normalService"
+            }
+        };
+
+        File.WriteAllText(appDataPath, fallback.ToJsonString(JsonOpts));
     }
 }
