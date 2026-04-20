@@ -4,21 +4,13 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
+public partial class DeviceScanBindPage : ContentPage
 {
-    private readonly DeviceScanBindViewModel _vm;
-
-    public DeviceScanBindPage() : this(ServiceHelper.GetService<DeviceScanBindViewModel>()) { }
-
     public DeviceScanBindPage(DeviceScanBindViewModel vm)
     {
         InitializeComponent();
-        _vm = vm ?? throw new ArgumentNullException(nameof(vm));
-        BindingContext = _vm;
+        BindingContext = vm;
     }
-
-    public void ApplyQueryAttributes(IDictionary<string, object> query)
-        => _vm.ApplyQueryAttributes(query);
 
     private async void OnScanDeviceClicked(object sender, EventArgs e)
     {
@@ -32,7 +24,7 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        var deviceCode = ExtractDeviceCode(result);
+        var deviceCode = result.Trim();
         DeviceCodeEntry.Text = deviceCode;
         await PromptScanConfirmAndBindAsync(vm, deviceCode);
     }
@@ -42,9 +34,7 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
         if (BindingContext is not DeviceScanBindViewModel vm)
             return;
 
-        var deviceCode = ExtractDeviceCode(DeviceCodeEntry.Text);
-        DeviceCodeEntry.Text = deviceCode;
-        await PromptScanConfirmAndBindAsync(vm, deviceCode);
+        await PromptScanConfirmAndBindAsync(vm, DeviceCodeEntry.Text?.Trim());
     }
 
     private async void OnManualBindClicked(object sender, EventArgs e)
@@ -70,7 +60,7 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
     private async void OnEditBoundDeviceClicked(object sender, EventArgs e)
     {
         if (BindingContext is not DeviceScanBindViewModel vm
-            || sender is not ImageButton button
+            || sender is not Button button
             || button.CommandParameter is not WorkOrderDeviceBindItem item)
             return;
 
