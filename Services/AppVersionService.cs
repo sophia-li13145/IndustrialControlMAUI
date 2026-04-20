@@ -2,6 +2,7 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services.Common;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json;
 
 namespace IndustrialControlMAUI.Services;
@@ -14,7 +15,7 @@ public interface IAppVersionService
 
 public sealed class AppVersionService : IAppVersionService
 {
-    public const string CurrentVersionName = "V1.2_202604.1";
+    private const string FallbackVersionName = "0";
 
     private readonly HttpClient _http;
     private readonly IConfigLoader _configLoader;
@@ -89,7 +90,7 @@ public sealed class AppVersionService : IAppVersionService
     private async Task<PdaAppVersionCheckResult?> CheckUpdateAsync(CancellationToken ct)
     {
         var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _checkUpdatePath);
-        var payload = new { versionName = CurrentVersionName };
+        var payload = new { versionName = GetCurrentVersionName() };
 
         using var resp = await _http.PostAsJsonAsync(url, payload, ct);
         var raw = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
@@ -98,6 +99,23 @@ public sealed class AppVersionService : IAppVersionService
 
         var result = JsonSerializer.Deserialize<ApiResp<PdaAppVersionCheckResult>>(raw, _json);
         return result?.result;
+    }
+
+    private string GetCurrentVersionName()
+    {
+        JsonNode? cfg = null;
+        try
+        {
+            cfg = _configLoader.Load();
+        }
+        catch
+        {
+            // ignore and use fallback version
+        }
+
+        return cfg?["schemaVersion"]?.GetValue<string>()?.Trim() is { Length: > 0 } version
+            ? version
+            : FallbackVersionName;
     }
 
     private async Task DownloadAndOpenAsync(string? attachmentUrl, CancellationToken ct)
