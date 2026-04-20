@@ -89,6 +89,8 @@ public sealed class AppVersionService : IAppVersionService
 
     private async Task<PdaAppVersionCheckResult?> CheckUpdateAsync(CancellationToken ct)
     {
+        await _configLoader.EnsureLatestAsync();
+
         var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _checkUpdatePath);
         var payload = new { versionName = GetCurrentVersionName() };
 
@@ -101,21 +103,21 @@ public sealed class AppVersionService : IAppVersionService
         return result?.result;
     }
 
-    private string GetCurrentVersionName()
+    private string GetCurrentVersionName() => GetLocalVersionName();
+
+    private string GetLocalVersionName()
     {
-        JsonNode? cfg = null;
         try
         {
-            cfg = _configLoader.Load();
+            var cfg = _configLoader.Load();
+            return cfg?["schemaVersion"]?.GetValue<string>()?.Trim() is { Length: > 0 } version
+                ? version
+                : FallbackVersionName;
         }
         catch
         {
-            // ignore and use fallback version
+            return FallbackVersionName;
         }
-
-        return cfg?["schemaVersion"]?.GetValue<string>()?.Trim() is { Length: > 0 } version
-            ? version
-            : FallbackVersionName;
     }
 
     private async Task DownloadAndOpenAsync(string? attachmentUrl, CancellationToken ct)
