@@ -119,21 +119,4 @@ public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
 
         await vm.BindByInputCodeAsync(deviceCode);
     }
-
-    private static string? ExtractDeviceCode(string? raw)
-    {
-        var text = raw?.Trim();
-        if (string.IsNullOrWhiteSpace(text))
-            return text;
-
-        var parts = text.Split("#%", StringSplitOptions.None);
-        if (parts.Length >= 2)
-        {
-            var extracted = parts[^1]?.Trim();
-            if (!string.IsNullOrWhiteSpace(extracted))
-                return extracted;
-        }
-
-        return text;
-    }
 }
