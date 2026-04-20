@@ -84,10 +84,8 @@ public partial class App : Application
         var token = await TokenStorage.LoadAsync();
         bool authed = !string.IsNullOrWhiteSpace(token);
 
-        if (authed)
-        {
-            await _appVersionService.HandleStartupUpdateAsync();
-        }
+        await _appVersionService.HandleStartupUpdateAsync();
+        
 
         _shell.ApplyAuth(authed);
     }

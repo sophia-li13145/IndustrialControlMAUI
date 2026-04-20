@@ -2,6 +2,7 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services.Common;
 using IndustrialControlMAUI.Tools;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json;
 
 namespace IndustrialControlMAUI.Services;
@@ -57,7 +58,7 @@ public sealed class AppVersionService : IAppVersionService
 
         if (confirm)
         {
-            await DownloadAndOpenAsync(data.attachmentUrl, ct);
+            await DownloadAndOpenAsync(data.fileInfo?.attachmentUrl, ct);
         }
         else
         {
@@ -150,5 +151,14 @@ public sealed class PdaAppVersionCheckResult
     public bool needUpdate { get; set; }
     public string? compareResult { get; set; }
     public string? message { get; set; }
+    public FileInfo? fileInfo { get; set; }
+
+
+}
+
+public sealed class FileInfo
+{
     public string? attachmentUrl { get; set; }
+
+
 }
