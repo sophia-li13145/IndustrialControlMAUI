@@ -10,7 +10,7 @@ public partial class AdminViewModel : ObservableObject
     private bool _servicePathCustomized;
     private bool _isSyncingServicePath;
 
-    [ObservableProperty] private int schemaVersion;
+    [ObservableProperty] private string schemaVersion = "0";
     [ObservableProperty] private string ipAddress = "";          // 可包含端口
     [ObservableProperty] private string scheme = "http";         // http / https
     [ObservableProperty] private string serviceName = "normalService";  // services.current
@@ -29,7 +29,7 @@ public partial class AdminViewModel : ObservableObject
     {
         JsonNode node = _cfg.Load();
 
-        SchemaVersion = node?["schemaVersion"]?.GetValue<int?>() ?? 0;
+        SchemaVersion = node?["schemaVersion"]?.GetValue<string>() ?? "0";
 
         // server
         var server = node?["server"] as JsonObject ?? new JsonObject();
