@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.ViewModels;
 
@@ -7,8 +8,8 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
 {
     private readonly ProcessTaskSearchViewModel _vm;
     private string? _entryMode;
+    private bool _isStatusPopupOpening;
 
-    /// <summary>执行 ProcessTaskSearchPage 初始化逻辑。</summary>
     public ProcessTaskSearchPage(ProcessTaskSearchViewModel vm)
     {
         InitializeComponent();
@@ -16,7 +17,6 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
         _vm = vm;
     }
 
-    /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -35,35 +35,56 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
         _vm.SetEntryMode(_entryMode);
     }
 
-    /// <summary>执行 OnDisappearing 逻辑。</summary>
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
     }
 
-    // 扫码按钮点击
-    /// <summary>执行 OnScanClicked 逻辑。</summary>
     private async void OnScanClicked(object sender, EventArgs e)
     {
         var tcs = new TaskCompletionSource<string>();
         await Navigation.PushAsync(new QrScanPage(tcs));
 
-        // 等待扫码结果
         var result = await tcs.Task;
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        // 回填扫码结果
         OrderEntry.Text = result.Trim();
 
-        // 同步 ViewModel
         if (BindingContext is ProcessTaskSearchViewModel vm)
         {
             vm.Keyword = result.Trim();
 
-            // 使用扫码结果查询
             if (vm.SearchCommand.CanExecute(null))
                 vm.SearchCommand.Execute(null);
+        }
+    }
+
+    private async void OnStatusFilterClicked(object sender, EventArgs e)
+    {
+        if (_isStatusPopupOpening)
+            return;
+        System.Diagnostics.Debug.WriteLine("A1: 点击状态按钮");
+
+        try
+        {
+            _isStatusPopupOpening = true;
+
+            if (BindingContext is ProcessTaskSearchViewModel vm)
+            {
+                System.Diagnostics.Debug.WriteLine($"A2: StatusOptions.Count={vm.StatusOptions?.Count}");
+                await this.ShowPopupAsync(new StatusMultiSelectPopup(vm.StatusOptions));
+                System.Diagnostics.Debug.WriteLine("A3: Popup 已关闭");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"A_ERR: {ex}");
+            await DisplayAlert("错误", ex.ToString(), "确定");
+        }
+        finally
+        {
+            _isStatusPopupOpening = false;
         }
     }
 }

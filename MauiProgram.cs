@@ -71,6 +71,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.DeviceScanBindViewModel>();
             builder.Services.AddTransient<ViewModels.WarehouseLocationPickerViewModel>();
             builder.Services.AddTransient<ViewModels.WorkProcessTaskDetailViewModel>();
+            builder.Services.AddTransient<ViewModels.ReworkOrderViewModel>();
             builder.Services.AddTransient<ViewModels.QualitySearchViewModel>();
             builder.Services.AddTransient<ViewModels.IncomingQualityDetailViewModel>();
             builder.Services.AddTransient<ViewModels.IncomingQualitySearchViewModel>();
@@ -126,6 +127,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.ProcessTaskSearchPage>();
             builder.Services.AddTransient<Pages.DeviceScanBindPage>();
             builder.Services.AddTransient<Pages.WorkProcessTaskDetailPage>();
+            builder.Services.AddTransient<Pages.ReworkOrderPage>();
             builder.Services.AddTransient<Pages.QualitySearchPage>();
             builder.Services.AddTransient<Pages.IncomingQualitySearchPage>();
             builder.Services.AddTransient<Pages.IncomingQualityDetailPage>();
@@ -193,6 +195,9 @@ namespace IndustrialControlMAUI
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
             builder.Services.AddHttpClient<IAttachmentApi, AttachmentApi>(ConfigureBaseAddress)
+          .AddHttpMessageHandler<AuthHeaderHandler>()
+          .AddHttpMessageHandler<TokenExpiredHandler>();
+            builder.Services.AddHttpClient<IAppVersionService, AppVersionService>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
             builder.Services.AddHttpClient<IEnergyApi, EnergyApi>(ConfigureBaseAddress)

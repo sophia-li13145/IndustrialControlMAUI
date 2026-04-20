@@ -4,13 +4,21 @@ using IndustrialControlMAUI.ViewModels;
 
 namespace IndustrialControlMAUI.Pages;
 
-public partial class DeviceScanBindPage : ContentPage
+public partial class DeviceScanBindPage : ContentPage, IQueryAttributable
 {
+    private readonly DeviceScanBindViewModel _vm;
+
+    public DeviceScanBindPage() : this(ServiceHelper.GetService<DeviceScanBindViewModel>()) { }
+
     public DeviceScanBindPage(DeviceScanBindViewModel vm)
     {
         InitializeComponent();
-        BindingContext = vm;
+        _vm = vm ?? throw new ArgumentNullException(nameof(vm));
+        BindingContext = _vm;
     }
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+        => _vm.ApplyQueryAttributes(query);
 
     private async void OnScanDeviceClicked(object sender, EventArgs e)
     {
@@ -24,7 +32,7 @@ public partial class DeviceScanBindPage : ContentPage
         if (string.IsNullOrWhiteSpace(result))
             return;
 
-        var deviceCode = result.Trim();
+        var deviceCode = ExtractDeviceCode(result);
         DeviceCodeEntry.Text = deviceCode;
         await PromptScanConfirmAndBindAsync(vm, deviceCode);
     }
@@ -34,7 +42,9 @@ public partial class DeviceScanBindPage : ContentPage
         if (BindingContext is not DeviceScanBindViewModel vm)
             return;
 
-        await PromptScanConfirmAndBindAsync(vm, DeviceCodeEntry.Text?.Trim());
+        var deviceCode = ExtractDeviceCode(DeviceCodeEntry.Text);
+        DeviceCodeEntry.Text = deviceCode;
+        await PromptScanConfirmAndBindAsync(vm, deviceCode);
     }
 
     private async void OnManualBindClicked(object sender, EventArgs e)
@@ -60,7 +70,7 @@ public partial class DeviceScanBindPage : ContentPage
     private async void OnEditBoundDeviceClicked(object sender, EventArgs e)
     {
         if (BindingContext is not DeviceScanBindViewModel vm
-            || sender is not Button button
+            || sender is not ImageButton button
             || button.CommandParameter is not WorkOrderDeviceBindItem item)
             return;
 

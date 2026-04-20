@@ -13,7 +13,7 @@ using AuthState = IndustrialControlMAUI.Tools.AuthState;
 
 namespace IndustrialControlMAUI.Services
 {
-public class WorkOrderApi : IWorkOrderApi
+    public class WorkOrderApi : IWorkOrderApi
     {
         private readonly HttpClient _http;
         private readonly AuthState _auth;
@@ -42,6 +42,11 @@ public class WorkOrderApi : IWorkOrderApi
         private readonly string _editWorkOrderDeviceBindTimeEndpoint;
         private readonly string _unbindWorkOrderDeviceEndpoint;
         private readonly string _workOrderDomainEndpoint;
+        private readonly string _reworkDictEndpoint;
+        private readonly string _reworkWorkOrderDomainEndpoint;
+        private readonly string _reworkBomFlattenEndpoint;
+        private readonly string _reworkSaveEndpoint;
+        private readonly string _reworkSaveAndSubmitEndpoint;
         private readonly string _inventoryPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
         private readonly string _stockCheckDetailPageEndpoint;
@@ -118,6 +123,21 @@ public class WorkOrderApi : IWorkOrderApi
             _workOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
         configLoader.GetApiPath("workOrder.domain", "/pda/pmsWorkOrder/getWorkOrderDomain"),
         servicePath);
+            _reworkDictEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkDictList", "/pda/pmsReworkOrder/getDictList"),
+    servicePath);
+            _reworkWorkOrderDomainEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkDomain", "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo"),
+    servicePath);
+            _reworkBomFlattenEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkBomFlatten", "/pda/pmsBom/queryPmsBomDetailFlattenByWorkOrder"),
+    servicePath);
+            _reworkSaveEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkSave", "/pda/pmsReworkOrder/save"),
+    servicePath);
+            _reworkSaveAndSubmitEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.reworkSaveAndSubmit", "/pda/pmsReworkOrder/saveAndSubmit"),
+    servicePath);
             _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
     servicePath);
@@ -385,8 +405,8 @@ public class WorkOrderApi : IWorkOrderApi
         public Task<SimpleOk> UpdateWorkProcessTaskAsync(
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default)
         {
-            var payload = 
-        new WorkProcessTaskTeamUpdateReq { id = id, productionMachine = productionMachine, productionMachineName = productionMachineName,taskReportedQty = taskReportedQty,teamCode= teamCode,teamName=teamName,workHours = workHours,startDate= startDate,endDate = endDate };
+            var payload =
+        new WorkProcessTaskTeamUpdateReq { id = id, productionMachine = productionMachine, productionMachineName = productionMachineName, taskReportedQty = taskReportedQty, teamCode = teamCode, teamName = teamName, workHours = workHours, startDate = startDate, endDate = endDate };
             return UpdateWorkProcessTaskAsync(payload, ct);
         }
 
@@ -610,7 +630,7 @@ public class WorkOrderApi : IWorkOrderApi
         {
             if (string.IsNullOrWhiteSpace(id))
                 return new ApiResp<bool> { success = false, message = "id 不能为空" };
-            
+
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskMaterialInputEndpoint);
 
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
@@ -833,6 +853,89 @@ public class WorkOrderApi : IWorkOrderApi
             return JsonSerializer.Deserialize<WorkOrderDomainResp>(json,
                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                    ?? new WorkOrderDomainResp();
+        }
+
+        public async Task<ApiResp<List<FieldDict>>> GetReworkDictListAsync(CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkDictEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            await using var stream = await res.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<List<FieldDict>>>(stream, _json, ct);
+            return data ?? new ApiResp<List<FieldDict>> { success = false, message = "empty response", result = new List<FieldDict>() };
+        }
+
+        public async Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string workOrderNo, CancellationToken ct = default)
+        {
+            var url = _reworkWorkOrderDomainEndpoint + "?workOrderNo=" + Uri.EscapeDataString(workOrderNo ?? "");
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ReworkOrderDomainResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ReworkOrderDomainResp>(json,
+                       new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                   ?? new ReworkOrderDomainResp();
+        }
+
+        public async Task<ApiResp<bool?>> SaveReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkSaveEndpoint);
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = JsonContent.Create(req)
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
+        }
+
+        public async Task<ApiResp<bool?>> SaveAndSubmitReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _reworkSaveAndSubmitEndpoint);
+            var options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            var body = JsonSerializer.Serialize(req, options);
+
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "反序列化失败", result = false };
+        }
+
+        public async Task<ApiResp<List<ReworkBomDetailFlattenItem>>> GetReworkBomFlattenDetailsAsync(string workOrderNo, CancellationToken ct = default)
+        {
+            var url = _reworkBomFlattenEndpoint + "?workOrderNo=" + Uri.EscapeDataString(workOrderNo ?? "");
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<List<ReworkBomDetailFlattenItem>> { success = false, message = $"HTTP {(int)res.StatusCode}", result = new List<ReworkBomDetailFlattenItem>() };
+
+            return JsonSerializer.Deserialize<ApiResp<List<ReworkBomDetailFlattenItem>>>(json, _json)
+                   ?? new ApiResp<List<ReworkBomDetailFlattenItem>> { success = false, message = "反序列化失败", result = new List<ReworkBomDetailFlattenItem>() };
         }
 
         public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(

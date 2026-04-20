@@ -89,12 +89,14 @@ public class DictQuality
     public List<DictItem> InspectStatus { get; set; } = new();
     public List<DictItem> QualityTypes { get; set; } = new();
     public List<DictItem> DataSources { get; set; } = new();
+    public List<DictItem> InspectResults { get; set; } = new();
 }
 
 
 public class QualityDetailDto : ObservableObject
 {
     public decimal? arrivalQty { get; set; }
+    public decimal? concessionAcceptQty { get; set; }
     public string id { get; set; } = "";
     public string inspectRemark { get; set; } = "";
     public string inspectResult { get; set; } = "";
@@ -109,6 +111,9 @@ public class QualityDetailDto : ObservableObject
     public string orderNumber { get; set; } = "";
     public string processCode { get; set; } = "";
     public string processName { get; set; } = "";
+    public string? workOrderStatus { get; set; }
+    public string? workOrderAuditStatus { get; set; }
+    public string? auditStatus { get; set; }
     public string qualityType { get; set; } = "";
     public string qualityTypeName { get; set; } = "";
     public string retainedSampleNumber { get; set; } = "";
@@ -204,6 +209,7 @@ public class QualityDetailDto : ObservableObject
         }
         finally { _inRecalc = false; }
     }
+
 }
 
 
@@ -689,6 +695,11 @@ public class DefectRecord
 /// </summary>
 public class DefectChip
 {
+    /// <summary>
+    /// 缺陷编码（用于回显/再次选择）
+    /// </summary>
+    public string Code { get; set; } = "";
+
     /// <summary>
     /// 缺陷名称（展示用）
     /// </summary>

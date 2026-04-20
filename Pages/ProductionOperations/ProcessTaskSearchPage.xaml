@@ -39,24 +39,67 @@
 
             </Grid>
 
-            <!-- 第二行：时间 + 状态 -->
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8">
-                <DatePicker Date="{Binding StartDate}" />
-                <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
-                <Picker 
-                    Grid.Column="2"
-         Title="状态"
-         WidthRequest="120"
-         ItemsSource="{Binding StatusOptions}"
-         ItemDisplayBinding="{Binding Text}"
-         SelectedItem="{Binding SelectedStatusOption}" />
-                <Picker Grid.Column="3"
-        Title="工序"
-        WidthRequest="120"
-        ItemsSource="{Binding ProcessOptions}"
-        ItemDisplayBinding="{Binding Text}"
-        SelectedItem="{Binding SelectedProcessOption}" />
+            <!-- 第二行：时间 + 状态 + 工序 -->
+            <Grid ColumnDefinitions="80,80,80,80"
+      ColumnSpacing="8"
+      VerticalOptions="Center">
 
+                <!-- 开始日期 -->
+                <DatePicker Grid.Column="0"
+                Date="{Binding StartDate}"
+                HeightRequest="40"
+                BackgroundColor="Transparent"
+                TextColor="#333333" />
+
+                <!-- 结束日期 -->
+                <DatePicker Grid.Column="1"
+                Date="{Binding EndDate}"
+                HeightRequest="40"
+                BackgroundColor="Transparent"
+                TextColor="#333333" />
+
+                <!-- 状态 -->
+                <Grid Grid.Column="2"
+      WidthRequest="80"
+      HeightRequest="40"
+      RowDefinitions="38,2"
+      VerticalOptions="Center">
+
+                    <Grid Grid.Row="0"
+          BackgroundColor="White"
+          Padding="0"
+          VerticalOptions="Fill"
+          HorizontalOptions="Fill">
+                        <Label Text="{Binding SelectedStatusSummary}"
+               FontSize="13"
+               TextColor="#333333"
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center" />
+
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnStatusFilterClicked" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+
+                    <BoxView Grid.Row="1"
+             HeightRequest="2"
+                             Margin="2,2,2,5"
+             BackgroundColor="#BDBDBD"
+             HorizontalOptions="Fill"
+             VerticalOptions="End" />
+                </Grid>
+
+                <!-- 工序 -->
+                <Picker Grid.Column="3"
+            Title="工序"
+            HeightRequest="40"
+            WidthRequest="80"
+            ItemsSource="{Binding ProcessOptions}"
+            ItemDisplayBinding="{Binding Text}"
+            SelectedItem="{Binding SelectedProcessOption}"
+            BackgroundColor="Transparent"
+            TextColor="#333333" />
             </Grid>
         </VerticalStackLayout>
 
@@ -92,7 +135,7 @@
                             </Grid>
                             <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
                                 <Label Text="工单状态：" FontAttributes="Bold" />
-                                <Label Grid.Column="1" Text="{Binding WorkOrderAuditStatus}" />
+                                <Label Grid.Column="1" Text="{Binding WorkOrderAuditStatusName}" />
                             </Grid>
                             <Grid Grid.Row="3" ColumnDefinitions="Auto,*">
                                 <Label Text="工序：" FontAttributes="Bold" />

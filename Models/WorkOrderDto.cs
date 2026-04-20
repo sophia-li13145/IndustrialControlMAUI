@@ -226,6 +226,9 @@ public class ProcessTask
     [JsonPropertyName("factoryCode")]
     public string? FactoryCode { get; set; }
     public string? ProcessCode { get; set; }
+    public string? SchemeNo { get; set; }
+    public string? PlatPlanNo { get; set; }
+    public string? Line { get; set; }
     public string? ProcessName { get; set; }
     public string? MaterialName { get; set; }
     public decimal? ScheQty { get; set; }
@@ -241,6 +244,9 @@ public class ProcessTask
 
     [JsonPropertyName("WorkOrderAuditStatus")]
     public string? WorkOrderAuditStatus { get; set; }
+
+    [JsonIgnore]
+    public string? WorkOrderAuditStatusName { get; set; }
 
     [JsonPropertyName("AuditStatus")]
     public string? AuditStatus { get; set; } // 接口返回的原始值
@@ -333,6 +339,7 @@ public class WorkProcessTaskDetail
     public decimal? scheQty { get; set; }
     public decimal? completedQty { get; set; }
     public string? auditStatus { get; set; }
+    public string? workOrderAuditStatus { get; set; }
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? taskReportedQty { get; set; }
@@ -474,6 +481,25 @@ public class WorkOrderDeviceBindItem
     public string? schemeNo { get; set; }
     public string? workOrderNo { get; set; }
     public string? platPlanNo { get; set; }
+    public string StartDatePart => SplitDateTime(startTime).date;
+    public string StartTimePart => SplitDateTime(startTime).time;
+    public string EndDatePart => SplitDateTime(endTime).date;
+    public string EndTimePart => SplitDateTime(endTime).time;
+
+    private static (string date, string time) SplitDateTime(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return ("", "");
+
+        if (DateTime.TryParse(value, out var dt))
+            return (dt.ToString("yyyy-MM-dd"), dt.ToString("HH:mm:ss"));
+
+        var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return (parts[0], parts[1]);
+
+        return (value, "");
+    }
 }
 
 public class AddWorkProcessTaskMaterialInputReq

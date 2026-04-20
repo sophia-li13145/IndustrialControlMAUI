@@ -10,6 +10,8 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 {
     private readonly IWorkOrderApi _api;
     private readonly List<DevicesInfo> _deviceCache = new();
+    private string? _loadedTaskId;
+    [ObservableProperty] private bool isContextLoading;
 
     [ObservableProperty] private string workOrderNo = string.Empty;
     [ObservableProperty] private string workOrderName = string.Empty;
@@ -35,40 +37,65 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         _api = api;
     }
 
-    public async void ApplyQueryAttributes(IDictionary<string, object> query)
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+        => _ = ApplyQueryAttributesAsync(query);
+
+    private async Task ApplyQueryAttributesAsync(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("task", out var obj) || obj is not ProcessTask task)
-            return;
-
-        WorkOrderNo = task.WorkOrderNo ?? string.Empty;
-        WorkOrderName = task.WorkOrderName ?? string.Empty;
-        MaterialName = task.MaterialName ?? string.Empty;
-        ProcessName = task.ProcessName ?? string.Empty;
-        ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
-        FactoryCode = task.FactoryCode ?? string.Empty;
-        ProcessCode = task.ProcessCode ?? string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(task.Id))
+        IsContextLoading = true;
+        try
         {
-            var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
-            if (detailResp?.success == true && detailResp.result is not null)
-            {
-                var detail = detailResp.result;
-                FactoryCode = detail.factoryCode ?? task.FactoryCode ?? string.Empty;
-                ProcessCode = detail.processCode ?? task.ProcessCode ?? string.Empty;
-                LineCode = detail.line;
-                SchemeNo = detail.schemeNo ?? string.Empty;
-                PlatPlanNo = detail.platPlanNo;
-            }
-            else
-            {
-                FactoryCode = task.FactoryCode ?? string.Empty;
-                ProcessCode = task.ProcessCode ?? string.Empty;
-            }
-        }
+            var task = BuildTaskFromQuery(query);
+            if (task is null)
+                return;
 
-        await LoadDevicesAsync();
-        await LoadBoundDevicesAsync();
+            WorkOrderNo = task.WorkOrderNo ?? string.Empty;
+            WorkOrderName = task.WorkOrderName ?? string.Empty;
+            MaterialName = task.MaterialName ?? string.Empty;
+            ProcessName = task.ProcessName ?? string.Empty;
+            ScheQty = task.ScheQty?.ToString("G29") ?? string.Empty;
+            FactoryCode = task.FactoryCode ?? string.Empty;
+            ProcessCode = task.ProcessCode ?? string.Empty;
+            LineCode = task.Line;
+            SchemeNo = task.SchemeNo ?? string.Empty;
+            PlatPlanNo = task.PlatPlanNo;
+
+            if (!string.IsNullOrWhiteSpace(task.Id) &&
+                !string.Equals(_loadedTaskId, task.Id, StringComparison.Ordinal))
+            {
+                var detailResp = await _api.GetWorkProcessTaskDetailAsync(task.Id!);
+                if (detailResp?.success == true && detailResp.result is not null)
+                {
+                    var detail = detailResp.result;
+                    FactoryCode = detail.factoryCode ?? task.FactoryCode ?? string.Empty;
+                    ProcessCode = detail.processCode ?? task.ProcessCode ?? string.Empty;
+                    LineCode = detail.line;
+                    SchemeNo = detail.schemeNo ?? string.Empty;
+                    PlatPlanNo = detail.platPlanNo;
+                    _loadedTaskId = task.Id;
+                }
+                else
+                {
+                    _loadedTaskId = null;
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(task.Id))
+            {
+                _loadedTaskId = null;
+            }
+
+            await LoadDevicesAsync();
+            IsContextLoading = false;
+            await LoadBoundDevicesAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowTip($"设备绑定页面加载失败：{ex.Message}");
+        }
+        finally
+        {
+            IsContextLoading = false;
+        }
     }
 
     [RelayCommand]
@@ -80,12 +107,15 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
         {
             IsBusy = true;
             var resp = await _api.GetWorkOrderDeviceListAsync(FactoryCode, ProcessCode, SchemeNo, WorkOrderNo);
-            BoundDevices.Clear();
-            if (resp?.result != null)
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
+                BoundDevices.Clear();
+                if (resp?.result == null)
+                    return;
+
                 foreach (var item in resp.result)
                     BoundDevices.Add(item);
-            }
+            });
         }
         catch (Exception ex)
         {
@@ -297,62 +327,16 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             await LoadBoundDevicesAsync();
     }
 
-    private async Task UpdateBoundDeviceTimeAsync(string deviceCode, DateTime startTime, DateTime endTime)
-    {
-        if (IsBusy || !CanCallApi())
-            return;
-
-        if (startTime > endTime)
-        {
-            await ShowTip("开始时间不能晚于结束时间");
-            return;
-        }
-
-        var bindOk = false;
-
-        try
-        {
-            IsBusy = true;
-            var req = new EditWorkOrderDeviceBindTimeReq
-            {
-                deviceCode = deviceCode,
-                factoryCode = FactoryCode,
-                processCode = ProcessCode,
-                workOrderNo = WorkOrderNo,
-                startTime = startTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                endTime = endTime.ToString("yyyy-MM-dd HH:mm:ss")
-            };
-
-            var resp = await _api.EditWorkOrderDeviceBindTimeAsync(req);
-            if (resp?.success == true && resp.result == true)
-            {
-                bindOk = true;
-                await ShowTip("绑定成功");
-                DeviceCodeInput = string.Empty;
-            }
-            else
-            {
-                await ShowTip(resp?.message ?? "绑定失败");
-            }
-        }
-        catch (Exception ex)
-        {
-            await ShowTip($"绑定失败：{ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-
-        if (bindOk)
-            await LoadBoundDevicesAsync();
-    }
+   
 
     private async Task LoadDevicesAsync()
     {
         _deviceCache.Clear();
-        DeviceOptions.Clear();
-        DeviceOptions.Add(new StatusOption { Text = "请选择设备", Value = null });
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            DeviceOptions.Clear();
+            DeviceOptions.Add(new StatusOption { Text = "请选择设备", Value = null });
+        });
 
         if (string.IsNullOrWhiteSpace(FactoryCode) || string.IsNullOrWhiteSpace(ProcessCode))
         {
@@ -365,16 +349,23 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
             var resp = await _api.GetDeviceOptionsAsync(FactoryCode, ProcessCode, LineCode);
             if (resp?.result != null)
             {
+                var options = new List<StatusOption>();
                 foreach (var d in resp.result)
                 {
                     if (string.IsNullOrWhiteSpace(d.deviceCode)) continue;
                     _deviceCache.Add(d);
-                    DeviceOptions.Add(new StatusOption
+                    options.Add(new StatusOption
                     {
                         Text = d.deviceName ?? d.deviceCode!,
                         Value = d.deviceCode
                     });
                 }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var option in options)
+                        DeviceOptions.Add(option);
+                });
             }
         }
         catch
@@ -387,6 +378,9 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private bool CanCallApi()
     {
+        if (IsContextLoading)
+            return false;
+
         if (!string.IsNullOrWhiteSpace(FactoryCode)
             && !string.IsNullOrWhiteSpace(ProcessCode)
             && !string.IsNullOrWhiteSpace(SchemeNo)
@@ -399,4 +393,50 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
     private static Task ShowTip(string message)
         => Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
+
+    private static ProcessTask? BuildTaskFromQuery(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue("task", out var obj) && obj is ProcessTask task)
+            return task;
+
+        var taskId = GetQueryString(query, "taskId");
+        var workOrderNo = GetQueryString(query, "workOrderNo");
+        var workOrderName = GetQueryString(query, "workOrderName");
+        var materialName = GetQueryString(query, "materialName");
+        var processName = GetQueryString(query, "processName");
+        var factoryCode = GetQueryString(query, "factoryCode");
+        var processCode = GetQueryString(query, "processCode");
+        var schemeNo = GetQueryString(query, "schemeNo");
+        var platPlanNo = GetQueryString(query, "platPlanNo");
+        var lineCode = GetQueryString(query, "lineCode");
+        var scheQtyText = GetQueryString(query, "scheQty");
+
+        if (string.IsNullOrWhiteSpace(taskId) &&
+            string.IsNullOrWhiteSpace(workOrderNo) &&
+            string.IsNullOrWhiteSpace(factoryCode) &&
+            string.IsNullOrWhiteSpace(processCode))
+            return null;
+
+        decimal? scheQty = null;
+        if (decimal.TryParse(scheQtyText, out var qty))
+            scheQty = qty;
+
+        return new ProcessTask
+        {
+            Id = taskId,
+            WorkOrderNo = workOrderNo,
+            WorkOrderName = workOrderName,
+            MaterialName = materialName,
+            ProcessName = processName,
+            FactoryCode = factoryCode,
+            ProcessCode = processCode,
+            SchemeNo = schemeNo,
+            PlatPlanNo = platPlanNo,
+            Line = lineCode,
+            ScheQty = scheQty
+        };
+    }
+
+    private static string? GetQueryString(IDictionary<string, object> query, string key)
+        => query.TryGetValue(key, out var value) ? value?.ToString() : null;
 }

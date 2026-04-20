@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.ReworkOrderPage"
+             Title="生产管理系统"
+             BackgroundColor="#F5F6F8">
+    <ScrollView>
+        <VerticalStackLayout Padding="8" Spacing="8">
+            <Label Text="返修单基础信息" FontAttributes="Bold" TextColor="#333" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="保存并提交"
+                        BackgroundColor="#1E76FF"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        HeightRequest="36"
+                        CornerRadius="4"
+                        Command="{Binding SaveAndSubmitCommand}" />
+            </HorizontalStackLayout>
+
+            <Frame Padding="8" HasShadow="False" BorderColor="#DADCE0" CornerRadius="0" BackgroundColor="White">
+                <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                    <Label Grid.Row="0" Grid.Column="0" Text="工单编号:" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding WorkOrderNo}" />
+                    <Label Grid.Row="0" Grid.Column="2" Text="产品名称:" />
+                    <Label Grid.Row="0" Grid.Column="3" Text="{Binding MaterialName}" />
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="工单名称:" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding WorkOrderName}" />
+                    <Label Grid.Row="1" Grid.Column="2" Text="生产数量:" />
+                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding QuantityText}" />
+
+                    <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="缺陷:" VerticalTextAlignment="Center" />
+                        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                            <FlexLayout BindableLayout.ItemsSource="{Binding DefectTags}" Direction="Row" Wrap="Wrap" AlignItems="Center">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto,Auto"
+                          Padding="8,3"
+                          Margin="0,0,4,0"
+                          BackgroundColor="#EAF3FF">
+                                            <Label Grid.Column="0" Text="{Binding Name}" TextColor="#1E76FF" FontSize="12" />
+                                            <Label Grid.Column="1" Text="✕" TextColor="#5B6470" FontSize="12" Margin="4,0,0,0">
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveDefectTagCommand}"
+                                                      CommandParameter="{Binding .}" />
+                                                </Label.GestureRecognizers>
+                                            </Label>
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                            <Button Grid.Column="1"
+                Text="＋"
+                WidthRequest="28"
+                HeightRequest="28"
+                Padding="0"
+                FontSize="18"
+                TextColor="#4B5563"
+                BackgroundColor="White"
+                BorderColor="#D1D5DB"
+                BorderWidth="1"
+                CornerRadius="6"
+                Command="{Binding OpenDefectPickerCommand}" />
+                        </Grid>
+                    </Grid>
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="返修数量:" />
+                    <Entry Grid.Row="3"
+                           Grid.Column="1"
+                           Placeholder="请输入"
+                           Keyboard="Numeric"
+                           Text="{Binding ReworkQtyText}" />
+                    <Label Grid.Row="3" Grid.Column="2" Text="返修类型:" />
+                    <Picker Grid.Row="3" Grid.Column="3"
+                            ItemsSource="{Binding ReworkTypeOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedReworkType}" />
+                    <Label Grid.Row="4" Grid.Column="1"
+                           Text="{Binding ReworkQtyErrorText}"
+                           TextColor="Red"
+                           FontSize="12"
+                           IsVisible="{Binding IsReworkQtyInvalid}" />
+                    <Label Grid.Row="4" Grid.Column="3"
+                           Text="返修类型必填"
+                           TextColor="Red"
+                           FontSize="12"
+                           IsVisible="{Binding IsReworkTypeInvalid}" />
+
+                    <Label Grid.Row="5" Grid.Column="0" Text="返修工序:" />
+                    <Grid Grid.Row="5" Grid.Column="1"
+                          HeightRequest="36"
+                          Padding="8,0"
+                          BackgroundColor="Transparent"
+                          InputTransparent="{Binding IsReworkProcessDisabled}">
+                        <Grid.Triggers>
+                            <DataTrigger TargetType="Grid" Binding="{Binding IsReworkProcessDisabled}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#F3F4F6" />
+                            </DataTrigger>
+                        </Grid.Triggers>
+                        <Label Text="{Binding ReworkProcessSummary}"
+                               TextColor="#111827"
+                               VerticalTextAlignment="Center"
+                               LineBreakMode="TailTruncation">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsReworkProcessDisabled}" Value="True">
+                                    <Setter Property="TextColor" Value="#9CA3AF" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenReworkProcessSelectorCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                    <Label Grid.Row="5" Grid.Column="2" Text="是否补料:" />
+                    <Picker Grid.Row="5" Grid.Column="3"
+                            ItemsSource="{Binding YesNoOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedNeedSupplement}"
+                            IsEnabled="True"
+                            BackgroundColor="Transparent">
+                        <Picker.Triggers>
+                            <DataTrigger TargetType="Picker" Binding="{Binding IsNeedSupplementDisabled}" Value="True">
+                                <Setter Property="IsEnabled" Value="False" />
+                                <Setter Property="BackgroundColor" Value="#F3F4F6" />
+                                <Setter Property="TextColor" Value="#9CA3AF" />
+                            </DataTrigger>
+                        </Picker.Triggers>
+                    </Picker>
+
+                    <Label Grid.Row="6" Grid.Column="0" Text="返修备注:" />
+                    <Entry Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Placeholder="请输入" Text="{Binding ReworkNote}" />
+                </Grid>
+            </Frame>
+
+            <Label Text="补料详情" FontAttributes="Bold" TextColor="#333" IsVisible="{Binding IsSupplementSectionVisible}" />
+
+            <CollectionView ItemsSource="{Binding SupplementRows}" IsVisible="{Binding IsSupplementSectionVisible}">
+                <CollectionView.Header>
+                    <Grid BackgroundColor="#DCEAF9" Padding="6,8" ColumnDefinitions="40,80,80,40,60,60">
+                        <Label Text="序号" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="物料名称" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="物料编码" FontAttributes="Bold" />
+                        <Label Grid.Column="3" Text="是否补料" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="4" Text="标准补料数量" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="5" Text="实际补料数量" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="6" ColumnDefinitions="40,80,80,40,60,60" RowDefinitions="Auto,Auto">
+                            <Label Text="{Binding Sequence}" />
+                            <Label Text="{Binding materialName}" Grid.Column="1" />
+                            <Label Text="{Binding materialCode}" Grid.Column="2" />
+                            <Picker Grid.Column="3"
+                                    ItemsSource="{Binding NeedSupplementOptions}"
+                                    ItemDisplayBinding="{Binding Text}"
+                                    SelectedItem="{Binding SelectedNeedSupplementOption}" />
+                            <Label Grid.Column="4" Text="{Binding standardQty, StringFormat='{0:F4}'}" HorizontalTextAlignment="Center" />
+                            <Entry Grid.Column="5" Text="{Binding ActualQtyText}" Keyboard="Numeric" HorizontalTextAlignment="Center" />
+                            <BoxView Grid.ColumnSpan="6" Grid.Row="1" HeightRequest="1" BackgroundColor="#E5E7EB" VerticalOptions="End" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

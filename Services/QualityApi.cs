@@ -155,8 +155,17 @@ public class QualityApi : IQualityApi
             var dataSources = all.FirstOrDefault(f =>
        string.Equals(f.field, "dataSource", StringComparison.OrdinalIgnoreCase))
        ?.dictItems ?? new List<DictItem>();
+            var inspectResults = all.FirstOrDefault(f =>
+       string.Equals(f.field, "orderInspectResult", StringComparison.OrdinalIgnoreCase))
+       ?.dictItems ?? new List<DictItem>();
 
-            return new DictQuality { InspectStatus = inspectStatus, QualityTypes = qualityTypes, DataSources = dataSources };
+            return new DictQuality
+            {
+                InspectStatus = inspectStatus,
+                QualityTypes = qualityTypes,
+                DataSources = dataSources,
+                InspectResults = inspectResults
+            };
         }
 
         public async Task<ApiResp<List<InspectDeviceOption>>?> GetInspectDevicesAsync(CancellationToken ct = default)

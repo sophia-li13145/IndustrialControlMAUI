@@ -256,45 +256,44 @@
                         <VerticalStackLayout Spacing="0">
 
                             <!-- 表头 -->
-                            <Grid ColumnDefinitions="*,*,*,120"
-      ColumnSpacing="0"
-      RowSpacing="0">
-
+                            <Grid ColumnDefinitions="68,82,82,85"
+                                  ColumnSpacing="0"
+                                  RowSpacing="0">
                                 <Border Stroke="#B8B8B8"
-            StrokeThickness="1"
-            BackgroundColor="#F3F3F3"
-            Padding="4,8"
-            MinimumHeightRequest="36">
+                                StrokeThickness="1"
+                                BackgroundColor="#F3F3F3"
+                                Padding="2,4"
+                                MinimumHeightRequest="36">
                                     <Label Text="设备名称"
-               FontSize="14"
-               TextColor="#333333"
-               HorizontalTextAlignment="Center"
-               VerticalTextAlignment="Center"
-               VerticalOptions="Center" />
+                               FontSize="12"
+                               TextColor="#333333"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"
+                               VerticalOptions="Center" />
                                 </Border>
 
                                 <Border Grid.Column="1"
-            Stroke="#B8B8B8"
-            StrokeThickness="1"
-            BackgroundColor="#F3F3F3"
-            Padding="4,8"
-            MinimumHeightRequest="36">
+                                Stroke="#B8B8B8"
+                                StrokeThickness="1"
+                                BackgroundColor="#F3F3F3"
+                                Padding="2,4"
+                                MinimumHeightRequest="36">
                                     <Label Text="开始时间"
-               FontSize="14"
-               TextColor="#333333"
-               HorizontalTextAlignment="Center"
-               VerticalTextAlignment="Center"
-               VerticalOptions="Center" />
+                               FontSize="12"
+                               TextColor="#333333"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center"
+                               VerticalOptions="Center" />
                                 </Border>
 
                                 <Border Grid.Column="2"
             Stroke="#B8B8B8"
             StrokeThickness="1"
             BackgroundColor="#F3F3F3"
-            Padding="4,8"
+            Padding="2,4"
             MinimumHeightRequest="36">
                                     <Label Text="结束时间"
-               FontSize="14"
+               FontSize="12"
                TextColor="#333333"
                HorizontalTextAlignment="Center"
                VerticalTextAlignment="Center"
@@ -305,10 +304,10 @@
             Stroke="#B8B8B8"
             StrokeThickness="1"
             BackgroundColor="#F3F3F3"
-            Padding="4,8"
+            Padding="2,4"
             MinimumHeightRequest="36">
                                     <Label Text="操作"
-               FontSize="14"
+               FontSize="12"
                TextColor="#333333"
                HorizontalTextAlignment="Center"
                VerticalTextAlignment="Center"
@@ -323,17 +322,17 @@
 
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                            <Grid ColumnDefinitions="*,*,*,120"
+                                        <Grid ColumnDefinitions="68,82,82,85"
               ColumnSpacing="0"
               RowSpacing="0">
 
                                             <Border Stroke="#B8B8B8"
                     StrokeThickness="1"
                     BackgroundColor="White"
-                    Padding="4,8"
+                    Padding="2,4"
                     MinimumHeightRequest="42">
                                                 <Label Text="{Binding deviceName}"
-                       FontSize="14"
+                       FontSize="12"
                        TextColor="#333333"
                        HorizontalTextAlignment="Center"
                        VerticalTextAlignment="Center"
@@ -346,64 +345,92 @@
                     Stroke="#B8B8B8"
                     StrokeThickness="1"
                     BackgroundColor="White"
-                    Padding="4,8"
+                    Padding="2,4"
                     MinimumHeightRequest="42">
-                                                <Label Text="{Binding startTime}"
-                       FontSize="14"
-                       TextColor="#333333"
-                       HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center"
-                       VerticalOptions="Center"
-                       LineBreakMode="WordWrap"
-                       MaxLines="2" />
+                                                <Label FontSize="12"
+                   TextColor="#333333"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   VerticalOptions="Center"
+                   LineBreakMode="WordWrap"
+                   MaxLines="2">
+                                                    <Label.FormattedText>
+                                                        <FormattedString>
+                                                            <Span Text="{Binding StartDatePart}" />
+                                                            <Span Text="&#10;" />
+                                                            <Span Text="{Binding StartTimePart}" />
+                                                        </FormattedString>
+                                                    </Label.FormattedText>
+                                                </Label>
                                             </Border>
 
                                             <Border Grid.Column="2"
                     Stroke="#B8B8B8"
                     StrokeThickness="1"
                     BackgroundColor="White"
-                    Padding="4,8"
+                    Padding="2,4"
                     MinimumHeightRequest="42">
-                                                <Label Text="{Binding endTime}"
-                       FontSize="14"
-                       TextColor="#333333"
-                       HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center"
-                       VerticalOptions="Center"
-                       LineBreakMode="WordWrap"
-                       MaxLines="2" />
+                                                <Label FontSize="12"
+       TextColor="#333333"
+       HorizontalTextAlignment="Center"
+       VerticalTextAlignment="Center"
+       VerticalOptions="Center"
+       LineBreakMode="WordWrap"
+       MaxLines="2">
+                                                    <Label.FormattedText>
+                                                        <FormattedString>
+                                                            <Span Text="{Binding EndDatePart}" />
+                                                            <Span Text="&#10;" />
+                                                            <Span Text="{Binding EndTimePart}" />
+                                                        </FormattedString>
+                                                    </Label.FormattedText>
+                                                </Label>
                                             </Border>
 
                                             <Border Grid.Column="3"
                     Stroke="#B8B8B8"
                     StrokeThickness="1"
                     BackgroundColor="White"
-                    Padding="4,8"
+                    Padding="2,4"
                     MinimumHeightRequest="42">
-                                                <HorizontalStackLayout HorizontalOptions="Center"
-                                                                       VerticalOptions="Center"
-                                                                       Spacing="12">
-                                                    <Button Text="编辑"
-                                                            FontSize="13"
-                                                            TextColor="#2D73FF"
-                                                            BackgroundColor="#EEF5FF"
-                                                            BorderColor="#2D73FF"
-                                                            BorderWidth="1"
-                                                            CornerRadius="4"
-                                                            Padding="8,2"
-                                                            Clicked="OnEditBoundDeviceClicked"
-                                                            CommandParameter="{Binding .}" />
+                                                <HorizontalStackLayout Spacing="8"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center">
 
-                                                    <Button Text="删除"
-                                                            FontSize="13"
-                                                            TextColor="#FF4D4F"
-                                                            BackgroundColor="#FFF1F0"
-                                                            BorderColor="#FF4D4F"
-                                                            BorderWidth="1"
-                                                            CornerRadius="4"
-                                                            Padding="8,2"
-                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteBoundDeviceCommand}"
-                                                            CommandParameter="{Binding .}" />
+                                                    <Frame Padding="6"
+           HasShadow="False"
+           BorderColor="#2D73FF"
+           BackgroundColor="#EEF5FF"
+           CornerRadius="4">
+                                                        <ImageButton BackgroundColor="Transparent"
+             WidthRequest="20"
+             HeightRequest="20"
+            Clicked="OnEditBoundDeviceClicked"
+             CommandParameter="{Binding .}">
+                                                            <ImageButton.Source>
+                                                                <FontImageSource Glyph="✎"
+                         Size="16"
+                         Color="#2D73FF" />
+                                                            </ImageButton.Source>
+                                                        </ImageButton>
+                                                    </Frame>
+
+                                                    <Frame Padding="6"
+           HasShadow="False"
+           BorderColor="#FF4D4F"
+           BackgroundColor="#FFF1F0"
+           CornerRadius="4">
+                                                        <ImageButton BackgroundColor="Transparent"
+                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteBoundDeviceCommand}"
+                     CommandParameter="{Binding .}">
+                                                            <ImageButton.Source>
+                                                                <FontImageSource Glyph="🗑"
+                                 Size="15"
+                                 Color="#FF4D4F" />
+                                                            </ImageButton.Source>
+                                                        </ImageButton>
+                                                    </Frame>
+
                                                 </HorizontalStackLayout>
                                             </Border>
                                         </Grid>
@@ -425,5 +452,32 @@
 
             </VerticalStackLayout>
         </ScrollView>
+
+        <!-- 工单上下文加载遮罩 -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding IsContextLoading}"
+              BackgroundColor="#66000000"
+              InputTransparent="False">
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="20,16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="12"
+                                       VerticalOptions="Center">
+                    <ActivityIndicator IsRunning="{Binding IsContextLoading}"
+                                       Color="#0B7BEE"
+                                       WidthRequest="26"
+                                       HeightRequest="26" />
+                    <Label Text="工单信息加载中..."
+                           TextColor="#333333"
+                           VerticalTextAlignment="Center"
+                           FontSize="14" />
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
     </Grid>
 </ContentPage>

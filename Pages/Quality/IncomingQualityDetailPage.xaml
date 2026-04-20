@@ -194,7 +194,7 @@
 
                 <!-- 检验结果（严格按行列） -->
                 <Frame Style="{StaticResource Card}">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
                           ColumnDefinitions="50,*,60,*,60,*"
                           RowSpacing="5" ColumnSpacing="0"> 
 
@@ -222,6 +222,11 @@
                        Binding="{Binding SelectedInspectResult.Text}"
                        Value="不合格">
                                     <Setter Property="BackgroundColor" Value="#FFA8A8"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Picker"
+                       Binding="{Binding SelectedInspectResult.Text}"
+                       Value="让步接收">
+                                    <Setter Property="BackgroundColor" Value="#FDE047"/>
                                 </DataTrigger>
                             </Picker.Triggers>
 
@@ -280,9 +285,24 @@
                                Text="{Binding Detail.passRate, Mode=OneWay, StringFormat='{0:0.##}%'}"
                                IsEnabled="False" /> 
 
+                        <!-- 第3行补充：让步接收数（选“让步接收”时显示） -->
+                        <Label Grid.Row="4" Grid.Column="0" Style="{StaticResource FieldLabel}" IsVisible="{Binding ShowConcessionAcceptQtyInput}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="*" TextColor="Red" FontAttributes="Bold"/>
+                                    <Span Text="让步接收数：" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Entry Grid.Row="4" Grid.Column="1"
+                               Text="{Binding Detail.concessionAcceptQty, Mode=TwoWay, Converter={StaticResource DecParseOnlyConv}}"
+                               Keyboard="Numeric"
+                               IsEnabled="{Binding IsEditing}"
+                               IsVisible="{Binding ShowConcessionAcceptQtyInput}" />
+
                         <!-- 第4行：检验备注（整行） -->
-                        <Label Grid.Row="4" Grid.Column="0" Text="检验备注：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="5"
+                        <Label Grid.Row="5" Grid.Column="0" Text="检验备注：" Style="{StaticResource FieldLabel}" />
+                        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="5"
                                Text="{Binding Detail.inspectRemark, Mode=TwoWay}"
                                IsEnabled="{Binding IsEditing}" /> 
                     </Grid>
