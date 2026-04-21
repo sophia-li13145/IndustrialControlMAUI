@@ -37,8 +37,8 @@ public partial class MoldOutboundExecuteViewModel : ObservableObject
     {
     "0", // 待执行
     "1", // 执行中
-    "4", // 待入库
-    "2", // 入库中
+    "4", // 待出库
+    "2", // 出库中
     "3", // 已完成
     "5"  // 终结
 };

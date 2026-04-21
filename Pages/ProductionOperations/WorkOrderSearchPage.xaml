@@ -21,7 +21,7 @@
             <!-- 第一行：工单号 + 查询 + 扫码图标按钮 -->
             <Grid ColumnDefinitions="*,40,Auto">
                 <Entry x:Name="OrderEntry"
-                       Placeholder="请输入/扫描工单号"
+                       Placeholder="请输入扫描工单号"
                        Text="{Binding Keyword}"
                        HeightRequest="40" />
                 <ImageButton  Grid.Column="1"

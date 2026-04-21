@@ -101,7 +101,7 @@
         <!-- Tab切换 -->
         <Grid Grid.Row="3" RowDefinitions="Auto,Auto,*" Margin="0">
             <Grid ColumnDefinitions="*,*" BackgroundColor="White">
-                <Button Text="待入库明细" 
+                <Button Text="待出库明细" 
                         Command="{Binding ShowPendingCommand}" 
                         BackgroundColor="{Binding PendingTabColor}" 
                         TextColor="{Binding PendingTextColor}" />
@@ -113,7 +113,7 @@
             </Grid>
 
             <!-- 待出库明细表头 -->
-            <Grid Grid.Row="1" ColumnDefinitions="70,70,40,80,80,*,*" BackgroundColor="#F2F2F2" IsVisible="{Binding IsPendingVisible}" Padding="8">
+            <Grid Grid.Row="1" ColumnDefinitions="60,60,40,60,60,40,40" BackgroundColor="#F2F2F2" IsVisible="{Binding IsPendingVisible}" Padding="8">
                 <Label Text="产品名称" FontAttributes="Bold" />
                 <Label Grid.Column="1" Text="产品编码" FontAttributes="Bold" />
                 <Label Grid.Column="2" Text="规格" FontAttributes="Bold" />
@@ -123,14 +123,14 @@
                 <Label Grid.Column="6" Text="已扫描数" FontAttributes="Bold" />
             </Grid>
 
-            <!-- 待入库明细列表 -->
+            <!-- 待出库明细列表 -->
             <CollectionView Grid.Row="2"
                             ItemsSource="{Binding PendingList}"
                             IsVisible="{Binding IsPendingVisible}"
                             SelectionMode="Single">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="70,70,40,80,80,*,*" Padding="8" BackgroundColor="White">
+                        <Grid ColumnDefinitions="60,60,40,60,60,40,40" Padding="8" BackgroundColor="White">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup Name="CommonStates">
                                     <VisualState Name="Normal">

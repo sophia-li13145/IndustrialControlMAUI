@@ -18,7 +18,7 @@
         <!-- 入库单/条码扫描 -->
         <Grid Grid.Row="1" ColumnDefinitions="*,40" Padding="16,8">
             <Entry x:Name="ScanEntry" 
-                   Placeholder="请输入/扫描单号/物料/包装条码" 
+                   Placeholder="请输入扫描单号/物料/包装条码" 
                    FontSize="14"
                    VerticalOptions="Center"
                    BackgroundColor="White"

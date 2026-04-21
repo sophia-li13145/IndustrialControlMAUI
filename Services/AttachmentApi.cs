@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Web;
+using Serilog;
 
 namespace IndustrialControlMAUI.Services
 {
@@ -92,24 +93,59 @@ public class AttachmentApi : IAttachmentApi
 
         public async Task<ApiResp<string>> GetPreviewUrlAsync(string attachmentUrl, long? expires = null, CancellationToken ct = default)
         {
-            var baseUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _previewImagePath);
-
-            // 组装 query
-            var qb = HttpUtility.ParseQueryString(string.Empty);
-            qb["attachmentUrl"] = attachmentUrl;                    // 必填
-            if (expires.HasValue) qb["expires"] = expires.Value.ToString(); // 可选（秒）
-
-            var url = $"{baseUrl}?{qb}";
-
-            using var req = new HttpRequestMessage(HttpMethod.Get, url);
-            using var res = await _http.SendAsync(req, ct);
-            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
-
-            return JsonSerializer.Deserialize<ApiResp<string>>(json, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true,
-                NumberHandling = JsonNumberHandling.AllowReadingFromString
-            }) ?? new ApiResp<string>();
+                var baseUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _previewImagePath);
+
+                var qb = HttpUtility.ParseQueryString(string.Empty);
+                qb["attachmentUrl"] = attachmentUrl;
+                if (expires.HasValue) qb["expires"] = expires.Value.ToString();
+
+                var url = $"{baseUrl}?{qb}";
+
+                Log.Information("=== GetPreviewUrlAsync Start ===");
+                Log.Information("BaseAddress: {BaseAddress}", _http.BaseAddress?.ToString());
+                Log.Information("PreviewPath: {PreviewPath}", _previewImagePath);
+                Log.Information("AttachmentUrl param: {AttachmentUrl}", attachmentUrl);
+                Log.Information("Final request url: {Url}", url);
+
+                using var req = new HttpRequestMessage(HttpMethod.Get, url);
+
+                // 看看认证头是否真的加上了
+                if (req.Headers.Authorization != null)
+                {
+                    Log.Information("Authorization header exists: {Scheme}", req.Headers.Authorization.Scheme);
+                }
+                else
+                {
+                    Log.Information("Authorization header is null on request object before send");
+                }
+
+                using var res = await _http.SendAsync(req, ct);
+
+                Log.Information("HTTP Status: {StatusCode}", (int)res.StatusCode);
+                Log.Information("Response headers: {Headers}", res.Headers.ToString());
+
+                var raw = await res.Content.ReadAsStringAsync(ct);
+                Log.Information("Raw response: {RawResponse}", raw);
+
+                // 先不用 ResponseGuard，先看真实返回
+                var result = JsonSerializer.Deserialize<ApiResp<string>>(raw, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = JsonNumberHandling.AllowReadingFromString
+                }) ?? new ApiResp<string>();
+
+                Log.Information("Deserialize result: code={Code}, msg={Msg}, data={Data}",
+                    result.code, result.message, result.result);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "GetPreviewUrlAsync failed. attachmentUrl={AttachmentUrl}", attachmentUrl);
+                throw;
+            }
         }
 
         public async Task<ApiResp<bool>> DeleteAttachmentAsync(string id,string atturl, CancellationToken ct = default)

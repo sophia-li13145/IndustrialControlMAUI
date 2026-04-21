@@ -4,6 +4,7 @@ using IndustrialControlMAUI.Tools;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using System.Text;
 
 namespace IndustrialControlMAUI.Services;
 
@@ -49,10 +50,31 @@ public sealed class AppVersionService : IAppVersionService
         if (data is null || !data.needUpdate)
             return;
 
+        var alertMessage = new StringBuilder();
+
+        alertMessage.AppendLine(string.IsNullOrWhiteSpace(data.message)
+            ? "检测到新版本，请及时更新。"
+            : data.message);
+
+        // 企业可用版本号
+        if (!string.IsNullOrWhiteSpace(data.enterpriseVersionName))
+        {
+            alertMessage.AppendLine();
+            alertMessage.AppendLine($"企业可用版本号：{data.enterpriseVersionName}");
+        }
+
+        // 更新内容
+        if (!string.IsNullOrWhiteSpace(data.updateNote))
+        {
+            alertMessage.AppendLine();
+            alertMessage.AppendLine("更新内容：");
+            alertMessage.AppendLine(data.updateNote);
+        }
+
         var confirm = await MainThread.InvokeOnMainThreadAsync(() =>
             Application.Current?.MainPage?.DisplayAlert(
                 "版本更新",
-                string.IsNullOrWhiteSpace(data.message) ? "检测到新版本，请及时更新。" : data.message,
+                alertMessage.ToString(),
                 "确定",
                 "取消") ?? Task.FromResult(false));
 
@@ -131,10 +153,11 @@ public sealed class AppVersionService : IAppVersionService
 
         try
         {
-            var resp = await _attachmentApi.GetPreviewUrlAsync(attachmentUrl, expires: null, ct);
+
+            var resp = await _attachmentApi.GetPreviewUrlAsync(attachmentUrl, 600, ct);
             var downloadUrl = resp.result;
             if (string.IsNullOrWhiteSpace(downloadUrl))
-                throw new InvalidOperationException("下载地址为空");
+                throw new InvalidOperationException("下载地址为空:resp.success" + resp.success);
 
             await Launcher.Default.OpenAsync(new Uri(downloadUrl));
         }
@@ -151,6 +174,9 @@ public sealed class PdaAppVersionCheckResult
     public bool needUpdate { get; set; }
     public string? compareResult { get; set; }
     public string? message { get; set; }
+    public string? enterpriseVersionName { get; set; }
+
+    public string? updateNote { get; set; }
     public FileInfo? fileInfo { get; set; }
 
 

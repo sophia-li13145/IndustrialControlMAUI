@@ -95,7 +95,7 @@
                         TextColor="{Binding ScannedTextColor}" />
             </Grid>
 
-            <!-- 待入库明细表头 -->
+            <!-- 待出库明细表头 -->
             <Grid Grid.Row="1" ColumnDefinitions="70,60,40,60,80,*,*" BackgroundColor="#F2F2F2" IsVisible="{Binding IsPendingVisible}" Padding="8">
                 <Label Text="物料名称" FontAttributes="Bold" />
                 <Label Grid.Column="1" Text="物料编码" FontAttributes="Bold" />
@@ -106,7 +106,7 @@
                 <Label Grid.Column="6" Text="已扫描数量" FontAttributes="Bold" />
             </Grid>
 
-            <!-- 待入库明细列表 -->
+            <!-- 待出库明细列表 -->
             <CollectionView Grid.Row="2"
                             ItemsSource="{Binding PendingList}"
                             IsVisible="{Binding IsPendingVisible}"

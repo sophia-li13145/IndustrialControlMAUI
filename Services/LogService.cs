@@ -38,7 +38,8 @@ namespace IndustrialControlMAUI.Services
         public event Action<string>? LogTextUpdated;
 
         public string TodayLogPath => Path.Combine(_logsDir, $"gr-{DateTime.Now:yyyy-MM-dd}.txt");
-
+        public string TodaySerilogPath => Path.Combine(_logsDir, $"app_log-{DateTime.Now:yyyyMMdd}.txt");
+        public string CurrentReadableLogPath => File.Exists(TodaySerilogPath) ? TodaySerilogPath : TodayLogPath;
         // 日志保留天数（包含今天）
         private const int LogRetainDays = 7;
 
@@ -119,11 +120,12 @@ namespace IndustrialControlMAUI.Services
                 {
                     try
                     {
-                        if (File.Exists(TodayLogPath))
+                        var activePath = CurrentReadableLogPath;
+                        if (File.Exists(activePath))
                         {
                             // 用 FileStream + 共享读，避免写入方占用时报错
                             using var fs = new FileStream(
-                                TodayLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                activePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                             using var sr = new StreamReader(fs);
                             var text = await sr.ReadToEndAsync().ConfigureAwait(false);
 

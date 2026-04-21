@@ -87,7 +87,7 @@ namespace IndustrialControlMAUI.ViewModels
             await LoadPendingAsync();
             await LoadScannedAsync();
 
-            // 默认显示“待入库明细”
+            // 默认显示“待出库明细”
             SwitchTab(true);
         }
 
@@ -517,7 +517,7 @@ namespace IndustrialControlMAUI.ViewModels
             if (!serverAllOk)
             {
                 // 直接提示，不再让用户选择
-                await ShowTip("已扫描列表与待入库数量不一致，无法继续入库。");
+                await ShowTip("已扫描列表与待出库数量不一致，无法继续出库。");
                 return false;   // 直接结束方法
             }
 
@@ -602,7 +602,7 @@ namespace IndustrialControlMAUI.ViewModels
             // 记录一下当前行用于刷新后恢复选中
             var keepBarcode = row.Barcode;
 
-            await LoadPendingAsync();   // 刷新“待入库明细”
+            await LoadPendingAsync();   // 刷新“待出库明细”
             await LoadScannedAsyncDiff();
             // 刷新“已扫描明细”
 

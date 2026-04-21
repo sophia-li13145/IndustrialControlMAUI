@@ -9,7 +9,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty] private string logText = "日志初始化中...";
 
-        public string TodayPath => _logSvc.TodayLogPath;
+        public string TodayPath => _logSvc.CurrentReadableLogPath;
 
         /// <summary>执行 LogsViewModel 初始化逻辑。</summary>
         public LogsViewModel(LogService logSvc)
