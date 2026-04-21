@@ -7,6 +7,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class AdminViewModel : ObservableObject
 {
     private readonly IConfigLoader _cfg;
+    private readonly IAppVersionService _appVersionService;
     private bool _servicePathCustomized;
     private bool _isSyncingServicePath;
 
@@ -18,9 +19,10 @@ public partial class AdminViewModel : ObservableObject
     [ObservableProperty] private string baseUrl = "";            // 预览：scheme://ipAddress + servicePath
 
     /// <summary>执行 AdminViewModel 初始化逻辑。</summary>
-    public AdminViewModel(IConfigLoader cfg)
+    public AdminViewModel(IConfigLoader cfg, IAppVersionService appVersionService)
     {
         _cfg = cfg;
+        _appVersionService = appVersionService;
         LoadFromConfig();
     }
 
@@ -95,6 +97,12 @@ public partial class AdminViewModel : ObservableObject
         await _cfg.EnsureLatestAsync(); // 包内 schemaVersion 更高会覆盖
         LoadFromConfig();
         await Shell.Current.DisplayAlert("已重载", "已从包内默认配置重载。", "确定");
+    }
+
+    [RelayCommand]
+    public async Task CheckUpdateAsync()
+    {
+        await _appVersionService.HandleStartupUpdateAsync();
     }
 
     // ========== Helper ==========
