@@ -11,7 +11,7 @@ namespace IndustrialControlMAUI.Services;
 public interface IAppVersionService
 {
     Task HandleStartupUpdateAsync(CancellationToken ct = default);
-    Task ShowCompareResultMessageIfNeededAsync(CancellationToken ct = default);
+    Task<bool> ShowCompareResultMessageIfNeededAsync(CancellationToken ct = default);
 }
 
 public sealed class AppVersionService : IAppVersionService
@@ -92,21 +92,29 @@ public sealed class AppVersionService : IAppVersionService
         }
     }
 
-    public async Task ShowCompareResultMessageIfNeededAsync(CancellationToken ct = default)
+    public async Task<bool> ShowCompareResultMessageIfNeededAsync(CancellationToken ct = default)
     {
         var data = await CheckUpdateAsync(ct);
         if (data is null)
-            return;
+            return true;
 
         if (!string.Equals(data.compareResult, "equal", StringComparison.OrdinalIgnoreCase))
         {
+            var isHigher = string.Equals(data.compareResult, "higher", StringComparison.OrdinalIgnoreCase);
             var msg = string.IsNullOrWhiteSpace(data.message)
-                ? $"当前版本比较结果：{data.compareResult ?? "unknown"}"
+                ? (isHigher
+                    ? "当前版本高于企业可用版本，请切换到企业可用版本后再登录。"
+                    : $"当前版本比较结果：{data.compareResult ?? "unknown"}")
                 : data.message;
 
             await MainThread.InvokeOnMainThreadAsync(() =>
                 Application.Current?.MainPage?.DisplayAlert("版本提示", msg, "确定") ?? Task.CompletedTask);
+
+            if (isHigher)
+                return false;
         }
+
+        return true;
     }
 
     private async Task<PdaAppVersionCheckResult?> CheckUpdateAsync(CancellationToken ct)

@@ -86,6 +86,10 @@ public partial class LoginViewModel : ObservableObject
                 return;
             }
 
+            var canLogin = await _appVersionService.ShowCompareResultMessageIfNeededAsync();
+            if (!canLogin)
+                return;
+
             await TokenStorage.SaveAsync(token!);
             Preferences.Set("UserName", UserName ?? "");
             if (RememberPassword)
@@ -99,9 +103,7 @@ public partial class LoginViewModel : ObservableObject
                 Preferences.Set("RememberPassword", false);
             }
 
-            await _appVersionService.ShowCompareResultMessageIfNeededAsync();
-
-             App.SwitchToLoggedInShell();
+            App.SwitchToLoggedInShell();
         }
         catch (OperationCanceledException)
         {
