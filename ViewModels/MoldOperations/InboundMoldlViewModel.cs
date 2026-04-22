@@ -148,37 +148,55 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 HandleScannedAsync 逻辑。</summary>
         public async Task HandleScannedAsync(string data, string symbology)
         {
+
             var code = (data ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(code))
             {
-                await ShowTip("无效条码。");
+                await MainThread.InvokeOnMainThreadAsync(() => ShowTip("无效条码。"));
                 return;
             }
-
-            // ✅ 先本地 Upsert，只保留一条（避免 UI 出现两条再合一的“闪一下”）
-            var row = UpsertLocalByMoldCode(code);
 
             await _scanLock.WaitAsync();
             try
             {
+                MoldScanRow? row = null;
+
+                // 1. 所有集合/UI对象操作切主线程
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    row = UpsertLocalByMoldCode(code);
+                });
+
                 var resp = await _api.InStockScanQueryAsync(code);
+
+                if (row == null)
+                    return;
+
                 if (resp is null)
                 {
-                    row.UseStatusText = "查询失败";
-                    await ShowTip("接口无响应。");
-                    return;
-                }
-                if (resp.success != true || resp.result is null)
-                {
-                    row.UseStatusText = "未找到";
-                    await ShowTip(string.IsNullOrWhiteSpace(resp.message) ? "未查询到该模具信息" : resp.message!);
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        row.UseStatusText = "查询失败";
+                    });
+                    await MainThread.InvokeOnMainThreadAsync(() => ShowTip("接口无响应。"));
                     return;
                 }
 
-                var isUsing = resp.result.usageStatus == true; // true=使用中，false=在库/未使用
+                if (resp.success != true || resp.result is null)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        row.UseStatusText = "未找到";
+                    });
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                        ShowTip(string.IsNullOrWhiteSpace(resp.message) ? "未查询到该模具信息" : resp.message!));
+                    return;
+                }
+
+                var isUsing = resp.result.usageStatus == true;
+
                 var updated = new MoldScanRow
                 {
-                    // 注意：这里不创建新对象塞进列表，而是“只更新字段”
                     MoldCode = resp.result.moldCode ?? code,
                     MoldModel = resp.result.moldModel ?? "",
                     UseStatusText = isUsing ? "使用中" : "未使用",
@@ -190,12 +208,18 @@ namespace IndustrialControlMAUI.ViewModels
                     IsSelected = true
                 };
 
-                // ✅ 关键：不 Remove/Insert，只更新同一个对象的字段，UI 不会闪
-                ApplyRow(row, updated);
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    ApplyRow(row, updated);
+                    row.IsSelected = true;
+                    SelectedRow = row;
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HandleScannedAsync] 扫码处理异常: {ex}");
 
-                // 维持当前选中
-                row.IsSelected = true;
-                SelectedRow = row;
+                await MainThread.InvokeOnMainThreadAsync(() => ShowTip($"扫描处理失败：{ex.Message}"));
             }
             finally
             {
@@ -262,7 +286,8 @@ namespace IndustrialControlMAUI.ViewModels
 
         /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string msg) =>
-            Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask;
+    MainThread.InvokeOnMainThreadAsync(() =>
+        Shell.Current?.DisplayAlert("提示", msg, "确定") ?? Task.CompletedTask);
 
         // 兼容不同 BinInfo 定义，智能取库位编码
 

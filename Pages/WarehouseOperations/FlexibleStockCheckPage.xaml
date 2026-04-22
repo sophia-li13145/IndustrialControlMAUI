@@ -45,7 +45,7 @@
                            Text="物料条码：" VerticalTextAlignment="Center" />
                     <Entry x:Name="MaterialEntry"
                            Grid.Row="1" Grid.Column="1"
-                           Placeholder="请扫描/输入物料编码"
+                           Placeholder="请扫描/输入物料条码"
                            Text="{Binding MaterialBarcode}"
                            Completed="OnMaterialCompleted" />
                     <ImageButton Grid.Row="1" Grid.Column="2"
