@@ -50,10 +50,18 @@
                            TextColor="#333333"
                            VerticalTextAlignment="Center" />
                     <Border Grid.Column="1" Stroke="#B8B8B8" BackgroundColor="White" Padding="8,0" HeightRequest="40">
-                        <Entry Text="{Binding MoldCode}" Placeholder="请输入" FontSize="14" BackgroundColor="Transparent" />
+                        <Entry x:Name="MoldCodeEntry"
+                               Text="{Binding MoldCode}"
+                               Placeholder="请输入"
+                               FontSize="14"
+                               BackgroundColor="Transparent"
+                               Completed="OnMoldCodeCompleted" />
                     </Border>
                     <Border Grid.Column="2" Stroke="#B8B8B8" BackgroundColor="White" HeightRequest="40">
-                        <ImageButton Source="scan_button.png" BackgroundColor="Transparent" Padding="6" IsEnabled="False" Opacity="0.5" />
+                        <ImageButton Source="scan_button.png"
+                                     BackgroundColor="Transparent"
+                                     Padding="6"
+                                     Clicked="OnScanMoldClicked" />
                     </Border>
                 </Grid>
 
@@ -73,7 +81,14 @@
                                         <Label Text="{Binding moldCode}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                                         <Label Grid.Column="1" Text="{Binding moldModel}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                                         <Label Grid.Column="2" Text="{Binding moldInstallTime}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="12" />
-                                        <Label Grid.Column="3" Text="卸模" TextColor="Red" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                        <Button Grid.Column="3"
+                                                Text="卸模"
+                                                TextColor="Red"
+                                                BackgroundColor="Transparent"
+                                                Padding="0"
+                                                FontSize="14"
+                                                CommandParameter="{Binding .}"
+                                                Clicked="OnUnloadClicked" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>

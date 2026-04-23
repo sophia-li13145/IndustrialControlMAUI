@@ -53,6 +53,10 @@ namespace IndustrialControlMAUI.Services
         private readonly string _stockCheckEditEndpoint;
         private readonly string _flexibleStockCheckAddEndpoint;
         private readonly string _pageDeviceMoldRelationEndpoint;
+        private readonly string _deviceMoldRelationByMoldCodeEndpoint;
+        private readonly string _addDeviceMoldRelationEndpoint;
+        private readonly string _getDeviceMoldRelationEndpoint;
+        private readonly string _confirmUnloadMoldEndpoint;
 
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
@@ -158,6 +162,18 @@ namespace IndustrialControlMAUI.Services
     servicePath);
             _pageDeviceMoldRelationEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("workOrder.pageDeviceMoldRelation", "/pda/dev/pdaDeviceMoldRelation/pageDeviceMoldRelation"),
+    servicePath);
+            _deviceMoldRelationByMoldCodeEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.getDeviceMoldRelationByMoldCode", "/pda/dev/pdaDeviceMoldRelation/getDeviceMoldRelationByMoldCode"),
+    servicePath);
+            _addDeviceMoldRelationEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.addDeviceMoldRelation", "/pda/dev/pdaDeviceMoldRelation/addDeviceMoldRelation"),
+    servicePath);
+            _getDeviceMoldRelationEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.getDeviceMoldRelation", "/pda/dev/pdaDeviceMoldRelation/getDeviceMoldRelation"),
+    servicePath);
+            _confirmUnloadMoldEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.confirmUnloadMold", "/pda/dev/pdaDeviceMoldRelation/confirmUnloadMold"),
     servicePath);
 
 
@@ -402,6 +418,94 @@ namespace IndustrialControlMAUI.Services
 
             return JsonSerializer.Deserialize<PageResp<DeviceMoldRelationDto>>(json, _json)
                 ?? new PageResp<DeviceMoldRelationDto> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationByMoldCodeAsync(
+            string moldCode,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deviceMoldRelationByMoldCodeEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["moldCode"] = moldCode?.Trim()
+            });
+
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<DeviceMoldRelationDto> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<DeviceMoldRelationDto>>(json, _json)
+                ?? new ApiResp<DeviceMoldRelationDto> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<bool>?> AddDeviceMoldRelationAsync(
+            AddDeviceMoldRelationReq req,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addDeviceMoldRelationEndpoint);
+            var body = JsonSerializer.Serialize(req, _json);
+
+            using var msg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            };
+
+            using var res = await _http.SendAsync(msg, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                ?? new ApiResp<bool> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationAsync(
+            string id,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getDeviceMoldRelationEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["id"] = id?.Trim()
+            });
+
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<DeviceMoldRelationDto> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<DeviceMoldRelationDto>>(json, _json)
+                ?? new ApiResp<DeviceMoldRelationDto> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<bool>?> ConfirmUnloadMoldAsync(
+            string id,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _confirmUnloadMoldEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["id"] = id?.Trim()
+            });
+
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                ?? new ApiResp<bool> { success = false, message = "empty response" };
         }
 
         private static string BuildQuery(Dictionary<string, string?> parameters)

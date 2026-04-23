@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="IndustrialControlMAUI.Pages.MoldInstallConfirmPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Size="320,280">
+
+    <Border BackgroundColor="#E5EAF2" Stroke="#CFD6E3" StrokeShape="RoundRectangle 8" Padding="16">
+        <VerticalStackLayout Spacing="8">
+            <Label Text="{Binding MoldCodeText}" FontSize="16" TextColor="#222" />
+            <Label Text="{Binding MoldModelText}" FontSize="16" TextColor="#222" />
+            <Label Text="{Binding UsageStatusText}" FontSize="16" TextColor="#222" />
+            <Label Text="{Binding BoundDeviceText}" FontSize="16" TextColor="#222" />
+
+            <HorizontalStackLayout Spacing="0">
+                <Label Text="使用寿命/累计模次: " FontSize="16" TextColor="#222" />
+                <Label Text="{Binding ServiceLifeText}" FontSize="16" TextColor="Red" />
+                <Label Text="/" FontSize="16" TextColor="#222" />
+                <Label Text="{Binding UsageCountText}" FontSize="16" TextColor="Green" />
+            </HorizontalStackLayout>
+
+            <Button Text="确认安装"
+                    Margin="0,16,0,0"
+                    HorizontalOptions="Center"
+                    Padding="14,8"
+                    BackgroundColor="#0B7BEE"
+                    TextColor="White"
+                    Clicked="OnConfirmClicked" />
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>
