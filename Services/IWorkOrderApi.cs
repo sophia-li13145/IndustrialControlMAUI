@@ -109,6 +109,25 @@ namespace IndustrialControlMAUI.Services
             CancellationToken ct = default);
 
         Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default);
+        Task<PageResp<DeviceMoldRelationDto>?> PageDeviceMoldRelationsAsync(
+            string deviceCode,
+            int pageNo = 1,
+            int pageSize = 50,
+            bool? searchCount = null,
+            CancellationToken ct = default);
+        Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationByMoldCodeAsync(
+            string moldCode,
+            CancellationToken ct = default);
+        Task<ApiResp<bool>?> AddDeviceMoldRelationAsync(
+            AddDeviceMoldRelationReq req,
+            CancellationToken ct = default);
+        Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationAsync(
+            string id,
+            CancellationToken ct = default);
+        Task<ApiResp<bool>?> ConfirmUnloadMoldAsync(
+            string id,
+            CancellationToken ct = default);
+
         Task<ApiResp<List<FieldDict>>> GetReworkDictListAsync(CancellationToken ct = default);
         Task<ReworkOrderDomainResp?> GetReworkWorkOrderDomainAsync(string workOrderNo, CancellationToken ct = default);
         Task<ApiResp<List<ReworkBomDetailFlattenItem>>> GetReworkBomFlattenDetailsAsync(string workOrderNo, CancellationToken ct = default);

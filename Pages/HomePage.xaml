@@ -272,7 +272,25 @@
                     </Frame.GestureRecognizers>
                 </Frame>
 
-               
+                <!-- 设备装模 -->
+                <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                     BackgroundColor="#8BC34A"
+                     StrokeShape="RoundRectangle 32">
+                            <Image Source="in_mold.svg"
+                        HeightRequest="28" WidthRequest="28"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="设备装模" FontSize="12" Margin="0,6,0,0"
+                    HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDeviceMoldRelation"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
 
             </Grid>
             <!-- 质检作业" -->
