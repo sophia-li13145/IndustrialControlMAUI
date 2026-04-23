@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:IndustrialControlMAUI.Models"
+             x:Class="IndustrialControlMAUI.Pages.DeviceMoldRelationPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#D9DEE5">
+
+    <Grid RowDefinitions="58,*">
+        <Grid Grid.Row="0" BackgroundColor="#0B7BEE" Padding="12,0">
+            <Label Text="生产管理系统"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Start"
+                   TextColor="White"
+                   FontSize="16"
+                   FontAttributes="Bold" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="12" Spacing="10">
+                <Grid ColumnDefinitions="72,*,48" ColumnSpacing="8">
+                    <Label Text="设备码"
+                           FontSize="15"
+                           TextColor="#333333"
+                           VerticalTextAlignment="Center" />
+                    <Border Grid.Column="1" Stroke="#B8B8B8" BackgroundColor="White" Padding="8,0" HeightRequest="40">
+                        <Entry x:Name="DeviceCodeEntry"
+                               Text="{Binding DeviceCode}"
+                               Placeholder="请输入"
+                               FontSize="14"
+                               BackgroundColor="Transparent"
+                               Completed="OnDeviceCodeCompleted" />
+                    </Border>
+                    <Border Grid.Column="2" Stroke="#B8B8B8" BackgroundColor="White" HeightRequest="40">
+                        <ImageButton Source="scan_button.png"
+                                     BackgroundColor="Transparent"
+                                     Padding="6"
+                                     Clicked="OnScanDeviceClicked" />
+                    </Border>
+                </Grid>
+
+                <HorizontalStackLayout Spacing="4">
+                    <BoxView WidthRequest="4" HeightRequest="20" Color="#1E7AF0" VerticalOptions="Center" />
+                    <Label Text="设备当前装载模具" FontSize="18" TextColor="#333" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+
+                <Grid ColumnDefinitions="72,*,48" ColumnSpacing="8">
+                    <Label Text="模具码"
+                           FontSize="15"
+                           TextColor="#333333"
+                           VerticalTextAlignment="Center" />
+                    <Border Grid.Column="1" Stroke="#B8B8B8" BackgroundColor="White" Padding="8,0" HeightRequest="40">
+                        <Entry Text="{Binding MoldCode}" Placeholder="请输入" FontSize="14" BackgroundColor="Transparent" />
+                    </Border>
+                    <Border Grid.Column="2" Stroke="#B8B8B8" BackgroundColor="White" HeightRequest="40">
+                        <ImageButton Source="scan_button.png" BackgroundColor="Transparent" Padding="6" IsEnabled="False" Opacity="0.5" />
+                    </Border>
+                </Grid>
+
+                <Border Stroke="#B8B8B8" BackgroundColor="White" Padding="0">
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="*,*,*,*" BackgroundColor="#F5F5F5" HeightRequest="42">
+                            <Label Text="模具编码" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                            <Label Grid.Column="1" Text="模具型号" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                            <Label Grid.Column="2" Text="装模时间" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                            <Label Grid.Column="3" Text="操作" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="#E5E5E5" />
+                        <CollectionView ItemsSource="{Binding Records}" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="model:DeviceMoldRelationDto">
+                                    <Grid ColumnDefinitions="*,*,*,*" HeightRequest="44">
+                                        <Label Text="{Binding moldCode}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                        <Label Grid.Column="1" Text="{Binding moldModel}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                        <Label Grid.Column="2" Text="{Binding moldInstallTime}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="12" />
+                                        <Label Grid.Column="3" Text="卸模" TextColor="Red" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                            <CollectionView.EmptyView>
+                                <Label Text="暂无装模记录" HorizontalTextAlignment="Center" Margin="0,18" TextColor="#999" />
+                            </CollectionView.EmptyView>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

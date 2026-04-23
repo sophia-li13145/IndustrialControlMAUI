@@ -52,6 +52,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _stockCheckDetailPageEndpoint;
         private readonly string _stockCheckEditEndpoint;
         private readonly string _flexibleStockCheckAddEndpoint;
+        private readonly string _pageDeviceMoldRelationEndpoint;
 
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
@@ -154,6 +155,9 @@ namespace IndustrialControlMAUI.Services
     servicePath);
             _flexibleStockCheckAddEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("stockCheck.flexibleAdd", "/pda/wmsInstockCheck/add"),
+    servicePath);
+            _pageDeviceMoldRelationEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.pageDeviceMoldRelation", "/pda/dev/pdaDeviceMoldRelation/pageDeviceMoldRelation"),
     servicePath);
 
 
@@ -367,6 +371,37 @@ namespace IndustrialControlMAUI.Services
             await using var stream = await resp.Content.ReadAsStreamAsync(ct);
             var data = await JsonSerializer.DeserializeAsync<ApiResp<List<DevicesInfo>>>(stream, _json, ct);
             return data ?? new ApiResp<List<DevicesInfo>> { success = false, message = "empty response", result = new List<DevicesInfo>() };
+        }
+
+        public async Task<PageResp<DeviceMoldRelationDto>?> PageDeviceMoldRelationsAsync(
+            string deviceCode,
+            int pageNo = 1,
+            int pageSize = 50,
+            bool? searchCount = null,
+            CancellationToken ct = default)
+        {
+            var p = new Dictionary<string, string>
+            {
+                ["pageNo"] = pageNo.ToString(),
+                ["pageSize"] = pageSize.ToString(),
+                ["deviceCode"] = deviceCode?.Trim() ?? string.Empty
+            };
+
+            if (searchCount.HasValue)
+                p["searchCount"] = searchCount.Value ? "true" : "false";
+
+            var url = _pageDeviceMoldRelationEndpoint + "?" + BuildQuery(p.ToDictionary(x => x.Key, x => (string?)x.Value));
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new PageResp<DeviceMoldRelationDto> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<PageResp<DeviceMoldRelationDto>>(json, _json)
+                ?? new PageResp<DeviceMoldRelationDto> { success = false, message = "empty response" };
         }
 
         private static string BuildQuery(Dictionary<string, string?> parameters)

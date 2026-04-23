@@ -35,6 +35,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Pages.WorkProcessTaskDetailPage), typeof(Pages.WorkProcessTaskDetailPage));
         Routing.RegisterRoute(nameof(Pages.ReworkOrderPage), typeof(Pages.ReworkOrderPage));
         Routing.RegisterRoute(nameof(Pages.DeviceScanBindPage), typeof(Pages.DeviceScanBindPage));
+        Routing.RegisterRoute(nameof(Pages.DeviceMoldRelationPage), typeof(Pages.DeviceMoldRelationPage));
         Routing.RegisterRoute(nameof(Pages.QualitySearchPage), typeof(Pages.QualitySearchPage));
         Routing.RegisterRoute(nameof(Pages.IncomingQualitySearchPage), typeof(Pages.IncomingQualitySearchPage));
         Routing.RegisterRoute(nameof(Pages.IncomingQualityDetailPage), typeof(Pages.IncomingQualityDetailPage));
