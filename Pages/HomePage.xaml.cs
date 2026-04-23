@@ -21,6 +21,8 @@ namespace IndustrialControlMAUI.Pages
             => await Shell.Current.GoToAsync($"{nameof(ProcessTaskSearchPage)}?entryMode=deviceBinding");
         private async void OnWorkOrder(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(WorkOrderSearchPage));
+        private async void OnDeviceMoldRelation(object? s, TappedEventArgs e)
+            => await Shell.Current.GoToAsync(nameof(DeviceMoldRelationPage));
         
 
         // —— 仓储作业（与你发来的函数一一对应）——
