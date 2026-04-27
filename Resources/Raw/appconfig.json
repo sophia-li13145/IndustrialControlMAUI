@@ -65,6 +65,8 @@
       "bindWorkOrderDevice": "/pda/pmsWorkOrder/bindWorkOrderDevice",
       "editWorkOrderDeviceBindTime": "/pda/pmsWorkOrder/editWorkOrderDeviceBindTime",
       "unbindWorkOrderDevice": "/pda/pmsWorkOrder/unbindWorkOrderDevice",
+      "getDeviceMoldInfo": "/pda/dev/pdaDeviceMoldRelation/getDeviceMoldInfo",
+      "getMoldByMoldCode": "/pda/dev/pdaDeviceMoldRelation/getMoldByMoldCode",
       "reworkDictList": "/pda/pmsReworkOrder/getDictList",
       "reworkDomain": "/pda/pmsWorkOrder/getWorkOrderDomainByWorkOrderNo",
       "reworkSave": "/pda/pmsReworkOrder/save",

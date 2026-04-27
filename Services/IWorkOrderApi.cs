@@ -109,13 +109,10 @@ namespace IndustrialControlMAUI.Services
             CancellationToken ct = default);
 
         Task<WorkOrderDomainResp?> GetWorkOrderDomainAsync(string id, CancellationToken ct = default);
-        Task<PageResp<DeviceMoldRelationDto>?> PageDeviceMoldRelationsAsync(
+        Task<ApiResp<DeviceMoldInfoResultDto>?> GetDeviceMoldInfoAsync(
             string deviceCode,
-            int pageNo = 1,
-            int pageSize = 50,
-            bool? searchCount = null,
             CancellationToken ct = default);
-        Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationByMoldCodeAsync(
+        Task<ApiResp<DeviceMoldRelationDto>?> GetMoldByMoldCodeAsync(
             string moldCode,
             CancellationToken ct = default);
         Task<ApiResp<bool>?> AddDeviceMoldRelationAsync(

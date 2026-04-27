@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace IndustrialControlMAUI.ViewModels;
 
@@ -37,23 +36,20 @@ public partial class DeviceMoldRelationViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            var resp = await _api.PageDeviceMoldRelationsAsync(code, 1, 100, true);
+            var resp = await _api.GetDeviceMoldInfoAsync(code);
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 Records.Clear();
-                var list = resp?.result?.records;
-                if (list == null)
+                var eqpt = resp?.result?.pmsEqptPointDTO;
+                DeviceModel = eqpt?.deviceModel;
+                DeviceName = eqpt?.deviceName;
+
+                var list = resp?.result?.pmsDeviceMoldRelationDTOList;
+                if (list is null || list.Count == 0)
                     return;
 
                 foreach (var row in list)
                     Records.Add(row);
-
-                var first = list.FirstOrDefault();
-                if (first is not null)
-                {
-                    DeviceModel = first.deviceModel;
-                    DeviceName = first.deviceName;
-                }
             });
         }
         catch (Exception ex)
@@ -90,8 +86,8 @@ public partial class DeviceMoldRelationViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            var resp = await _api.GetDeviceMoldRelationByMoldCodeAsync(code);
-            if (resp?.success == true && resp.result is not null)
+            var resp = await _api.GetMoldByMoldCodeAsync(code);
+            if ((resp?.success == true || resp?.code == 0) && resp?.result is not null)
                 return resp.result;
 
             await ShowTip(resp?.message ?? "查询模具信息失败");

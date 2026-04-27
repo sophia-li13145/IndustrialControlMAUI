@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace IndustrialControlMAUI.Models;
 
 public class DeviceMoldRelationDto
@@ -24,4 +26,17 @@ public class AddDeviceMoldRelationReq
     public string? memo { get; set; }
     public string? moldCode { get; set; }
     public string? moldModel { get; set; }
+}
+
+public class DeviceMoldInfoResultDto
+{
+    public List<DeviceMoldRelationDto>? pmsDeviceMoldRelationDTOList { get; set; }
+    public DeviceInfoDto? pmsEqptPointDTO { get; set; }
+}
+
+public class DeviceInfoDto
+{
+    public string? deviceCode { get; set; }
+    public string? deviceName { get; set; }
+    public string? deviceModel { get; set; }
 }
