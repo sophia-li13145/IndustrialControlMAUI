@@ -326,7 +326,6 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
 
         if (bindOk)
         {
-            await CloseBindPopupIfOpenAsync();
             await LoadBoundDevicesAsync();
         }
     }
@@ -398,21 +397,6 @@ public partial class DeviceScanBindViewModel : ObservableObject, IQueryAttributa
     private static Task ShowTip(string message)
         => Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
-    private static async Task CloseBindPopupIfOpenAsync()
-    {
-        var page = Shell.Current?.CurrentPage;
-        if (page is null)
-            return;
-
-        try
-        {
-            await page.ClosePopupAsync();
-        }
-        catch
-        {
-            // 当前页面无弹窗时忽略
-        }
-    }
 
     private static ProcessTask? BuildTaskFromQuery(IDictionary<string, object> query)
     {
