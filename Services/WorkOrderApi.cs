@@ -52,8 +52,8 @@ namespace IndustrialControlMAUI.Services
         private readonly string _stockCheckDetailPageEndpoint;
         private readonly string _stockCheckEditEndpoint;
         private readonly string _flexibleStockCheckAddEndpoint;
-        private readonly string _pageDeviceMoldRelationEndpoint;
-        private readonly string _deviceMoldRelationByMoldCodeEndpoint;
+        private readonly string _getDeviceMoldInfoEndpoint;
+        private readonly string _getMoldByMoldCodeEndpoint;
         private readonly string _addDeviceMoldRelationEndpoint;
         private readonly string _getDeviceMoldRelationEndpoint;
         private readonly string _confirmUnloadMoldEndpoint;
@@ -160,11 +160,11 @@ namespace IndustrialControlMAUI.Services
             _flexibleStockCheckAddEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("stockCheck.flexibleAdd", "/pda/wmsInstockCheck/add"),
     servicePath);
-            _pageDeviceMoldRelationEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("workOrder.pageDeviceMoldRelation", "/pda/dev/pdaDeviceMoldRelation/pageDeviceMoldRelation"),
+            _getDeviceMoldInfoEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.getDeviceMoldInfo", "/pda/dev/pdaDeviceMoldRelation/getDeviceMoldInfo"),
     servicePath);
-            _deviceMoldRelationByMoldCodeEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("workOrder.getDeviceMoldRelationByMoldCode", "/pda/dev/pdaDeviceMoldRelation/getDeviceMoldRelationByMoldCode"),
+            _getMoldByMoldCodeEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.getMoldByMoldCode", "/pda/dev/pdaDeviceMoldRelation/getMoldByMoldCode"),
     servicePath);
             _addDeviceMoldRelationEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("workOrder.addDeviceMoldRelation", "/pda/dev/pdaDeviceMoldRelation/addDeviceMoldRelation"),
@@ -389,42 +389,33 @@ namespace IndustrialControlMAUI.Services
             return data ?? new ApiResp<List<DevicesInfo>> { success = false, message = "empty response", result = new List<DevicesInfo>() };
         }
 
-        public async Task<PageResp<DeviceMoldRelationDto>?> PageDeviceMoldRelationsAsync(
+        public async Task<ApiResp<DeviceMoldInfoResultDto>?> GetDeviceMoldInfoAsync(
             string deviceCode,
-            int pageNo = 1,
-            int pageSize = 50,
-            bool? searchCount = null,
             CancellationToken ct = default)
         {
-            var p = new Dictionary<string, string>
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getDeviceMoldInfoEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
             {
-                ["pageNo"] = pageNo.ToString(),
-                ["pageSize"] = pageSize.ToString(),
-                ["deviceCode"] = deviceCode?.Trim() ?? string.Empty
-            };
+                ["deviceCode"] = deviceCode?.Trim()
+            });
 
-            if (searchCount.HasValue)
-                p["searchCount"] = searchCount.Value ? "true" : "false";
-
-            var url = _pageDeviceMoldRelationEndpoint + "?" + BuildQuery(p.ToDictionary(x => x.Key, x => (string?)x.Value));
-            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
-
-            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
             using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
 
             if (!res.IsSuccessStatusCode)
-                return new PageResp<DeviceMoldRelationDto> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+                return new ApiResp<DeviceMoldInfoResultDto> { success = false, message = $"HTTP {(int)res.StatusCode}" };
 
-            return JsonSerializer.Deserialize<PageResp<DeviceMoldRelationDto>>(json, _json)
-                ?? new PageResp<DeviceMoldRelationDto> { success = false, message = "empty response" };
+            return JsonSerializer.Deserialize<ApiResp<DeviceMoldInfoResultDto>>(json, _json)
+                ?? new ApiResp<DeviceMoldInfoResultDto> { success = false, message = "empty response" };
         }
 
-        public async Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationByMoldCodeAsync(
+        public async Task<ApiResp<DeviceMoldRelationDto>?> GetMoldByMoldCodeAsync(
             string moldCode,
             CancellationToken ct = default)
         {
-            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deviceMoldRelationByMoldCodeEndpoint);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getMoldByMoldCodeEndpoint);
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["moldCode"] = moldCode?.Trim()
