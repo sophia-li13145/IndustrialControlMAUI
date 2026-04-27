@@ -61,6 +61,25 @@ public partial class DeviceMoldRelationPage : ContentPage
 
     private async Task TryConfirmInstallAsync(DeviceMoldRelationViewModel vm, string? moldCode)
     {
+        var code = moldCode?.Trim();
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            var installed = vm.Records.FirstOrDefault(x =>
+                string.Equals(x.moldCode?.Trim(), code, StringComparison.OrdinalIgnoreCase));
+            if (installed is not null)
+            {
+                var unloadDetail = await vm.QueryRelationDetailByIdAsync(installed.id);
+                if (unloadDetail is null)
+                    return;
+
+                var unloadPopup = new MoldUnloadConfirmPopup(unloadDetail);
+                var unloadResult = await this.ShowPopupAsync(unloadPopup);
+                if (unloadResult is true)
+                    await vm.ConfirmUnloadAsync(unloadDetail.id);
+                return;
+            }
+        }
+
         DeviceMoldRelationDto? detail = await vm.QueryMoldDetailAsync(moldCode);
         if (detail is null)
             return;
