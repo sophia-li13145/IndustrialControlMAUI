@@ -6,10 +6,11 @@
     xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
     xmlns:behaviors="clr-namespace:IndustrialControlMAUI.Behaviors"
     x:Name="Page"
-    Title="灵活盘点">
+    Title="{Binding PageTitle}">
     <ContentPage.Resources>
         <ResourceDictionary>
             <conv:DecimalTrimConverter x:Key="TrimNumber" />
+            <conv:InverseBoolConverter x:Key="InverseBool" />
         </ResourceDictionary>
     </ContentPage.Resources>
     <Grid>
@@ -55,15 +56,26 @@
                                  BackgroundColor="Transparent"
                                  Aspect="AspectFit"
                                  Clicked="OnMaterialScanClicked" />
-                    <!-- 结存按钮：绑定到 SettleCommand，只有未完成时可点 -->
-                    <Button Text="结存"
-                Grid.Row="2" Grid.Column="3"
-BackgroundColor="#00C853"
-TextColor="White"
-CornerRadius="6"
-HeightRequest="40"
-Command="{Binding SettleCommand}"
-IsEnabled="{Binding CanEdit}" />
+                    <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                          ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0"
+                                Text="保存"
+                                BackgroundColor="#1976D2"
+                                TextColor="White"
+                                CornerRadius="6"
+                                HeightRequest="40"
+                                IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}"
+                                IsEnabled="{Binding CanEdit}"
+                                Command="{Binding SaveCommand}" />
+                        <Button Grid.Column="1"
+                                Text="结存"
+                                BackgroundColor="#00C853"
+                                TextColor="White"
+                                CornerRadius="6"
+                                HeightRequest="40"
+                                IsEnabled="{Binding CanEdit}"
+                                Command="{Binding SettleCommand}" />
+                    </Grid>
 
                 </Grid>
 
@@ -79,9 +91,11 @@ IsEnabled="{Binding CanEdit}" />
                       ColumnSpacing="4">
 
                         <Label Grid.Column="0"
-                           Text="盘点单号：" />
+                           Text="盘点单号："
+                           IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
                         <Label Grid.Column="1"
-                           Text="{Binding CheckNo}" />
+                           Text="{Binding CheckNo}"
+                           IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
 
                         <Label Grid.Column="2"
                            Text="仓库名称：" />
