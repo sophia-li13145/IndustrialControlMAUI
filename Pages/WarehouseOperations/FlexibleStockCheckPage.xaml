@@ -91,9 +91,11 @@
                       ColumnSpacing="4">
 
                         <Label Grid.Column="0"
-                           Text="盘点单号：" />
+                           Text="盘点单号："
+                           IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
                         <Label Grid.Column="1"
-                           Text="{Binding CheckNo}" />
+                           Text="{Binding CheckNo}"
+                           IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
 
                         <Label Grid.Column="2"
                            Text="仓库名称：" />

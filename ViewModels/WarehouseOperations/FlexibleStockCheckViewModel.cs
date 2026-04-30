@@ -558,7 +558,7 @@ namespace IndustrialControlMAUI.ViewModels
                 }
 
                 var records = resp.result.records ?? new List<StockCheckDetailItem>();
-                if (IsFlexibleMode && !string.IsNullOrWhiteSpace(location + materialBarcode) && string.IsNullOrWhiteSpace(WarehouseName) && records.Count > 0)
+                if (IsFlexibleMode && !string.IsNullOrWhiteSpace(location) && records.Count > 0)
                 {
                     WarehouseName = records[0].warehouseName;
                 }
