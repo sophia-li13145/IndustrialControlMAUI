@@ -448,11 +448,26 @@ namespace IndustrialControlMAUI.Services
             using var res = await _http.SendAsync(msg, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
 
-            if (!res.IsSuccessStatusCode)
-                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            var data = JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json);
 
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                ?? new ApiResp<bool> { success = false, message = "empty response" };
+            if (!res.IsSuccessStatusCode)
+            {
+                return new ApiResp<bool>
+                {
+                    success = false,
+                    code = data?.code ?? (int)res.StatusCode,
+                    message = data?.message ?? $"HTTP {(int)res.StatusCode}",
+                    result = data?.result ?? false
+                };
+            }
+
+            if (data is null)
+                return new ApiResp<bool> { success = false, message = "empty response" };
+
+            if (!data.success)
+                return new ApiResp<bool> { success = false, code = data.code, message = data.message, result = data.result ?? false };
+
+            return new ApiResp<bool> { success = data.success, code = data.code, message = data.message, result = data.result ?? false };
         }
 
         public async Task<ApiResp<DeviceMoldRelationDto>?> GetDeviceMoldRelationAsync(
