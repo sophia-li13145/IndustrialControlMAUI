@@ -97,10 +97,21 @@
                            Text="{Binding CheckNo}"
                            IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
 
+                        <!-- 普通盘点：仓库名称放在右侧（列2/3） -->
                         <Label Grid.Column="2"
-                           Text="仓库名称：" />
+                           Text="仓库名称："
+                           IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
                         <Label Grid.Column="3"
-                           Text="{Binding WarehouseName}" />
+                           Text="{Binding WarehouseName}"
+                           IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}" />
+
+                        <!-- 灵活盘点：仓库名称放在左侧第二列（列0/1） -->
+                        <Label Grid.Column="0"
+                           Text="仓库名称："
+                           IsVisible="{Binding IsFlexibleMode}" />
+                        <Label Grid.Column="1"
+                           Text="{Binding WarehouseName}"
+                           IsVisible="{Binding IsFlexibleMode}" />
                     </Grid>
                 </Frame>
 
