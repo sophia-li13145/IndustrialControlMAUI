@@ -70,6 +70,9 @@ public partial class DeviceMoldRelationViewModel : ObservableObject
 
         DeviceCode = val;
         await QueryAsync();
+
+        if (string.IsNullOrWhiteSpace(DeviceName))
+            await ShowTip("这个设备码不存在");
     }
 
     public async Task<DeviceMoldRelationDto?> QueryMoldDetailAsync(string? moldCode)
