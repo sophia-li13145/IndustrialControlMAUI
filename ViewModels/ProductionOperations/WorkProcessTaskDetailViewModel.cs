@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
+using IndustrialControlMAUI.Popups;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -205,6 +206,12 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
         try
         {
+            if (Detail?.preStartInspectionEnabled == true)
+            {
+                var passed = await RunPreStartInspectionAsync();
+                if (!passed) return;
+            }
+
             var resp = await _api.StartWorkAsync(Detail.processCode, Detail.workOrderNo, null);
             if (resp.success && resp.result)
             {
@@ -226,6 +233,15 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+
+
+    private async Task<bool> RunPreStartInspectionAsync()
+    {
+        if (Detail is null) return false;
+        var popup = new PreStartInspectionPopup(_api, Detail);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        return result is bool ok && ok;
+    }
 
     /// <summary>执行 PauseResumeAsync 逻辑。</summary>
     [RelayCommand(CanExecute = nameof(CanPauseResume))]

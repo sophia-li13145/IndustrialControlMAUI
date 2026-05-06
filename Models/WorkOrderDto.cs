@@ -314,6 +314,7 @@ public  class ProcessInfo
 {
     public string? processCode { get; set; }
     public string? processName { get; set; }
+    public bool? preStartInspectionEnabled { get; set; }
     public string? status { get; set; }
 }
 
@@ -336,6 +337,7 @@ public class WorkProcessTaskDetail
     public string? workOrderName { get; set; }
     public string? processCode { get; set; }
     public string? processName { get; set; }
+    public bool? preStartInspectionEnabled { get; set; }
     public decimal? scheQty { get; set; }
     public decimal? completedQty { get; set; }
     public string? auditStatus { get; set; }
@@ -512,6 +514,7 @@ public class AddWorkProcessTaskMaterialInputReq
     public string? platPlanNo { get; set; }
     public string? processCode { get; set; }
     public string? processName { get; set; }
+    public bool? preStartInspectionEnabled { get; set; }
     public double qty { get; set; }
     public string? rawMaterialProductionDate { get; set; } // "yyyy-MM-dd HH:mm:ss"
     public string? schemeNo { get; set; }
@@ -572,6 +575,7 @@ public class AddWorkProcessTaskProductOutputReq
     public string? platPlanNo { get; set; }
     public string? processCode { get; set; }
     public string? processName { get; set; }
+    public bool? preStartInspectionEnabled { get; set; }
     public double qty { get; set; }
     public string? rawMaterialProductionDate { get; set; } // "yyyy-MM-dd HH:mm:ss"
     public string? schemeNo { get; set; }
@@ -665,6 +669,7 @@ public class RouteDetail
     public string? id { get; set; }
     public string? processCode { get; set; }
     public string? processName { get; set; }
+    public bool? preStartInspectionEnabled { get; set; }
     public int? sortNumber { get; set; }
 }
 /// <summary>
