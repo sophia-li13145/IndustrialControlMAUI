@@ -3,7 +3,7 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                x:Class="IndustrialControlMAUI.Popups.PreStartInspectionPopup"
-               Size="380,620"
+               Size="380,680"
                CanBeDismissedByTappingOutsideOfPopup="False">
     <Border Padding="12" BackgroundColor="#F2F4F7" Stroke="#DDDDDD" StrokeShape="RoundRectangle 10">
         <VerticalStackLayout Spacing="8">

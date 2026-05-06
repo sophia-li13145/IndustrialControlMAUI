@@ -19,26 +19,7 @@ public partial class PreStartInspectionPopup : Popup
         _detail = detail;
         ToolList.ItemsSource = _toolRows;
         MaterialList.ItemsSource = _materialRows;
-        _ = LoadInitialAsync();
-    }
-
-    private async Task LoadInitialAsync()
-    {
-        var resourceResp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
-        {
-            factoryCode = _detail.factoryCode,
-            workOrderNo = _detail.workOrderNo,
-            processCode = _detail.processCode
-        });
-        if (resourceResp.success && resourceResp.result != null) _toolRows.Add(resourceResp.result);
-
-        var materialResp = await _api.QueryPreStartInspectionMaterialAsync(new PmsPreStartInspectionQueryMaterialParam
-        {
-            factoryCode = _detail.factoryCode,
-            workOrderNo = _detail.workOrderNo,
-            processCode = _detail.processCode
-        });
-        if (materialResp.success && materialResp.result != null) _materialRows.Add(materialResp.result);
+       
     }
 
     private async void OnToolScanClicked(object? sender, EventArgs e)
@@ -48,10 +29,8 @@ public partial class PreStartInspectionPopup : Popup
 
         var resp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
         {
-            factoryCode = _detail.factoryCode,
             workOrderNo = _detail.workOrderNo,
             processCode = _detail.processCode,
-            resourceType = GetScanResourceType(),
             resourceCode = code
         });
         if (!resp.success || resp.result == null)
@@ -71,7 +50,6 @@ public partial class PreStartInspectionPopup : Popup
 
         var resp = await _api.QueryPreStartInspectionMaterialAsync(new PmsPreStartInspectionQueryMaterialParam
         {
-            factoryCode = _detail.factoryCode,
             workOrderNo = _detail.workOrderNo,
             processCode = _detail.processCode,
             materialCode = code
