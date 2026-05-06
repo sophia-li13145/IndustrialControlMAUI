@@ -57,6 +57,9 @@ namespace IndustrialControlMAUI.Services
         private readonly string _addDeviceMoldRelationEndpoint;
         private readonly string _getDeviceMoldRelationEndpoint;
         private readonly string _confirmUnloadMoldEndpoint;
+        private readonly string _preStartInspectionResourceEndpoint;
+        private readonly string _preStartInspectionMaterialEndpoint;
+        private readonly string _preStartInspectionConfirmScansEndpoint;
 
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
@@ -174,6 +177,15 @@ namespace IndustrialControlMAUI.Services
     servicePath);
             _confirmUnloadMoldEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("workOrder.confirmUnloadMold", "/pda/dev/pdaDeviceMoldRelation/confirmUnloadMold"),
+    servicePath);
+            _preStartInspectionResourceEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.preStartInspectionResource", "/pda/pmsPreStartInspection/queryScanResource"),
+    servicePath);
+            _preStartInspectionMaterialEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.preStartInspectionMaterial", "/pda/pmsPreStartInspection/queryScanMaterial"),
+    servicePath);
+            _preStartInspectionConfirmScansEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("workOrder.preStartInspectionConfirmScans", "/pda/pmsPreStartInspection/confirmScans"),
     servicePath);
 
 
@@ -540,6 +552,33 @@ namespace IndustrialControlMAUI.Services
             return UpdateWorkProcessTaskAsync(payload, ct);
         }
 
+
+        public async Task<ApiResp<PreStartInspectionScanResourceDto>> QueryPreStartInspectionResourceAsync(PmsPreStartInspectionQueryResourceParam req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _preStartInspectionResourceEndpoint);
+            using var res = await _http.PostAsJsonAsync(full, req, cancellationToken: ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            return JsonSerializer.Deserialize<ApiResp<PreStartInspectionScanResourceDto>>(json, _json)
+                ?? new ApiResp<PreStartInspectionScanResourceDto> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<PreStartInspectionScanMaterialDto>> QueryPreStartInspectionMaterialAsync(PmsPreStartInspectionQueryMaterialParam req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _preStartInspectionMaterialEndpoint);
+            using var res = await _http.PostAsJsonAsync(full, req, cancellationToken: ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            return JsonSerializer.Deserialize<ApiResp<PreStartInspectionScanMaterialDto>>(json, _json)
+                ?? new ApiResp<PreStartInspectionScanMaterialDto> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<bool>> ConfirmPreStartInspectionScansAsync(PmsPreStartInspectionConfirmScansParam req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _preStartInspectionConfirmScansEndpoint);
+            using var res = await _http.PostAsJsonAsync(full, req, cancellationToken: ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                ?? new ApiResp<bool> { success = false, message = "empty response" };
+        }
         public async Task<ApiResp<bool>> StartWorkAsync(string processCode, string workOrderNo, string? memo = null)
         {
             var body = new
