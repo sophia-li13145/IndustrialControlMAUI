@@ -64,16 +64,17 @@
                                 TextColor="White"
                                 CornerRadius="6"
                                 HeightRequest="40"
-                                IsVisible="{Binding IsFlexibleMode, Converter={StaticResource InverseBool}}"
+                                IsVisible="{Binding IsSaveButtonVisible}"
                                 IsEnabled="{Binding CanEdit}"
                                 Command="{Binding SaveCommand}" />
                         <Button Grid.Column="1"
                                 Text="结存"
-                                BackgroundColor="#00C853"
+                                BackgroundColor="{Binding SettleButtonBackgroundColor}"
                                 TextColor="White"
                                 CornerRadius="6"
                                 HeightRequest="40"
-                                IsEnabled="{Binding CanEdit}"
+                                IsVisible="{Binding IsSettleButtonVisible}"
+                                IsEnabled="{Binding IsSettleButtonEnabled}"
                                 Command="{Binding SettleCommand}" />
                     </Grid>
 
@@ -255,8 +256,10 @@
                     <Label Grid.Row="3" Grid.Column="1" Text="{Binding EditingItem.stockBatch}" />
 
                     <Label Grid.Row="4" Grid.Column="0" Text="账存数量：" />
-                    <Label Grid.Row="4" Grid.Column="1"
-                           Text="{Binding EditingItem.InstockQtyDisplay, StringFormat='{0}  kg'}" />
+                    <HorizontalStackLayout Grid.Row="4" Grid.Column="1" Spacing="4">
+                        <Label Text="{Binding EditingItem.instockQty, Converter={StaticResource TrimNumber}}" />
+                        <Label Text="{Binding EditingItem.unit}" />
+                    </HorizontalStackLayout>
 
                     <Label Grid.Row="5" Grid.Column="0" Text="盘点数量：" />
                     <Entry Grid.Row="5" Grid.Column="1"
