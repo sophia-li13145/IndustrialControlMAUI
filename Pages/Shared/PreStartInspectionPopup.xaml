@@ -5,47 +5,210 @@
                x:Class="IndustrialControlMAUI.Popups.PreStartInspectionPopup"
                Size="380,680"
                CanBeDismissedByTappingOutsideOfPopup="False">
-    <Border Padding="12" BackgroundColor="#F2F4F7" Stroke="#DDDDDD" StrokeShape="RoundRectangle 10">
-        <VerticalStackLayout Spacing="8">
-            <Label Text="开工前点检" FontSize="18" FontAttributes="Bold"/>
-            <Grid ColumnDefinitions="*,Auto">
-                <Entry x:Name="ToolScanEntry"
-       Placeholder="输入型号模拟扫描添加..."
-       ReturnType="Done"
-       Completed="OnToolScanClicked" />
-                <ImageButton Grid.Column="1" Source="scan_button.png" HeightRequest="36" WidthRequest="74" Clicked="OnToolScanClicked"/>
-            </Grid>
-            <Label Text="工具工装" FontAttributes="Bold"/>
-            <CollectionView x:Name="ToolList" HeightRequest="180">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="*,Auto" Padding="4">
-                            <Label Text="{Binding resourceName}"/>
-                            <Label Grid.Column="1" Text="{Binding maintenanceStatus}"/>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+    <toolkit:Popup.Resources>
+        <ResourceDictionary>
+            <Style x:Key="SectionCardStyle" TargetType="Border">
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="BackgroundColor" Value="White"/>
+                <Setter Property="Stroke" Value="#E5E7EB"/>
+                <Setter Property="StrokeShape" Value="RoundRectangle 6"/>
+            </Style>
+            <Style x:Key="SectionTitleStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="#374151"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+            <Style x:Key="HeaderTextStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="#4B5563"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+                <Setter Property="VerticalTextAlignment" Value="Center"/>
+            </Style>
+            <Style x:Key="CellTextStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="#111827"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+                <Setter Property="VerticalTextAlignment" Value="Center"/>
+                <Setter Property="LineBreakMode" Value="TailTruncation"/>
+            </Style>
+            <Style x:Key="UnavailableCellTextStyle" TargetType="Label" BasedOn="{StaticResource CellTextStyle}">
+                <Style.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding IsConfirmed}" Value="False">
+                        <Setter Property="TextColor" Value="#EF4444"/>
+                        <Setter Property="FontAttributes" Value="Bold"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="ScanEntryStyle" TargetType="Entry">
+                <Setter Property="HeightRequest" Value="36"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="BackgroundColor" Value="White"/>
+                <Setter Property="TextColor" Value="#111827"/>
+                <Setter Property="PlaceholderColor" Value="#9CA3AF"/>
+            </Style>
+            <Style x:Key="DeleteButtonStyle" TargetType="Button">
+                <Setter Property="Text" Value="删除"/>
+                <Setter Property="HeightRequest" Value="22"/>
+                <Setter Property="MinimumHeightRequest" Value="22"/>
+                <Setter Property="WidthRequest" Value="38"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Margin" Value="0,2,0,0"/>
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="BackgroundColor" Value="#EF4444"/>
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+            <Style x:Key="AvailableSwitchStyle" TargetType="Switch">
+                <Setter Property="IsToggled" Value="True"/>
+                <Setter Property="OnColor" Value="#22C55E"/>
+                <Setter Property="ThumbColor" Value="White"/>
+                <Setter Property="Scale" Value="0.65"/>
+                <Setter Property="HorizontalOptions" Value="Center"/>
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+        </ResourceDictionary>
+    </toolkit:Popup.Resources>
 
-            <Grid ColumnDefinitions="*,Auto">
-                <Entry x:Name="MaterialScanEntry"
-       Placeholder="输入物料码模拟扫描添加..."
-       ReturnType="Done"
-       Completed="OnMaterialScanClicked" />
-                <ImageButton Grid.Column="1" Source="scan_button.png" HeightRequest="36" WidthRequest="74" Clicked="OnMaterialScanClicked"/>
-            </Grid>
-            <Label Text="物料清单" FontAttributes="Bold"/>
-            <CollectionView x:Name="MaterialList" HeightRequest="180">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="*,Auto" Padding="4">
-                            <Label Text="{Binding materialName}"/>
-                            <Label Grid.Column="1" Text="{Binding demandQty}"/>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-            <Button x:Name="ConfirmButton" Text="确认" Clicked="OnConfirmClicked" BackgroundColor="#4B5563" TextColor="White"/>
+    <Border Padding="10" BackgroundColor="#F2F4F7" Stroke="#DDDDDD" StrokeShape="RoundRectangle 10">
+        <VerticalStackLayout Spacing="8">
+            <Label Text="开工前点检" FontSize="18" FontAttributes="Bold" TextColor="#111827"/>
+
+            <Border Style="{StaticResource SectionCardStyle}">
+                <Grid x:Name="ToolSectionGrid" RowDefinitions="38,1,42,36,*,28">
+                    <Grid Padding="8,0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="5">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnToggleToolSectionTapped"/>
+                        </Grid.GestureRecognizers>
+                        <Label Text="工具工装:" Style="{StaticResource SectionTitleStyle}"/>
+                        <Label Grid.Column="1" Text="◱" TextColor="#22C55E" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
+                        <Label x:Name="ToolHeaderToggleLabel" Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
+                    </Grid>
+                    <BoxView Grid.Row="1" HeightRequest="1" Color="#E5E7EB"/>
+                    <Grid x:Name="ToolScanRow" Grid.Row="2" Padding="8,5" ColumnDefinitions="*,74" ColumnSpacing="8">
+                        <Entry x:Name="ToolScanEntry"
+                               Style="{StaticResource ScanEntryStyle}"
+                               Placeholder="输入型号模拟扫描添加..."
+                               ReturnType="Done"
+                               Completed="OnToolScanClicked" />
+                        <ImageButton Grid.Column="1"
+                                     Source="scan_button.png"
+                                     HeightRequest="36"
+                                     WidthRequest="74"
+                                     BackgroundColor="Transparent"
+                                     Clicked="OnToolScanClicked"/>
+                    </Grid>
+                    <Grid x:Name="ToolTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="1.35*,1*,1*,54">
+                        <Label Text="工具名称" Style="{StaticResource HeaderTextStyle}"/>
+                        <Label Grid.Column="1" Text="型号" Style="{StaticResource HeaderTextStyle}"/>
+                        <Label Grid.Column="2" Text="工具状态" Style="{StaticResource HeaderTextStyle}"/>
+                        <Label Grid.Column="3" Text="操作" Style="{StaticResource HeaderTextStyle}"/>
+                    </Grid>
+                    <CollectionView x:Name="ToolList" Grid.Row="4" SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Label Text="暂无工具工装" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid RowDefinitions="1,66">
+                                    <BoxView HeightRequest="1" Color="#E5E7EB"/>
+                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="1.35*,1*,1*,54">
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding IsConfirmed}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="#FEF2F2"/>
+                                            </DataTrigger>
+                                        </Grid.Triggers>
+                                        <Label Text="{Binding resourceName}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <Label Grid.Column="1" Text="{Binding model}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <Label Grid.Column="2" Text="{Binding maintenanceStatus}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding IsConfirmed, Mode=TwoWay}"/>
+                                            <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteToolClicked"/>
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Grid x:Name="ToolFooterToggleRow" Grid.Row="5" Padding="0,0,8,0">
+                        <Label Text="收起 ^" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="End" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnToggleToolSectionTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource SectionCardStyle}">
+                <Grid x:Name="MaterialSectionGrid" RowDefinitions="38,1,42,36,*,28">
+                    <Grid Padding="8,0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="5">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnToggleMaterialSectionTapped"/>
+                        </Grid.GestureRecognizers>
+                        <Label Text="物料清单:" Style="{StaticResource SectionTitleStyle}"/>
+                        <Label Grid.Column="1" Text="◱" TextColor="#22C55E" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
+                        <Label x:Name="MaterialHeaderToggleLabel" Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
+                    </Grid>
+                    <BoxView Grid.Row="1" HeightRequest="1" Color="#E5E7EB"/>
+                    <Grid x:Name="MaterialScanRow" Grid.Row="2" Padding="8,5" ColumnDefinitions="*,74" ColumnSpacing="8">
+                        <Entry x:Name="MaterialScanEntry"
+                               Style="{StaticResource ScanEntryStyle}"
+                               Placeholder="输入物料码模拟扫描添加..."
+                               ReturnType="Done"
+                               Completed="OnMaterialScanClicked" />
+                        <ImageButton Grid.Column="1"
+                                     Source="scan_button.png"
+                                     HeightRequest="36"
+                                     WidthRequest="74"
+                                     BackgroundColor="Transparent"
+                                     Clicked="OnMaterialScanClicked"/>
+                    </Grid>
+                    <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="1.25*,1*,1*,54">
+                        <Label Text="物料名称" Style="{StaticResource HeaderTextStyle}"/>
+                        <Label Grid.Column="1" Text="物料编码" Style="{StaticResource HeaderTextStyle}"/>
+                        <Label Grid.Column="2" Text="领用数量" Style="{StaticResource HeaderTextStyle}"/>
+                        <Label Grid.Column="3" Text="操作" Style="{StaticResource HeaderTextStyle}"/>
+                    </Grid>
+                    <CollectionView x:Name="MaterialList" Grid.Row="4" SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Label Text="暂无物料" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid RowDefinitions="1,66">
+                                    <BoxView HeightRequest="1" Color="#E5E7EB"/>
+                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="1.25*,1*,1*,54">
+                                        <Grid.Triggers>
+                                            <DataTrigger TargetType="Grid" Binding="{Binding IsConfirmed}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="#FEF2F2"/>
+                                            </DataTrigger>
+                                        </Grid.Triggers>
+                                        <Label Text="{Binding materialName}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <Label Grid.Column="1" Text="{Binding materialCode}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <Label Grid.Column="2" Text="{Binding DemandQtyText}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding IsConfirmed, Mode=TwoWay}"/>
+                                            <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteMaterialClicked"/>
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Grid x:Name="MaterialFooterToggleRow" Grid.Row="5" Padding="0,0,8,0">
+                        <Label Text="收起 ^" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="End" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnToggleMaterialSectionTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Button x:Name="ConfirmButton" Text="确认" Clicked="OnConfirmClicked" BackgroundColor="#4B5563" TextColor="White" CornerRadius="6" HeightRequest="40"/>
         </VerticalStackLayout>
     </Border>
 </toolkit:Popup>
