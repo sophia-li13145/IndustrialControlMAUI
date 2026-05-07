@@ -1,3 +1,7 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
+
 namespace IndustrialControlMAUI.Models;
 
 public class PmsPreStartInspectionQueryResourceParam
@@ -17,8 +21,28 @@ public class PmsPreStartInspectionQueryMaterialParam
     public string? materialCode { get; set; }
 }
 
-public class PreStartInspectionScanResourceDto
+public class PreStartInspectionScanResourceDto : INotifyPropertyChanged
 {
+    private bool _isConfirmed = true;
+
+    public bool isConfirmed
+    {
+        get => _isConfirmed;
+        set
+        {
+            if (_isConfirmed == value) return;
+            _isConfirmed = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public decimal? demandQty { get; set; }
     public string? maintenanceStatus { get; set; }
     public string? model { get; set; }
@@ -30,8 +54,31 @@ public class PreStartInspectionScanResourceDto
     public string? resourceType { get; set; }
 }
 
-public class PreStartInspectionScanMaterialDto
+public class PreStartInspectionScanMaterialDto : INotifyPropertyChanged
 {
+    private bool _isConfirmed = true;
+
+    public bool isConfirmed
+    {
+        get => _isConfirmed;
+        set
+        {
+            if (_isConfirmed == value) return;
+            _isConfirmed = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    [JsonIgnore]
+    public string DemandQtyText => demandQty.HasValue ? $"{demandQty:g}{unit}" : string.Empty;
+
     public decimal? demandQty { get; set; }
     public string? matReqNo { get; set; }
     public string? materialClassName { get; set; }
