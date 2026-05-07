@@ -84,6 +84,22 @@ public partial class PreStartInspectionPopup : Popup
         }
     }
 
+    private void OnDeleteToolClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: PreStartInspectionScanResourceDto row })
+        {
+            _toolRows.Remove(row);
+        }
+    }
+
+    private void OnDeleteMaterialClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: PreStartInspectionScanMaterialDto row })
+        {
+            _materialRows.Remove(row);
+        }
+    }
+
     private PmsPreStartInspectionConfirmScansParam BuildConfirmRequest()
     {
         return new PmsPreStartInspectionConfirmScansParam
@@ -102,7 +118,7 @@ public partial class PreStartInspectionPopup : Popup
     {
         return new PreStartInspectionConfirmMaterialItem
         {
-            isConfirmed = true,
+            isConfirmed = row.IsConfirmed,
             matReqNo = row.matReqNo,
             materialCode = row.materialCode,
             materialName = row.materialName,
@@ -120,7 +136,7 @@ public partial class PreStartInspectionPopup : Popup
     {
         return new PreStartInspectionConfirmToolingItem
         {
-            isConfirmed = true,
+            isConfirmed = row.IsConfirmed,
             maintenanceStatus = row.maintenanceStatus,
             model = row.model,
             platPlanNo = _detail.platPlanNo,
