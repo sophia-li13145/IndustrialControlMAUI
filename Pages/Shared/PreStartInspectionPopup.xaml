@@ -77,14 +77,17 @@
             <Label Text="开工前点检" FontSize="18" FontAttributes="Bold" TextColor="#111827"/>
 
             <Border Style="{StaticResource SectionCardStyle}">
-                <Grid RowDefinitions="38,1,42,36,*,28">
+                <Grid x:Name="ToolSectionGrid" RowDefinitions="38,1,42,36,*,28">
                     <Grid Padding="8,0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="5">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnToggleToolSectionTapped"/>
+                        </Grid.GestureRecognizers>
                         <Label Text="工具工装:" Style="{StaticResource SectionTitleStyle}"/>
                         <Label Grid.Column="1" Text="◱" TextColor="#22C55E" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
-                        <Label Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
+                        <Label x:Name="ToolHeaderToggleLabel" Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
                     </Grid>
                     <BoxView Grid.Row="1" HeightRequest="1" Color="#E5E7EB"/>
-                    <Grid Grid.Row="2" Padding="8,5" ColumnDefinitions="*,74" ColumnSpacing="8">
+                    <Grid x:Name="ToolScanRow" Grid.Row="2" Padding="8,5" ColumnDefinitions="*,74" ColumnSpacing="8">
                         <Entry x:Name="ToolScanEntry"
                                Style="{StaticResource ScanEntryStyle}"
                                Placeholder="输入型号模拟扫描添加..."
@@ -97,7 +100,7 @@
                                      BackgroundColor="Transparent"
                                      Clicked="OnToolScanClicked"/>
                     </Grid>
-                    <Grid Grid.Row="3" Padding="6,0" ColumnDefinitions="1.35*,1*,1*,54">
+                    <Grid x:Name="ToolTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="1.35*,1*,1*,54">
                         <Label Text="工具名称" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="1" Text="型号" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="2" Text="工具状态" Style="{StaticResource HeaderTextStyle}"/>
@@ -129,21 +132,28 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                    <Grid Grid.Row="5" Padding="0,0,8,0">
-                        <Label Text="收起 ^" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="End" VerticalOptions="Center"/>
+                    <Grid x:Name="ToolFooterToggleRow" Grid.Row="5" Padding="0,0,8,0">
+                        <Label Text="收起 ^" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="End" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnToggleToolSectionTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
                     </Grid>
                 </Grid>
             </Border>
 
             <Border Style="{StaticResource SectionCardStyle}">
-                <Grid RowDefinitions="38,1,42,36,*,28">
+                <Grid x:Name="MaterialSectionGrid" RowDefinitions="38,1,42,36,*,28">
                     <Grid Padding="8,0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="5">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnToggleMaterialSectionTapped"/>
+                        </Grid.GestureRecognizers>
                         <Label Text="物料清单:" Style="{StaticResource SectionTitleStyle}"/>
                         <Label Grid.Column="1" Text="◱" TextColor="#22C55E" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
-                        <Label Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
+                        <Label x:Name="MaterialHeaderToggleLabel" Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
                     </Grid>
                     <BoxView Grid.Row="1" HeightRequest="1" Color="#E5E7EB"/>
-                    <Grid Grid.Row="2" Padding="8,5" ColumnDefinitions="*,74" ColumnSpacing="8">
+                    <Grid x:Name="MaterialScanRow" Grid.Row="2" Padding="8,5" ColumnDefinitions="*,74" ColumnSpacing="8">
                         <Entry x:Name="MaterialScanEntry"
                                Style="{StaticResource ScanEntryStyle}"
                                Placeholder="输入物料码模拟扫描添加..."
@@ -156,7 +166,7 @@
                                      BackgroundColor="Transparent"
                                      Clicked="OnMaterialScanClicked"/>
                     </Grid>
-                    <Grid Grid.Row="3" Padding="6,0" ColumnDefinitions="1.25*,1*,1*,54">
+                    <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="1.25*,1*,1*,54">
                         <Label Text="物料名称" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="1" Text="物料编码" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="2" Text="领用数量" Style="{StaticResource HeaderTextStyle}"/>
@@ -188,8 +198,12 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                    <Grid Grid.Row="5" Padding="0,0,8,0">
-                        <Label Text="收起 ^" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="End" VerticalOptions="Center"/>
+                    <Grid x:Name="MaterialFooterToggleRow" Grid.Row="5" Padding="0,0,8,0">
+                        <Label Text="收起 ^" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="End" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnToggleMaterialSectionTapped"/>
+                            </Label.GestureRecognizers>
+                        </Label>
                     </Grid>
                 </Grid>
             </Border>

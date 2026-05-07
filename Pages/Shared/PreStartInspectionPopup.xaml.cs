@@ -11,6 +11,8 @@ public partial class PreStartInspectionPopup : Popup
     private readonly WorkProcessTaskDetail _detail;
     private readonly ObservableCollection<PreStartInspectionScanResourceDto> _toolRows = new();
     private readonly ObservableCollection<PreStartInspectionScanMaterialDto> _materialRows = new();
+    private bool _isToolSectionExpanded = true;
+    private bool _isMaterialSectionExpanded = true;
 
     public PreStartInspectionPopup(IWorkOrderApi api, WorkProcessTaskDetail detail)
     {
@@ -62,6 +64,59 @@ public partial class PreStartInspectionPopup : Popup
 
         _materialRows.Add(resp.result);
         MaterialScanEntry.Text = string.Empty;
+    }
+
+    private void OnToggleToolSectionTapped(object? sender, TappedEventArgs e)
+    {
+        _isToolSectionExpanded = !_isToolSectionExpanded;
+        SetToolSectionExpanded(_isToolSectionExpanded);
+    }
+
+    private void OnToggleMaterialSectionTapped(object? sender, TappedEventArgs e)
+    {
+        _isMaterialSectionExpanded = !_isMaterialSectionExpanded;
+        SetMaterialSectionExpanded(_isMaterialSectionExpanded);
+    }
+
+    private void SetToolSectionExpanded(bool isExpanded)
+    {
+        SetSectionRows(ToolSectionGrid, isExpanded);
+        ToolScanRow.IsVisible = isExpanded;
+        ToolTableHeader.IsVisible = isExpanded;
+        ToolList.IsVisible = isExpanded;
+        ToolFooterToggleRow.IsVisible = isExpanded;
+        ToolHeaderToggleLabel.Text = isExpanded ? "收起 向上" : "展开 向下";
+    }
+
+    private void SetMaterialSectionExpanded(bool isExpanded)
+    {
+        SetSectionRows(MaterialSectionGrid, isExpanded);
+        MaterialScanRow.IsVisible = isExpanded;
+        MaterialTableHeader.IsVisible = isExpanded;
+        MaterialList.IsVisible = isExpanded;
+        MaterialFooterToggleRow.IsVisible = isExpanded;
+        MaterialHeaderToggleLabel.Text = isExpanded ? "收起 向上" : "展开 向下";
+    }
+
+    private static void SetSectionRows(Grid sectionGrid, bool isExpanded)
+    {
+        sectionGrid.RowDefinitions.Clear();
+        sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(38) });
+        sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1) });
+
+        if (isExpanded)
+        {
+            sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(42) });
+            sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(36) });
+            sectionGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+            sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(28) });
+            return;
+        }
+
+        sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0) });
+        sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0) });
+        sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0) });
+        sectionGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0) });
     }
 
     private async void OnConfirmClicked(object? sender, EventArgs e)
