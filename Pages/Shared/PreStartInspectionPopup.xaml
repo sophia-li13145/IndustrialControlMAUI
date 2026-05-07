@@ -9,7 +9,10 @@
         <VerticalStackLayout Spacing="8">
             <Label Text="开工前点检" FontSize="18" FontAttributes="Bold"/>
             <Grid ColumnDefinitions="*,Auto">
-                <Entry x:Name="ToolScanEntry" Placeholder="输入型号模拟扫描添加..."/>
+                <Entry x:Name="ToolScanEntry"
+       Placeholder="输入型号模拟扫描添加..."
+       ReturnType="Done"
+       Completed="OnToolScanClicked" />
                 <ImageButton Grid.Column="1" Source="scan_button.png" HeightRequest="36" WidthRequest="74" Clicked="OnToolScanClicked"/>
             </Grid>
             <Label Text="工具工装" FontAttributes="Bold"/>
@@ -25,7 +28,10 @@
             </CollectionView>
 
             <Grid ColumnDefinitions="*,Auto">
-                <Entry x:Name="MaterialScanEntry" Placeholder="输入物料码模拟扫描添加..."/>
+                <Entry x:Name="MaterialScanEntry"
+       Placeholder="输入物料码模拟扫描添加..."
+       ReturnType="Done"
+       Completed="OnMaterialScanClicked" />
                 <ImageButton Grid.Column="1" Source="scan_button.png" HeightRequest="36" WidthRequest="74" Clicked="OnMaterialScanClicked"/>
             </Grid>
             <Label Text="物料清单" FontAttributes="Bold"/>
