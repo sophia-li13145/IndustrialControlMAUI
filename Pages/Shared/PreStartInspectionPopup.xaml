@@ -100,7 +100,7 @@
                                      BackgroundColor="Transparent"
                                      Clicked="OnToolScanClicked"/>
                     </Grid>
-                    <Grid x:Name="ToolTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="1.35*,1*,1*,54">
+                    <Grid x:Name="ToolTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="80,80,60,80">
                         <Label Text="工具名称" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="1" Text="型号" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="2" Text="工具状态" Style="{StaticResource HeaderTextStyle}"/>
@@ -114,7 +114,7 @@
                             <DataTemplate>
                                 <Grid RowDefinitions="1,66">
                                     <BoxView HeightRequest="1" Color="#E5E7EB"/>
-                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="1.35*,1*,1*,54">
+                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="80,80,60,80">
                                         <Grid.Triggers>
                                             <DataTrigger TargetType="Grid" Binding="{Binding isConfirmed}" Value="False">
                                                 <Setter Property="BackgroundColor" Value="#FEF2F2"/>
@@ -166,7 +166,7 @@
                                      BackgroundColor="Transparent"
                                      Clicked="OnMaterialScanClicked"/>
                     </Grid>
-                    <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="1.25*,1*,1*,54">
+                    <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="80,80,60,80">
                         <Label Text="物料名称" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="1" Text="物料编码" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="2" Text="领用数量" Style="{StaticResource HeaderTextStyle}"/>
@@ -180,7 +180,7 @@
                             <DataTemplate>
                                 <Grid RowDefinitions="1,66">
                                     <BoxView HeightRequest="1" Color="#E5E7EB"/>
-                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="1.25*,1*,1*,54">
+                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="80,80,60,80">
                                         <Grid.Triggers>
                                             <DataTrigger TargetType="Grid" Binding="{Binding isConfirmed}" Value="False">
                                                 <Setter Property="BackgroundColor" Value="#FEF2F2"/>
