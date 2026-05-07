@@ -62,6 +62,8 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>盘点明细列表</summary>
         public ObservableCollection<StockCheckDetailItem> Details { get; } = new();
 
+        private readonly Dictionary<string, StockCheckDetailItem> _flexibleEditedItems = new();
+
         // ===== 弹窗相关属性 =====
 
         /// <summary>弹窗是否可见</summary>
@@ -85,6 +87,18 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty]
         private bool canEdit = true;      // 是否可以编辑/结存
 
+        /// <summary>保存按钮是否可见：普通盘点且未完成时显示。</summary>
+        public bool IsSaveButtonVisible => !IsFlexibleMode && CanEdit;
+
+        /// <summary>结存按钮是否可见：未完成时显示。</summary>
+        public bool IsSettleButtonVisible => CanEdit;
+
+        /// <summary>结存按钮是否可用：灵活盘点需要先录入盘点数量。</summary>
+        public bool IsSettleButtonEnabled => CanEdit && (!IsFlexibleMode || _flexibleEditedItems.Count > 0);
+
+        /// <summary>结存按钮背景色：不可结存时置灰，可结存时置绿。</summary>
+        public string SettleButtonBackgroundColor => IsSettleButtonEnabled ? "#00C853" : "#BDBDBD";
+
         private StockCheckDetailItem? _lastSelectedItem;
 
         /// <summary>执行 OnAuditStatusChanged 逻辑。</summary>
@@ -96,6 +110,23 @@ namespace IndustrialControlMAUI.ViewModels
         partial void OnIsFlexibleModeChanged(bool value)
         {
             PageTitle = value ? "灵活盘点" : "普通盘点";
+            OnPropertyChanged(nameof(IsSaveButtonVisible));
+            OnPropertyChanged(nameof(IsSettleButtonEnabled));
+            OnPropertyChanged(nameof(SettleButtonBackgroundColor));
+        }
+
+        partial void OnCanEditChanged(bool value)
+        {
+            OnPropertyChanged(nameof(IsSaveButtonVisible));
+            OnPropertyChanged(nameof(IsSettleButtonVisible));
+            OnPropertyChanged(nameof(IsSettleButtonEnabled));
+            OnPropertyChanged(nameof(SettleButtonBackgroundColor));
+        }
+
+        private void RefreshSettleButtonState()
+        {
+            OnPropertyChanged(nameof(IsSettleButtonEnabled));
+            OnPropertyChanged(nameof(SettleButtonBackgroundColor));
         }
 
 
@@ -268,6 +299,9 @@ namespace IndustrialControlMAUI.ViewModels
                 item.profitLossQty = profitLoss;
                 item.memo = EditMemo;
 
+                _flexibleEditedItems[BuildFlexibleItemKey(item)] = item;
+                RefreshSettleButtonState();
+
                 // 如果行模型没有属性通知，这里仍然用 Remove/Insert 触发 UI 刷新
                 var idx = Details.IndexOf(item);
                 if (idx >= 0)
@@ -360,8 +394,8 @@ namespace IndustrialControlMAUI.ViewModels
                 // ==========【模式 1：灵活盘点】==========
                 if (IsFlexibleMode)
                 {
-                    // 灵活盘点：只取盘点数量不为 0 的
-                    var all = Details.Where(d => d.checkQty != 0).ToList();
+                    // 灵活盘点：只取已确认录入并临时保存的明细
+                    var all = _flexibleEditedItems.Values.ToList();
 
                     if (all.Count == 0)
                     {
@@ -412,6 +446,8 @@ namespace IndustrialControlMAUI.ViewModels
                     }
 
                     await ShowTip("灵活盘点结存成功");
+                    _flexibleEditedItems.Clear();
+                    RefreshSettleButtonState();
                     AuditStatus = "2";    // 已完成
                     await Shell.Current.GoToAsync("..");
                     return;
@@ -547,6 +583,7 @@ namespace IndustrialControlMAUI.ViewModels
                     ct: _cts.Token);
 
                 Details.Clear();
+                RefreshSettleButtonState();
 
                 if (resp == null || resp.success != true || resp.result == null)
                 {
@@ -565,9 +602,16 @@ namespace IndustrialControlMAUI.ViewModels
                 var i = 1;
                 foreach (var r in records)
                 {
+                    if (IsFlexibleMode)
+                    {
+                        ResetFlexibleCheckQty(r);
+                        ApplyFlexibleEditedItem(r);
+                    }
+
                     r.index = i++;
                     Details.Add(r);
                 }
+                RefreshSettleButtonState();
             }
             catch (OperationCanceledException)
             {
@@ -585,6 +629,33 @@ namespace IndustrialControlMAUI.ViewModels
             }
         }
 
+
+        private static string BuildFlexibleItemKey(StockCheckDetailItem item) =>
+            string.Join("|",
+                item.warehouseCode ?? string.Empty,
+                item.location ?? string.Empty,
+                item.materialCode ?? string.Empty,
+                item.stockBatch ?? string.Empty,
+                item.productionBatch ?? string.Empty);
+
+        private static void ResetFlexibleCheckQty(StockCheckDetailItem item)
+        {
+            item.checkQty = 0;
+            item.profitLossQty = 0;
+        }
+
+        private void ApplyFlexibleEditedItem(StockCheckDetailItem item)
+        {
+            if (!_flexibleEditedItems.TryGetValue(BuildFlexibleItemKey(item), out var edited))
+            {
+                return;
+            }
+
+            item.checkQty = edited.checkQty;
+            item.profitLossQty = edited.profitLossQty;
+            item.memo = edited.memo;
+            _flexibleEditedItems[BuildFlexibleItemKey(item)] = item;
+        }
 
         /// <summary>执行 ShowTip 逻辑。</summary>
         private Task ShowTip(string msg) =>
