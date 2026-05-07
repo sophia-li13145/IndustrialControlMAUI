@@ -173,7 +173,7 @@ public partial class PreStartInspectionPopup : Popup
     {
         return new PreStartInspectionConfirmMaterialItem
         {
-            isConfirmed = row.IsConfirmed,
+            isConfirmed = row.isConfirmed,
             matReqNo = row.matReqNo,
             materialCode = row.materialCode,
             materialName = row.materialName,
@@ -191,7 +191,7 @@ public partial class PreStartInspectionPopup : Popup
     {
         return new PreStartInspectionConfirmToolingItem
         {
-            isConfirmed = row.IsConfirmed,
+            isConfirmed = row.isConfirmed,
             maintenanceStatus = row.maintenanceStatus,
             model = row.model,
             platPlanNo = _detail.platPlanNo,

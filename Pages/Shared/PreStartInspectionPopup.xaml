@@ -35,7 +35,7 @@
             </Style>
             <Style x:Key="UnavailableCellTextStyle" TargetType="Label" BasedOn="{StaticResource CellTextStyle}">
                 <Style.Triggers>
-                    <DataTrigger TargetType="Label" Binding="{Binding IsConfirmed}" Value="False">
+                    <DataTrigger TargetType="Label" Binding="{Binding isConfirmed}" Value="False">
                         <Setter Property="TextColor" Value="#EF4444"/>
                         <Setter Property="FontAttributes" Value="Bold"/>
                     </DataTrigger>
@@ -116,7 +116,7 @@
                                     <BoxView HeightRequest="1" Color="#E5E7EB"/>
                                     <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="1.35*,1*,1*,54">
                                         <Grid.Triggers>
-                                            <DataTrigger TargetType="Grid" Binding="{Binding IsConfirmed}" Value="False">
+                                            <DataTrigger TargetType="Grid" Binding="{Binding isConfirmed}" Value="False">
                                                 <Setter Property="BackgroundColor" Value="#FEF2F2"/>
                                             </DataTrigger>
                                         </Grid.Triggers>
@@ -124,7 +124,7 @@
                                         <Label Grid.Column="1" Text="{Binding model}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <Label Grid.Column="2" Text="{Binding maintenanceStatus}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding IsConfirmed, Mode=TwoWay}"/>
+                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
                                             <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteToolClicked"/>
                                         </VerticalStackLayout>
                                     </Grid>
@@ -182,7 +182,7 @@
                                     <BoxView HeightRequest="1" Color="#E5E7EB"/>
                                     <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="1.25*,1*,1*,54">
                                         <Grid.Triggers>
-                                            <DataTrigger TargetType="Grid" Binding="{Binding IsConfirmed}" Value="False">
+                                            <DataTrigger TargetType="Grid" Binding="{Binding isConfirmed}" Value="False">
                                                 <Setter Property="BackgroundColor" Value="#FEF2F2"/>
                                             </DataTrigger>
                                         </Grid.Triggers>
@@ -190,7 +190,7 @@
                                         <Label Grid.Column="1" Text="{Binding materialCode}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <Label Grid.Column="2" Text="{Binding DemandQtyText}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding IsConfirmed, Mode=TwoWay}"/>
+                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
                                             <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteMaterialClicked"/>
                                         </VerticalStackLayout>
                                     </Grid>

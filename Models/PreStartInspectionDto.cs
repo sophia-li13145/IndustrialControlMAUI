@@ -25,8 +25,7 @@ public class PreStartInspectionScanResourceDto : INotifyPropertyChanged
 {
     private bool _isConfirmed = true;
 
-    [JsonIgnore]
-    public bool IsConfirmed
+    public bool isConfirmed
     {
         get => _isConfirmed;
         set
@@ -59,8 +58,7 @@ public class PreStartInspectionScanMaterialDto : INotifyPropertyChanged
 {
     private bool _isConfirmed = true;
 
-    [JsonIgnore]
-    public bool IsConfirmed
+    public bool isConfirmed
     {
         get => _isConfirmed;
         set
