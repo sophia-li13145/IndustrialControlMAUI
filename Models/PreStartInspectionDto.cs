@@ -24,6 +24,8 @@ public class PmsPreStartInspectionQueryMaterialParam
 public class PreStartInspectionScanResourceDto : INotifyPropertyChanged
 {
     private bool _isConfirmed = true;
+    private string? _maintenanceStatus;
+    private string _maintenanceStatusText = "未保养";
 
     public bool isConfirmed
     {
@@ -44,7 +46,30 @@ public class PreStartInspectionScanResourceDto : INotifyPropertyChanged
     }
 
     public decimal? demandQty { get; set; }
-    public string? maintenanceStatus { get; set; }
+
+    public string? maintenanceStatus
+    {
+        get => _maintenanceStatus;
+        set
+        {
+            if (_maintenanceStatus == value) return;
+            _maintenanceStatus = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [JsonIgnore]
+    public string MaintenanceStatusText
+    {
+        get => _maintenanceStatusText;
+        set
+        {
+            if (_maintenanceStatusText == value) return;
+            _maintenanceStatusText = value;
+            OnPropertyChanged();
+        }
+    }
+
     public string? model { get; set; }
     public string? processCode { get; set; }
     public string? processName { get; set; }

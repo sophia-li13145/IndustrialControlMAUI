@@ -122,7 +122,7 @@
                                         </Grid.Triggers>
                                         <Label Text="{Binding resourceName}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <Label Grid.Column="1" Text="{Binding model}" Style="{StaticResource UnavailableCellTextStyle}"/>
-                                        <Label Grid.Column="2" Text="{Binding maintenanceStatus}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                        <Label Grid.Column="2" Text="{Binding MaintenanceStatusText}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
                                             <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
                                             <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteToolClicked"/>
