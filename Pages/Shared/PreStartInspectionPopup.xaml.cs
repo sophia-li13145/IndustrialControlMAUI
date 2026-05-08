@@ -11,6 +11,8 @@ public partial class PreStartInspectionPopup : Popup
     private readonly WorkProcessTaskDetail _detail;
     private readonly ObservableCollection<PreStartInspectionScanResourceDto> _toolRows = new();
     private readonly ObservableCollection<PreStartInspectionScanMaterialDto> _materialRows = new();
+    private readonly Dictionary<string, string> _maintenanceStatusMap = new(StringComparer.OrdinalIgnoreCase);
+    private Task? _maintenanceStatusLoadTask;
     private bool _isToolSectionExpanded = true;
     private bool _isMaterialSectionExpanded = true;
 
@@ -21,7 +23,68 @@ public partial class PreStartInspectionPopup : Popup
         _detail = detail;
         ToolList.ItemsSource = _toolRows;
         MaterialList.ItemsSource = _materialRows;
-       
+        _maintenanceStatusLoadTask = LoadMaintenanceStatusDictAsync();
+    }
+
+    private async Task LoadMaintenanceStatusDictAsync()
+    {
+        try
+        {
+            var resp = await _api.GetWorkProcessTaskDictListAsync();
+            if (!resp.success)
+            {
+                await Shell.Current.DisplayAlert("提示", resp.message ?? "工具状态字典获取失败", "确定");
+                return;
+            }
+
+            var upkeepStatus = resp.result?.FirstOrDefault(field =>
+                string.Equals(field.field, "upkeepStatus", StringComparison.OrdinalIgnoreCase));
+
+            _maintenanceStatusMap.Clear();
+            if (upkeepStatus?.dictItems != null)
+            {
+                foreach (var item in upkeepStatus.dictItems)
+                {
+                    var value = item.dictItemValue?.Trim();
+                    if (string.IsNullOrWhiteSpace(value)) continue;
+
+                    _maintenanceStatusMap[value] = item.dictItemName ?? value;
+                }
+            }
+
+            foreach (var row in _toolRows)
+            {
+                ApplyMaintenanceStatusText(row);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("提示", $"工具状态字典获取失败：{ex.Message}", "确定");
+        }
+    }
+
+    private async Task EnsureMaintenanceStatusDictLoadedAsync()
+    {
+        if (_maintenanceStatusLoadTask == null)
+        {
+            _maintenanceStatusLoadTask = LoadMaintenanceStatusDictAsync();
+        }
+
+        await _maintenanceStatusLoadTask;
+    }
+
+    private void ApplyMaintenanceStatusText(PreStartInspectionScanResourceDto row)
+    {
+        var value = row.maintenanceStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            row.MaintenanceStatusText = "未保养";
+            return;
+        }
+
+        row.MaintenanceStatusText = _maintenanceStatusMap.TryGetValue(value, out var name)
+            ? name
+            : value;
     }
 
     private async void OnToolScanClicked(object? sender, EventArgs e)
@@ -41,6 +104,8 @@ public partial class PreStartInspectionPopup : Popup
             return;
         }
 
+        await EnsureMaintenanceStatusDictLoadedAsync();
+        ApplyMaintenanceStatusText(resp.result);
         _toolRows.Add(resp.result);
         ToolScanEntry.Text = string.Empty;
     }
