@@ -37,7 +37,7 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<WorkProcessTaskDetail>> GetWorkProcessTaskDetailAsync(string id, CancellationToken ct = default);
         Task<ApiResp<PreStartInspectionScanResourceDto>> QueryPreStartInspectionResourceAsync(PmsPreStartInspectionQueryResourceParam req, CancellationToken ct = default);
         Task<ApiResp<PreStartInspectionScanMaterialDto>> QueryPreStartInspectionMaterialAsync(PmsPreStartInspectionQueryMaterialParam req, CancellationToken ct = default);
-        Task<ApiResp<bool>> ConfirmPreStartInspectionScansAsync(PmsPreStartInspectionConfirmScansParam req, CancellationToken ct = default);
+        Task<ApiResp<bool?>> ConfirmPreStartInspectionScansAsync(PmsPreStartInspectionConfirmScansParam req, CancellationToken ct = default);
         Task<ApiResp<List<ShiftInfo>>> GetShiftOptionsAsync(
         string factoryCode,
         string workshopsCode,
@@ -49,7 +49,7 @@ namespace IndustrialControlMAUI.Services
         CancellationToken ct = default);
         Task<SimpleOk> UpdateWorkProcessTaskAsync(
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default);
-        Task<ApiResp<bool>> StartWorkAsync(string processCode, string workOrderNo, string? memo = null);
+        Task<ApiResp<bool?>> StartWorkAsync(string processCode, string workOrderNo, string? memo = null);
 
         Task<ApiResp<bool>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null);
 

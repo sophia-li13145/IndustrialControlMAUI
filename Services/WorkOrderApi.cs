@@ -586,15 +586,15 @@ namespace IndustrialControlMAUI.Services
                 ?? new ApiResp<PreStartInspectionScanMaterialDto> { success = false, message = "empty response" };
         }
 
-        public async Task<ApiResp<bool>> ConfirmPreStartInspectionScansAsync(PmsPreStartInspectionConfirmScansParam req, CancellationToken ct = default)
+        public async Task<ApiResp<bool?>> ConfirmPreStartInspectionScansAsync(PmsPreStartInspectionConfirmScansParam req, CancellationToken ct = default)
         {
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _preStartInspectionConfirmScansEndpoint);
             using var res = await _http.PostAsJsonAsync(full, req, cancellationToken: ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                ?? new ApiResp<bool> { success = false, message = "empty response" };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                ?? new ApiResp<bool?> { success = false, message = "empty response" };
         }
-        public async Task<ApiResp<bool>> StartWorkAsync(string processCode, string workOrderNo, string? memo = null)
+        public async Task<ApiResp<bool?>> StartWorkAsync(string processCode, string workOrderNo, string? memo = null)
         {
             var body = new
             {
@@ -605,10 +605,10 @@ namespace IndustrialControlMAUI.Services
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _startworkEndpoint);
             var resp = await _http.PostAsJsonAsync(full, body);
             var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, new JsonSerializerOptions
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }) ?? new ApiResp<bool> { success = false, message = "反序列化失败" };
+            }) ?? new ApiResp<bool?> { success = false, message = "反序列化失败" };
         }
 
         public async Task<ApiResp<bool>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null)

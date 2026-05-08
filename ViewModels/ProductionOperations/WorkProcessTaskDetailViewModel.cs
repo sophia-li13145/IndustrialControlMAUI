@@ -214,7 +214,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             }
 
             var resp = await _api.StartWorkAsync(Detail.processCode, Detail.workOrderNo, null);
-            if (resp.success && resp.result)
+            if (resp.success)
             {
                 State = TaskRunState.Running;
                 await Shell.Current.DisplayAlert("提示", "开工成功！", "确定");

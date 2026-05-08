@@ -190,7 +190,7 @@ public partial class PreStartInspectionPopup : Popup
         try
         {
             var resp = await _api.ConfirmPreStartInspectionScansAsync(BuildConfirmRequest());
-            if (resp.success && resp.result)
+            if (resp.success)
             {
                 Close(true);
                 return;

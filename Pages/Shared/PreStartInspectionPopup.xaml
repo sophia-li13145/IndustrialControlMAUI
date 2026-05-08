@@ -114,19 +114,50 @@
                             <DataTemplate>
                                 <Grid RowDefinitions="1,66">
                                     <BoxView HeightRequest="1" Color="#E5E7EB"/>
-                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="80,80,60,80">
+                                    <Grid Grid.Row="1"
+      Padding="6,6"
+      ColumnDefinitions="80,80,60,110">
+
                                         <Grid.Triggers>
-                                            <DataTrigger TargetType="Grid" Binding="{Binding isConfirmed}" Value="False">
-                                                <Setter Property="BackgroundColor" Value="#FEF2F2"/>
+                                            <DataTrigger TargetType="Grid"
+                     Binding="{Binding isConfirmed}"
+                     Value="False">
+                                                <Setter Property="BackgroundColor"
+                    Value="#FEF2F2"/>
                                             </DataTrigger>
                                         </Grid.Triggers>
-                                        <Label Text="{Binding resourceName}" Style="{StaticResource UnavailableCellTextStyle}"/>
-                                        <Label Grid.Column="1" Text="{Binding model}" Style="{StaticResource UnavailableCellTextStyle}"/>
-                                        <Label Grid.Column="2" Text="{Binding MaintenanceStatusText}" Style="{StaticResource UnavailableCellTextStyle}"/>
-                                        <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
-                                            <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteToolClicked"/>
-                                        </VerticalStackLayout>
+
+                                        <!-- 工具名称 -->
+                                        <Label Text="{Binding resourceName}"
+           Style="{StaticResource UnavailableCellTextStyle}"/>
+
+                                        <!-- 型号 -->
+                                        <Label Grid.Column="1"
+           Text="{Binding model}"
+           Style="{StaticResource UnavailableCellTextStyle}"/>
+
+                                        <!-- 状态 -->
+                                        <Label Grid.Column="2"
+           Text="{Binding MaintenanceStatusText}"
+           Style="{StaticResource UnavailableCellTextStyle}"/>
+
+                                        <!-- 操作 -->
+                                        <HorizontalStackLayout Grid.Column="3"
+                           Spacing="2"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center">
+
+                                            <Switch Style="{StaticResource AvailableSwitchStyle}"
+                Scale="1"
+                IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
+
+                                            <Button Style="{StaticResource DeleteButtonStyle}"
+                Padding="4,0"
+                HeightRequest="28"
+                WidthRequest="50"
+                Clicked="OnDeleteToolClicked"/>
+                                        </HorizontalStackLayout>
+
                                     </Grid>
                                 </Grid>
                             </DataTemplate>
