@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
@@ -89,7 +90,21 @@ public partial class PreStartInspectionPopup : Popup
 
     private async void OnToolScanClicked(object? sender, EventArgs e)
     {
-        var code = ToolScanEntry.Text?.Trim();
+        await SubmitToolScanAsync(ToolScanEntry.Text);
+    }
+
+    private async void OnToolScanButtonClicked(object? sender, EventArgs e)
+    {
+        var code = await ScanCodeAsync();
+        if (string.IsNullOrWhiteSpace(code)) return;
+
+        ToolScanEntry.Text = code;
+        await SubmitToolScanAsync(code);
+    }
+
+    private async Task SubmitToolScanAsync(string? scanText)
+    {
+        var code = scanText?.Trim();
         if (string.IsNullOrWhiteSpace(code)) return;
 
         var resp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
@@ -112,7 +127,21 @@ public partial class PreStartInspectionPopup : Popup
 
     private async void OnMaterialScanClicked(object? sender, EventArgs e)
     {
-        var code = MaterialScanEntry.Text?.Trim();
+        await SubmitMaterialScanAsync(MaterialScanEntry.Text);
+    }
+
+    private async void OnMaterialScanButtonClicked(object? sender, EventArgs e)
+    {
+        var code = await ScanCodeAsync();
+        if (string.IsNullOrWhiteSpace(code)) return;
+
+        MaterialScanEntry.Text = code;
+        await SubmitMaterialScanAsync(code);
+    }
+
+    private async Task SubmitMaterialScanAsync(string? scanText)
+    {
+        var code = scanText?.Trim();
         if (string.IsNullOrWhiteSpace(code)) return;
 
         var resp = await _api.QueryPreStartInspectionMaterialAsync(new PmsPreStartInspectionQueryMaterialParam
@@ -129,6 +158,25 @@ public partial class PreStartInspectionPopup : Popup
 
         _materialRows.Add(resp.result);
         MaterialScanEntry.Text = string.Empty;
+    }
+
+    private static async Task<string?> ScanCodeAsync()
+    {
+        var navigation = Shell.Current?.Navigation ?? Application.Current?.MainPage?.Navigation;
+        if (navigation == null)
+        {
+            var page = Shell.Current?.CurrentPage ?? Application.Current?.MainPage;
+            if (page != null)
+            {
+                await page.DisplayAlert("提示", "无法打开扫码页面", "确定");
+            }
+
+            return null;
+        }
+
+        var tcs = new TaskCompletionSource<string>();
+        await navigation.PushAsync(new QrScanPage(tcs));
+        return await tcs.Task;
     }
 
     private void OnToggleToolSectionTapped(object? sender, TappedEventArgs e)

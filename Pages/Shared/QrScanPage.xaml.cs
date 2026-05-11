@@ -187,6 +187,8 @@ public partial class QrScanPage : ContentPage
         var status = await Permissions.RequestAsync<Permissions.Camera>();
         if (status != PermissionStatus.Granted)
         {
+            _returned = true;
+            _tcs.TrySetResult(string.Empty);
             await DisplayAlert("提示", "未授予相机权限，无法使用扫码功能。", "确定");
             await Navigation.PopAsync();
             return;
@@ -203,6 +205,12 @@ public partial class QrScanPage : ContentPage
         if (barcodeView != null)
         {
             barcodeView.IsDetecting = false;
+        }
+
+        if (!_returned)
+        {
+            _returned = true;
+            _tcs.TrySetResult(string.Empty);
         }
     }
 
