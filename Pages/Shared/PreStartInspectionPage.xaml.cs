@@ -1,12 +1,10 @@
-using CommunityToolkit.Maui.Views;
-using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
-namespace IndustrialControlMAUI.Popups;
+namespace IndustrialControlMAUI.Pages;
 
-public partial class PreStartInspectionPopup : Popup
+public partial class PreStartInspectionPage : ContentPage
 {
     private readonly IWorkOrderApi _api;
     private readonly WorkProcessTaskDetail _detail;
@@ -17,14 +15,36 @@ public partial class PreStartInspectionPopup : Popup
     private bool _isToolSectionExpanded = true;
     private bool _isMaterialSectionExpanded = true;
 
-    public PreStartInspectionPopup(IWorkOrderApi api, WorkProcessTaskDetail detail)
+    private readonly TaskCompletionSource<bool> _completionSource;
+
+    public PreStartInspectionPage(IWorkOrderApi api, WorkProcessTaskDetail detail, TaskCompletionSource<bool> completionSource)
     {
         InitializeComponent();
         _api = api;
         _detail = detail;
+        _completionSource = completionSource;
         ToolList.ItemsSource = _toolRows;
         MaterialList.ItemsSource = _materialRows;
         _maintenanceStatusLoadTask = LoadMaintenanceStatusDictAsync();
+    }
+
+    public static async Task<bool> ShowAsync(IWorkOrderApi api, WorkProcessTaskDetail detail)
+    {
+        var navigation = Shell.Current?.Navigation ?? Application.Current?.MainPage?.Navigation;
+        if (navigation == null)
+        {
+            var page = Shell.Current?.CurrentPage ?? Application.Current?.MainPage;
+            if (page != null)
+            {
+                await page.DisplayAlert("提示", "无法打开开工前点检页面", "确定");
+            }
+
+            return false;
+        }
+
+        var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await navigation.PushAsync(new PreStartInspectionPage(api, detail, completionSource));
+        return await completionSource.Task;
     }
 
     private async Task LoadMaintenanceStatusDictAsync()
@@ -240,7 +260,7 @@ public partial class PreStartInspectionPopup : Popup
             var resp = await _api.ConfirmPreStartInspectionScansAsync(BuildConfirmRequest());
             if (resp.success)
             {
-                Close(true);
+                await CompleteAsync(true);
                 return;
             }
 
@@ -250,6 +270,32 @@ public partial class PreStartInspectionPopup : Popup
         {
             ConfirmButton.IsEnabled = true;
         }
+    }
+
+
+    private async Task CompleteAsync(bool result)
+    {
+        if (!_completionSource.Task.IsCompleted)
+        {
+            _completionSource.TrySetResult(result);
+        }
+
+        var navigation = Shell.Current?.Navigation ?? Navigation;
+        if (navigation.NavigationStack.LastOrDefault() == this)
+        {
+            await navigation.PopAsync();
+        }
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        _ = CompleteAsync(false);
+        return true;
+    }
+
+    private async void OnCancelClicked(object? sender, EventArgs e)
+    {
+        await CompleteAsync(false);
     }
 
     private void OnDeleteToolClicked(object? sender, EventArgs e)

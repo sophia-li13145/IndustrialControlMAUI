@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-               x:Class="IndustrialControlMAUI.Popups.PreStartInspectionPopup"
-               Size="380,680"
-               CanBeDismissedByTappingOutsideOfPopup="False">
-    <toolkit:Popup.Resources>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.PreStartInspectionPage"
+             Title="开工前点检"
+             BackgroundColor="#F2F4F7">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="取消" Clicked="OnCancelClicked"/>
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
         <ResourceDictionary>
             <Style x:Key="SectionCardStyle" TargetType="Border">
                 <Setter Property="Padding" Value="0"/>
@@ -70,9 +73,10 @@
                 <Setter Property="VerticalOptions" Value="Center"/>
             </Style>
         </ResourceDictionary>
-    </toolkit:Popup.Resources>
+    </ContentPage.Resources>
 
-    <Border Padding="10" BackgroundColor="#F2F4F7" Stroke="#DDDDDD" StrokeShape="RoundRectangle 10">
+    <ScrollView>
+        <Border Padding="10" BackgroundColor="#F2F4F7" Stroke="#DDDDDD" StrokeShape="RoundRectangle 10">
         <VerticalStackLayout Spacing="8">
             <Label Text="开工前点检" FontSize="18" FontAttributes="Bold" TextColor="#111827"/>
 
@@ -241,5 +245,6 @@
 
             <Button x:Name="ConfirmButton" Text="确认" Clicked="OnConfirmClicked" BackgroundColor="#4B5563" TextColor="White" CornerRadius="6" HeightRequest="40"/>
         </VerticalStackLayout>
-    </Border>
-</toolkit:Popup>
+        </Border>
+    </ScrollView>
+</ContentPage>
