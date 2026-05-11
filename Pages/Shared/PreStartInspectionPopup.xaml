@@ -98,7 +98,7 @@
                                      HeightRequest="36"
                                      WidthRequest="74"
                                      BackgroundColor="Transparent"
-                                     Clicked="OnToolScanClicked"/>
+                                     Clicked="OnToolScanButtonClicked"/>
                     </Grid>
                     <Grid x:Name="ToolTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="80,80,60,80">
                         <Label Text="工具名称" Style="{StaticResource HeaderTextStyle}"/>
@@ -195,7 +195,7 @@
                                      HeightRequest="36"
                                      WidthRequest="74"
                                      BackgroundColor="Transparent"
-                                     Clicked="OnMaterialScanClicked"/>
+                                     Clicked="OnMaterialScanButtonClicked"/>
                     </Grid>
                     <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="80,80,60,80">
                         <Label Text="物料名称" Style="{StaticResource HeaderTextStyle}"/>
