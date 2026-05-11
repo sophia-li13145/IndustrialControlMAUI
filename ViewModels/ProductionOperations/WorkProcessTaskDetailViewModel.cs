@@ -1,10 +1,8 @@
 ﻿using Android.Text;
-using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
-using IndustrialControlMAUI.Popups;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -239,9 +237,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     private async Task<bool> RunPreStartInspectionAsync()
     {
         if (Detail is null) return false;
-        var popup = new PreStartInspectionPopup(_api, Detail);
-        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
-        return result is bool ok && ok;
+        return await PreStartInspectionPage.ShowAsync(_api, Detail);
     }
 
     /// <summary>执行 PauseResumeAsync 逻辑。</summary>
