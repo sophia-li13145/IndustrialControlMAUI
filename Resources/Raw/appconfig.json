@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "V1.4_202604.6",
+  "schemaVersion": "V1.4_202604.7",
   "server": {
     "scheme": "http",
     "ipAddress": "114.250.17.252:9128/"
