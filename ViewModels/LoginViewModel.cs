@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.Tools;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -70,7 +71,7 @@ public partial class LoginViewModel : ObservableObject
 
             if (!resp.IsSuccessStatusCode)
             {
-                await Application.Current.MainPage.DisplayAlert("登录失败", $"HTTP {(int)resp.StatusCode}: {raw}", "确定");
+                await Application.Current.MainPage.DisplayAlert("登录失败", GetLoginHttpErrorMessage(resp.StatusCode), "确定");
                 return;
             }
 
@@ -82,7 +83,7 @@ public partial class LoginViewModel : ObservableObject
 
             if (!ok || string.IsNullOrWhiteSpace(token))
             {
-                await Application.Current.MainPage.DisplayAlert("登录失败", result?.message ?? "登录返回无效", "确定");
+                await Application.Current.MainPage.DisplayAlert("登录失败", GetLoginResultErrorMessage(result?.message), "确定");
                 return;
             }
 
@@ -109,14 +110,49 @@ public partial class LoginViewModel : ObservableObject
         {
             await Application.Current.MainPage.DisplayAlert("超时", "登录请求超时，请检查网络", "确定");
         }
-        catch (Exception ex)
+        catch (HttpRequestException)
         {
-            await Application.Current.MainPage.DisplayAlert("异常", ex.Message, "确定");
+            await Application.Current.MainPage.DisplayAlert("登录失败", "网络连接异常，请检查网络后重试", "确定");
+        }
+        catch (JsonException)
+        {
+            await Application.Current.MainPage.DisplayAlert("登录失败", "登录服务返回异常，请稍后再试", "确定");
+        }
+        catch (Exception)
+        {
+            await Application.Current.MainPage.DisplayAlert("登录失败", "登录失败，请稍后再试", "确定");
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private static string GetLoginHttpErrorMessage(HttpStatusCode statusCode) => statusCode switch
+    {
+        HttpStatusCode.BadGateway => "请输入正确的用户名和密码",
+        HttpStatusCode.BadRequest => "登录请求有误，请检查输入后重试",
+        HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => "账号验证未通过，请确认后重试",
+        HttpStatusCode.NotFound => "登录服务暂不可用，请稍后再试",
+        HttpStatusCode.RequestTimeout or HttpStatusCode.GatewayTimeout => "登录请求超时，请检查网络后重试",
+        HttpStatusCode.InternalServerError or HttpStatusCode.ServiceUnavailable => "登录服务异常，请稍后再试",
+        _ => "登录失败，请稍后再试"
+    };
+
+    private static string GetLoginResultErrorMessage(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return "登录失败，请确认账号信息后重试";
+
+        if (message.Contains("密码") || message.Contains("账号") || message.Contains("用户") ||
+            message.Contains("password", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("user", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("credential", StringComparison.OrdinalIgnoreCase))
+        {
+            return "账号验证未通过，请确认后重试";
+        }
+
+        return "登录失败，请稍后再试";
     }
 
     /// <summary>执行 TogglePassword 逻辑。</summary>
