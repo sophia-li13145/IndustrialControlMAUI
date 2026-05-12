@@ -611,7 +611,7 @@ namespace IndustrialControlMAUI.Services
             }) ?? new ApiResp<bool?> { success = false, message = "反序列化失败" };
         }
 
-        public async Task<ApiResp<bool>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null)
+        public async Task<ApiResp<bool?>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null)
         {
             var body = new
             {
@@ -622,13 +622,13 @@ namespace IndustrialControlMAUI.Services
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _completeworkEndpoint);
             var resp = await _http.PostAsJsonAsync(full, body);
             var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, new JsonSerializerOptions
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }) ?? new ApiResp<bool> { success = false, message = "反序列化失败" };
+            }) ?? new ApiResp<bool?> { success = false, message = "反序列化失败" };
         }
 
-        public async Task<ApiResp<bool>> PauseWorkAsync(string processCode, string workOrderNo, string? memo = null)
+        public async Task<ApiResp<bool?>> PauseWorkAsync(string processCode, string workOrderNo, string? memo = null)
         {
             var body = new
             {
@@ -639,10 +639,10 @@ namespace IndustrialControlMAUI.Services
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _pauseworkEndpoint);
             var resp = await _http.PostAsJsonAsync(full, body);
             var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, CancellationToken.None);
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, new JsonSerializerOptions
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }) ?? new ApiResp<bool> { success = false, message = "反序列化失败" };
+            }) ?? new ApiResp<bool?> { success = false, message = "反序列化失败" };
         }
 
         public async Task<ApiResp<bool>> AddWorkProcessTaskMaterialInputAsync(AddWorkProcessTaskMaterialInputReq req)

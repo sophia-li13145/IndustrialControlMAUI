@@ -51,9 +51,9 @@ namespace IndustrialControlMAUI.Services
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default);
         Task<ApiResp<bool?>> StartWorkAsync(string processCode, string workOrderNo, string? memo = null);
 
-        Task<ApiResp<bool>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null);
+        Task<ApiResp<bool?>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null);
 
-        Task<ApiResp<bool>> PauseWorkAsync(string processCode, string workOrderNo, string? memo = null);
+        Task<ApiResp<bool?>> PauseWorkAsync(string processCode, string workOrderNo, string? memo = null);
 
         Task<ApiResp<bool>> AddWorkProcessTaskMaterialInputAsync(AddWorkProcessTaskMaterialInputReq req);
 

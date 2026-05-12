@@ -270,7 +270,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 }
 
                 var resp = await _api.PauseWorkAsync(Detail.processCode, Detail.workOrderNo, reason);
-                if (resp.success && resp.result)
+                if (resp.success)
                 {
                     State = TaskRunState.Paused;
                     await Application.Current.MainPage.DisplayAlert("成功", "已暂停。", "确定");
@@ -287,7 +287,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 if (!go) return;
 
                 var resp = await _api.PauseWorkAsync(Detail.processCode, Detail.workOrderNo, null);
-                if (resp.success && resp.result)
+                if (resp.success)
                 {
                     State = TaskRunState.Running;
                     await Application.Current.MainPage.DisplayAlert("成功", "已恢复生产。", "确定");
@@ -318,7 +318,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         try
         {
             var resp = await _api.CompleteWorkAsync(Detail.processCode, Detail.workOrderNo, null);
-            if (resp.success && resp.result)
+            if (resp.success)
             {
                 State = TaskRunState.Finished;
                 //await Task.CompletedTask;
