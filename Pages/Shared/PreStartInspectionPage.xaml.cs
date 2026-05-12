@@ -14,6 +14,8 @@ public partial class PreStartInspectionPage : ContentPage
     private Task? _maintenanceStatusLoadTask;
     private bool _isToolSectionExpanded = true;
     private bool _isMaterialSectionExpanded = true;
+    private readonly HashSet<string> _pendingToolScanCodes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _pendingMaterialScanCodes = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly TaskCompletionSource<bool> _completionSource;
 
@@ -127,22 +129,45 @@ public partial class PreStartInspectionPage : ContentPage
         var code = scanText?.Trim();
         if (string.IsNullOrWhiteSpace(code)) return;
 
-        var resp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
-        {
-            workOrderNo = _detail.workOrderNo,
-            processCode = _detail.processCode,
-            resourceCode = code
-        });
-        if (!resp.success || resp.result == null)
-        {
-            await Shell.Current.DisplayAlert("提示", resp.message ?? "扫描失败", "确定");
-            return;
-        }
+        if (!_pendingToolScanCodes.Add(code)) return;
 
-        await EnsureMaintenanceStatusDictLoadedAsync();
-        ApplyMaintenanceStatusText(resp.result);
-        _toolRows.Add(resp.result);
-        ToolScanEntry.Text = string.Empty;
+        try
+        {
+            if (HasDuplicateTool(code))
+            {
+                await Shell.Current.DisplayAlert("提示", "该工具工装已在列表中，请勿重复添加", "确定");
+                ToolScanEntry.Text = string.Empty;
+                return;
+            }
+
+            var resp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
+            {
+                workOrderNo = _detail.workOrderNo,
+                processCode = _detail.processCode,
+                resourceCode = code
+            });
+            if (!resp.success || resp.result == null)
+            {
+                await Shell.Current.DisplayAlert("提示", resp.message ?? "扫描失败", "确定");
+                return;
+            }
+
+            if (HasDuplicateTool(resp.result, code))
+            {
+                await Shell.Current.DisplayAlert("提示", "该工具工装已在列表中，请勿重复添加", "确定");
+                ToolScanEntry.Text = string.Empty;
+                return;
+            }
+
+            await EnsureMaintenanceStatusDictLoadedAsync();
+            ApplyMaintenanceStatusText(resp.result);
+            _toolRows.Add(resp.result);
+            ToolScanEntry.Text = string.Empty;
+        }
+        finally
+        {
+            _pendingToolScanCodes.Remove(code);
+        }
     }
 
     private async void OnMaterialScanClicked(object? sender, EventArgs e)
@@ -164,20 +189,99 @@ public partial class PreStartInspectionPage : ContentPage
         var code = scanText?.Trim();
         if (string.IsNullOrWhiteSpace(code)) return;
 
-        var resp = await _api.QueryPreStartInspectionMaterialAsync(new PmsPreStartInspectionQueryMaterialParam
-        {
-            workOrderNo = _detail.workOrderNo,
-            processCode = _detail.processCode,
-            materialCode = code
-        });
-        if (!resp.success || resp.result == null)
-        {
-            await Shell.Current.DisplayAlert("提示", resp.message ?? "扫描失败", "确定");
-            return;
-        }
+        if (!_pendingMaterialScanCodes.Add(code)) return;
 
-        _materialRows.Add(resp.result);
-        MaterialScanEntry.Text = string.Empty;
+        try
+        {
+            if (HasDuplicateMaterial(code))
+            {
+                await Shell.Current.DisplayAlert("提示", "该物料已在列表中，请勿重复添加", "确定");
+                MaterialScanEntry.Text = string.Empty;
+                return;
+            }
+
+            var resp = await _api.QueryPreStartInspectionMaterialAsync(new PmsPreStartInspectionQueryMaterialParam
+            {
+                workOrderNo = _detail.workOrderNo,
+                processCode = _detail.processCode,
+                materialCode = code
+            });
+            if (!resp.success || resp.result == null)
+            {
+                await Shell.Current.DisplayAlert("提示", resp.message ?? "扫描失败", "确定");
+                return;
+            }
+
+            if (HasDuplicateMaterial(resp.result, code))
+            {
+                await Shell.Current.DisplayAlert("提示", "该物料已在列表中，请勿重复添加", "确定");
+                MaterialScanEntry.Text = string.Empty;
+                return;
+            }
+
+            _materialRows.Add(resp.result);
+            MaterialScanEntry.Text = string.Empty;
+        }
+        finally
+        {
+            _pendingMaterialScanCodes.Remove(code);
+        }
+    }
+
+
+    private bool HasDuplicateTool(string scanCode)
+    {
+        return _toolRows.Any(row => IsSameTool(row, scanCode));
+    }
+
+    private bool HasDuplicateTool(PreStartInspectionScanResourceDto candidate, string scanCode)
+    {
+        return _toolRows.Any(row => IsSameTool(row, candidate) || IsSameTool(row, scanCode));
+    }
+
+    private static bool IsSameTool(PreStartInspectionScanResourceDto row, string scanCode)
+    {
+        return HasSameValue(scanCode, row.resourceCode)
+            || HasSameValue(scanCode, row.model)
+            || HasSameValue(scanCode, row.resourceDemandId);
+    }
+
+    private static bool IsSameTool(PreStartInspectionScanResourceDto row, PreStartInspectionScanResourceDto candidate)
+    {
+        return HasSameValue(row.resourceCode, candidate.resourceCode)
+            || HasSameValue(row.resourceDemandId, candidate.resourceDemandId)
+            || (HasSameValue(row.model, candidate.model)
+                && HasSameValue(row.resourceName, candidate.resourceName)
+                && HasSameValue(row.resourceType, candidate.resourceType));
+    }
+
+    private bool HasDuplicateMaterial(string scanCode)
+    {
+        return _materialRows.Any(row => IsSameMaterial(row, scanCode));
+    }
+
+    private bool HasDuplicateMaterial(PreStartInspectionScanMaterialDto candidate, string scanCode)
+    {
+        return _materialRows.Any(row => IsSameMaterial(row, candidate) || IsSameMaterial(row, scanCode));
+    }
+
+    private static bool IsSameMaterial(PreStartInspectionScanMaterialDto row, string scanCode)
+    {
+        return HasSameValue(scanCode, row.materialCode)
+            || HasSameValue(scanCode, row.matReqNo);
+    }
+
+    private static bool IsSameMaterial(PreStartInspectionScanMaterialDto row, PreStartInspectionScanMaterialDto candidate)
+    {
+        return HasSameValue(row.materialCode, candidate.materialCode)
+            || HasSameValue(row.matReqNo, candidate.matReqNo);
+    }
+
+    private static bool HasSameValue(string? left, string? right)
+    {
+        return !string.IsNullOrWhiteSpace(left)
+            && !string.IsNullOrWhiteSpace(right)
+            && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task<string?> ScanCodeAsync()
