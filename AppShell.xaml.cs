@@ -1,4 +1,4 @@
-﻿using IndustrialControlMAUI.Pages;
+using IndustrialControlMAUI.Pages;
 
 namespace IndustrialControlMAUI;
 
@@ -85,6 +85,10 @@ public partial class AppShell : Shell
         Items.Clear();
 
         var bar = new TabBar();
+        var startTab = CreateStartTab(authed);
+
+        // 先添加启动页，避免 Shell 在添加第一个 Tab（日志）后保持选中日志页。
+        bar.Items.Add(startTab);
 
         // 公共：日志
         bar.Items.Add(new Tab
@@ -114,10 +118,18 @@ public partial class AppShell : Shell
             }
         });
 
+        Items.Add(bar);
+
+        bar.CurrentItem = startTab;
+        CurrentItem = bar;
+    }
+
+    private Tab CreateStartTab(bool authed)
+    {
         if (authed)
         {
             // 已登录：主页放在最前，并把根路由命名为 Home
-            bar.Items.Insert(0, new Tab
+            return new Tab
             {
                 Title = "主页",
                 Items =
@@ -128,25 +140,21 @@ public partial class AppShell : Shell
                         ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.HomePage>())
                     }
                 }
-            });
-        }
-        else
-        {
-            // 未登录：登录页在最前，并把根路由命名为 Login
-            bar.Items.Insert(0, new Tab
-            {
-                Title = "登录",
-                Items =
-                {
-                    new ShellContent
-                    {
-                        Route = "Login",   // 对应 RouteLogin = "//Login"
-                        ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.LoginPage>())
-                    }
-                }
-            });
+            };
         }
 
-        Items.Add(bar);
+        // 未登录：登录页在最前，并把根路由命名为 Login
+        return new Tab
+        {
+            Title = "登录",
+            Items =
+            {
+                new ShellContent
+                {
+                    Route = "Login",   // 对应 RouteLogin = "//Login"
+                    ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.LoginPage>())
+                }
+            }
+        };
     }
 }
