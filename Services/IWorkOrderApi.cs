@@ -78,6 +78,10 @@ namespace IndustrialControlMAUI.Services
                 string? materialCode = null, // 物料编码（可选）
                 bool? searchCount = null,    // 是否计算总记录数（可选）
                 CancellationToken ct = default);
+        Task<PageResp<WorkProcessTaskReportRecord>?> PageWorkProcessTaskReports(
+                string processCode,
+                string workOrderNo,
+                CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
     string id,
     CancellationToken ct = default);

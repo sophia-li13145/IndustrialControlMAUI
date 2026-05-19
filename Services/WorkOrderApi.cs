@@ -34,6 +34,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _addOutputEndpoint;
         private readonly string _autMaterialListEndpoint;
         private readonly string _autOutputListEndpoint;
+        private readonly string _reportListEndpoint;
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
@@ -114,6 +115,8 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.autMaterialList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs"), servicePath);
             _autOutputListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.autOutputList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs"), servicePath);
+            _reportListEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.reportList", "/pda/pmsWorkProcessTaskReport/listWorkProcessTaskReports"), servicePath);
             _deleteWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput"), servicePath);
             _deleteWorkProcessTaskOutputEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -806,6 +809,38 @@ namespace IndustrialControlMAUI.Services
             return JsonSerializer.Deserialize<PageResp<OutputAuRecord>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 ?? new PageResp<OutputAuRecord>();
+        }
+
+        public async Task<PageResp<WorkProcessTaskReportRecord>?> PageWorkProcessTaskReports(
+            string processCode,
+            string workOrderNo,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(processCode))
+                throw new ArgumentException("processCode 不能为空", nameof(processCode));
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+                throw new ArgumentException("workOrderNo 不能为空", nameof(workOrderNo));
+
+            var url = $"{_reportListEndpoint}?processCode={Uri.EscapeDataString(processCode.Trim())}&workOrderNo={Uri.EscapeDataString(workOrderNo.Trim())}";
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new PageResp<WorkProcessTaskReportRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            var apiResp = JsonSerializer.Deserialize<ApiResp<List<WorkProcessTaskReportRecord>>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return new PageResp<WorkProcessTaskReportRecord>
+            {
+                success = apiResp?.success ?? false,
+                message = apiResp?.message,
+                code = apiResp?.code,
+                result = new PageResult<WorkProcessTaskReportRecord>
+                {
+                    records = apiResp?.result ?? new List<WorkProcessTaskReportRecord>()
+                }
+            };
         }
         //单条删除投料
         public async Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
