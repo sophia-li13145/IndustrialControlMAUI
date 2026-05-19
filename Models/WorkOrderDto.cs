@@ -420,6 +420,17 @@ public sealed class MaterialIO
     public string? createdTime { get; set; }
 }
 public enum DetailTab { Report, Input, Output }
+public class WorkProcessTaskReportRecord
+{
+    public string? id { get; set; }
+    public string? productionMachineName { get; set; } // 设备
+    public string? teamName { get; set; }              // 班组
+    public string? operatorName { get; set; }          // 操作人
+    public decimal? workHours { get; set; }            // 工时
+    public decimal? reportQty { get; set; }            // 报工数量
+    public string? operateTime { get; set; }           // 操作时间
+    public string? memo { get; set; }                  // 备注
+}
 public class WorkProcessTaskTeamUpdateReq
 {
     public string id { get; set; } = "";      

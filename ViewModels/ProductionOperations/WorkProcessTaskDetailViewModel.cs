@@ -85,6 +85,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     // —— 产出记录列表（表2数据源）
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<OutputAuRecord> OutputRecords { get; } = new();
+    public ObservableCollection<WorkProcessTaskReportRecord> ReportRecords { get; } = new();
     public event EventHandler? TabChanged;
 
     private TaskMaterialInput? _selectedMaterialItem;
@@ -382,6 +383,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     {
         Debug.WriteLine("切换到报工");
         ActiveTab = DetailTab.Report;
+        _ = LoadReportRecordsAsync();
     }
 
     /// <summary>执行 ShowInput 逻辑。</summary>
@@ -413,8 +415,26 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             ActiveTab = DetailTab.Report; // 会同步设置各 Tab 可见性
             CurrentLoginUserName = Preferences.Get("UserName", string.Empty);
             CurrentUserName = CurrentLoginUserName.Split('@')[0]; // 页面显示名
+            await LoadReportRecordsAsync();
         }
         finally { IsBusy = false; }
+    }
+
+    private async Task LoadReportRecordsAsync()
+    {
+        if (Detail is null || string.IsNullOrWhiteSpace(Detail.processCode) || string.IsNullOrWhiteSpace(Detail.workOrderNo))
+            return;
+
+        var resp = await _api.PageWorkProcessTaskReports(
+            processCode: Detail.processCode!,
+            workOrderNo: Detail.workOrderNo!);
+
+        ReportRecords.Clear();
+        if (resp?.result?.records != null)
+        {
+            foreach (var item in resp.result.records)
+                ReportRecords.Add(item);
+        }
     }
 
     /// <summary>执行 LoadAuditDictAsync 逻辑。</summary>
