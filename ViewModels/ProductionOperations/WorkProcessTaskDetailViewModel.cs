@@ -36,10 +36,12 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     private readonly IServiceProvider _sp;
     public string PauseResumeText => State == TaskRunState.Running ? "暂停" : "复工";
 
-    [ObservableProperty] private DetailTab activeTab = DetailTab.Input;
-    [ObservableProperty] private bool isInputVisible = true;   // 默认显示投料
+    [ObservableProperty] private DetailTab activeTab = DetailTab.Report;
+    [ObservableProperty] private bool isInputVisible = false;   // 默认隐藏投料
     [ObservableProperty] private bool isOutputVisible = false; // 默认隐藏产出
+    [ObservableProperty] private bool isReportVisible = true;  // 默认显示报工
 
+    public bool IsReportTab => ActiveTab == DetailTab.Report;
     public bool IsInputTab => ActiveTab == DetailTab.Input;
     public bool IsOutputTab => ActiveTab == DetailTab.Output;
 
@@ -177,9 +179,11 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     /// <summary>执行 OnActiveTabChanged 逻辑。</summary>
     partial void OnActiveTabChanged(DetailTab value)
     {
+        IsReportVisible = (value == DetailTab.Report);
         IsInputVisible = (value == DetailTab.Input);
-        IsOutputVisible = !IsInputVisible;
+        IsOutputVisible = (value == DetailTab.Output);
 
+        OnPropertyChanged(nameof(IsReportTab));
         OnPropertyChanged(nameof(IsInputTab));
         OnPropertyChanged(nameof(IsOutputTab));
         TabChanged?.Invoke(this, EventArgs.Empty);
@@ -368,6 +372,13 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
+    [RelayCommand]
+    public void ShowReport()
+    {
+        Debug.WriteLine("切换到报工");
+        ActiveTab = DetailTab.Report;
+    }
+
     /// <summary>执行 ShowInput 逻辑。</summary>
     [RelayCommand]
     public void ShowInput()
@@ -394,7 +405,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         {
             await LoadAuditDictAsync();
             await LoadDetailAsync(id);
-            ActiveTab = DetailTab.Input; // 会同步设置 IsInputVisible/IsOutputVisible
+            ActiveTab = DetailTab.Report; // 会同步设置各 Tab 可见性
             CurrentUserName = Preferences.Get("UserName", string.Empty).Split('@')[0]; // 进入页面时赋值实际登录人
         }
         finally { IsBusy = false; }
