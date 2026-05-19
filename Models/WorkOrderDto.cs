@@ -419,7 +419,7 @@ public sealed class MaterialIO
     public string? memo { get; set; }
     public string? createdTime { get; set; }
 }
-public enum DetailTab { Input, Output }
+public enum DetailTab { Report, Input, Output }
 public class WorkProcessTaskTeamUpdateReq
 {
     public string id { get; set; } = "";      
