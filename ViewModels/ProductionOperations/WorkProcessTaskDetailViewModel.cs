@@ -54,8 +54,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         get
         {
             var isAuditStatusMatched = (QueryWorkOrderAuditStatus ?? Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "1" or "2" or "4";
-            var isBlockedUser = !string.IsNullOrWhiteSpace(CurrentUserName)
-                && CurrentUserName.EndsWith("lzyrcy", StringComparison.OrdinalIgnoreCase);
+            var userNameForCheck = string.IsNullOrWhiteSpace(CurrentLoginUserName) ? CurrentUserName : CurrentLoginUserName;
+            var isBlockedUser = !string.IsNullOrWhiteSpace(userNameForCheck)
+                && userNameForCheck.EndsWith("lzyrcy", StringComparison.OrdinalIgnoreCase);
             return isAuditStatusMatched && !isBlockedUser;
         }
     }
@@ -74,6 +75,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [NotifyPropertyChangedFor(nameof(IsReworkVisible))]
     [NotifyPropertyChangedFor(nameof(CanRework))]
     private string? currentUserName; // 进入页面时赋值实际登录人
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsReworkVisible))]
+    [NotifyPropertyChangedFor(nameof(CanRework))]
+    private string? currentLoginUserName; // 原始登录用户名（用于后缀判断）
     // 投料记录列表（表格2的数据源）
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<MaterialAuRecord> MaterialInputRecords { get; } = new();
@@ -406,7 +411,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await LoadAuditDictAsync();
             await LoadDetailAsync(id);
             ActiveTab = DetailTab.Report; // 会同步设置各 Tab 可见性
-            CurrentUserName = Preferences.Get("UserName", string.Empty).Split('@')[0]; // 进入页面时赋值实际登录人
+            CurrentLoginUserName = Preferences.Get("UserName", string.Empty);
+            CurrentUserName = CurrentLoginUserName.Split('@')[0]; // 页面显示名
         }
         finally { IsBusy = false; }
     }
