@@ -47,7 +47,16 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [ObservableProperty] private WorkProcessTaskDetail? detail;
     [ObservableProperty] private string? queryWorkOrderAuditStatus;
     // 返修按钮显示规则：仅工单状态 1-执行中、2-入库中、4-待入库 时显示
-    public bool IsReworkVisible => (QueryWorkOrderAuditStatus ?? Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "1" or "2" or "4";
+    public bool IsReworkVisible
+    {
+        get
+        {
+            var isAuditStatusMatched = (QueryWorkOrderAuditStatus ?? Detail?.workOrderAuditStatus ?? Detail?.auditStatus) is "1" or "2" or "4";
+            var isBlockedUser = !string.IsNullOrWhiteSpace(CurrentUserName)
+                && CurrentUserName.EndsWith("lzyrcy", StringComparison.OrdinalIgnoreCase);
+            return isAuditStatusMatched && !isBlockedUser;
+        }
+    }
 
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<TaskMaterialInput> Inputs { get; } = new();
@@ -59,7 +68,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public ObservableCollection<StatusOption> ShiftOptions { get; } = new();
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<StatusOption> DeviceOptions { get; } = new();
-    [ObservableProperty] private string? currentUserName; // 进入页面时赋值实际登录人
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsReworkVisible))]
+    [NotifyPropertyChangedFor(nameof(CanRework))]
+    private string? currentUserName; // 进入页面时赋值实际登录人
     // 投料记录列表（表格2的数据源）
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<MaterialAuRecord> MaterialInputRecords { get; } = new();
