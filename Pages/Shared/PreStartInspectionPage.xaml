@@ -201,7 +201,7 @@
                                      BackgroundColor="Transparent"
                                      Clicked="OnMaterialScanButtonClicked"/>
                     </Grid>
-                    <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="80,80,60,80">
+                    <Grid x:Name="MaterialTableHeader" Grid.Row="3" Padding="6,0" ColumnDefinitions="70,80,80,80">
                         <Label Text="物料名称" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="1" Text="物料编码" Style="{StaticResource HeaderTextStyle}"/>
                         <Label Grid.Column="2" Text="领用数量" Style="{StaticResource HeaderTextStyle}"/>
@@ -215,7 +215,7 @@
                             <DataTemplate>
                                 <Grid RowDefinitions="1,66">
                                     <BoxView HeightRequest="1" Color="#E5E7EB"/>
-                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="80,80,60,80">
+                                    <Grid Grid.Row="1" Padding="6,6" ColumnDefinitions="70,80,80,80">
                                         <Grid.Triggers>
                                             <DataTrigger TargetType="Grid" Binding="{Binding isConfirmed}" Value="False">
                                                 <Setter Property="BackgroundColor" Value="#FEF2F2"/>
@@ -223,12 +223,24 @@
                                         </Grid.Triggers>
                                         <Label Text="{Binding materialName}" Style="{StaticResource UnavailableCellTextStyle}"/>
                                         <Label Grid.Column="1" Text="{Binding materialCode}" Style="{StaticResource UnavailableCellTextStyle}"/>
-                                        <Label Grid.Column="2" Text="{Binding DemandQtyText}" Style="{StaticResource UnavailableCellTextStyle}"/>
-                                        <VerticalStackLayout Grid.Column="3" Spacing="0" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Switch Style="{StaticResource AvailableSwitchStyle}" IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
-                                            <Button Style="{StaticResource DeleteButtonStyle}" Clicked="OnDeleteMaterialClicked"/>
-                                        </VerticalStackLayout>
-                                    </Grid>
+                                            <Label Grid.Column="2" Text="{Binding DemandQtyText}" Style="{StaticResource UnavailableCellTextStyle}"/>
+                                            <!-- 操作 -->
+                                            <HorizontalStackLayout Grid.Column="3"
+                                                                   Spacing="2"
+                                                                   HorizontalOptions="Center"
+                                                                   VerticalOptions="Center">    
+
+                                                <Switch Style="{StaticResource AvailableSwitchStyle}"
+                                                        Scale="1"
+                                                        IsToggled="{Binding isConfirmed, Mode=TwoWay}"/>
+
+                                                <Button Style="{StaticResource DeleteButtonStyle}"
+                                                        Padding="4,0"
+                                                        HeightRequest="28"
+                                                        WidthRequest="50"
+                                                        Clicked="OnDeleteMaterialClicked"/> 
+                                            </HorizontalStackLayout>
+                                        </Grid>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
