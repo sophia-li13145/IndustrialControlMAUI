@@ -34,6 +34,10 @@ namespace IndustrialControlMAUI.Services
         private readonly string _addOutputEndpoint;
         private readonly string _autMaterialListEndpoint;
         private readonly string _autOutputListEndpoint;
+        private readonly string _reportListEndpoint;
+        private readonly string _addReportEndpoint;
+        private readonly string _deleteReportEndpoint;
+        private readonly string _frameOutputQtyEndpoint;
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
@@ -114,6 +118,14 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.autMaterialList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs"), servicePath);
             _autOutputListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.autOutputList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs"), servicePath);
+            _reportListEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.reportList", "/pda/pmsWorkProcessTaskReport/listWorkProcessTaskReports"), servicePath);
+            _addReportEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.addReport", "/pda/pmsWorkProcessTaskReport/addWorkProcessTaskReport"), servicePath);
+            _deleteReportEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.deleteReport", "/pda/pmsWorkProcessTaskReport/deleteWorkProcessTaskReport"), servicePath);
+            _frameOutputQtyEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.frameOutputQty", "/pda/pmsWorkProcessTaskReport/getWorkProcessTaskFrameOutputQty"), servicePath);
             _deleteWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput"), servicePath);
             _deleteWorkProcessTaskOutputEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -383,13 +395,15 @@ namespace IndustrialControlMAUI.Services
             string factoryCode,
             string processCode,
             string? line = null,
+            string? workshopsCode = null,
             CancellationToken ct = default)
         {
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deviceEndpoint);
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["factoryCode"] = factoryCode,
-                ["processCode"] = processCode
+                ["processCode"] = processCode,
+                ["workshopsCode"] = workshopsCode
             });
 
             var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
@@ -695,6 +709,57 @@ namespace IndustrialControlMAUI.Services
             return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
         }
 
+        public async Task<ApiResp<bool>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addReportEndpoint);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            using var resp = await _http.PostAsJsonAsync(full, req, options, ct);
+            if (!resp.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP错误 {resp.StatusCode}" };
+
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
+            var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
+            return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
+        }
+
+        public async Task<ApiResp<bool>> DeleteWorkProcessTaskReportAsync(DeleteWorkProcessTaskReportReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deleteReportEndpoint);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            using var resp = await _http.PostAsJsonAsync(full, req, options, ct);
+            if (!resp.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP错误 {resp.StatusCode}" };
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
+            var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
+            return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
+        }
+
+        public async Task<ApiResp<decimal?>> GetWorkProcessTaskFrameOutputQtyAsync(string workProcessTaskId, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _frameOutputQtyEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["workProcessTaskId"] = workProcessTaskId
+            });
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<decimal?> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<decimal?>>(json, _json)
+                ?? new ApiResp<decimal?> { success = false, message = "empty response" };
+        }
+
         //实际投料列表
         public async Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
             string factoryCode,          // 工厂编码（必填）
@@ -806,6 +871,38 @@ namespace IndustrialControlMAUI.Services
             return JsonSerializer.Deserialize<PageResp<OutputAuRecord>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 ?? new PageResp<OutputAuRecord>();
+        }
+
+        public async Task<PageResp<WorkProcessTaskReportRecord>?> PageWorkProcessTaskReports(
+            string processCode,
+            string workOrderNo,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(processCode))
+                throw new ArgumentException("processCode 不能为空", nameof(processCode));
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+                throw new ArgumentException("workOrderNo 不能为空", nameof(workOrderNo));
+
+            var url = $"{_reportListEndpoint}?processCode={Uri.EscapeDataString(processCode.Trim())}&workOrderNo={Uri.EscapeDataString(workOrderNo.Trim())}";
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new PageResp<WorkProcessTaskReportRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            var apiResp = JsonSerializer.Deserialize<ApiResp<List<WorkProcessTaskReportRecord>>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return new PageResp<WorkProcessTaskReportRecord>
+            {
+                success = apiResp?.success ?? false,
+                message = apiResp?.message,
+                code = apiResp?.code,
+                result = new PageResult<WorkProcessTaskReportRecord>
+                {
+                    records = apiResp?.result ?? new List<WorkProcessTaskReportRecord>()
+                }
+            };
         }
         //单条删除投料
         public async Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
