@@ -130,7 +130,7 @@
             <VerticalStackLayout x:Name="BodyStack" Spacing="10" HorizontalOptions="Fill">
 
                 <Frame Padding="12" HasShadow="False" BorderColor="#E5E7EB" CornerRadius="8">
-                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
                            ColumnSpacing="8" RowSpacing="8">
 
                         <!-- 第一行 -->
@@ -151,31 +151,8 @@
                         <Label Grid.Row="2" Grid.Column="0" Text="工序：" FontAttributes="Bold"/>
                         <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.processName}" FontAttributes="Bold"/>
 
-                        <Label Grid.Row="2" Grid.Column="2" Text="班次：" FontAttributes="Bold"/>
-                        <Picker Grid.Row="2" Grid.Column="3"
-                                ItemsSource="{Binding ShiftOptions}"
-                                ItemDisplayBinding="{Binding Text}"
-                                SelectedItem="{Binding SelectedShift, Mode=TwoWay}"
-                                IsEnabled="{Binding IsEditing}" /> 
-
-                        <!-- 第四行 -->
-                        <Label Grid.Row="3" Grid.Column="0" Text="生产设备：" />
-                        <Picker Grid.Row="3" Grid.Column="1"
-                                ItemsSource="{Binding DeviceOptions}"
-                                ItemDisplayBinding="{Binding Text}"
-                                SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
-                                IsEnabled="{Binding IsEditing}" /> 
-
-                        <Label Grid.Row="3" Grid.Column="2" Text="报工数量：" />
-                        <Entry Grid.Row="3"
-                               Grid.Column="3"
-                               Text="{Binding ReportQtyText, Mode=TwoWay}"
-                               Keyboard="Numeric"
-                               IsEnabled="{Binding IsEditing}"
-                               Completed="OnReportQtyCompleted" /> 
-                        <!-- 第五行 -->
-                        <Label Grid.Row="4" Grid.Column="0" Text="操作人：" />
-                        <Label Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding CurrentUserName}" />
+                        <Label Grid.Row="3" Grid.Column="0" Text="操作人：" />
+                        <Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding CurrentUserName}" />
                     </Grid>
                 </Frame>
 
@@ -306,8 +283,7 @@
                 <Grid Margin="0,12,0,8" IsVisible="{Binding IsReportVisible}">
                     <Button Text="＋ 新增报工"
                             HorizontalOptions="End"
-                            Command="{Binding AddReportCommand}"
-                            IsEnabled="{Binding IsEditing}" />
+                            Command="{Binding AddReportCommand}" />
                 </Grid>
                 <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,26"
                       BackgroundColor="#E8F0FE"
