@@ -623,10 +623,11 @@ namespace IndustrialControlMAUI.Services
             }) ?? new ApiResp<bool?> { success = false, message = "反序列化失败" };
         }
 
-        public async Task<ApiResp<bool?>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null)
+        public async Task<ApiResp<bool?>> CompleteWorkAsync(string processCode, string workOrderNo, string? memo = null, decimal? actQty = null)
         {
             var body = new
             {
+                actQty,
                 memo = memo ?? "",
                 processCode,
                 workOrderNo

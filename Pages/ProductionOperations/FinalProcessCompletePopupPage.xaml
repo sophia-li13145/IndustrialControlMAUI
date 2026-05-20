@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="IndustrialControlMAUI.Pages.FinalProcessCompletePopupPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="完工"
+    Padding="12"
+    BackgroundColor="White">
+
+    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
+        <Label Text="*完工数量：" TextColor="#D0021B" VerticalTextAlignment="Center" />
+        <Entry Grid.Column="1" Placeholder="请输入" Keyboard="Numeric" Text="{Binding ActQtyText}" />
+
+        <Label Grid.Row="1" Text="备注：" VerticalTextAlignment="Center" />
+        <Entry Grid.Row="1" Grid.Column="1" Placeholder="请输入" Text="{Binding Memo}" />
+
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,*" Margin="0,12,0,0">
+            <Button Text="确认" Command="{Binding ConfirmCommand}" Margin="0,0,6,0" />
+            <Button Grid.Column="1" Text="取消" Command="{Binding CancelCommand}" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -356,6 +356,7 @@ public class WorkProcessTaskDetail
     public string? schemeNo { get; set; }
 
     public string? platPlanNo { get; set; }
+    public bool? finalProcess { get; set; }
 
     public List<TaskMaterialInput> materialInputList { get; set; } = new();
     public List<TaskMaterialOutput> materialOutputList { get; set; } = new();
@@ -644,6 +645,12 @@ public class ReportAddPopupResult
     public int? WorkHours { get; set; }
     public int? ReportQty { get; set; }
     public string? OperateTimeText { get; set; }
+    public string? Memo { get; set; }
+}
+
+public class FinalProcessCompletePopupResult
+{
+    public decimal ActQty { get; set; }
     public string? Memo { get; set; }
 }
 
