@@ -419,7 +419,18 @@ public sealed class MaterialIO
     public string? memo { get; set; }
     public string? createdTime { get; set; }
 }
-public enum DetailTab { Input, Output }
+public enum DetailTab { Report, Input, Output }
+public class WorkProcessTaskReportRecord
+{
+    public string? id { get; set; }
+    public string? productionMachineName { get; set; } // 设备
+    public string? teamName { get; set; }              // 班组
+    public string? operatorName { get; set; }          // 操作人
+    public decimal? workHours { get; set; }            // 工时
+    public decimal? reportQty { get; set; }            // 报工数量
+    public string? operateTime { get; set; }           // 操作时间
+    public string? memo { get; set; }                  // 备注
+}
 public class WorkProcessTaskTeamUpdateReq
 {
     public string id { get; set; } = "";      
@@ -620,6 +631,36 @@ public class MaterialInputResult
     public string? Memo { get; set; }
     public string? Unit { get; set; }
     public DateTime? OperationTime { get; set; }
+}
+
+public class ReportAddPopupResult
+{
+    public string? DeviceCode { get; set; }
+    public string? DeviceName { get; set; }
+    public string? TeamCode { get; set; }
+    public string? TeamName { get; set; }
+    public string? OperatorUserName { get; set; }
+    public string? OperatorName { get; set; }
+    public int? WorkHours { get; set; }
+    public int? ReportQty { get; set; }
+    public string? OperateTimeText { get; set; }
+    public string? Memo { get; set; }
+}
+
+public class AddWorkProcessTaskReportReq
+{
+    public string? memo { get; set; }
+    public string? operateTime { get; set; }
+    public string? @operator { get; set; }
+    public string processCode { get; set; } = "";
+    public string? productionMachine { get; set; }
+    public string? productionMachineName { get; set; }
+    public decimal reportQty { get; set; }
+    public string? teamCode { get; set; }
+    public string? teamName { get; set; }
+    public decimal? unqualifiedQty { get; set; }
+    public decimal? workHours { get; set; }
+    public string workOrderNo { get; set; } = "";
 }
 
 public class DeleteWorkProcessTaskMaterialInputReq

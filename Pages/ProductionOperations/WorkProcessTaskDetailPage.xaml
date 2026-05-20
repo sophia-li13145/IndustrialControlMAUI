@@ -198,7 +198,7 @@
       InputTransparent="True"
                         
                        />
-                    <Grid  ColumnDefinitions="*,*">
+                    <Grid  ColumnDefinitions="*,*,*">
                     <!-- 白色滑块：默认在左列；上边留更大间距以露出更多紫色；带轻微阴影 -->
                         <Border x:Name="Knob"
                                   Grid.Column="0"
@@ -209,21 +209,60 @@
                                   HorizontalOptions="Fill"
                                   VerticalOptions="Fill"
                                   InputTransparent="True"> 
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding ActiveTab}" Value="Report">
+                                    <Setter Property="Grid.Column" Value="0" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding ActiveTab}" Value="Input">
+                                    <Setter Property="Grid.Column" Value="1" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding ActiveTab}" Value="Output">
+                                    <Setter Property="Grid.Column" Value="2" />
+                                </DataTrigger>
+                            </Border.Triggers>
                             <Border.Shadow>
                                 <Shadow Brush="#33000000" Offset="0,2" Radius="10" Opacity="0.35"/>
                             </Border.Shadow>
                         </Border>
                    
-                    <!-- 左：投料（选中→紫字；未选中→白字） -->
+                    <!-- 左：报工（选中→紫字；未选中→白字） -->
                         <Grid Grid.Column="0">
-                            <Label Text="投料"
+                            <Label Text="报工"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"
                                    FontAttributes="Bold"
                                    TextColor="White"> 
                                 <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Report">
+                                        <Setter Property="TextColor" Value="#5B3FF3"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Input">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Output">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowReportCommand}" />
+                                <SwipeGestureRecognizer Direction="Right" Command="{Binding ShowReportCommand}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+
+                        <!-- 中：投料（选中→紫字；未选中→白字） -->
+                        <Grid Grid.Column="1">
+                        <Label Text="投料"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               FontAttributes="Bold"
+                               TextColor="White"> 
+                            <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Input">
                                         <Setter Property="TextColor" Value="#5B3FF3"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Report">
+                                        <Setter Property="TextColor" Value="White"/>
                                     </DataTrigger>
                                     <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Output">
                                         <Setter Property="TextColor" Value="White"/>
@@ -232,20 +271,21 @@
                             </Label>
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding ShowInputCommand}" />
-                                <SwipeGestureRecognizer Direction="Right" Command="{Binding ShowInputCommand}" />
                             </Grid.GestureRecognizers>
                         </Grid>
-
                         <!-- 右：产出（选中→紫字；未选中→白字） -->
-                        <Grid Grid.Column="1">
-                        <Label Text="产出"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               FontAttributes="Bold"
-                               TextColor="White"> 
-                            <Label.Triggers>
+                        <Grid Grid.Column="2">
+                            <Label Text="产出"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   FontAttributes="Bold"
+                                   TextColor="White"> 
+                                <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Output">
                                         <Setter Property="TextColor" Value="#5B3FF3"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Report">
+                                        <Setter Property="TextColor" Value="White"/>
                                     </DataTrigger>
                                     <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Input">
                                         <Setter Property="TextColor" Value="White"/>
@@ -259,6 +299,53 @@
                         </Grid>
                 </Grid>
                 </Grid>
+
+                <!-- 报工明细 -->
+                <Label Text="报工明细" FontAttributes="Bold" Margin="0,8,0,4"
+                       IsVisible="{Binding IsReportVisible}" />
+                <Grid Margin="0,12,0,8" IsVisible="{Binding IsReportVisible}">
+                    <Button Text="＋ 新增报工"
+                            HorizontalOptions="End"
+                            Command="{Binding AddReportCommand}"
+                            IsEnabled="{Binding IsEditing}" />
+                </Grid>
+                <Grid ColumnDefinitions="30,45,45,45,40,50,70,50,35"
+                      BackgroundColor="#E8F0FE"
+                      Padding="4"
+                      RowSpacing="1"
+                      ColumnSpacing="1"
+                      IsVisible="{Binding IsReportVisible}">
+                    <Label Text="序号" FontAttributes="Bold" />
+                    <Label Text="设备" Grid.Column="1" FontAttributes="Bold" />
+                    <Label Text="班组" Grid.Column="2" FontAttributes="Bold" />
+                    <Label Text="操作人" Grid.Column="3" FontAttributes="Bold" />
+                    <Label Text="工时" Grid.Column="4" FontAttributes="Bold" />
+                    <Label Text="报工数量" Grid.Column="5" FontAttributes="Bold" />
+                    <Label Text="操作时间" Grid.Column="6" FontAttributes="Bold" />
+                    <Label Text="备注" Grid.Column="7" FontAttributes="Bold" />
+                    <Label Text="操作" Grid.Column="8" FontAttributes="Bold" />
+                </Grid>
+                <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}" IsVisible="{Binding IsReportVisible}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="30,45,45,45,40,50,70,50,35"
+                                  Padding="4"
+                                  RowSpacing="1"
+                                  ColumnSpacing="1"
+                                  BackgroundColor="White">
+                                <Label Text="{Binding ., Converter={StaticResource IndexConverter}, ConverterParameter={x:Reference ReportListView}}" />
+                                <Label Grid.Column="1" Text="{Binding productionMachineName}" />
+                                <Label Grid.Column="2" Text="{Binding teamName}" />
+                                <Label Grid.Column="3" Text="{Binding operatorName}" />
+                                <Label Grid.Column="4" Text="{Binding workHours}" />
+                                <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
+                                <Label Grid.Column="6" Text="{Binding operateTime}" />
+                                <Label Grid.Column="7" Text="{Binding memo}" />
+                                <Label Grid.Column="8" Text="删除" Style="{StaticResource DeleteActionLabelStyle}" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
                 <!-- 标题 -->
                 <Label Text="配料明细" FontAttributes="Bold" Margin="0,8,0,4"
