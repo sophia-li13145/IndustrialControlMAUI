@@ -46,6 +46,7 @@ namespace IndustrialControlMAUI.Services
         string factoryCode,
         string processCode,
         string? line = null,
+        string? workshopsCode = null,
         CancellationToken ct = default);
         Task<SimpleOk> UpdateWorkProcessTaskAsync(
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default);
@@ -58,6 +59,9 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<bool>> AddWorkProcessTaskMaterialInputAsync(AddWorkProcessTaskMaterialInputReq req);
 
         Task<ApiResp<bool>> AddWorkProcessTaskProductOutputAsync(AddWorkProcessTaskProductOutputReq req);
+        Task<ApiResp<bool>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default);
+        Task<ApiResp<bool>> DeleteWorkProcessTaskReportAsync(DeleteWorkProcessTaskReportReq req, CancellationToken ct = default);
+        Task<ApiResp<decimal?>> GetWorkProcessTaskFrameOutputQtyAsync(string workProcessTaskId, CancellationToken ct = default);
 
         Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
                 string factoryCode,          // 工厂编码（必填）
@@ -77,6 +81,10 @@ namespace IndustrialControlMAUI.Services
                 int pageSize = 50,           // 每页条数（必填）
                 string? materialCode = null, // 物料编码（可选）
                 bool? searchCount = null,    // 是否计算总记录数（可选）
+                CancellationToken ct = default);
+        Task<PageResp<WorkProcessTaskReportRecord>?> PageWorkProcessTaskReports(
+                string processCode,
+                string workOrderNo,
                 CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
     string id,
