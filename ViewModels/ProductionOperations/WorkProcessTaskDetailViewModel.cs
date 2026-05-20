@@ -33,7 +33,6 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public bool CanFinish => !IsBusy && State == TaskRunState.Running;
     public bool CanRework => !IsBusy && IsReworkVisible;
 
-    private readonly IServiceProvider _sp;
     public string PauseResumeText => State == TaskRunState.Running ? "暂停" : "复工";
 
     [ObservableProperty] private DetailTab activeTab = DetailTab.Report;
@@ -339,7 +338,18 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
         try
         {
-            var resp = await _api.CompleteWorkAsync(Detail.processCode, Detail.workOrderNo, null);
+            string? memo = null;
+            decimal? actQty = null;
+
+            if (Detail?.finalProcess == true)
+            {
+                var popupResult = await FinalProcessCompletePopupPage.ShowAsync(null);
+                if (popupResult is null) return;
+                memo = popupResult.Memo;
+                actQty = popupResult.ActQty;
+            }
+
+            var resp = await _api.CompleteWorkAsync(Detail.processCode, Detail.workOrderNo, memo, actQty);
             if (resp.success)
             {
                 State = TaskRunState.Finished;
