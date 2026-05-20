@@ -633,6 +633,41 @@ public class MaterialInputResult
     public DateTime? OperationTime { get; set; }
 }
 
+public class ReportAddPopupResult
+{
+    public string? DeviceCode { get; set; }
+    public string? DeviceName { get; set; }
+    public string? TeamCode { get; set; }
+    public string? TeamName { get; set; }
+    public string? OperatorUserName { get; set; }
+    public string? OperatorName { get; set; }
+    public int? WorkHours { get; set; }
+    public int? ReportQty { get; set; }
+    public string? OperateTimeText { get; set; }
+    public string? Memo { get; set; }
+}
+
+public class AddWorkProcessTaskReportReq
+{
+    public string? memo { get; set; }
+    public string? operateTime { get; set; }
+    public string? @operator { get; set; }
+    public string processCode { get; set; } = "";
+    public string? productionMachine { get; set; }
+    public string? productionMachineName { get; set; }
+    public decimal reportQty { get; set; }
+    public string? teamCode { get; set; }
+    public string? teamName { get; set; }
+    public decimal? unqualifiedQty { get; set; }
+    public decimal? workHours { get; set; }
+    public string workOrderNo { get; set; } = "";
+}
+
+public class DeleteWorkProcessTaskReportReq
+{
+    public string id { get; set; } = "";
+}
+
 public class DeleteWorkProcessTaskMaterialInputReq
 {
     public string? id { get; set; }

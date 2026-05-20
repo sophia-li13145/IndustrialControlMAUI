@@ -306,7 +306,7 @@
                 <Grid Margin="0,12,0,8" IsVisible="{Binding IsReportVisible}">
                     <Button Text="＋ 新增报工"
                             HorizontalOptions="End"
-                            Command="{Binding SubmitReportQtyCommand}"
+                            Command="{Binding AddReportCommand}"
                             IsEnabled="{Binding IsEditing}" />
                 </Grid>
                 <Grid ColumnDefinitions="30,45,45,45,40,50,70,50,35"
@@ -341,7 +341,13 @@
                                 <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
                                 <Label Grid.Column="6" Text="{Binding operateTime}" />
                                 <Label Grid.Column="7" Text="{Binding memo}" />
-                                <Label Grid.Column="8" Text="删除" Style="{StaticResource DeleteActionLabelStyle}" />
+                                <Label Grid.Column="8" Text="删除" Style="{StaticResource DeleteActionLabelStyle}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteReportCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
