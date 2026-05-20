@@ -1218,6 +1218,7 @@ namespace IndustrialControlMAUI.Services
                    ?? new ApiResp<List<ReworkBomDetailFlattenItem>> { success = false, message = "反序列化失败", result = new List<ReworkBomDetailFlattenItem>() };
         }
 
+        
         public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(
     string? barcode,
     int pageNo = 1,

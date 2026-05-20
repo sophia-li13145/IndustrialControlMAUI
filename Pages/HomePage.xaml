@@ -208,6 +208,123 @@
                 </Frame>
 
             </Grid>
+
+            <!-- 料框管理 -->
+            <Label Text="料框管理" Style="{StaticResource SectionTitle}"/>
+
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto,Auto"
+                  Padding="8,0,8,24">
+
+                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#ECE6FF"
+                                StrokeShape="RoundRectangle 20">
+                            <Image Source="search_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="查询" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaterialBoxQuery"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#DDF7FC"
+                                StrokeShape="RoundRectangle 20">
+                            <Image Source="box_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="装框" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaterialBoxLoad"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#E9F0FF"
+                                StrokeShape="RoundRectangle 20">
+                            <Image Source="action_key.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="拆框" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaterialBoxUnload"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#ECE9FF"
+                                StrokeShape="RoundRectangle 20">
+                            <Image Source="all_match.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="合框" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaterialBoxMerge"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <Frame Grid.Row="2" Grid.Column="0" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#FDF0DF"
+                                StrokeShape="RoundRectangle 20">
+                            <Image Source="repair_run.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="倒框" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaterialBoxDump"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+                <Frame Grid.Row="2" Grid.Column="1" Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#FDEDEF"
+                                StrokeShape="RoundRectangle 20">
+                            <Image Source="beaker_24_filled.svg"
+                                   HeightRequest="28" WidthRequest="28"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <Label Text="空框" FontSize="12" Margin="0,6,0,0"
+                               HorizontalTextAlignment="Center" TextColor="#333"/>
+                    </VerticalStackLayout>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMaterialBoxEmpty"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
+
+            </Grid>
             <!-- 仓储作业 -->
             <Label Text="生产作业" Style="{StaticResource SectionTitle}"/>
 

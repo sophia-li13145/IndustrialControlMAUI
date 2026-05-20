@@ -140,7 +140,7 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<List<ReworkBomDetailFlattenItem>>> GetReworkBomFlattenDetailsAsync(string workOrderNo, CancellationToken ct = default);
         Task<ApiResp<bool?>> SaveReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default);
         Task<ApiResp<bool?>> SaveAndSubmitReworkOrderAsync(SaveReworkOrderReq req, CancellationToken ct = default);
-        Task<PageResp<InventoryRecord>?> PageInventoryAsync(
+Task<PageResp<InventoryRecord>?> PageInventoryAsync(
     string? barcode,          // 库位或者物料条码
     int pageNo = 1,           // 当前页
     int pageSize = 50,        // 页大小

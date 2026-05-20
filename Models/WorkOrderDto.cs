@@ -725,6 +725,7 @@ public class RouteDetail
     public bool? preStartInspectionEnabled { get; set; }
     public int? sortNumber { get; set; }
 }
+
 /// <summary>
 /// 库存明细记录（对应 /pda/wmsInstock/pageQuery 返回的 records）
 /// </summary>

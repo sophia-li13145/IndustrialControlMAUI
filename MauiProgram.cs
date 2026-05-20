@@ -104,6 +104,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<InventorySearchViewModel>();
             builder.Services.AddTransient<FlexibleStockCheckViewModel>();
             builder.Services.AddTransient<StockCheckSearchViewModel>();
+            builder.Services.AddTransient<MaterialFrameQueryViewModel>();
 
             // ===== 注册 Pages（DI 创建）=====
             builder.Services.AddTransient<Pages.LoginPage>();
@@ -161,6 +162,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<InventorySearchPage>();
             builder.Services.AddTransient<FlexibleStockCheckPage>();
             builder.Services.AddTransient<StockCheckSearchPage>();
+            builder.Services.AddTransient<MaterialFrameQueryPage>();
 
 
             builder.Services.AddTransient<WarehouseLocationPickerPage>();
@@ -172,6 +174,10 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<AuthHeaderHandler>();
 
             builder.Services.AddHttpClient<IWorkOrderApi, WorkOrderApi>(ConfigureBaseAddress)
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .AddHttpMessageHandler<TokenExpiredHandler>();
+
+            builder.Services.AddHttpClient<IMaterialFrameApi, MaterialFrameApi>(ConfigureBaseAddress)
                 .AddHttpMessageHandler<AuthHeaderHandler>()
                 .AddHttpMessageHandler<TokenExpiredHandler>();
 
