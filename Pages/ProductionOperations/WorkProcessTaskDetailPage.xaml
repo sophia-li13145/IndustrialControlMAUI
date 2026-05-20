@@ -309,7 +309,7 @@
                             Command="{Binding AddReportCommand}"
                             IsEnabled="{Binding IsEditing}" />
                 </Grid>
-                <Grid ColumnDefinitions="30,45,45,45,40,50,70,50,35"
+                <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,26"
                       BackgroundColor="#E8F0FE"
                       Padding="4"
                       RowSpacing="1"
@@ -328,7 +328,7 @@
                 <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}" IsVisible="{Binding IsReportVisible}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="30,45,45,45,40,50,70,50,35"
+                            <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,26"
                                   Padding="4"
                                   RowSpacing="1"
                                   ColumnSpacing="1"
