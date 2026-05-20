@@ -9,7 +9,9 @@
         <CollectionView Grid.Row="0"
                         ItemsSource="{Binding Items}"
                         RemainingItemsThreshold="2"
-                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
+                        SelectionMode="Single"
+                        SelectionChanged="OnItemSelectionChanged">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Frame Margin="0,0,0,10" Padding="12" CornerRadius="12" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">

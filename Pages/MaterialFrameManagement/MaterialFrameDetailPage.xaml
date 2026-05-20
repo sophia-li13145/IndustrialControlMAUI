@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.MaterialFrameDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="料框详情"
+             BackgroundColor="#F4F5F7">
+    <Grid RowDefinitions="Auto,3*" Padding="12,8,12,12" RowSpacing="10">
+        <Frame Grid.Row="0" CornerRadius="14" Padding="14" BackgroundColor="#2450D6" HasShadow="False" BorderColor="#2450D6">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="料框编号" TextColor="#CFE0FF" FontSize="13"/>
+                        <Label Text="{Binding FrameNoDisplay}" TextColor="White" FontSize="36" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+                    <Label Grid.Column="1" Text="{Binding UseStatusText}" BackgroundColor="{Binding UseStatusColor}" TextColor="White" Padding="10,4" VerticalOptions="Start"/>
+                </Grid>
+                <Label Text="{Binding CurrentLocationDisplay}" TextColor="White" BackgroundColor="#2E5BDC" Padding="10,6"/>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Frame Grid.Row="1" CornerRadius="12" Padding="12" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+            <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="产品明细" FontSize="20" FontAttributes="Bold" TextColor="#1F2937"/>
+                    <Label Grid.Column="1" Text="{Binding DetailCount, StringFormat='共 {0} 项'}" TextColor="#6B7280" VerticalOptions="Center"/>
+                </Grid>
+
+                <CollectionView Grid.Row="1" ItemsSource="{Binding LoadDetails}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,0,0,8" Padding="10" CornerRadius="10" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="#FAFAFA">
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Text="{Binding MaterialName}" FontSize="18" FontAttributes="Bold" TextColor="#1F2937"/>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                        <Label Text="批号:" TextColor="#9CA3AF"/>
+                                        <Label Grid.Column="1" Text="{Binding BatchNo}" TextColor="#6B7280"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Text="当前数量" TextColor="#9CA3AF"/>
+                                        <Label Grid.Column="1" Text="{Binding QtyDisplay}" TextColor="#2450D6" FontSize="26" FontAttributes="Bold"/>
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <Label Text="暂无产品明细" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF"/>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </Grid>
+        </Frame>
+    </Grid>
+</ContentPage>

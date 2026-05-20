@@ -66,8 +66,11 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
 
 public class MaterialFrameItemVm
 {
+    public MaterialFrameRecord Source { get; }
+
     public MaterialFrameItemVm(MaterialFrameRecord r)
     {
+        Source = r;
         FrameNoDisplay = string.IsNullOrWhiteSpace(r.frameNo) ? "-" : r.frameNo!;
         CurrentLocationDisplay = string.IsNullOrWhiteSpace(r.currentLocation) ? "未分配位置" : r.currentLocation!;
         var use = r.frameInfo?.useStatus ?? 0;
@@ -84,4 +87,61 @@ public class MaterialFrameItemVm
     public string UseStatusColor { get; }
     public string FullLoadStatusText { get; }
     public string FullLoadStatusColor { get; }
+}
+
+public class MaterialFrameDetailLoadItemVm
+{
+    public MaterialFrameDetailLoadItemVm(MaterialFrameLoadDetail d)
+    {
+        MaterialName = FirstNotEmpty(d.materialName, d.productName, d.itemName, "-");
+        BatchNo = FirstNotEmpty(d.batchNo, d.lotNo, "-");
+        QtyDisplay = (d.currentQty ?? d.currentQuantity ?? d.quantity ?? 0m).ToString("0.##");
+    }
+
+    public string MaterialName { get; }
+    public string BatchNo { get; }
+    public string QtyDisplay { get; }
+
+    private static string FirstNotEmpty(params string?[] values)
+    {
+        foreach (var v in values)
+        {
+            if (!string.IsNullOrWhiteSpace(v)) return v!;
+        }
+
+        return "-";
+    }
+}
+
+public partial class MaterialFrameDetailViewModel : ObservableObject
+{
+    public ObservableCollection<MaterialFrameDetailLoadItemVm> LoadDetails { get; } = new();
+
+    [ObservableProperty] private string frameNoDisplay = "-";
+    [ObservableProperty] private string currentLocationDisplay = "未分配位置";
+    [ObservableProperty] private string useStatusText = "空闲";
+    [ObservableProperty] private string useStatusColor = "#22C55E";
+
+    public int DetailCount => LoadDetails.Count;
+
+    public void Apply(MaterialFrameRecord? record)
+    {
+        LoadDetails.Clear();
+        if (record == null)
+        {
+            OnPropertyChanged(nameof(DetailCount));
+            return;
+        }
+
+        FrameNoDisplay = string.IsNullOrWhiteSpace(record.frameNo) ? "-" : record.frameNo!;
+        CurrentLocationDisplay = string.IsNullOrWhiteSpace(record.currentLocation) ? "未分配位置" : record.currentLocation!;
+        var use = record.frameInfo?.useStatus ?? 0;
+        UseStatusText = use == 1 ? "占用" : "空闲";
+        UseStatusColor = use == 1 ? "#EF4444" : "#22C55E";
+
+        foreach (var detail in record.loadDetailList ?? new List<MaterialFrameLoadDetail>())
+            LoadDetails.Add(new MaterialFrameDetailLoadItemVm(detail));
+
+        OnPropertyChanged(nameof(DetailCount));
+    }
 }

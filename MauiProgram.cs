@@ -105,6 +105,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<FlexibleStockCheckViewModel>();
             builder.Services.AddTransient<StockCheckSearchViewModel>();
             builder.Services.AddTransient<MaterialFrameQueryViewModel>();
+            builder.Services.AddTransient<MaterialFrameDetailViewModel>();
 
             // ===== 注册 Pages（DI 创建）=====
             builder.Services.AddTransient<Pages.LoginPage>();
@@ -163,6 +164,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<FlexibleStockCheckPage>();
             builder.Services.AddTransient<StockCheckSearchPage>();
             builder.Services.AddTransient<MaterialFrameQueryPage>();
+            builder.Services.AddTransient<MaterialFrameDetailPage>();
 
 
             builder.Services.AddTransient<WarehouseLocationPickerPage>();

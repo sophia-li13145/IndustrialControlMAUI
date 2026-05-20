@@ -67,6 +67,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(FlexibleStockCheckPage), typeof(FlexibleStockCheckPage));
         Routing.RegisterRoute(nameof(StockCheckSearchPage), typeof(StockCheckSearchPage));
         Routing.RegisterRoute(nameof(MaterialFrameQueryPage), typeof(MaterialFrameQueryPage));
+        Routing.RegisterRoute(nameof(MaterialFrameDetailPage), typeof(MaterialFrameDetailPage));
 
     }
 
