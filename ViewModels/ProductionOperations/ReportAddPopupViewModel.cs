@@ -52,6 +52,13 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
         var current = UserOptions.FirstOrDefault(x => string.Equals(x.username, Preferences.Get("UserName", string.Empty), StringComparison.OrdinalIgnoreCase));
         SelectedUser = current ?? UserOptions.FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(detail.id))
+        {
+            var qtyResp = await _api.GetWorkProcessTaskFrameOutputQtyAsync(detail.id);
+            if (qtyResp.success && qtyResp.result.HasValue)
+                ReportQtyText = qtyResp.result.Value.ToString("G29");
+        }
     }
 
     public void SetResultTcs(TaskCompletionSource<bool> tcs) => _tcs = tcs;

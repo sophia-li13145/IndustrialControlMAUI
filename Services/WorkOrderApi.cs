@@ -37,6 +37,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _reportListEndpoint;
         private readonly string _addReportEndpoint;
         private readonly string _deleteReportEndpoint;
+        private readonly string _frameOutputQtyEndpoint;
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
@@ -123,6 +124,8 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.addReport", "/pda/pmsWorkProcessTaskReport/addWorkProcessTaskReport"), servicePath);
             _deleteReportEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteReport", "/pda/pmsWorkProcessTaskReport/deleteWorkProcessTaskReport"), servicePath);
+            _frameOutputQtyEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.frameOutputQty", "/pda/pmsWorkProcessTaskReport/getWorkProcessTaskFrameOutputQty"), servicePath);
             _deleteWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput"), servicePath);
             _deleteWorkProcessTaskOutputEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -738,6 +741,23 @@ namespace IndustrialControlMAUI.Services
             var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
             var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
             return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
+        }
+
+        public async Task<ApiResp<decimal?>> GetWorkProcessTaskFrameOutputQtyAsync(string workProcessTaskId, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _frameOutputQtyEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["workProcessTaskId"] = workProcessTaskId
+            });
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<decimal?> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<decimal?>>(json, _json)
+                ?? new ApiResp<decimal?> { success = false, message = "empty response" };
         }
 
         //实际投料列表
