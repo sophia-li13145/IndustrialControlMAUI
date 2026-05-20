@@ -713,6 +713,24 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    [RelayCommand]
+    private async Task DeleteReportAsync(WorkProcessTaskReportRecord? row)
+    {
+        if (row is null || string.IsNullOrWhiteSpace(row.id)) return;
+        var ok = await Shell.Current.DisplayAlert("确认", "确定删除该报工记录吗？", "确定", "取消");
+        if (!ok) return;
+
+        var resp = await _api.DeleteWorkProcessTaskReportAsync(new DeleteWorkProcessTaskReportReq { id = row.id });
+        if (!resp.success)
+        {
+            await ShowTip(resp.message ?? "删除报工记录失败");
+            return;
+        }
+
+        await ShowTip("删除成功");
+        await LoadReportRecordsAsync();
+    }
+
     // 点击“新增投料”
     /// <summary>执行 AddMaterialInputAsync 逻辑。</summary>
     [RelayCommand]

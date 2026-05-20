@@ -663,6 +663,11 @@ public class AddWorkProcessTaskReportReq
     public string workOrderNo { get; set; } = "";
 }
 
+public class DeleteWorkProcessTaskReportReq
+{
+    public string id { get; set; } = "";
+}
+
 public class DeleteWorkProcessTaskMaterialInputReq
 {
     public string? id { get; set; }

@@ -60,6 +60,7 @@ namespace IndustrialControlMAUI.Services
 
         Task<ApiResp<bool>> AddWorkProcessTaskProductOutputAsync(AddWorkProcessTaskProductOutputReq req);
         Task<ApiResp<bool>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default);
+        Task<ApiResp<bool>> DeleteWorkProcessTaskReportAsync(DeleteWorkProcessTaskReportReq req, CancellationToken ct = default);
 
         Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
                 string factoryCode,          // 工厂编码（必填）
