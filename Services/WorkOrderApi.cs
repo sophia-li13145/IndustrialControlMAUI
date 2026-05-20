@@ -52,6 +52,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _reworkSaveEndpoint;
         private readonly string _reworkSaveAndSubmitEndpoint;
         private readonly string _inventoryPageEndpoint;
+        private readonly string _materialFrameInfoPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
         private readonly string _stockCheckDetailPageEndpoint;
         private readonly string _stockCheckEditEndpoint;
@@ -160,6 +161,9 @@ namespace IndustrialControlMAUI.Services
     servicePath);
             _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
+    servicePath);
+            _materialFrameInfoPageEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/pageMaterialFrameInfo"),
     servicePath);
 
             _stockCheckPageEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -1218,7 +1222,43 @@ namespace IndustrialControlMAUI.Services
                    ?? new ApiResp<List<ReworkBomDetailFlattenItem>> { success = false, message = "反序列化失败", result = new List<ReworkBomDetailFlattenItem>() };
         }
 
-        public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(
+        
+        public async Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameInfoAsync(
+            int pageNo = 1,
+            int pageSize = 10,
+            string? frameNo = null,
+            CancellationToken ct = default)
+        {
+            if (pageNo <= 0) pageNo = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var pairs = new List<KeyValuePair<string, string>>
+            {
+                new("pageNo", pageNo.ToString()),
+                new("pageSize", pageSize.ToString())
+            };
+
+            if (!string.IsNullOrWhiteSpace(frameNo))
+                pairs.Add(new("frameNo", frameNo.Trim()));
+
+            string BuildQueryMulti(IEnumerable<KeyValuePair<string, string>> kvs)
+                => string.Join("&", kvs.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+
+            var url = _materialFrameInfoPageEndpoint + "?" + BuildQueryMulti(pairs);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new PageResp<MaterialFrameRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<PageResp<MaterialFrameRecord>>(json,
+                       new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                   ?? new PageResp<MaterialFrameRecord>();
+        }
+
+public async Task<PageResp<InventoryRecord>?> PageInventoryAsync(
     string? barcode,
     int pageNo = 1,
     int pageSize = 50,
