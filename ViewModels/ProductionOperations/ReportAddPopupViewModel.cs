@@ -22,6 +22,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
     [ObservableProperty] private UserInfoDto? selectedUser;
     [ObservableProperty] private string? workHoursText;
     [ObservableProperty] private string? reportQtyText;
+    [ObservableProperty] private string? unqualifiedQtyText;
     [ObservableProperty] private string? operateTimeText = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     [ObservableProperty] private string? memo;
 
@@ -88,7 +89,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
             reportQty = qty,
             teamCode = SelectedShift?.Value,
             teamName = SelectedShift?.Text,
-            unqualifiedQty = 0,
+            unqualifiedQty = decimal.TryParse(UnqualifiedQtyText, out var unqualifiedQty) ? unqualifiedQty : 0,
             workHours = decimal.TryParse(WorkHoursText, out var hours) ? hours : null,
             workOrderNo = _detail.workOrderNo!
         };
