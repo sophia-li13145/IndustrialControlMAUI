@@ -17,7 +17,6 @@ public partial class MaterialFrameQueryPage : ContentPage
     {
         base.OnAppearing();
         await _vm.InitializeAsync();
-        ScanEntry?.Focus();
     }
 
     private async void OnSearchCompleted(object sender, EventArgs e)
