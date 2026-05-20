@@ -395,15 +395,13 @@ namespace IndustrialControlMAUI.Services
             string factoryCode,
             string processCode,
             string? line = null,
-            string? workshopsCode = null,
             CancellationToken ct = default)
         {
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deviceEndpoint);
             var query = BuildQuery(new Dictionary<string, string?>
             {
                 ["factoryCode"] = factoryCode,
-                ["processCode"] = processCode,
-                ["workshopsCode"] = workshopsCode
+                ["processCode"] = processCode
             });
 
             var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";

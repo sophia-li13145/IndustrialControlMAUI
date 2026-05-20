@@ -39,7 +39,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
         ShiftOptions.Clear();
         UserOptions.Clear();
 
-        var deviceResp = await _api.GetDeviceOptionsAsync(detail.factoryCode!, detail.processCode!, workshopsCode: detail.workShop);
+        var deviceResp = await _api.GetDeviceOptionsAsync(detail.factoryCode!, detail.processCode!);
         foreach (var d in deviceResp.result ?? new List<DevicesInfo>())
             DeviceOptions.Add(new StatusOption { Text = d.deviceName ?? d.deviceCode, Value = d.deviceCode });
 

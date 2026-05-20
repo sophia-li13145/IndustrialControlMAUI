@@ -46,7 +46,6 @@ namespace IndustrialControlMAUI.Services
         string factoryCode,
         string processCode,
         string? line = null,
-        string? workshopsCode = null,
         CancellationToken ct = default);
         Task<SimpleOk> UpdateWorkProcessTaskAsync(
             string id, string? productionMachine, string? productionMachineName, int? taskReportedQty, string? teamCode, string? teamName, int? workHours, string? startDate, string? endDate, CancellationToken ct = default);
