@@ -315,7 +315,7 @@
                                 <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
                                 <Label Grid.Column="6" Text="{Binding operateTime}" />
                                 <Label Grid.Column="7" Text="{Binding memo}" />
-                                <Label Grid.Column="8" Text="删除" Style="{StaticResource DeleteActionLabelStyle}">
+                                <Label Grid.Column="8" Text="删除" TextColor="Red">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteReportCommand}"
