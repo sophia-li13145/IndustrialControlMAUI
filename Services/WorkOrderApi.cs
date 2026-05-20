@@ -52,6 +52,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _reworkSaveEndpoint;
         private readonly string _reworkSaveAndSubmitEndpoint;
         private readonly string _inventoryPageEndpoint;
+        private readonly string _materialFrameInfoPageEndpoint;
         private readonly string _stockCheckPageEndpoint;
         private readonly string _stockCheckDetailPageEndpoint;
         private readonly string _stockCheckEditEndpoint;
@@ -160,6 +161,9 @@ namespace IndustrialControlMAUI.Services
     servicePath);
             _inventoryPageEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
+    servicePath);
+            _materialFrameInfoPageEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/pageMaterialFrameInfo"),
     servicePath);
 
             _stockCheckPageEndpoint = ServiceUrlHelper.NormalizeRelative(

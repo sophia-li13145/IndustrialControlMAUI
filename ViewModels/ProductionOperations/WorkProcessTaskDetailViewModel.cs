@@ -12,6 +12,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAttributable
 {
     private readonly IWorkOrderApi _api;
+    private readonly IServiceProvider _sp;
 
     // 状态字典（值→名），用于将 auditStatus 映射为中文
     private readonly Dictionary<string, string> _auditMap = new();
@@ -119,9 +120,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     private bool _suppressRemoteUpdate = false;
 
     /// <summary>执行 WorkProcessTaskDetailViewModel 初始化逻辑。</summary>
-    public WorkProcessTaskDetailViewModel(IWorkOrderApi api)
+    public WorkProcessTaskDetailViewModel(IServiceProvider sp, IWorkOrderApi api)
     {
         _api = api;
+        _sp = sp;
     }
     private StatusOption? _selectedShift;
     public StatusOption? SelectedShift
