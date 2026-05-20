@@ -726,19 +726,6 @@ public class RouteDetail
     public int? sortNumber { get; set; }
 }
 
-public class MaterialFrameRecord
-{
-    public string? currentLocation { get; set; }
-    public FrameInfoLite? frameInfo { get; set; }
-    public string? frameNo { get; set; }
-    public bool? fullLoadStatus { get; set; }
-}
-
-public class FrameInfoLite
-{
-    public int? useStatus { get; set; }
-}
-
 /// <summary>
 /// 库存明细记录（对应 /pda/wmsInstock/pageQuery 返回的 records）
 /// </summary>
