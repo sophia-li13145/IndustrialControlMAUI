@@ -5,24 +5,8 @@
              Title="料框查询"
              BackgroundColor="#F4F5F7">
 
-    <Grid RowDefinitions="Auto,*" Padding="12,8,12,0" RowSpacing="10">
-        <Grid Grid.Row="0" ColumnDefinitions="*,44" ColumnSpacing="8">
-            <Entry x:Name="ScanEntry"
-                   Placeholder="输入料框编码查询"
-                   Text="{Binding FrameNo}"
-                   ReturnType="Search"
-                   Completed="OnSearchCompleted"
-                   BackgroundColor="White"
-                   HeightRequest="40" />
-            <ImageButton Grid.Column="1"
-                         Source="scan_button.png"
-                         BackgroundColor="White"
-                         Padding="8"
-                         CornerRadius="8"
-                         Clicked="OnScanClicked"/>
-        </Grid>
-
-        <CollectionView Grid.Row="1"
+    <Grid RowDefinitions="4*,*" Padding="12,8,12,12" RowSpacing="10">
+        <CollectionView Grid.Row="0"
                         ItemsSource="{Binding Items}"
                         RemainingItemsThreshold="2"
                         RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
@@ -46,6 +30,28 @@
                     <Label Text="加载中..." Margin="8,0,0,0" VerticalOptions="Center"/>
                 </Grid>
             </CollectionView.Footer>
+            <CollectionView.EmptyView>
+                <Label Text="暂无数据"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="#9CA3AF"/>
+            </CollectionView.EmptyView>
         </CollectionView>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,44" ColumnSpacing="8" VerticalOptions="End">
+            <Entry x:Name="ScanEntry"
+                   Placeholder="输入料框编码查询"
+                   Text="{Binding FrameNo}"
+                   ReturnType="Search"
+                   Completed="OnSearchCompleted"
+                   BackgroundColor="White"
+                   HeightRequest="40" />
+            <ImageButton Grid.Column="1"
+                         Source="scan_button.png"
+                         BackgroundColor="White"
+                         Padding="8"
+                         CornerRadius="8"
+                         Clicked="OnScanClicked"/>
+        </Grid>
     </Grid>
 </ContentPage>
