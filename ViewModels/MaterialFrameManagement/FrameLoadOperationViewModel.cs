@@ -2,10 +2,9 @@ using IndustrialControlMAUI.Services;
 
 namespace IndustrialControlMAUI.ViewModels;
 
-public class FrameLoadOperationViewModel : MaterialFrameQueryViewModel
+public class FrameLoadOperationViewModel : FrameUseRecordOperationListViewModel
 {
-    public FrameLoadOperationViewModel(IMaterialFrameApi api) : base(api)
+    public FrameLoadOperationViewModel(IMaterialFrameApi api) : base(api, "装框操作", "framing")
     {
-        ApplyOperation("装框", "framing");
     }
 }
