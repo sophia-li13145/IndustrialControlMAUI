@@ -12,6 +12,7 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _materialFrameInfoPageEndpoint;
     private readonly string _materialFrameOperationPageEndpoint;
     private readonly string _pageBasMaterialsEndpoint;
+    private readonly string _getFrameStatusListEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
     {
@@ -31,6 +32,9 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _pageBasMaterialsEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.pageBasMaterials", "/pda/dev/frameUseRecord/pageBasMaterials"),
+            servicePath);
+        _getFrameStatusListEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getFrameStatusList", "/pda/dev/frameUseRecord/getFrameStatusList"),
             servicePath);
     }
 
@@ -190,5 +194,33 @@ public class MaterialFrameApi : IMaterialFrameApi
         return JsonSerializer.Deserialize<PageResp<BasMaterialRecord>>(json,
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                ?? new PageResp<BasMaterialRecord>();
+    }
+
+    public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListAsync(
+        string materialCode,
+        string materialName,
+        CancellationToken ct = default)
+    {
+        var pairs = new List<KeyValuePair<string, string>>
+        {
+            new("materialCode", materialCode.Trim()),
+            new("materialName", materialName.Trim())
+        };
+
+        var query = string.Join("&", pairs.Select(kv =>
+            $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+        var url = _getFrameStatusListEndpoint + "?" + query;
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameStatusItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameStatusItem>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameStatusItem>();
     }
 }

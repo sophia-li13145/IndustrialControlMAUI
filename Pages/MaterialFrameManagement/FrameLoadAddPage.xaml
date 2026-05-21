@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="新增装框"
              BackgroundColor="#F4F5F7">
-    <Grid Padding="12" RowDefinitions="Auto,Auto,*">
+    <Grid Padding="12" RowDefinitions="Auto,Auto,Auto,*">
         <Frame CornerRadius="12" BackgroundColor="White" BorderColor="#E5E7EB" HasShadow="False">
             <VerticalStackLayout Spacing="10">
                 <Label Text="装载物料" FontAttributes="Bold"/>
@@ -21,9 +21,31 @@
             </VerticalStackLayout>
         </Frame>
 
-        <Button Grid.Row="1" Margin="0,16,0,0" Text="确认装框" IsEnabled="False" BackgroundColor="#D1D5DB" TextColor="#9CA3AF"/>
+        <Frame Grid.Row="1" Margin="0,12,0,0" CornerRadius="12" BackgroundColor="White" BorderColor="#E5E7EB" HasShadow="False">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Label Text="分配至目标料框（空闲）" FontAttributes="Bold" TextColor="#1F2937"/>
+                    <Button Grid.Column="1" Text="扫码添加" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
+                    <Button Grid.Column="2" Text="列表添加" Command="{Binding OpenTargetFramePopupCommand}" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
+                </Grid>
+                <CollectionView ItemsSource="{Binding SelectedTargetFrames}" HeightRequest="120">
+                    <CollectionView.EmptyView>
+                        <Label Text="请点击上方按钮添加目标空闲料框" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF"/>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="8" BorderColor="#BBF7D0" BackgroundColor="#F0FDF4" CornerRadius="10" HasShadow="False">
+                                <Label Text="{Binding frameNo}" FontAttributes="Bold" TextColor="#1F2937"/>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Frame>
 
-        <Grid x:Name="PickerOverlay" Grid.RowSpan="3" BackgroundColor="#66000000" IsVisible="{Binding IsPickerVisible}">
+        <Button Grid.Row="2" Margin="0,16,0,0" Text="确认装框" IsEnabled="False" BackgroundColor="#D1D5DB" TextColor="#9CA3AF"/>
+
+        <Grid x:Name="PickerOverlay" Grid.RowSpan="4" BackgroundColor="#66000000" IsVisible="{Binding IsPickerVisible}">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12" Margin="0,0,0,0">
                 <VerticalStackLayout Spacing="10">
                     <Grid ColumnDefinitions="*,Auto">
@@ -47,6 +69,34 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+
+        <Grid Grid.RowSpan="4" BackgroundColor="#66000000" IsVisible="{Binding IsTargetFramePopupVisible}">
+            <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="选择目标料框（空闲, 多选）" FontSize="24" FontAttributes="Bold"/>
+                        <Button Grid.Column="1" Text="✕" Command="{Binding CloseTargetFramePopupCommand}"/>
+                    </Grid>
+                    <CollectionView ItemsSource="{Binding TargetFrameList}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="12" BorderColor="#E5E7EB" CornerRadius="10" HasShadow="False">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleTargetFrameCommand}"
+                                                              CommandParameter="{Binding .}"/>
+                                    </Frame.GestureRecognizers>
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
+                                        <Label Text="{Binding frameStatus, StringFormat='状态: {0}'}" TextColor="#6B7280"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Button Text="确认选择" Command="{Binding CloseTargetFramePopupCommand}" BackgroundColor="#2F66E8" TextColor="White"/>
                 </VerticalStackLayout>
             </Frame>
         </Grid>
