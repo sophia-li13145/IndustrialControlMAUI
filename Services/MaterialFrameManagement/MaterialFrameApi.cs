@@ -23,7 +23,10 @@ public class MaterialFrameApi : IMaterialFrameApi
 
         var servicePath = _http.BaseAddress.AbsolutePath?.TrimEnd('/') ?? "/normalService";
         _materialFrameInfoPageEndpoint = ServiceUrlHelper.NormalizeRelative(
-            configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/pageMaterialFrameInfo"),
+            configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/page"),
+            servicePath);
+        _pageBasMaterialsEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.pageBasMaterials", "/pda/dev/frameUseRecord/pageBasMaterials"),
             servicePath);
         _pageBasMaterialsEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.pageBasMaterials", "/pda/dev/frameUseRecord/pageBasMaterials"),
