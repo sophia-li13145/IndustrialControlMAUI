@@ -17,6 +17,12 @@ public class FrameUseRecordOperation
     public string? sourceLocation { get; set; }
     public string? targetLocation { get; set; }
     public decimal? totalQty { get; set; }
+
+    public string BizNoDisplay => string.IsNullOrWhiteSpace(bizNo) ? "-" : bizNo!;
+    public string MaterialNameDisplay => string.IsNullOrWhiteSpace(materialName) ? "-" : materialName!;
+    public string TargetLocationDisplay => string.IsNullOrWhiteSpace(targetLocation) ? "-" : targetLocation!;
+    public string FrameCountDisplay => (frameCount ?? 0).ToString();
+    public string OperationTimeDisplay => string.IsNullOrWhiteSpace(operationTime) ? "-" : operationTime!;
 }
 
 public class FrameUseRecordDetail
