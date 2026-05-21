@@ -10,6 +10,7 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly HttpClient _http;
     private readonly AuthState _auth;
     private readonly string _materialFrameInfoPageEndpoint;
+    private readonly string _materialFrameOperationPageEndpoint;
     private readonly string _pageBasMaterialsEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
@@ -23,10 +24,10 @@ public class MaterialFrameApi : IMaterialFrameApi
 
         var servicePath = _http.BaseAddress.AbsolutePath?.TrimEnd('/') ?? "/normalService";
         _materialFrameInfoPageEndpoint = ServiceUrlHelper.NormalizeRelative(
-            configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/page"),
+            configLoader.GetApiPath("materialFrame.pageMaterialFrameInfo", "/pda/dev/frameUseRecord/pageMaterialFrameInfo"),
             servicePath);
-        _pageBasMaterialsEndpoint = ServiceUrlHelper.NormalizeRelative(
-            configLoader.GetApiPath("materialFrame.pageBasMaterials", "/pda/dev/frameUseRecord/pageBasMaterials"),
+        _materialFrameOperationPageEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/page"),
             servicePath);
         _pageBasMaterialsEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.pageBasMaterials", "/pda/dev/frameUseRecord/pageBasMaterials"),
@@ -57,7 +58,10 @@ public class MaterialFrameApi : IMaterialFrameApi
         var query = string.Join("&", pairs.Select(kv =>
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
-        var url = _materialFrameInfoPageEndpoint + "?" + query;
+        var endpoint = string.IsNullOrWhiteSpace(operationType)
+            ? _materialFrameInfoPageEndpoint
+            : _materialFrameOperationPageEndpoint;
+        var url = endpoint + "?" + query;
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
