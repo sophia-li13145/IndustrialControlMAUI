@@ -1,4 +1,5 @@
 using IndustrialControlMAUI.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
 namespace IndustrialControlMAUI.Pages;
@@ -32,7 +33,16 @@ public partial class MaterialFrameQueryPage : ContentPage
         if (sender is CollectionView cv) cv.SelectedItem = null;
 
         var navKey = MaterialFrameNavigationStore.Put(item.Source);
-        await Shell.Current.GoToAsync($"{nameof(MaterialFrameDetailPage)}?frameNo={navKey}");
+        if (Shell.Current is not null)
+        {
+            await Shell.Current.GoToAsync($"{nameof(MaterialFrameDetailPage)}?frameNo={navKey}");
+            return;
+        }
+
+        var detailPage = Application.Current?.Handler?.MauiContext?.Services.GetService<MaterialFrameDetailPage>();
+        if (detailPage is null) return;
+        detailPage.FrameNo = navKey;
+        await Navigation.PushAsync(detailPage);
     }
 
     private async void OnScanClicked(object sender, EventArgs e)
