@@ -7,14 +7,18 @@
 
     <Grid RowDefinitions="4*,*" Padding="12,8,12,12" RowSpacing="10">
         <CollectionView Grid.Row="0"
-                        ItemsSource="{Binding Items}"
-                        RemainingItemsThreshold="2"
-                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
-                        SelectionMode="Single"
-                        SelectionChanged="OnItemSelectionChanged">
+                ItemsSource="{Binding Items}"
+                RemainingItemsThreshold="2"
+                RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
+                SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Frame Margin="0,0,0,10" Padding="12" CornerRadius="12" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer
+            Tapped="OnItemTapped"
+            CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
                         <VerticalStackLayout Spacing="8">
                             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                                 <Label Text="{Binding FrameNoDisplay}" FontSize="24" FontAttributes="Bold" TextColor="#1F2937"/>
