@@ -41,7 +41,7 @@ namespace IndustrialControlMAUI.Tools
                         {
                             PropertyNameCaseInsensitive = true
                         });
-                        if (api?.success == false)
+                        if (api is not null)
                         {
                             var code = api.code?.ToString()?.ToUpperInvariant();
                             if (code is "401" or "40101" or "40301" or "TOKEN_EXPIRED" or "NO_AUTH"

@@ -28,7 +28,7 @@ namespace IndustrialControlMAUI.Tools
             try
             {
                 var api = JsonSerializer.Deserialize<ApiBase>(text, _json);
-                if (api?.success == false)
+                if (api is not null)
                 {
                     var code = api.code?.ToString() ?? "";
                     if (_expiredCodes.Contains(code) || code.StartsWith("401", StringComparison.OrdinalIgnoreCase)
