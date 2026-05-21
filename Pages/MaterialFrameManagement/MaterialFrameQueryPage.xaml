@@ -2,7 +2,7 @@
 <ContentPage x:Class="IndustrialControlMAUI.Pages.MaterialFrameQueryPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             Title="料框查询"
+             Title="{Binding PageTitle}"
              BackgroundColor="#F4F5F7">
 
     <Grid RowDefinitions="4*,*" Padding="12,8,12,12" RowSpacing="10">
@@ -40,7 +40,7 @@
             </CollectionView.EmptyView>
         </CollectionView>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,40" ColumnSpacing="8" VerticalOptions="End">
+        <Grid x:Name="SearchBarGrid" Grid.Row="1" ColumnDefinitions="*,40" ColumnSpacing="8" VerticalOptions="End">
             <Entry x:Name="ScanEntry"
                    Placeholder="输入料框编码查询"
                    Text="{Binding FrameNo}"
@@ -55,6 +55,15 @@
                          Padding="6"
                          CornerRadius="8"
                          Clicked="OnScanClicked"/>
+        </Grid>
+
+        <Grid x:Name="ActionButtonGrid" Grid.Row="1" VerticalOptions="End" IsVisible="False">
+            <Button Text="{Binding ActionButtonText}"
+                    HeightRequest="44"
+                    CornerRadius="10"
+                    TextColor="White"
+                    BackgroundColor="#2F66E8"
+                    Clicked="OnAddRecordClicked"/>
         </Grid>
     </Grid>
 </ContentPage>

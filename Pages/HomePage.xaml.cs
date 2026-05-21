@@ -49,19 +49,19 @@ namespace IndustrialControlMAUI.Pages
             => await Shell.Current.GoToAsync(nameof(MaterialFrameQueryPage));
 
         private async void OnMaterialBoxLoad(object? s, TappedEventArgs e)
-            => await DisplayAlert("料框管理", "装框页面待接入", "确定");
+            => await Shell.Current.GoToAsync(nameof(FrameLoadOperationPage));
 
         private async void OnMaterialBoxUnload(object? s, TappedEventArgs e)
-            => await DisplayAlert("料框管理", "拆框页面待接入", "确定");
+            => await Shell.Current.GoToAsync(nameof(FrameUnloadOperationPage));
 
         private async void OnMaterialBoxMerge(object? s, TappedEventArgs e)
-            => await DisplayAlert("料框管理", "合框页面待接入", "确定");
+            => await Shell.Current.GoToAsync(nameof(FrameMergeOperationPage));
 
         private async void OnMaterialBoxDump(object? s, TappedEventArgs e)
-            => await DisplayAlert("料框管理", "倒框页面待接入", "确定");
+            => await Shell.Current.GoToAsync(nameof(FrameDumpOperationPage));
 
         private async void OnMaterialBoxEmpty(object? s, TappedEventArgs e)
-            => await DisplayAlert("料框管理", "空框页面待接入", "确定");
+            => await Shell.Current.GoToAsync(nameof(FrameEmptyOperationPage));
 
         private async void OnAllQuality(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(QualitySearchPage));
