@@ -76,6 +76,44 @@ public class MaterialFrameApi : IMaterialFrameApi
                ?? new PageResp<MaterialFrameRecord>();
     }
 
+    public async Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameOperationAsync(
+        int pageNo = 1,
+        int pageSize = 10,
+        string operationType = "framing",
+        string? frameNo = null,
+        CancellationToken ct = default)
+    {
+        if (pageNo <= 0) pageNo = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var pairs = new List<KeyValuePair<string, string>>
+        {
+            new("pageNo", pageNo.ToString()),
+            new("pageSize", pageSize.ToString())
+        };
+        if (!string.IsNullOrWhiteSpace(operationType))
+            pairs.Add(new("operationType", operationType.Trim()));
+        if (!string.IsNullOrWhiteSpace(frameNo))
+            pairs.Add(new("frameNo", frameNo.Trim()));
+
+        var query = string.Join("&", pairs.Select(kv =>
+            $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+
+        var url = _materialFrameOperationPageEndpoint + "?" + query;
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new PageResp<MaterialFrameRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<PageResp<MaterialFrameRecord>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new PageResp<MaterialFrameRecord>();
+    }
+
     public async Task<PageResp<BasMaterialRecord>?> PageBasMaterialsAsync(
         int pageNo = 1,
         int pageSize = 20,
