@@ -67,6 +67,12 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(FlexibleStockCheckPage), typeof(FlexibleStockCheckPage));
         Routing.RegisterRoute(nameof(StockCheckSearchPage), typeof(StockCheckSearchPage));
         Routing.RegisterRoute(nameof(MaterialFrameQueryPage), typeof(MaterialFrameQueryPage));
+        Routing.RegisterRoute(nameof(FrameLoadOperationPage), typeof(FrameLoadOperationPage));
+        Routing.RegisterRoute(nameof(FrameUnloadOperationPage), typeof(FrameUnloadOperationPage));
+        Routing.RegisterRoute(nameof(FrameMergeOperationPage), typeof(FrameMergeOperationPage));
+        Routing.RegisterRoute(nameof(FrameDumpOperationPage), typeof(FrameDumpOperationPage));
+        Routing.RegisterRoute(nameof(FrameEmptyOperationPage), typeof(FrameEmptyOperationPage));
+        Routing.RegisterRoute(nameof(FrameLoadAddPage), typeof(FrameLoadAddPage));
         Routing.RegisterRoute(nameof(MaterialFrameDetailPage), typeof(MaterialFrameDetailPage));
 
     }

@@ -9,4 +9,18 @@ public interface IMaterialFrameApi
         int pageSize = 10,
         string? frameNo = null,
         CancellationToken ct = default);
+
+    Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameOperationAsync(
+        int pageNo = 1,
+        int pageSize = 10,
+        string operationType = "framing",
+        string? frameNo = null,
+        CancellationToken ct = default);
+
+    Task<PageResp<BasMaterialRecord>?> PageBasMaterialsAsync(
+        int pageNo = 1,
+        int pageSize = 20,
+        string? materialName = null,
+        string? materialCode = null,
+        CancellationToken ct = default);
 }
