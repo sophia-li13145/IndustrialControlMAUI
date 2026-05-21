@@ -163,7 +163,7 @@ namespace IndustrialControlMAUI.Services
     configLoader.GetApiPath("inventory.page", "/pda/wmsInstock/pageQuery"),
     servicePath);
             _materialFrameInfoPageEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/pageMaterialFrameInfo"),
+    configLoader.GetApiPath("materialFrame.page", "/pda/dev/frameUseRecord/page"),
     servicePath);
 
             _stockCheckPageEndpoint = ServiceUrlHelper.NormalizeRelative(
