@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
