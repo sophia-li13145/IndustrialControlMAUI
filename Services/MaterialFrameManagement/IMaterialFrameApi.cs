@@ -7,6 +7,7 @@ public interface IMaterialFrameApi
     Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameInfoAsync(
         int pageNo = 1,
         int pageSize = 10,
+        string? operationType = null,
         string? frameNo = null,
         CancellationToken ct = default);
 

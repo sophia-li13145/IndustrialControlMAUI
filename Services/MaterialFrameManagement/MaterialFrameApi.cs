@@ -37,6 +37,7 @@ public class MaterialFrameApi : IMaterialFrameApi
     public async Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameInfoAsync(
         int pageNo = 1,
         int pageSize = 10,
+        string? operationType = null,
         string? frameNo = null,
         CancellationToken ct = default)
     {
@@ -48,6 +49,8 @@ public class MaterialFrameApi : IMaterialFrameApi
             new("pageNo", pageNo.ToString()),
             new("pageSize", pageSize.ToString())
         };
+        if (!string.IsNullOrWhiteSpace(operationType))
+            pairs.Add(new("operationType", operationType.Trim()));
 
         if (!string.IsNullOrWhiteSpace(frameNo))
             pairs.Add(new("frameNo", frameNo.Trim()));
@@ -55,7 +58,10 @@ public class MaterialFrameApi : IMaterialFrameApi
         var query = string.Join("&", pairs.Select(kv =>
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
 
-        var url = _materialFrameInfoPageEndpoint + "?" + query;
+        var endpoint = string.IsNullOrWhiteSpace(operationType)
+            ? _materialFrameInfoPageEndpoint
+            : _materialFrameOperationPageEndpoint;
+        var url = endpoint + "?" + query;
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
