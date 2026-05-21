@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="新增装框"
              BackgroundColor="#F4F5F7">
-    <Grid Padding="12" RowDefinitions="Auto,Auto,Auto,*">
+    <Grid Padding="12" RowDefinitions="Auto,Auto,*,Auto">
         <Frame CornerRadius="12" BackgroundColor="White" BorderColor="#E5E7EB" HasShadow="False">
             <VerticalStackLayout Spacing="10">
                 <Label Text="装载物料" FontAttributes="Bold"/>
@@ -28,7 +28,7 @@
                     <Button Grid.Column="1" Text="扫码添加" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
                     <Button Grid.Column="2" Text="列表添加" Command="{Binding OpenTargetFramePopupCommand}" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
                 </Grid>
-                <CollectionView ItemsSource="{Binding SelectedTargetFrames}" HeightRequest="120">
+                <CollectionView ItemsSource="{Binding SelectedTargetFrames}" HeightRequest="240">
                     <CollectionView.EmptyView>
                         <Label Text="请点击上方按钮添加目标空闲料框" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF"/>
                     </CollectionView.EmptyView>
@@ -59,7 +59,9 @@
             </VerticalStackLayout>
         </Frame>
 
-        <Button Grid.Row="2" Margin="0,16,0,0" Text="确认装框" IsEnabled="False" BackgroundColor="#D1D5DB" TextColor="#9CA3AF"/>
+        <Grid Grid.Row="2"/>
+
+        <Button Grid.Row="3" Margin="0,28,0,24" Text="确认装框" IsEnabled="False" BackgroundColor="#D1D5DB" TextColor="#9CA3AF"/>
 
         <Grid x:Name="PickerOverlay" Grid.RowSpan="4" BackgroundColor="#66000000" IsVisible="{Binding IsPickerVisible}">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12" Margin="0,0,0,0">
@@ -115,8 +117,18 @@
                                                               CommandParameter="{Binding .}"/>
                                     </Frame.GestureRecognizers>
                                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                        <Frame WidthRequest="22" HeightRequest="22" CornerRadius="11" Padding="0" BorderColor="#D1D5DB" BackgroundColor="White" HasShadow="False">
-                                            <Label Text="●" FontSize="12" TextColor="#3B82F6" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding isSelected}"/>
+                                        <Frame WidthRequest="22" HeightRequest="22" CornerRadius="11" Padding="0" HasShadow="False">
+                                            <Frame.Triggers>
+                                                <DataTrigger TargetType="Frame" Binding="{Binding isSelected}" Value="True">
+                                                    <Setter Property="BorderColor" Value="#3B82F6"/>
+                                                    <Setter Property="BackgroundColor" Value="#3B82F6"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Frame" Binding="{Binding isSelected}" Value="False">
+                                                    <Setter Property="BorderColor" Value="#D1D5DB"/>
+                                                    <Setter Property="BackgroundColor" Value="White"/>
+                                                </DataTrigger>
+                                            </Frame.Triggers>
+                                            <Label Text="●" FontSize="12" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding isSelected}"/>
                                         </Frame>
                                         <VerticalStackLayout Grid.Column="1">
                                             <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
