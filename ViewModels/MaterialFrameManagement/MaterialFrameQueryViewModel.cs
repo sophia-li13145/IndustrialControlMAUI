@@ -19,6 +19,10 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool isLoadingMore;
     [ObservableProperty] private bool hasMore = true;
+    [ObservableProperty] private string pageTitle = "料框查询";
+    [ObservableProperty] private bool showBottomActionButton;
+    [ObservableProperty] private string actionButtonText = "新增记录";
+    [ObservableProperty] private string? operationType;
 
     public MaterialFrameQueryViewModel(IMaterialFrameApi api) { _api = api; }
 
@@ -45,7 +49,7 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
         try
         {
             var nextPage = reset ? 1 : _pageNo + 1;
-            var resp = await _api.PageMaterialFrameInfoAsync(nextPage, DefaultPageSize, string.IsNullOrWhiteSpace(FrameNo) ? null : FrameNo!.Trim());
+            var resp = await _api.PageMaterialFrameInfoAsync(nextPage, DefaultPageSize, OperationType, string.IsNullOrWhiteSpace(FrameNo) ? null : FrameNo!.Trim());
             var records = resp?.result?.records ?? new List<MaterialFrameRecord>();
 
             if (reset) Items.Clear();
@@ -61,6 +65,14 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
             IsBusy = false;
             IsLoadingMore = false;
         }
+    }
+
+    public void ApplyOperation(string displayName, string operationTypeValue)
+    {
+        PageTitle = $"{displayName}操作";
+        ActionButtonText = "新增记录";
+        OperationType = operationTypeValue;
+        ShowBottomActionButton = true;
     }
 }
 
