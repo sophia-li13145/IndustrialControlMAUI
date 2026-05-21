@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.FrameEmptyOperationPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="{Binding PageTitle}"
+             BackgroundColor="#F4F5F7">
+    <Grid Padding="12" RowDefinitions="*,Auto">
+        <CollectionView Grid.Row="0" ItemsSource="{Binding Items}" RemainingItemsThreshold="2" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+            <CollectionView.ItemTemplate><DataTemplate>
+                <Frame Margin="0,0,0,10" Padding="12" CornerRadius="12" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding materialName}" FontAttributes="Bold" FontSize="18"/>
+                        <Label Text="{Binding recordNo, StringFormat='记录号: {0}'}" TextColor="#6B7280"/>
+                        <Label Text="{Binding operator, StringFormat='操作人: {0}'}" TextColor="#6B7280"/>
+                        <Label Text="{Binding operationTime, StringFormat='操作时间: {0}'}" TextColor="#6B7280"/>
+                    </VerticalStackLayout>
+                </Frame>
+            </DataTemplate></CollectionView.ItemTemplate>
+            <CollectionView.EmptyView><Label Text="暂无数据" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF"/></CollectionView.EmptyView>
+        </CollectionView>
+        <Button Grid.Row="1" Text="新增记录" HeightRequest="44" CornerRadius="10" TextColor="White" BackgroundColor="#2F66E8" Clicked="OnAddRecordClicked"/>
+    </Grid>
+</ContentPage>
