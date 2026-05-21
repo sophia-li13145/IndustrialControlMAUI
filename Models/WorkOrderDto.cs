@@ -659,6 +659,7 @@ public class AddWorkProcessTaskReportReq
     public string? memo { get; set; }
     public string? operateTime { get; set; }
     public string? @operator { get; set; }
+    public string? operatorName { get; set; }
     public string processCode { get; set; } = "";
     public string? productionMachine { get; set; }
     public string? productionMachineName { get; set; }
