@@ -34,8 +34,24 @@
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame Padding="8" BorderColor="#BBF7D0" BackgroundColor="#F0FDF4" CornerRadius="10" HasShadow="False">
-                                <Label Text="{Binding frameNo}" FontAttributes="Bold" TextColor="#1F2937"/>
+                            <Frame Padding="0" BorderColor="#BBF7D0" BackgroundColor="#F0FDF4" CornerRadius="10" HasShadow="False">
+                                <VerticalStackLayout Spacing="0">
+                                    <Grid Padding="10,8" ColumnDefinitions="Auto,*,Auto">
+                                        <Frame Grid.Column="0" Padding="0" WidthRequest="20" HeightRequest="20" CornerRadius="10" BackgroundColor="#BBF7D0" HasShadow="False" BorderColor="#BBF7D0">
+                                            <Label Text="{Binding Index}" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#15803D"/>
+                                        </Frame>
+                                        <Label Grid.Column="1" Margin="10,0,0,0" Text="{Binding FrameNo}" FontAttributes="Bold" TextColor="#1F2937"/>
+                                        <Label Grid.Column="2" Text="✕" TextColor="#9CA3AF">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveTargetFrameCommand}" CommandParameter="{Binding .}"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Grid>
+                                    <Grid Padding="10" BackgroundColor="#F8FAFC" ColumnDefinitions="Auto,*">
+                                        <Label Text="装入数量" VerticalOptions="Center"/>
+                                        <Entry Grid.Column="1" Text="{Binding Qty}" Placeholder="请输入分配数量" BackgroundColor="White"/>
+                                    </Grid>
+                                </VerticalStackLayout>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -83,20 +99,35 @@
                     <CollectionView ItemsSource="{Binding TargetFrameList}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Frame Padding="12" BorderColor="#E5E7EB" CornerRadius="10" HasShadow="False">
+                                <Frame Padding="12" CornerRadius="10" HasShadow="False">
+                                    <Frame.Triggers>
+                                        <DataTrigger TargetType="Frame" Binding="{Binding isSelected}" Value="True">
+                                            <Setter Property="BorderColor" Value="#3B82F6"/>
+                                            <Setter Property="BackgroundColor" Value="#EFF6FF"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Frame" Binding="{Binding isSelected}" Value="False">
+                                            <Setter Property="BorderColor" Value="#E5E7EB"/>
+                                            <Setter Property="BackgroundColor" Value="White"/>
+                                        </DataTrigger>
+                                    </Frame.Triggers>
                                     <Frame.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleTargetFrameCommand}"
                                                               CommandParameter="{Binding .}"/>
                                     </Frame.GestureRecognizers>
-                                    <VerticalStackLayout>
-                                        <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
-                                        <Label Text="{Binding frameStatus, StringFormat='状态: {0}'}" TextColor="#6B7280"/>
-                                    </VerticalStackLayout>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Frame WidthRequest="22" HeightRequest="22" CornerRadius="11" Padding="0" BorderColor="#D1D5DB" BackgroundColor="White" HasShadow="False">
+                                            <Label Text="●" FontSize="12" TextColor="#3B82F6" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding isSelected}"/>
+                                        </Frame>
+                                        <VerticalStackLayout Grid.Column="1">
+                                            <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
+                                            <Label Text="{Binding frameStatus, StringFormat='状态: {0}'}" TextColor="#6B7280"/>
+                                        </VerticalStackLayout>
+                                    </Grid>
                                 </Frame>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                    <Button Text="确认选择" Command="{Binding CloseTargetFramePopupCommand}" BackgroundColor="#2F66E8" TextColor="White"/>
+                    <Button Text="{Binding SelectedTargetFrameCount, StringFormat='确认选择 ({0})'}" Command="{Binding CloseTargetFramePopupCommand}" BackgroundColor="#2F66E8" TextColor="White"/>
                 </VerticalStackLayout>
             </Frame>
         </Grid>
