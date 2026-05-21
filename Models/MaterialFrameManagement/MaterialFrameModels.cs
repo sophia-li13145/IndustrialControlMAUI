@@ -42,4 +42,5 @@ public class FrameStatusItem
     public string? materialName { get; set; }
     public decimal? maxLimit { get; set; }
     public decimal? minLimit { get; set; }
+    public bool isSelected { get; set; }
 }
