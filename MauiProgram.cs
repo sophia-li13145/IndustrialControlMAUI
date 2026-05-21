@@ -105,6 +105,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<FlexibleStockCheckViewModel>();
             builder.Services.AddTransient<StockCheckSearchViewModel>();
             builder.Services.AddTransient<MaterialFrameQueryViewModel>();
+            builder.Services.AddTransient<FrameLoadOperationViewModel>();
             builder.Services.AddTransient<MaterialFrameDetailViewModel>();
             builder.Services.AddTransient<FrameLoadAddViewModel>();
 

@@ -4,9 +4,8 @@ namespace IndustrialControlMAUI.Pages;
 
 public class FrameLoadOperationPage : MaterialFrameQueryPage
 {
-    public FrameLoadOperationPage(MaterialFrameQueryViewModel vm) : base(vm)
+    public FrameLoadOperationPage(FrameLoadOperationViewModel vm) : base(vm)
     {
-        ConfigureAsOperationPage("装框", "framing");
     }
 
     protected override async Task HandleAddRecordAsync()
