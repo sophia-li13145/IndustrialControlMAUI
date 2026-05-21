@@ -33,4 +33,9 @@ public interface IMaterialFrameApi
         string? materialName = null,
         string? materialCode = null,
         CancellationToken ct = default);
+
+    Task<ListResp<FrameStatusItem>?> GetFrameStatusListAsync(
+        string materialCode,
+        string materialName,
+        CancellationToken ct = default);
 }

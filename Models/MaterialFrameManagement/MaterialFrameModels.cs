@@ -25,3 +25,22 @@ public class MaterialFrameLoadDetail
     public decimal? currentQty { get; set; }
     public decimal? currentQuantity { get; set; }
 }
+
+public class FrameStatusItem
+{
+    public decimal? availableQty { get; set; }
+    public decimal? currentLoadQty { get; set; }
+    public string? frameInfoId { get; set; }
+    public string? frameName { get; set; }
+    public string? frameNo { get; set; }
+    public string? frameStatus { get; set; }
+    public string? frameTypeCode { get; set; }
+    public string? frameTypeName { get; set; }
+    public bool? fullLoadStatus { get; set; }
+    public string? id { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public decimal? maxLimit { get; set; }
+    public decimal? minLimit { get; set; }
+    public bool isSelected { get; set; }
+}
