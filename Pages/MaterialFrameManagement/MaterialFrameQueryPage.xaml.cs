@@ -15,6 +15,8 @@ public partial class MaterialFrameQueryPage : ContentPage
         BindingContext = _vm = vm;
     }
 
+    protected MaterialFrameQueryViewModel ViewModel => _vm;
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -50,5 +52,22 @@ public partial class MaterialFrameQueryPage : ContentPage
             await _vm.SearchAsync();
         }
         finally { _isScanning = false; }
+    }
+
+    private async void OnAddRecordClicked(object sender, EventArgs e)
+    {
+        await HandleAddRecordAsync();
+    }
+
+    protected virtual async Task HandleAddRecordAsync()
+    {
+        await DisplayAlert("料框管理", "新增记录页面待接入", "确定");
+    }
+
+    protected void ConfigureAsOperationPage(string displayName, string operationType)
+    {
+        _vm.ApplyOperation(displayName, operationType);
+        SearchBarGrid.IsVisible = false;
+        ActionButtonGrid.IsVisible = true;
     }
 }

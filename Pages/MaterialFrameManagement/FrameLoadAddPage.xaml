@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.FrameLoadAddPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="新增装框"
+             BackgroundColor="#F4F5F7">
+    <Grid Padding="12" RowDefinitions="Auto,Auto,*">
+        <Frame CornerRadius="12" BackgroundColor="White" BorderColor="#E5E7EB" HasShadow="False">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="装载物料" FontAttributes="Bold"/>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Text="下拉选择" Clicked="OnPickClicked" BackgroundColor="#F8FAFC" BorderColor="#93C5FD" BorderWidth="1"/>
+                    <Button Grid.Column="1" Text="扫码输入" Clicked="OnScanClicked" BackgroundColor="#EFF6FF" BorderColor="#93C5FD" BorderWidth="1"/>
+                </Grid>
+                <Frame BorderColor="#93C5FD" BackgroundColor="#EFF6FF" HasShadow="False">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding SelectedMaterialName}" TextColor="#1D4ED8" FontAttributes="Bold"/>
+                        <Label Grid.Column="1" Text="{Binding SelectedMaterialCode}" TextColor="#64748B"/>
+                    </Grid>
+                </Frame>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Button Grid.Row="1" Margin="0,16,0,0" Text="确认装框" IsEnabled="False" BackgroundColor="#D1D5DB" TextColor="#9CA3AF"/>
+
+        <Grid x:Name="PickerOverlay" Grid.RowSpan="3" BackgroundColor="#66000000" IsVisible="False">
+            <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12" Margin="0,0,0,0">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="选择物料" FontSize="24" FontAttributes="Bold"/>
+                        <Button Grid.Column="1" Text="✕" Clicked="OnClosePicker"/>
+                    </Grid>
+                    <SearchBar Placeholder="输入物料名模糊查询" Text="{Binding MaterialNameKeyword}" SearchCommand="{Binding SearchMaterialsCommand}"/>
+                    <CollectionView ItemsSource="{Binding MaterialList}" SelectionMode="Single" SelectionChanged="OnMaterialSelected">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="12" BorderColor="#E5E7EB" CornerRadius="10" HasShadow="False">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Text="{Binding materialName}" FontAttributes="Bold"/>
+                                        <Label Grid.Column="1" Text="{Binding materialCode}" TextColor="#94A3B8"/>
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </Grid>
+</ContentPage>
