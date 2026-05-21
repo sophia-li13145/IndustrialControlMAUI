@@ -426,7 +426,9 @@ public class WorkProcessTaskReportRecord
     public string? id { get; set; }
     public string? productionMachineName { get; set; } // 设备
     public string? teamName { get; set; }              // 班组
-    public string? operatorName { get; set; }          // 操作人
+    public string? operatorName { get; set; }          // 操作人姓名
+    public string? @operator { get; set; }             // 操作人账号
+    public string? operatorDisplay => string.IsNullOrWhiteSpace(operatorName) ? @operator : operatorName;
     public decimal? workHours { get; set; }            // 工时
     public decimal? reportQty { get; set; }            // 报工数量
     public string? operateTime { get; set; }           // 操作时间
