@@ -27,25 +27,16 @@ public partial class MaterialFrameQueryPage : ContentPage
     {
         await _vm.SearchAsync();
     }
-
-
-    private async void OnItemSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void OnItemTapped(object sender, TappedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is not MaterialFrameItemVm item) return;
-        if (sender is CollectionView cv) cv.SelectedItem = null;
+        if (e.Parameter is not MaterialFrameItemVm item)
+            return;
 
         var navKey = MaterialFrameNavigationStore.Put(item.Source);
-        if (Shell.Current is not null)
-        {
-            await Shell.Current.GoToAsync($"{nameof(MaterialFrameDetailPage)}?frameNo={navKey}");
-            return;
-        }
 
-        var detailPage = Application.Current?.Handler?.MauiContext?.Services.GetService<MaterialFrameDetailPage>();
-        if (detailPage is null) return;
-        detailPage.FrameNo = navKey;
-        await Navigation.PushAsync(detailPage);
+        await Shell.Current.GoToAsync($"{nameof(MaterialFrameDetailPage)}?frameNo={navKey}");
     }
+
 
     private async void OnScanClicked(object sender, EventArgs e)
     {
