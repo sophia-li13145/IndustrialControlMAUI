@@ -180,6 +180,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
                     ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                     : OperateTimeText,
                 @operator = SelectedUser.realname ?? SelectedUser.username ?? string.Empty,
+                operatorName = SelectedUser.realname ?? SelectedUser.username ?? string.Empty,
                 processCode = _detail.processCode!,
                 productionMachine = SelectedDevice.Value,
                 productionMachineName = SelectedDevice.Text,

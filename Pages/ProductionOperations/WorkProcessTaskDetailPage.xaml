@@ -310,7 +310,7 @@
                                 <Label Text="{Binding ., Converter={StaticResource IndexConverter}, ConverterParameter={x:Reference ReportListView}}" />
                                 <Label Grid.Column="1" Text="{Binding productionMachineName}" />
                                 <Label Grid.Column="2" Text="{Binding teamName}" />
-                                <Label Grid.Column="3" Text="{Binding operatorName}" />
+                                <Label Grid.Column="3" Text="{Binding operatorDisplay}" />
                                 <Label Grid.Column="4" Text="{Binding workHours}" />
                                 <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
                                 <Label Grid.Column="6" Text="{Binding operateTime}" />
