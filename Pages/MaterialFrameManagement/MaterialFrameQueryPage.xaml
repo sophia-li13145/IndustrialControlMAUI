@@ -40,7 +40,7 @@
             </CollectionView.EmptyView>
         </CollectionView>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,44" ColumnSpacing="8" VerticalOptions="End">
+        <Grid Grid.Row="1" ColumnDefinitions="*,40" ColumnSpacing="8" VerticalOptions="End">
             <Entry x:Name="ScanEntry"
                    Placeholder="输入料框编码查询"
                    Text="{Binding FrameNo}"
@@ -51,7 +51,8 @@
             <ImageButton Grid.Column="1"
                          Source="scan_button.png"
                          BackgroundColor="White"
-                         Padding="8"
+                         HeightRequest="40"
+                         Padding="6"
                          CornerRadius="8"
                          Clicked="OnScanClicked"/>
         </Grid>
