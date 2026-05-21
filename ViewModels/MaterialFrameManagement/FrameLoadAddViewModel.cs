@@ -16,6 +16,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
     [ObservableProperty] private string? materialNameKeyword;
     [ObservableProperty] private string selectedMaterialName = "请选择";
     [ObservableProperty] private string? selectedMaterialCode;
+    [ObservableProperty] private bool isPickerVisible;
 
     public FrameLoadAddViewModel(IMaterialFrameApi api) => _api = api;
 
@@ -29,6 +30,12 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
     [RelayCommand]
     public async Task SearchMaterialsAsync() => await LoadMaterialsAsync();
+
+    [RelayCommand]
+    private void OpenPicker() => IsPickerVisible = true;
+
+    [RelayCommand]
+    private void ClosePicker() => IsPickerVisible = false;
 
     public async Task ScanAndBindAsync(INavigation nav)
     {
@@ -48,5 +55,13 @@ public partial class FrameLoadAddViewModel : ObservableObject
     {
         SelectedMaterialName = string.IsNullOrWhiteSpace(record.materialName) ? "-" : record.materialName!;
         SelectedMaterialCode = record.materialCode;
+        IsPickerVisible = false;
+    }
+
+    [RelayCommand]
+    private void PickMaterial(BasMaterialRecord? record)
+    {
+        if (record is null) return;
+        SelectMaterial(record);
     }
 }
