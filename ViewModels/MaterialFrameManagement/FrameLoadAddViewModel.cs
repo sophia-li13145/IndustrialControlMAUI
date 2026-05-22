@@ -182,7 +182,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
         var frameStatusList = TargetFrameList
             .Where(x => x.IsSelected)
-            .Select(x => new FrameStatusItem
+            .Select(x => new TargetFrameSelectableItem
             {
                 frameNo = x.frameNo,
                 frameStatus = x.frameStatus,
@@ -232,6 +232,7 @@ public partial class TargetFrameSelectableItem : ObservableObject
 {
     public string? frameNo { get; set; }
     public string? frameStatus { get; set; }
+    public string? frameTypeCode { get; set; }
 
     [ObservableProperty]
     private bool isSelected;

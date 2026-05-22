@@ -1,3 +1,5 @@
+using IndustrialControlMAUI.ViewModels;
+
 namespace IndustrialControlMAUI.Models;
 
 public class FrameUseRecordOperation
@@ -66,7 +68,7 @@ public sealed class BoolResp
 
 public sealed class AddLoadingRecordReq
 {
-    public List<FrameStatusItem>? frameStatusList { get; set; }
+    public List<TargetFrameSelectableItem>? frameStatusList { get; set; }
     public List<AddLoadingDetail>? loadDetailList { get; set; }
     public AddLoadingMaterial? material { get; set; }
 }
