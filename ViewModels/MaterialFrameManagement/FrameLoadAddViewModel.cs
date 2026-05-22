@@ -180,7 +180,15 @@ public partial class FrameLoadAddViewModel : ObservableObject
     {
         if (!CanConfirmLoad) return;
 
-        var frameStatusList = TargetFrameList.Where(x => x.IsSelected).ToList();
+        var frameStatusList = TargetFrameList
+            .Where(x => x.IsSelected)
+            .Select(x => new FrameStatusItem
+            {
+                frameNo = x.frameNo,
+                frameStatus = x.frameStatus,
+                frameTypeCode = "framing"
+            })
+            .ToList();
         var detailList = SelectedTargetFrames
             .Select(x => new AddLoadingDetail
             {
@@ -203,7 +211,14 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
         var resp = await _api.AddLoadingRecordAsync(req);
         if (resp?.success == true && resp.result == true)
+        {
             await Shell.Current.GoToAsync("..");
+            return;
+        }
+
+        var msg = string.IsNullOrWhiteSpace(resp?.message) ? "装框失败，请稍后重试" : resp!.message!;
+        if (Shell.Current?.CurrentPage is Page page)
+            await page.DisplayAlert("提示", msg, "确定");
     }
 }
 
