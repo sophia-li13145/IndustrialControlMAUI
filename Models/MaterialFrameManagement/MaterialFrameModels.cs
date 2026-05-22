@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace IndustrialControlMAUI.Models;
 
 public class MaterialFrameRecord
@@ -26,7 +28,7 @@ public class MaterialFrameLoadDetail
     public decimal? currentQuantity { get; set; }
 }
 
-public class FrameStatusItem
+public partial class FrameStatusItem : ObservableObject
 {
     public decimal? availableQty { get; set; }
     public decimal? currentLoadQty { get; set; }
@@ -42,5 +44,5 @@ public class FrameStatusItem
     public string? materialName { get; set; }
     public decimal? maxLimit { get; set; }
     public decimal? minLimit { get; set; }
-    public bool isSelected { get; set; }
+    [ObservableProperty] private bool isSelected;
 }
