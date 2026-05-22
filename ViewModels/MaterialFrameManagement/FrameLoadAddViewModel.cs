@@ -4,6 +4,8 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace IndustrialControlMAUI.ViewModels;
 
@@ -21,8 +23,15 @@ public partial class FrameLoadAddViewModel : ObservableObject
     [ObservableProperty] private bool isPickerVisible;
     [ObservableProperty] private bool isTargetFramePopupVisible;
     [ObservableProperty] private int selectedTargetFrameCount;
+    [ObservableProperty] private bool canConfirmLoad;
+    [ObservableProperty] private Color confirmButtonColor = Color.FromArgb("#D1D5DB");
+    [ObservableProperty] private Color confirmButtonTextColor = Color.FromArgb("#9CA3AF");
 
-    public FrameLoadAddViewModel(IMaterialFrameApi api) => _api = api;
+    public FrameLoadAddViewModel(IMaterialFrameApi api)
+    {
+        _api = api;
+        SelectedTargetFrames.CollectionChanged += OnSelectedTargetFramesChanged;
+    }
 
     public async Task LoadMaterialsAsync()
     {
@@ -134,6 +143,67 @@ public partial class FrameLoadAddViewModel : ObservableObject
         for (var i = 0; i < SelectedTargetFrames.Count; i++)
             SelectedTargetFrames[i].Index = i + 1;
         SelectedTargetFrameCount = SelectedTargetFrames.Count;
+        RefreshConfirmState();
+    }
+
+    private void OnSelectedTargetFramesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+            foreach (var item in e.NewItems.OfType<SelectedTargetFrameItem>())
+                item.PropertyChanged += OnSelectedTargetFrameItemChanged;
+
+        if (e.OldItems != null)
+            foreach (var item in e.OldItems.OfType<SelectedTargetFrameItem>())
+                item.PropertyChanged -= OnSelectedTargetFrameItemChanged;
+
+        RefreshConfirmState();
+    }
+
+    private void OnSelectedTargetFrameItemChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SelectedTargetFrameItem.Qty))
+            RefreshConfirmState();
+    }
+
+    private void RefreshConfirmState()
+    {
+        var allQtyValid = SelectedTargetFrames.Count > 0 && SelectedTargetFrames.All(x => decimal.TryParse(x.Qty, out var qty) && qty > 0);
+        CanConfirmLoad = !string.IsNullOrWhiteSpace(SelectedMaterialCode) && allQtyValid;
+        ConfirmButtonColor = CanConfirmLoad ? Color.FromArgb("#2F66E8") : Color.FromArgb("#D1D5DB");
+        ConfirmButtonTextColor = CanConfirmLoad ? Colors.White : Color.FromArgb("#9CA3AF");
+    }
+
+    partial void OnSelectedMaterialCodeChanged(string? value) => RefreshConfirmState();
+
+    [RelayCommand]
+    public async Task ConfirmLoadAsync()
+    {
+        if (!CanConfirmLoad) return;
+
+        var frameStatusList = TargetFrameList.Where(x => x.IsSelected).ToList();
+        var detailList = SelectedTargetFrames
+            .Select(x => new AddLoadingDetail
+            {
+                frameNo = x.FrameNo,
+                materialCode = SelectedMaterialCode,
+                materialName = SelectedMaterialName,
+                qty = decimal.Parse(x.Qty)
+            }).ToList();
+
+        var req = new AddLoadingRecordReq
+        {
+            frameStatusList = frameStatusList,
+            loadDetailList = detailList,
+            material = new AddLoadingMaterial
+            {
+                materialCode = SelectedMaterialCode,
+                materialName = SelectedMaterialName
+            }
+        };
+
+        var resp = await _api.AddLoadingRecordAsync(req);
+        if (resp?.success == true && resp.result == true)
+            await Shell.Current.GoToAsync("..");
     }
 }
 
