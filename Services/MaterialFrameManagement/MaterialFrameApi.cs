@@ -1,6 +1,7 @@
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services.Common;
 using IndustrialControlMAUI.Tools;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace IndustrialControlMAUI.Services;
@@ -13,6 +14,7 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _materialFrameOperationPageEndpoint;
     private readonly string _pageBasMaterialsEndpoint;
     private readonly string _getFrameStatusListEndpoint;
+    private readonly string _addLoadingRecordEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
     {
@@ -35,6 +37,9 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _getFrameStatusListEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameStatusList", "/pda/dev/frameUseRecord/getFrameStatusList"),
+            servicePath);
+        _addLoadingRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.addLoadingRecord", "/pda/dev/frameUseRecord/addLoadingRecord"),
             servicePath);
     }
 
@@ -222,5 +227,26 @@ public class MaterialFrameApi : IMaterialFrameApi
         return JsonSerializer.Deserialize<ListResp<FrameStatusItem>>(json,
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                ?? new ListResp<FrameStatusItem>();
+    }
+
+    public async Task<BoolResp?> AddLoadingRecordAsync(
+        AddLoadingRecordReq req,
+        CancellationToken ct = default)
+    {
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addLoadingRecordEndpoint);
+
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(req)
+        };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new BoolResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<BoolResp>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new BoolResp();
     }
 }
