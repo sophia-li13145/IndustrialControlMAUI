@@ -44,5 +44,5 @@ public partial class FrameStatusItem : ObservableObject
     public string? materialName { get; set; }
     public decimal? maxLimit { get; set; }
     public decimal? minLimit { get; set; }
-    [ObservableProperty] private bool isSelected;
+    [ObservableProperty] public bool isSelected;
 }

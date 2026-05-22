@@ -12,7 +12,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
     private readonly IMaterialFrameApi _api;
 
     public ObservableCollection<BasMaterialRecord> MaterialList { get; } = new();
-    public ObservableCollection<FrameStatusItem> TargetFrameList { get; } = new();
+    public ObservableCollection<TargetFrameSelectableItem> TargetFrameList { get; } = new();
     public ObservableCollection<SelectedTargetFrameItem> SelectedTargetFrames { get; } = new();
 
     [ObservableProperty] private string? materialNameKeyword;
@@ -74,13 +74,21 @@ public partial class FrameLoadAddViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(SelectedMaterialCode) || string.IsNullOrWhiteSpace(SelectedMaterialName))
             return;
+
         var resp = await _api.GetFrameStatusListAsync(SelectedMaterialCode!, SelectedMaterialName!);
+
         TargetFrameList.Clear();
+
         foreach (var x in resp?.result ?? new List<FrameStatusItem>())
         {
-            x.isSelected = SelectedTargetFrames.Any(t => t.FrameNo == x.frameNo);
-            TargetFrameList.Add(x);
+            TargetFrameList.Add(new TargetFrameSelectableItem
+            {
+                frameNo = x.frameNo,
+                frameStatus = x.frameStatus,
+                IsSelected = SelectedTargetFrames.Any(t => t.FrameNo == x.frameNo)
+            });
         }
+
         IsTargetFramePopupVisible = true;
     }
 
@@ -88,14 +96,16 @@ public partial class FrameLoadAddViewModel : ObservableObject
     private void CloseTargetFramePopup() => IsTargetFramePopupVisible = false;
 
     [RelayCommand]
-    private void ToggleTargetFrame(FrameStatusItem? item)
+    private void ToggleTargetFrame(TargetFrameSelectableItem? item)
     {
         if (item is null) return;
+
         var exists = SelectedTargetFrames.FirstOrDefault(x => x.FrameNo == item.frameNo);
+
         if (exists is not null)
         {
             SelectedTargetFrames.Remove(exists);
-            item.isSelected = false;
+            item.IsSelected = false;
         }
         else
         {
@@ -104,7 +114,8 @@ public partial class FrameLoadAddViewModel : ObservableObject
                 FrameNo = string.IsNullOrWhiteSpace(item.frameNo) ? "-" : item.frameNo!,
                 Qty = string.Empty
             });
-            item.isSelected = true;
+
+            item.IsSelected = true;
         }
 
         ReindexSelectedFrames();
@@ -131,4 +142,12 @@ public partial class SelectedTargetFrameItem : ObservableObject
     [ObservableProperty] private int index;
     [ObservableProperty] private string frameNo = "-";
     [ObservableProperty] private string qty = string.Empty;
+}
+public partial class TargetFrameSelectableItem : ObservableObject
+{
+    public string? frameNo { get; set; }
+    public string? frameStatus { get; set; }
+
+    [ObservableProperty]
+    private bool isSelected;
 }
