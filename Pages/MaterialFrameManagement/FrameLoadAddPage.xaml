@@ -61,7 +61,13 @@
 
         <Grid Grid.Row="2"/>
 
-        <Button Grid.Row="3" Margin="0,28,0,24" Text="确认装框" IsEnabled="False" BackgroundColor="#D1D5DB" TextColor="#9CA3AF"/>
+        <Button Grid.Row="3"
+                Margin="0,28,0,24"
+                Text="确认装框"
+                Command="{Binding ConfirmLoadCommand}"
+                IsEnabled="{Binding CanConfirmLoad}"
+                BackgroundColor="{Binding ConfirmButtonColor}"
+                TextColor="{Binding ConfirmButtonTextColor}"/>
 
         <Grid x:Name="PickerOverlay" Grid.RowSpan="4" BackgroundColor="#66000000" IsVisible="{Binding IsPickerVisible}">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12" Margin="0,0,0,0">

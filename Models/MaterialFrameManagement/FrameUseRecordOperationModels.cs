@@ -54,3 +54,35 @@ public sealed class ListResp<T>
     public int? code { get; set; }
     public List<T>? result { get; set; }
 }
+
+public sealed class BoolResp
+{
+    public int? code { get; set; }
+    public long? costTime { get; set; }
+    public string? message { get; set; }
+    public bool? result { get; set; }
+    public bool? success { get; set; }
+}
+
+public sealed class AddLoadingRecordReq
+{
+    public List<FrameStatusItem>? frameStatusList { get; set; }
+    public List<AddLoadingDetail>? loadDetailList { get; set; }
+    public AddLoadingMaterial? material { get; set; }
+}
+
+public sealed class AddLoadingDetail
+{
+    public string? frameNo { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public decimal qty { get; set; }
+}
+
+public sealed class AddLoadingMaterial
+{
+    public string? id { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public string? unit { get; set; }
+}

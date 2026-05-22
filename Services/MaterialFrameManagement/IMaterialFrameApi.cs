@@ -38,4 +38,8 @@ public interface IMaterialFrameApi
         string materialCode,
         string materialName,
         CancellationToken ct = default);
+
+    Task<BoolResp?> AddLoadingRecordAsync(
+        AddLoadingRecordReq req,
+        CancellationToken ct = default);
 }
