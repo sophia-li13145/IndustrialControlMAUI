@@ -39,6 +39,8 @@ namespace IndustrialControlMAUI.Services
         private readonly string _deleteReportEndpoint;
         private readonly string _frameOutputQtyEndpoint;
         private readonly string _scanOutputFrameEndpoint;
+        private readonly string _scanStockCheckFrameEndpoint;
+        private readonly string _listFrameLoadByBatchNoEndpoint;
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
         private readonly string _deleteWorkProcessTaskOutputEndpoint;
         private readonly string _editWorkProcessTaskMaterialInputEndpoint;
@@ -130,6 +132,10 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.frameOutputQty", "/pda/pmsWorkProcessTaskReport/getWorkProcessTaskFrameOutputQty"), servicePath);
             _scanOutputFrameEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.scanOutputFrame", "/pda/outputFrameRecord/scanOutputFrame"), servicePath);
+            _scanStockCheckFrameEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("stockCheck.scanFrameInfo", "/pda/wmsInstockCheck/scanFrameInfo"), servicePath);
+            _listFrameLoadByBatchNoEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("stockCheck.listFrameLoadByBatchNo", "/pda/wmsInstockCheck/listFrameLoadDetailsByBatchNo"), servicePath);
             _deleteWorkProcessTaskMaterialInputEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteWorkProcessTaskMaterialInput", "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput"), servicePath);
             _deleteWorkProcessTaskOutputEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -785,6 +791,38 @@ namespace IndustrialControlMAUI.Services
             return JsonSerializer.Deserialize<ApiResp<ScanOutputFrameResp>>(json, _json)
                 ?? new ApiResp<ScanOutputFrameResp> { success = false, message = "empty response" };
         }
+
+        public async Task<ApiResp<ScanOutputFrameResp>> ScanStockCheckFrameAsync(string frameNo, string materialCode, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _scanStockCheckFrameEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["frameNo"] = frameNo,
+                ["materialCode"] = materialCode
+            });
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<ScanOutputFrameResp> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<ScanOutputFrameResp>>(json, _json)
+                ?? new ApiResp<ScanOutputFrameResp> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<List<StockCheckFrameLoadByBatchItem>>> ListStockCheckFrameLoadDetailsByBatchNoAsync(string batchNo, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _listFrameLoadByBatchNoEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?> { ["batchNo"] = batchNo });
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<List<StockCheckFrameLoadByBatchItem>> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<List<StockCheckFrameLoadByBatchItem>>>(json, _json)
+                ?? new ApiResp<List<StockCheckFrameLoadByBatchItem>> { success = false, message = "empty response" };
+        }
         //实际投料列表
         public async Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
             string factoryCode,          // 工厂编码（必填）
@@ -1337,10 +1375,11 @@ namespace IndustrialControlMAUI.Services
                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                    ?? new PageResp<StockCheckOrderItem>();
         }
-        public async Task<PageResp<StockCheckDetailItem>?> PageStockCheckDetailsAsync(
+public async Task<PageResp<StockCheckDetailItem>?> PageStockCheckDetailsAsync(
     string checkNo,
     string? location,
     string? materialBarcode,
+    string? frameNo,
     bool? searchCount = null,
     int pageNo = 1,
     int pageSize = 50,
@@ -1363,6 +1402,8 @@ namespace IndustrialControlMAUI.Services
 
             if (!string.IsNullOrWhiteSpace(materialBarcode))
                 pairs.Add(new("materialBarcode", materialBarcode.Trim()));
+            if (!string.IsNullOrWhiteSpace(frameNo))
+                pairs.Add(new("frameNo", frameNo.Trim()));
 
             if (searchCount.HasValue)
                 pairs.Add(new("searchCount", searchCount.Value ? "true" : "false"));

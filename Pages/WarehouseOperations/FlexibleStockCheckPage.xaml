@@ -21,7 +21,7 @@
 
                 <!-- 顶部：库位号 / 物料条码 + 保存 -->
                 <Grid ColumnDefinitions="80,*,80"
-                      RowDefinitions="Auto,Auto,Auto"
+                      RowDefinitions="Auto,Auto,Auto,Auto"
                       ColumnSpacing="6"
                       RowSpacing="6">
 
@@ -56,7 +56,18 @@
                                  BackgroundColor="Transparent"
                                  Aspect="AspectFit"
                                  Clicked="OnMaterialScanClicked" />
-                    <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Text="料框条码：" VerticalTextAlignment="Center" TextColor="#2C6BED"/>
+                    <Entry Grid.Row="2" Grid.Column="1"
+                           Placeholder="请扫描/输入料框编号"
+                           Text="{Binding FrameNo}" />
+                    <ImageButton Grid.Row="2" Grid.Column="2"
+                                 Source="scan_button.png"
+                                 WidthRequest="36"
+                                 HeightRequest="36"
+                                 BackgroundColor="Transparent"
+                                 Aspect="AspectFit" />
+                    <Grid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
                           ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Grid.Column="0"
                                 Text="保存"
@@ -163,8 +174,8 @@
 
                                     <!-- 右边内容 -->
                                     <Grid Grid.Column="1"
-                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
-                                          ColumnDefinitions="80,*,80,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                          ColumnDefinitions="90,*,90,*"
                                           RowSpacing="2" ColumnSpacing="2">
 
                                         <!-- 行1：库位号 / 批次号 -->
@@ -173,33 +184,27 @@
                                         <Label Grid.Row="0" Grid.Column="2" Text="批次号：" />
                                         <Label Grid.Row="0" Grid.Column="3" Text="{Binding stockBatch}" />
 
-                                        <!-- 行2：物料编码 / 名称 -->
+                                        <!-- 行2：物料编码 / 物料名称 -->
                                         <Label Grid.Row="1" Grid.Column="0" Text="物料编码：" />
                                         <Label Grid.Row="1" Grid.Column="1" Text="{Binding materialCode}" />
                                         <Label Grid.Row="1" Grid.Column="2" Text="物料名称：" />
                                         <Label Grid.Row="1" Grid.Column="3" Text="{Binding materialName}" />
 
-                                        <!-- 行3：规格 / 型号 -->
-                                        <Label Grid.Row="2" Grid.Column="0" Text="规格：" />
-                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding spec}" />
-                                        <Label Grid.Row="2" Grid.Column="2" Text="型号：" />
-                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding model}" />
+                                        <!-- 行3：包含料框 / 总账存 -->
+                                        <Label Grid.Row="2" Grid.Column="0" Text="包含料框：" />
+                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding FrameCount, StringFormat='{}{0} 个'}" />
+                                        <Label Grid.Row="2" Grid.Column="2" Text="总账存：" />
+                                        <Label Grid.Row="2" Grid.Column="3" Text="{Binding instockQty, Converter={StaticResource TrimNumber}}" />
 
-                                        <!-- 行4：账存数量 / 单位 -->
-                                        <Label Grid.Row="3" Grid.Column="0" Text="账存数量：" />
-                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding instockQty, Converter={StaticResource TrimNumber}}" />
-                                        <Label Grid.Row="3" Grid.Column="2" Text="单位：" />
-                                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding unit}" />
+                                        <!-- 行4：总盘点 / 总盈亏 -->
+                                        <Label Grid.Row="3" Grid.Column="0" Text="总盘点：" />
+                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding checkQty, Converter={StaticResource TrimNumber}}" />
+                                        <Label Grid.Row="3" Grid.Column="2" Text="总盈亏：" />
+                                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding profitLossQty, Converter={StaticResource TrimNumber}}" />
 
-                                        <!-- 行5：盘点数量 / 盘盈盘亏 -->
-                                        <Label Grid.Row="4" Grid.Column="0" Text="盘点数量：" />
-                                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding checkQty, Converter={StaticResource TrimNumber}}" />
-                                        <Label Grid.Row="4" Grid.Column="2" Text="盘盈/盘亏：" />
-                                        <Label Grid.Row="4" Grid.Column="3" Text="{Binding profitLossQty, Converter={StaticResource TrimNumber}}" />
-
-                                        <!-- 行6：备注 -->
-                                        <Label Grid.Row="5" Grid.Column="0" Text="备注：" />
-                                        <Label Grid.Row="5" Grid.Column="1"
+                                        <!-- 行5：批次备注 -->
+                                        <Label Grid.Row="4" Grid.Column="0" Text="批次备注：" />
+                                        <Label Grid.Row="4" Grid.Column="1"
                                                Grid.ColumnSpan="3"
                                                Text="{Binding memo}" />
                                     </Grid>
@@ -215,16 +220,16 @@
         <!-- ===== 弹窗 Overlay ===== -->
         <Grid IsVisible="{Binding IsEditDialogVisible}"
               BackgroundColor="#80000000">
-            <Frame Padding="12"
+            <Frame Padding="0"
                    CornerRadius="6"
                    HasShadow="True"
-                   BackgroundColor="#E3F2FD"
+                   BackgroundColor="#F4F7FC"
                    HorizontalOptions="Center"
                    VerticalOptions="Center"
-                   WidthRequest="320">
+                   WidthRequest="360">
 
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                      ColumnDefinitions="80,*"
+                      ColumnDefinitions="90,*"
                       RowSpacing="6"
                       ColumnSpacing="4">
 
@@ -261,18 +266,58 @@
                         <Label Text="{Binding EditingItem.unit}" />
                     </HorizontalStackLayout>
 
-                    <Label Grid.Row="5" Grid.Column="0" Text="盘点数量：" />
+                    <Label Grid.Row="5" Grid.Column="0" Text="总盘点数量：" TextColor="#2C6BED" FontAttributes="Bold" />
                     <Entry Grid.Row="5" Grid.Column="1"
                             x:Name="CheckQtyEntry"
-    Text="{Binding EditCheckQtyText, Mode=TwoWay}"
-    Keyboard="Numeric">
+                           Placeholder="请输入"
+                           Text="{Binding EditCheckQtyText, Mode=TwoWay}"
+                           Keyboard="Numeric">
                         <Entry.Behaviors>
                             <behaviors:ClearOnFocusBehavior />
                         </Entry.Behaviors>
                     </Entry>
-                    <Label Grid.Row="6" Grid.Column="0" Text="备注：" />
-                    <Entry Grid.Row="6" Grid.Column="1"
-                           Text="{Binding EditMemo}" />
+                    <VerticalStackLayout Grid.Row="6" Grid.ColumnSpan="2" Spacing="6">
+                        <Label Text="料框明细维护" FontAttributes="Bold"/>
+                        <Grid ColumnDefinitions="*,42,56" RowDefinitions="Auto" ColumnSpacing="4">
+                            <Entry Grid.Column="0" Placeholder="扫码/输入新增料框" Text="{Binding EditFrameNoInput}" />
+                            <ImageButton Grid.Column="1"
+                                         Source="scan_button.png"
+                                         WidthRequest="28"
+                                         HeightRequest="28"
+                                         Padding="0"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         BackgroundColor="Transparent" />
+                            <Button Grid.Column="2"
+                                    Text="添加"
+                                    HeightRequest="32"
+                                    Padding="0"
+                                    VerticalOptions="Center"
+                                    Command="{Binding AddFrameToEditingCommand}"
+                                    BackgroundColor="#22C55E"
+                                    TextColor="White" />
+                        </Grid>
+                        <CollectionView ItemsSource="{Binding EditingItem.wmsInstockCheckFrameDetailList}" HeightRequest="180">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Padding="6" Margin="0,2" BorderColor="#D1D5DB" HasShadow="False">
+                                        <Frame.Triggers>
+                                            <DataTrigger TargetType="Frame" Binding="{Binding IsScannedMatch}" Value="True">
+                                                <Setter Property="BorderColor" Value="#2563EB"/>
+                                                <Setter Property="BackgroundColor" Value="#DBEAFE"/>
+                                            </DataTrigger>
+                                        </Frame.Triggers>
+                                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+                                            <Label Text="{Binding frameNo, StringFormat='□ {0}'}" FontAttributes="Bold"/>
+                                            <Label Grid.Column="1" Text="{Binding bookQty, StringFormat='账存 {0}'}"/>
+                                            <Entry Grid.Row="1" Placeholder="盘点数量" Keyboard="Numeric" Text="{Binding CheckQtyText}" />
+                                            <Entry Grid.Row="1" Grid.Column="1" Placeholder="备注" Text="{Binding EditMemo}" />
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
 
                     <!-- 按钮行 -->
                     <Grid Grid.Row="7" Grid.ColumnSpan="2"

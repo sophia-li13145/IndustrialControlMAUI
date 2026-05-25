@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace IndustrialControlMAUI.Models;
@@ -882,8 +883,49 @@ public partial class StockCheckDetailItem : ObservableObject
     public string? consignor { get; set; }
     public string? inspectResult { get; set; }
     public bool? isDeliverInspect { get; set; }
+    public List<StockCheckFrameDetailItem> wmsInstockCheckFrameDetailList { get; set; } = new();
+
+    /// <summary>包含料框数量（按接口返回的料框明细数量）</summary>
+    public int FrameCount => wmsInstockCheckFrameDetailList?.Count ?? 0;
+
+    /// <summary>首个料框编号（用于列表展示）</summary>
+    public string? FirstFrameNo => wmsInstockCheckFrameDetailList?.FirstOrDefault()?.frameNo;
 
 
+}
+
+public class StockCheckFrameDetailItem
+{
+    public string? id { get; set; }
+    public string? checkDetailId { get; set; }
+    public string? checkNo { get; set; }
+    public string? frameNo { get; set; }
+    public string? frameName { get; set; }
+    public string? location { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public string? stockBatch { get; set; }
+    public string? productionBatch { get; set; }
+    public decimal? bookQty { get; set; }
+    public decimal? checkQty { get; set; }
+    public decimal? profitLossQty { get; set; }
+    public bool? newFrameFlag { get; set; }
+    public string? factoryCode { get; set; }
+    public string? warehouseCode { get; set; }
+    public string? warehouseName { get; set; }
+    public string? memo { get; set; }
+    public string? creator { get; set; }
+    public string? createdTime { get; set; }
+    public string? modifier { get; set; }
+    public string? modifiedTime { get; set; }
+    public bool? delStatus { get; set; }
+
+    [JsonIgnore]
+    public bool IsScannedMatch { get; set; }
+    [JsonIgnore]
+    public string CheckQtyText { get; set; } = "";
+    [JsonIgnore]
+    public string? EditMemo { get; set; }
 }
 
 /// <summary>
@@ -922,6 +964,27 @@ public class StockCheckEditDetailReq
     public string? dataBelong { get; set; }
 
     /// <summary>明细备注</summary>
+    public string? memo { get; set; }
+
+    /// <summary>物料编码</summary>
+    public string? materialCode { get; set; }
+
+    /// <summary>质检状态</summary>
+    public string? qualityStatus { get; set; }
+
+    /// <summary>料框明细</summary>
+    public List<StockCheckEditFrameDetailReq> wmsInstockCheckFrameDetailList { get; set; } = new();
+}
+
+public class StockCheckEditFrameDetailReq
+{
+    public string? id { get; set; }
+    public string? frameNo { get; set; }
+    public string? frameName { get; set; }
+    public decimal? bookQty { get; set; }
+    public decimal? checkQty { get; set; }
+    public decimal? profitLossQty { get; set; }
+    public bool? newFrameFlag { get; set; }
     public string? memo { get; set; }
 }
 
@@ -964,6 +1027,7 @@ public class FlexibleStockCheckAddDetailReq
     public string? productionBatch { get; set; }
     public string? productionDate { get; set; }
     public decimal? profitLossQty { get; set; }
+    public string? qualityStatus { get; set; }
     public int? shelfLife { get; set; }
     public string? shelfLifeUnit { get; set; }
     public string? spec { get; set; }
@@ -973,4 +1037,16 @@ public class FlexibleStockCheckAddDetailReq
     public string? unit { get; set; }
     public string? warehouseCode { get; set; }
     public string? warehouseName { get; set; }
+    public List<StockCheckEditFrameDetailReq> wmsInstockCheckFrameDetailList { get; set; } = new();
+}
+
+public class StockCheckFrameLoadByBatchItem
+{
+    public string? id { get; set; }
+    public string? frameNo { get; set; }
+    public string? frameName { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public string? batchNo { get; set; }
+    public decimal? qty { get; set; }
 }
