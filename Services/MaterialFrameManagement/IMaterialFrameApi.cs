@@ -30,6 +30,22 @@ public interface IMaterialFrameApi
         string id,
         CancellationToken ct = default);
 
+    Task<ObjResp<FrameUseRecordOperation>?> GetUnloadRecordDetailAsync(
+        string recordId,
+        CancellationToken ct = default);
+
+    Task<ObjResp<FrameUseRecordOperation>?> GetPouringRecordDetailAsync(
+        string recordId,
+        CancellationToken ct = default);
+
+    Task<ObjResp<FrameUseRecordOperation>?> GetFrameMergingDetailAsync(
+        string useRecordId,
+        CancellationToken ct = default);
+
+    Task<ObjResp<FrameUseRecordOperation>?> GetFrameReturnDetailAsync(
+        string useRecordId,
+        CancellationToken ct = default);
+
     Task<PageResp<BasMaterialRecord>?> PageBasMaterialsAsync(
         int pageNo = 1,
         int pageSize = 20,

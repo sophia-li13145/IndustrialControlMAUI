@@ -21,6 +21,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
     [ObservableProperty] private string? materialNameKeyword;
     [ObservableProperty] private string selectedMaterialName = "请选择";
     [ObservableProperty] private string? selectedMaterialCode;
+    [ObservableProperty] private bool hasSelectedMaterial;
     [ObservableProperty] private bool isPickerVisible;
     [ObservableProperty] private BasMaterialRecord? pickedMaterial;
     [ObservableProperty] private bool isTargetFramePopupVisible;
@@ -28,6 +29,8 @@ public partial class FrameLoadAddViewModel : ObservableObject
     [ObservableProperty] private bool canConfirmLoad;
     [ObservableProperty] private Color confirmButtonColor = Color.FromArgb("#D1D5DB");
     [ObservableProperty] private Color confirmButtonTextColor = Color.FromArgb("#9CA3AF");
+
+    public bool ShowMaterialPickerActions => !HasSelectedMaterial;
 
     public FrameLoadAddViewModel(IMaterialFrameApi api)
     {
@@ -71,6 +74,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
     {
         SelectedMaterialName = string.IsNullOrWhiteSpace(record.materialName) ? "-" : record.materialName!;
         SelectedMaterialCode = record.materialCode;
+        HasSelectedMaterial = !string.IsNullOrWhiteSpace(SelectedMaterialCode);
         IsPickerVisible = false;
     }
 
@@ -86,6 +90,15 @@ public partial class FrameLoadAddViewModel : ObservableObject
     {
         if (record is null) return;
         SelectMaterial(record);
+    }
+
+    [RelayCommand]
+    private void ClearSelectedMaterial()
+    {
+        SelectedMaterialName = "请选择";
+        SelectedMaterialCode = null;
+        HasSelectedMaterial = false;
+        PickedMaterial = null;
     }
 
     [RelayCommand]
@@ -224,6 +237,11 @@ public partial class FrameLoadAddViewModel : ObservableObject
     }
 
     partial void OnSelectedMaterialCodeChanged(string? value) => RefreshConfirmState();
+
+    partial void OnHasSelectedMaterialChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowMaterialPickerActions));
+    }
 
     private async Task EnsureFrameStatusDictLoadedAsync()
     {

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.FrameEmptyOperationDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="操作详情"
+             BackgroundColor="#F4F5F7">
+    <ScrollView>
+        <VerticalStackLayout Padding="12" Spacing="12">
+            <Frame CornerRadius="14" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="Auto,*"><Label Text="任务单号" FontSize="28" FontAttributes="Bold" TextColor="#111827"/><Label Grid.Column="1" Text="{Binding RecordNoDisplay}" HorizontalOptions="End" TextColor="#6B7280"/></Grid>
+                    <BoxView HeightRequest="1" BackgroundColor="#E5E7EB"/>
+                    <Grid ColumnDefinitions="Auto,*"><Label Text="操作时间" TextColor="#6B7280"/><Label Grid.Column="1" Text="{Binding OperationTimeDisplay}" HorizontalOptions="End" TextColor="#111827"/></Grid>
+                    <Grid ColumnDefinitions="Auto,*"><Label Text="操作人" TextColor="#6B7280"/><Label Grid.Column="1" Text="{Binding OperatorDisplay}" HorizontalOptions="End" TextColor="#111827"/></Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame CornerRadius="14" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="操作详情" FontAttributes="Bold" TextColor="#111827"/>
+                    <Frame Padding="10" BorderColor="#FECACA" BackgroundColor="#FEF2F2" HasShadow="False" CornerRadius="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Label Text="释放料框明细" FontAttributes="Bold" TextColor="#DC2626"/>
+                                <Label Grid.Column="1" Text="{Binding FrameCountDisplay, StringFormat='共 {0} 个'}" HorizontalOptions="End" FontAttributes="Bold" TextColor="#B91C1C"/>
+                            </Grid>
+                            <CollectionView ItemsSource="{Binding ReleasedFrames}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,3,0,3">
+                                            <Label Text="{Binding FrameNoDisplay}" TextColor="#374151"/>
+                                            <Label Grid.Column="1" Text="{Binding BeforeStatusDisplay, StringFormat='原状态 {0}'}" TextColor="#9CA3AF"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Frame>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
