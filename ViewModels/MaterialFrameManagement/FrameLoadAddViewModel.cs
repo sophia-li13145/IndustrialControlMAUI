@@ -22,6 +22,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
     [ObservableProperty] private string selectedMaterialName = "请选择";
     [ObservableProperty] private string? selectedMaterialCode;
     [ObservableProperty] private bool isPickerVisible;
+    [ObservableProperty] private BasMaterialRecord? pickedMaterial;
     [ObservableProperty] private bool isTargetFramePopupVisible;
     [ObservableProperty] private int selectedTargetFrameCount;
     [ObservableProperty] private bool canConfirmLoad;
@@ -71,6 +72,13 @@ public partial class FrameLoadAddViewModel : ObservableObject
         SelectedMaterialName = string.IsNullOrWhiteSpace(record.materialName) ? "-" : record.materialName!;
         SelectedMaterialCode = record.materialCode;
         IsPickerVisible = false;
+    }
+
+    partial void OnPickedMaterialChanged(BasMaterialRecord? value)
+    {
+        if (value is null) return;
+        SelectMaterial(value);
+        PickedMaterial = null;
     }
 
     [RelayCommand]

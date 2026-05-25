@@ -143,7 +143,9 @@
                         <Button Grid.Column="1" Text="✕" Command="{Binding ClosePickerCommand}"/>
                     </Grid>
                     <SearchBar Placeholder="输入物料名模糊查询" Text="{Binding MaterialNameKeyword}" SearchCommand="{Binding SearchMaterialsCommand}"/>
-                    <CollectionView ItemsSource="{Binding MaterialList}" SelectionMode="None">
+                    <CollectionView ItemsSource="{Binding MaterialList}"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding PickedMaterial, Mode=TwoWay}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Padding="12" BorderColor="#E5E7EB" CornerRadius="10" HasShadow="False">
