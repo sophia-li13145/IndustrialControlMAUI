@@ -55,6 +55,8 @@ public class PlanBomDetailEx
     public string? materialCode { get; set; }
     public string? materialName { get; set; }
     public bool? needCollect { get; set; }
+    public string? materialType { get; set; }
+    public string? materialTypeName { get; set; }
     public decimal? qty { get; set; }
     public string? unit { get; set; }
 }
@@ -160,6 +162,8 @@ public class ReworkBomDetailFlattenItem
     public string? materialName { get; set; }
     public string? materialClassName { get; set; }
     public bool? needCollect { get; set; }
+    public string? materialType { get; set; }
+    public string? materialTypeName { get; set; }
     public decimal? qty { get; set; }
     public string? unit { get; set; }
 }
