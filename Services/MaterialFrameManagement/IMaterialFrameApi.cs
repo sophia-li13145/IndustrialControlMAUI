@@ -26,6 +26,9 @@ public interface IMaterialFrameApi
         string? materialName = null,
         string? recordNo = null,
         CancellationToken ct = default);
+    Task<ObjResp<FrameUseRecordOperation>?> GetLoadingRecordDetailAsync(
+        string id,
+        CancellationToken ct = default);
 
     Task<PageResp<BasMaterialRecord>?> PageBasMaterialsAsync(
         int pageNo = 1,

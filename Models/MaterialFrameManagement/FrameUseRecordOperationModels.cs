@@ -57,6 +57,14 @@ public sealed class ListResp<T>
     public List<T>? result { get; set; }
 }
 
+public sealed class ObjResp<T>
+{
+    public bool? success { get; set; }
+    public string? message { get; set; }
+    public int? code { get; set; }
+    public T? result { get; set; }
+}
+
 public sealed class BoolResp
 {
     public int? code { get; set; }
