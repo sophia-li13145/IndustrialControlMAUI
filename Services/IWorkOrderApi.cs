@@ -62,6 +62,8 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<bool>> DeleteWorkProcessTaskReportAsync(DeleteWorkProcessTaskReportReq req, CancellationToken ct = default);
         Task<ApiResp<decimal?>> GetWorkProcessTaskFrameOutputQtyAsync(string workProcessTaskId, CancellationToken ct = default);
         Task<ApiResp<ScanOutputFrameResp>> ScanOutputFrameAsync(string frameNo, string materialCode, CancellationToken ct = default);
+        Task<ApiResp<ScanOutputFrameResp>> ScanStockCheckFrameAsync(string frameNo, string materialCode, CancellationToken ct = default);
+        Task<ApiResp<List<StockCheckFrameLoadByBatchItem>>> ListStockCheckFrameLoadDetailsByBatchNoAsync(string batchNo, CancellationToken ct = default);
 
         Task<PageResp<MaterialAuRecord>?> PageWorkProcessTaskMaterialInputs(
                 string factoryCode,          // 工厂编码（必填）
@@ -161,6 +163,7 @@ Task<PageResp<InventoryRecord>?> PageInventoryAsync(
     string checkNo,
     string? location,
     string? materialBarcode,
+    string? frameNo,
     bool? searchCount = null,
     int pageNo = 1,
     int pageSize = 50,

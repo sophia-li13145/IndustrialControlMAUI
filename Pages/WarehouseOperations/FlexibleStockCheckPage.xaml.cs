@@ -56,7 +56,7 @@ namespace IndustrialControlMAUI.Pages
             LocationEntry.Text = code;
             _vm.LocationCode = code;
 
-            await _vm.QueryDetailsAsync(_vm.LocationCode, _vm.MaterialBarcode);
+            await _vm.QueryDetailsAsync(_vm.LocationCode, _vm.MaterialBarcode, _vm.FrameNo);
 
             if (_vm.Details.Count == 1)
                 _vm.OpenEditDialogCommand.Execute(_vm.Details[0]);
@@ -78,7 +78,7 @@ namespace IndustrialControlMAUI.Pages
             MaterialEntry.Text = code;
             _vm.MaterialBarcode = code;
 
-            await _vm.QueryDetailsAsync(_vm.LocationCode, _vm.MaterialBarcode);
+            await _vm.QueryDetailsAsync(_vm.LocationCode, _vm.MaterialBarcode, _vm.FrameNo);
 
             if (_vm.Details.Count == 1)
                 _vm.OpenEditDialogCommand.Execute(_vm.Details[0]);
