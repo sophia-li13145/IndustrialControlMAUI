@@ -535,7 +535,7 @@ public class AddWorkProcessTaskMaterialInputReq
     public string? unit { get; set; }
     public string workOrderNo { get; set; } = "";
     public string operationTime { get; set; }
-    
+
 }
 
 
@@ -596,7 +596,7 @@ public class AddWorkProcessTaskProductOutputReq
     public string? unit { get; set; }
     public string workOrderNo { get; set; } = "";
     public string operationTime { get; set; }
-    public List<OutputFrameSelectionItem>? frameNoList { get; set; }
+    public List<OutputFrameSelectionItem>? outputFrameList { get; set; }
 }
 
 
