@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
-using IntelliJ.Lang.Annotations;
 using System.Collections.ObjectModel;
 
 namespace IndustrialControlMAUI.ViewModels;
@@ -17,6 +16,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
     public ObservableCollection<StatusOption> DeviceOptions { get; } = new();
     public ObservableCollection<StatusOption> ShiftOptions { get; } = new();
     public ObservableCollection<UserInfoDto> UserOptions { get; } = new();
+    public ObservableCollection<ReworkBomDetailFlattenItem> UnqualifiedMaterialOptions { get; } = new();
 
     [ObservableProperty] private StatusOption? selectedDevice;
     [ObservableProperty] private StatusOption? selectedShift;
@@ -24,15 +24,33 @@ public partial class ReportAddPopupViewModel : ObservableObject
     [ObservableProperty] private string? workHoursText;
     [ObservableProperty] private string? reportQtyText;
     [ObservableProperty] private string? unqualifiedQtyText;
+    [ObservableProperty] private ReworkBomDetailFlattenItem? selectedUnqualifiedMaterial;
     [ObservableProperty] private string? operateTimeText = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     [ObservableProperty] private string? memo;
     [ObservableProperty] private bool isBusy;
 
     public bool IsNotBusy => !IsBusy;
 
+    public string UnqualifiedMaterialLabel => RequiresUnqualifiedMaterial ? "*不合格物料：" : "不合格物料：";
+
+    private bool RequiresUnqualifiedMaterial
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(UnqualifiedQtyText))
+                return false;
+            return decimal.TryParse(UnqualifiedQtyText, out var qty) && qty > 0;
+        }
+    }
+
     partial void OnIsBusyChanged(bool value)
     {
         OnPropertyChanged(nameof(IsNotBusy));
+    }
+
+    partial void OnUnqualifiedQtyTextChanged(string? value)
+    {
+        OnPropertyChanged(nameof(UnqualifiedMaterialLabel));
     }
 
     public ReportAddPopupViewModel(IWorkOrderApi api, IAuthApi authApi)
@@ -49,6 +67,8 @@ public partial class ReportAddPopupViewModel : ObservableObject
             DeviceOptions.Clear();
             ShiftOptions.Clear();
             UserOptions.Clear();
+            UnqualifiedMaterialOptions.Clear();
+            SelectedUnqualifiedMaterial = null;
 
             if (detail is null)
             {
@@ -90,6 +110,23 @@ public partial class ReportAddPopupViewModel : ObservableObject
             var current = UserOptions.FirstOrDefault(x =>
                 string.Equals(x.username, currentUserName, StringComparison.OrdinalIgnoreCase));
             SelectedUser = current ?? UserOptions.FirstOrDefault();
+
+
+            if (!string.IsNullOrWhiteSpace(detail.workOrderNo))
+            {
+                // 接口：/pda/pmsBom/queryPmsBomDetailFlattenByWorkOrder
+                var bomResp = await _api.GetReworkBomFlattenDetailsAsync(detail.workOrderNo);
+                if (bomResp?.success == true)
+                {
+                    foreach (var item in (bomResp.result ?? new List<ReworkBomDetailFlattenItem>())
+                        .Where(IsUnqualifiedMaterialCandidate)
+                        .GroupBy(x => x.materialCode ?? string.Empty)
+                        .Select(x => x.First()))
+                    {
+                        UnqualifiedMaterialOptions.Add(item);
+                    }
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(detail.id))
             {
@@ -173,6 +210,12 @@ public partial class ReportAddPopupViewModel : ObservableObject
             decimal.TryParse(UnqualifiedQtyText, out var unqualifiedQty);
             decimal.TryParse(WorkHoursText, out var hours);
 
+            if (unqualifiedQty > 0 && (SelectedUnqualifiedMaterial is null || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialCode)))
+            {
+                await AlertAsync("不合格数量大于0时，请选择不合格物料");
+                return;
+            }
+
             var req = new AddWorkProcessTaskReportReq
             {
                 memo = Memo,
@@ -188,6 +231,8 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 teamCode = SelectedShift.Value,
                 teamName = SelectedShift.Text,
                 unqualifiedQty = unqualifiedQty,
+                unqualifiedMaterialCode = unqualifiedQty > 0 ? SelectedUnqualifiedMaterial?.materialCode : null,
+                unqualifiedMaterialName = unqualifiedQty > 0 ? SelectedUnqualifiedMaterial?.materialName : null,
                 workHours = string.IsNullOrWhiteSpace(WorkHoursText) ? null : hours,
                 workOrderNo = _detail.workOrderNo!
             };
@@ -216,6 +261,18 @@ public partial class ReportAddPopupViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+
+    private static bool IsUnqualifiedMaterialCandidate(ReworkBomDetailFlattenItem item)
+    {
+        var type = item?.materialType?.Trim().ToLowerInvariant();
+        if (type == "semi_product" || type == "product")
+            return true;
+
+        var typeName = item?.materialTypeName ?? string.Empty;
+        return typeName.Contains("半成品", StringComparison.OrdinalIgnoreCase)
+               || typeName.Contains("产品", StringComparison.OrdinalIgnoreCase);
     }
 
     private static Task AlertAsync(string message)
