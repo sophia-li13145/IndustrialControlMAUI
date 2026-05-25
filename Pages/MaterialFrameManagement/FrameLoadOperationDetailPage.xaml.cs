@@ -14,8 +14,8 @@ public partial class FrameLoadOperationDetailPage : ContentPage
         {
             if (string.IsNullOrWhiteSpace(value)) return;
             var key = Uri.UnescapeDataString(value);
-            if (FrameLoadOperationNavigationStore.TryTake(key, out var record))
-                _vm.Apply(record);
+            if (FrameLoadOperationNavigationStore.TryTake(key, out var recordId))
+                MainThread.BeginInvokeOnMainThread(async () => await _vm.LoadAsync(recordId));
         }
     }
 
@@ -28,25 +28,25 @@ public partial class FrameLoadOperationDetailPage : ContentPage
 
 public static class FrameLoadOperationNavigationStore
 {
-    private static readonly Dictionary<string, FrameUseRecordOperation> Cache = new();
+    private static readonly Dictionary<string, string?> Cache = new();
 
-    public static string Put(FrameUseRecordOperation record)
+    public static string Put(string? recordId)
     {
         var key = Guid.NewGuid().ToString("N");
-        Cache[key] = record;
+        Cache[key] = recordId;
         return key;
     }
 
-    public static bool TryTake(string key, out FrameUseRecordOperation? record)
+    public static bool TryTake(string key, out string? recordId)
     {
-        if (Cache.TryGetValue(key, out var found))
+        if (Cache.TryGetValue(key, out var foundId))
         {
             Cache.Remove(key);
-            record = found;
+            recordId = foundId;
             return true;
         }
 
-        record = null;
+        recordId = null;
         return false;
     }
 }

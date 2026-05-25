@@ -27,7 +27,7 @@ public partial class FrameLoadOperationPage : ContentPage
     private async void OnItemTapped(object sender, TappedEventArgs e)
     {
         if (e.Parameter is not FrameUseRecordOperation record) return;
-        var key = FrameLoadOperationNavigationStore.Put(record);
+        var key = FrameLoadOperationNavigationStore.Put(record.id);
         await Shell.Current.GoToAsync($"{nameof(FrameLoadOperationDetailPage)}?recordKey={Uri.EscapeDataString(key)}");
     }
 }

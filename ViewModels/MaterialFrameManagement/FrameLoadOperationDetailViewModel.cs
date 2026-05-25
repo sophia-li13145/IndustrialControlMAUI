@@ -1,11 +1,19 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
 namespace IndustrialControlMAUI.ViewModels;
 
 public partial class FrameLoadOperationDetailViewModel : ObservableObject
 {
+    private readonly IMaterialFrameApi _api;
+
+    public FrameLoadOperationDetailViewModel(IMaterialFrameApi api)
+    {
+        _api = api;
+    }
+
     public ObservableCollection<FrameLoadTargetFrameItemVm> TargetFrames { get; } = new();
 
     [ObservableProperty] private string recordNoDisplay = "-";
@@ -13,9 +21,26 @@ public partial class FrameLoadOperationDetailViewModel : ObservableObject
     [ObservableProperty] private string operatorDisplay = "-";
     [ObservableProperty] private string materialNameDisplay = "-";
 
-    public void Apply(FrameUseRecordOperation? record)
+    public async Task LoadAsync(string? recordId)
+    {
+        Reset();
+        if (string.IsNullOrWhiteSpace(recordId)) return;
+
+        var resp = await _api.GetLoadingRecordDetailAsync(recordId.Trim());
+        Apply(resp?.result);
+    }
+
+    private void Reset()
     {
         TargetFrames.Clear();
+        RecordNoDisplay = "-";
+        OperationTimeDisplay = "-";
+        OperatorDisplay = "-";
+        MaterialNameDisplay = "-";
+    }
+
+    private void Apply(FrameUseRecordOperation? record)
+    {
         if (record is null) return;
 
         RecordNoDisplay = string.IsNullOrWhiteSpace(record.recordNo) ? "-" : record.recordNo!;
