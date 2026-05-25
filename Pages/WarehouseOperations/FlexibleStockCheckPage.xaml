@@ -219,19 +219,23 @@
 
         <!-- ===== 弹窗 Overlay ===== -->
         <Grid IsVisible="{Binding IsEditDialogVisible}"
-              BackgroundColor="#80000000">
-            <Frame Padding="0"
-                   CornerRadius="6"
-                   HasShadow="True"
+              BackgroundColor="#66000000"
+              RowDefinitions="*,Auto">
+            <BoxView Grid.Row="0" Color="Transparent" />
+            <Frame Grid.Row="1"
+                   Padding="0"
+                   CornerRadius="10"
+                   HasShadow="False"
                    BackgroundColor="#F4F7FC"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   WidthRequest="360">
+                   HorizontalOptions="Fill"
+                   VerticalOptions="End"
+                   Margin="0">
 
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto"
                       ColumnDefinitions="90,*"
                       RowSpacing="6"
-                      ColumnSpacing="4">
+                      ColumnSpacing="4"
+                      Padding="10,8,10,8">
 
                     <!-- 标题行：库位号 + 批次号 + 关闭按钮 -->
                     <Grid Grid.Row="0" Grid.ColumnSpan="2"
@@ -240,8 +244,9 @@
                                Text="{Binding EditingItem.location, StringFormat='库位号：{0}'}"
                                FontAttributes="Bold" />
                         <Label Grid.Column="1"
-                               Text="X"
+                               Text="✕"
                                TextColor="Red"
+                               FontSize="18"
                                HorizontalTextAlignment="Center"
                                VerticalTextAlignment="Center">
                             <Label.GestureRecognizers>
@@ -297,7 +302,8 @@
                                     BackgroundColor="#22C55E"
                                     TextColor="White" />
                         </Grid>
-                        <CollectionView ItemsSource="{Binding EditingItem.wmsInstockCheckFrameDetailList}" HeightRequest="180">
+                        <CollectionView ItemsSource="{Binding EditingItem.wmsInstockCheckFrameDetailList}"
+                                        VerticalOptions="FillAndExpand">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Frame Padding="6" Margin="0,2" BorderColor="#D1D5DB" HasShadow="False">
@@ -323,19 +329,21 @@
                     <Grid Grid.Row="7" Grid.ColumnSpan="2"
                           Margin="0,8,0,0"
                           ColumnDefinitions="*,*"
-                          ColumnSpacing="10">
+                          ColumnSpacing="0">
                         <Button Grid.Column="0"
-                                Text="确认"
-                                BackgroundColor="#1976D2"
-                                TextColor="White"
-                                Command="{Binding ConfirmEditCommand}" />
-                        <Button Grid.Column="1"
                                 Text="取消"
                                 BackgroundColor="White"
-                                BorderColor="#1976D2"
+                                BorderColor="#D1D5DB"
                                 BorderWidth="1"
-                                TextColor="#1976D2"
+                                TextColor="#111827"
+                                CornerRadius="0"
                                 Command="{Binding CancelEditCommand}" />
+                        <Button Grid.Column="1"
+                                Text="确认保存"
+                                BackgroundColor="#3B82F6"
+                                TextColor="White"
+                                CornerRadius="0"
+                                Command="{Binding ConfirmEditCommand}" />
                     </Grid>
                 </Grid>
             </Frame>
