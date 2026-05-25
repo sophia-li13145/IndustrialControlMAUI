@@ -23,11 +23,9 @@ public partial class FrameMergeOperationPage : ContentPage
         await DisplayAlert("料框管理", "新增记录页面待接入", "确定");
     }
 
-    private async void OnItemSelected(object? sender, SelectionChangedEventArgs e)
+    private async void OnItemTapped(object sender, TappedEventArgs e)
     {
-        if (sender is not CollectionView cv) return;
-        if (e.CurrentSelection.FirstOrDefault() is not Models.FrameUseRecordOperation record) return;
-        cv.SelectedItem = null;
+        if (e.Parameter is not Models.FrameUseRecordOperation record) return;
         var key = FrameLoadOperationNavigationStore.Put(record.id);
         await Shell.Current.GoToAsync($"{nameof(FrameMergeOperationDetailPage)}?recordKey={Uri.EscapeDataString(key)}");
     }
