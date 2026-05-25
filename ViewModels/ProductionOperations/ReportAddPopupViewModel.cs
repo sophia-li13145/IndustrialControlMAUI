@@ -18,6 +18,12 @@ public partial class ReportAddPopupViewModel : ObservableObject
     public ObservableCollection<UserInfoDto> UserOptions { get; } = new();
     public ObservableCollection<ReworkBomDetailFlattenItem> UnqualifiedMaterialOptions { get; } = new();
 
+    private static readonly ReworkBomDetailFlattenItem UnqualifiedMaterialPlaceholder = new()
+    {
+        materialCode = string.Empty,
+        materialName = "请选择"
+    };
+
     [ObservableProperty] private StatusOption? selectedDevice;
     [ObservableProperty] private StatusOption? selectedShift;
     [ObservableProperty] private UserInfoDto? selectedUser;
@@ -68,7 +74,8 @@ public partial class ReportAddPopupViewModel : ObservableObject
             ShiftOptions.Clear();
             UserOptions.Clear();
             UnqualifiedMaterialOptions.Clear();
-            SelectedUnqualifiedMaterial = null;
+            UnqualifiedMaterialOptions.Add(UnqualifiedMaterialPlaceholder);
+            SelectedUnqualifiedMaterial = UnqualifiedMaterialPlaceholder;
 
             if (detail is null)
             {
@@ -125,6 +132,8 @@ public partial class ReportAddPopupViewModel : ObservableObject
                     {
                         UnqualifiedMaterialOptions.Add(item);
                     }
+
+                    SelectedUnqualifiedMaterial = UnqualifiedMaterialPlaceholder;
                 }
             }
 
@@ -210,7 +219,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
             decimal.TryParse(UnqualifiedQtyText, out var unqualifiedQty);
             decimal.TryParse(WorkHoursText, out var hours);
 
-            if (unqualifiedQty > 0 && (SelectedUnqualifiedMaterial is null || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialCode)))
+            if (unqualifiedQty > 0 && (SelectedUnqualifiedMaterial is null
+                || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialCode)
+                || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialName)))
             {
                 await AlertAsync("不合格数量大于0时，请选择不合格物料");
                 return;
