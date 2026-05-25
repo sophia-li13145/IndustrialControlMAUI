@@ -882,6 +882,21 @@ public partial class StockCheckDetailItem : ObservableObject
     public bool? isDeliverInspect { get; set; }
 
 
+    public List<StockCheckFrameDetailItem> wmsInstockCheckFrameDetailList { get; set; } = new();
+
+
+}
+
+public class StockCheckFrameDetailItem
+{
+    public string? id { get; set; }
+    public string? checkNo { get; set; }
+    public string? checkDetailId { get; set; }
+    public string? frameNo { get; set; }
+    public decimal? bookQty { get; set; }
+    public decimal? checkQty { get; set; }
+    public string? memo { get; set; }
+    public bool? newFrameFlag { get; set; }
 }
 
 /// <summary>
