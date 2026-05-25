@@ -41,7 +41,7 @@ public partial class OutputPopupPage : ContentPage
         // 3) 打开弹窗并等待结果
         var page = new OutputPopupPage(vm);
         if (Application.Current?.MainPage?.Navigation is not null)
-            await Application.Current.MainPage.Navigation.PushModalAsync(page);
+            await Application.Current.MainPage.Navigation.PushAsync(page);
 
         // 4) 返回结果
         return await tcs.Task;
