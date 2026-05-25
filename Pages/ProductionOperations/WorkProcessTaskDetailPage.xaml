@@ -281,6 +281,7 @@
                 <Grid Margin="0,12,0,8" IsVisible="{Binding IsReportVisible}">
                     <Button Text="＋ 新增报工"
                             HorizontalOptions="End"
+                            IsEnabled="{Binding CanAddReport}"
                             Command="{Binding AddReportCommand}" />
                 </Grid>
                 <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,26"

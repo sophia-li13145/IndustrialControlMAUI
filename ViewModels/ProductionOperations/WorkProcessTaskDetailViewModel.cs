@@ -25,6 +25,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [NotifyPropertyChangedFor(nameof(CanRework))]
     [NotifyPropertyChangedFor(nameof(PauseResumeText))]
     [NotifyPropertyChangedFor(nameof(IsEditing))]
+    [NotifyPropertyChangedFor(nameof(CanAddReport))]
     private TaskRunState state = TaskRunState.NotStarted;
     // ★ 只有 Running（开工/复工后）为 true，其它状态为 false
     public bool IsEditing => State == TaskRunState.Running;
@@ -33,6 +34,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public bool CanPauseResume => !IsBusy && (State == TaskRunState.Running || State == TaskRunState.Paused);
     public bool CanFinish => !IsBusy && State == TaskRunState.Running;
     public bool CanRework => !IsBusy && IsReworkVisible;
+    public bool CanAddReport => !IsBusy && State == TaskRunState.Running;
 
     public string PauseResumeText => State == TaskRunState.Running ? "暂停" : "复工";
 
@@ -168,12 +170,14 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(IsReworkVisible));
         OnPropertyChanged(nameof(CanRework));
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
     partial void OnQueryWorkOrderAuditStatusChanged(string? value)
     {
         OnPropertyChanged(nameof(IsReworkVisible));
         OnPropertyChanged(nameof(CanRework));
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
     /// <summary>执行 NotifyAllCanExec 逻辑。</summary>
     private void NotifyAllCanExec()
@@ -182,6 +186,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (PauseResumeCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (FinishCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
     /// <summary>执行 OnActiveTabChanged 逻辑。</summary>
     partial void OnActiveTabChanged(DetailTab value)
@@ -238,6 +243,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             if (resp.success)
             {
                 State = TaskRunState.Running;
+                if (!string.IsNullOrWhiteSpace(Detail?.id))
+                    await LoadDetailAsync(Detail.id);
                 await Shell.Current.DisplayAlert("提示", "开工成功！", "确定");
             }
             else
@@ -466,6 +473,25 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
     }
 
+    private static TaskRunState MapStateFromPeriodExecute(string? periodExecute)
+    {
+        var raw = periodExecute?.Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+            return TaskRunState.NotStarted;
+
+        var exec = raw!.Replace("_", string.Empty).Replace("-", string.Empty).ToLowerInvariant();
+        return exec switch
+        {
+            "working" or "work" or "running" or "startwork" or "start" or "resume" or "resumework"
+                => TaskRunState.Running,
+            "pause" or "paused" or "suspend"
+                => TaskRunState.Paused,
+            "complete" or "completed" or "finish" or "finished" or "end"
+                => TaskRunState.Finished,
+            _ => TaskRunState.NotStarted
+        };
+    }
+
     /// <summary>执行 LoadDetailAsync 逻辑。</summary>
     private async Task LoadDetailAsync(string id)
     {
@@ -485,25 +511,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             {
                 Detail.AuditStatusName = s;
             }
-            var execRaw = resp.result.periodExecute;
-            var exec = execRaw?.Trim().ToLowerInvariant();
-
-            if (string.IsNullOrWhiteSpace(exec))
-            {
-                State = TaskRunState.NotStarted;     // ★ 关键：明确未开工
-            }
-            else
-            {
-                State = exec switch
-                {
-                    "working" => TaskRunState.Running,
-                    "resume" => TaskRunState.Running,
-                    "pause" => TaskRunState.Paused,
-                    "complete" => TaskRunState.Finished,
-                    _ => TaskRunState.NotStarted
-                };
-
-            }
+            State = MapStateFromPeriodExecute(resp.result.periodExecute);
                 // 关键：加载下拉选项
             await LoadShiftsAsync();
             await LoadDevicesAsync();
@@ -714,7 +722,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await ShowTip("报工数量已更新");
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanAddReport))]
     private async Task AddReportAsync()
     {
         if (Detail is null) return;
