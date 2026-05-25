@@ -14,6 +14,8 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _materialFrameOperationPageEndpoint;
     private readonly string _pageBasMaterialsEndpoint;
     private readonly string _getFrameStatusListEndpoint;
+    private readonly string _getFrameStatusListByFrameNoEndpoint;
+    private readonly string _getStatusDictListEndpoint;
     private readonly string _addLoadingRecordEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
@@ -37,6 +39,12 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _getFrameStatusListEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameStatusList", "/pda/dev/frameUseRecord/getFrameStatusList"),
+            servicePath);
+        _getFrameStatusListByFrameNoEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getFrameStatusListByFrameNo", "/pda/dev/frameUseRecord/getFrameStatusListByFrameNo"),
+            servicePath);
+        _getStatusDictListEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getStatusDictList", "/pda/dev/frameUseRecord/getStatusDictList"),
             servicePath);
         _addLoadingRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.addLoadingRecord", "/pda/dev/frameUseRecord/addLoadingRecord"),
@@ -227,6 +235,48 @@ public class MaterialFrameApi : IMaterialFrameApi
         return JsonSerializer.Deserialize<ListResp<FrameStatusItem>>(json,
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                ?? new ListResp<FrameStatusItem>();
+    }
+    public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListByFrameNoAsync(
+        string frameNo,
+        string materialCode,
+        CancellationToken ct = default)
+    {
+        var pairs = new List<KeyValuePair<string, string>>
+        {
+            new("frameNo", frameNo.Trim()),
+            new("materialCode", materialCode.Trim())
+        };
+
+        var query = string.Join("&", pairs.Select(kv =>
+            $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+        var url = _getFrameStatusListByFrameNoEndpoint + "?" + query;
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameStatusItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameStatusItem>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameStatusItem>();
+    }
+
+    public async Task<List<DictField>?> GetStatusDictListAsync(CancellationToken ct = default)
+    {
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getStatusDictListEndpoint);
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new List<DictField>();
+
+        var obj = JsonSerializer.Deserialize<ListResp<DictField>>(json,
+                  new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return obj?.result ?? new List<DictField>();
     }
 
     public async Task<BoolResp?> AddLoadingRecordAsync(

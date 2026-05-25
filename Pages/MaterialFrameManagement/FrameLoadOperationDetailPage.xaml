@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.FrameLoadOperationDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="操作详情"
+             BackgroundColor="#F4F5F7">
+    <ScrollView>
+        <VerticalStackLayout Padding="12" Spacing="12">
+            <Frame CornerRadius="14" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Label Text="任务单号" FontSize="28" FontAttributes="Bold" TextColor="#111827"/>
+                        <Label Grid.Column="1" Text="{Binding RecordNoDisplay}" HorizontalOptions="End" TextColor="#6B7280"/>
+                    </Grid>
+                    <BoxView HeightRequest="1" BackgroundColor="#E5E7EB"/>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Label Text="操作时间" TextColor="#6B7280"/>
+                        <Label Grid.Column="1" Text="{Binding OperationTimeDisplay}" HorizontalOptions="End" TextColor="#111827"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Label Text="操作人" TextColor="#6B7280"/>
+                        <Label Grid.Column="1" Text="{Binding OperatorDisplay}" HorizontalOptions="End" TextColor="#111827"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame CornerRadius="14" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="操作详情" FontAttributes="Bold" TextColor="#111827"/>
+                    <Frame Padding="10" BorderColor="#BFDBFE" BackgroundColor="#EFF6FF" HasShadow="False" CornerRadius="10">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="装载物料" FontAttributes="Bold" TextColor="#2563EB"/>
+                            <Label Text="{Binding MaterialNameDisplay}" TextColor="#111827"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <CollectionView ItemsSource="{Binding TargetFrames}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="10" BorderColor="#BBF7D0" BackgroundColor="#F0FDF4" HasShadow="False" CornerRadius="10" Margin="0,4,0,0">
+                                    <VerticalStackLayout Spacing="8">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                            <Label Text="{Binding Title}" FontAttributes="Bold" TextColor="#15803D"/>
+                                            <Label Grid.Column="1" Text="{Binding FrameNoDisplay}" HorizontalOptions="End" FontAttributes="Bold" TextColor="#166534"/>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Label Text="装入数量" TextColor="#6B7280"/>
+                                            <Label Grid.Column="1" Text="{Binding QtyDisplay}" HorizontalOptions="End" TextColor="#111827" FontAttributes="Bold"/>
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

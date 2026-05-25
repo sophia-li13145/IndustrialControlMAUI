@@ -38,6 +38,11 @@ public interface IMaterialFrameApi
         string materialCode,
         string materialName,
         CancellationToken ct = default);
+    Task<ListResp<FrameStatusItem>?> GetFrameStatusListByFrameNoAsync(
+        string frameNo,
+        string materialCode,
+        CancellationToken ct = default);
+    Task<List<DictField>?> GetStatusDictListAsync(CancellationToken ct = default);
 
     Task<BoolResp?> AddLoadingRecordAsync(
         AddLoadingRecordReq req,
