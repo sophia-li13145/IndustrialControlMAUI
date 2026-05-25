@@ -47,6 +47,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty]
         private string? locationCode;
 
+        [ObservableProperty]
+        private string? frameNo;
+
         /// <summary>正在查询/保存</summary>
         [ObservableProperty]
         private bool isBusy;
@@ -163,7 +166,7 @@ namespace IndustrialControlMAUI.ViewModels
             // 只在还没加载过的情况下加载一次
             if (!string.IsNullOrWhiteSpace(CheckNo) && Details.Count == 0)
             {
-                return QueryDetailsAsync(null, null);
+                return QueryDetailsAsync(null, null, null);
             }
             return Task.CompletedTask;
         }
@@ -179,7 +182,7 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            await QueryDetailsAsync(loc, MaterialBarcode);
+            await QueryDetailsAsync(loc, MaterialBarcode, FrameNo);
 
             // 如果只有一条数据，直接弹窗编辑
             if (Details.Count == 1)
@@ -199,7 +202,7 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            await QueryDetailsAsync(LocationCode, code);
+            await QueryDetailsAsync(LocationCode, code, FrameNo);
 
             if (Details.Count == 1)
             {
@@ -557,7 +560,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         /// <summary>执行 QueryDetailsAsync 逻辑。</summary>
-        public async Task QueryDetailsAsync(string? location, string? materialBarcode)
+        public async Task QueryDetailsAsync(string? location, string? materialBarcode, string? frameNo)
         {
             if (!IsFlexibleMode && string.IsNullOrWhiteSpace(CheckNo))
             {
@@ -577,6 +580,7 @@ namespace IndustrialControlMAUI.ViewModels
                     checkNo: CheckNo!,
                     location: location,
                     materialBarcode: materialBarcode,
+                    frameNo: frameNo,
                     searchCount: false,
                     pageNo: 1,
                     pageSize: 10,

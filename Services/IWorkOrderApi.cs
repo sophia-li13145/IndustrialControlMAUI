@@ -161,6 +161,7 @@ Task<PageResp<InventoryRecord>?> PageInventoryAsync(
     string checkNo,
     string? location,
     string? materialBarcode,
+    string? frameNo,
     bool? searchCount = null,
     int pageNo = 1,
     int pageSize = 50,
