@@ -23,7 +23,22 @@ public class FrameUseRecordOperation
     public string BizNoDisplay => string.IsNullOrWhiteSpace(recordNo) ? "-" : recordNo!;
     public string MaterialNameDisplay => string.IsNullOrWhiteSpace(materialName) ? "-" : materialName!;
     public string TargetLocationDisplay => string.IsNullOrWhiteSpace(targetLocation) ? "-" : targetLocation!;
-    public string FrameCountDisplay => (frameCount ?? 0).ToString();
+    public string FrameCountDisplay
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(targetLocation))
+            {
+                var targetCount = targetLocation.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length;
+                if (targetCount > 0)
+                {
+                    return targetCount.ToString();
+                }
+            }
+
+            return (frameCount ?? 0).ToString();
+        }
+    }
     public string OperationTimeDisplay => string.IsNullOrWhiteSpace(operationTime) ? "-" : operationTime!;
 }
 
