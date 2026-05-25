@@ -91,7 +91,7 @@
             <VerticalStackLayout Spacing="10">
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Label Text="分配至目标料框（空闲）" FontAttributes="Bold" TextColor="#1F2937"/>
-                    <Button Grid.Column="1" Text="扫码添加" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
+                    <Button Grid.Column="1" Text="扫码添加" Clicked="OnScanTargetFrameClicked" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
                     <Button Grid.Column="2" Text="列表添加" Command="{Binding OpenTargetFramePopupCommand}" BackgroundColor="#EFF6FF" TextColor="#2563EB" BorderColor="#BFDBFE" BorderWidth="1"/>
                 </Grid>
                 <CollectionView ItemsSource="{Binding SelectedTargetFrames}" HeightRequest="240">
@@ -250,7 +250,7 @@
                                     StrokeThickness="0"
                                     Padding="6,2">
 
-                                                    <Label Text="{Binding frameStatus}"
+                                                    <Label Text="{Binding frameStatusDisplay}"
                                        FontSize="11"
                                        TextColor="#2FA84F"/>
 

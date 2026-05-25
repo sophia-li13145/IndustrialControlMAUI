@@ -22,4 +22,9 @@ public partial class FrameLoadAddPage : ContentPage
     {
         await _vm.ScanAndBindAsync(Navigation);
     }
+
+    private async void OnScanTargetFrameClicked(object sender, EventArgs e)
+    {
+        await _vm.ScanAndAddTargetFrameAsync(Navigation);
+    }
 }

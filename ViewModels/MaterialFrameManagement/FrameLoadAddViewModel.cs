@@ -12,6 +12,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class FrameLoadAddViewModel : ObservableObject
 {
     private readonly IMaterialFrameApi _api;
+    private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
     public ObservableCollection<BasMaterialRecord> MaterialList { get; } = new();
     public ObservableCollection<TargetFrameSelectableItem> TargetFrameList { get; } = new();
@@ -35,6 +36,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
     public async Task LoadMaterialsAsync()
     {
+        await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.PageBasMaterialsAsync(1, 50, MaterialNameKeyword, null);
         MaterialList.Clear();
         foreach (var m in resp?.result?.records ?? new List<BasMaterialRecord>())
@@ -94,6 +96,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
             {
                 frameNo = x.frameNo,
                 frameStatus = x.frameStatus,
+                frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus),
                 IsSelected = SelectedTargetFrames.Any(t => t.FrameNo == x.frameNo)
             });
         }
@@ -103,6 +106,45 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
     [RelayCommand]
     private void CloseTargetFramePopup() => IsTargetFramePopupVisible = false;
+
+    public async Task ScanAndAddTargetFrameAsync(INavigation nav)
+    {
+        if (string.IsNullOrWhiteSpace(SelectedMaterialCode)) return;
+
+        var tcs = new TaskCompletionSource<string>();
+        await nav.PushAsync(new QrScanPage(tcs));
+        var frameNo = (await tcs.Task)?.Trim();
+        if (string.IsNullOrWhiteSpace(frameNo)) return;
+
+        await EnsureFrameStatusDictLoadedAsync();
+        var resp = await _api.GetFrameStatusListByFrameNoAsync(frameNo, SelectedMaterialCode!);
+        var frame = resp?.result?.FirstOrDefault();
+        if (frame is null) return;
+
+        var exists = TargetFrameList.FirstOrDefault(x =>
+            string.Equals(x.frameNo, frame.frameNo, StringComparison.OrdinalIgnoreCase));
+        if (exists is null)
+        {
+            exists = new TargetFrameSelectableItem
+            {
+                frameNo = frame.frameNo,
+                frameStatus = frame.frameStatus,
+                frameStatusDisplay = ResolveFrameStatusDisplay(frame.frameStatus)
+            };
+            TargetFrameList.Add(exists);
+        }
+
+        if (!exists.IsSelected)
+        {
+            exists.IsSelected = true;
+            SelectedTargetFrames.Add(new SelectedTargetFrameItem
+            {
+                FrameNo = string.IsNullOrWhiteSpace(exists.frameNo) ? "-" : exists.frameNo!,
+                Qty = string.Empty
+            });
+            ReindexSelectedFrames();
+        }
+    }
 
     [RelayCommand]
     private void ToggleTargetFrame(TargetFrameSelectableItem? item)
@@ -175,6 +217,28 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
     partial void OnSelectedMaterialCodeChanged(string? value) => RefreshConfirmState();
 
+    private async Task EnsureFrameStatusDictLoadedAsync()
+    {
+        if (_frameStatusDict.Count > 0) return;
+        var fields = await _api.GetStatusDictListAsync();
+        var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
+        var dict = (statusField?.dictItems ?? new List<DictItem>())
+            .Where(x => !string.IsNullOrWhiteSpace(x.dictItemValue))
+            .GroupBy(x => x.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                k => k.Key,
+                v => string.IsNullOrWhiteSpace(v.First().dictItemName) ? v.First().dictItemValue! : v.First().dictItemName!,
+                StringComparer.OrdinalIgnoreCase);
+        _frameStatusDict = dict;
+    }
+
+    private string ResolveFrameStatusDisplay(string? frameStatus)
+    {
+        var key = frameStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(key)) return "-";
+        return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
+    }
+
     [RelayCommand]
     public async Task ConfirmLoadAsync()
     {
@@ -232,6 +296,7 @@ public partial class TargetFrameSelectableItem : ObservableObject
 {
     public string? frameNo { get; set; }
     public string? frameStatus { get; set; }
+    public string? frameStatusDisplay { get; set; }
     public string? frameTypeCode { get; set; }
 
     [ObservableProperty]

@@ -106,6 +106,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<StockCheckSearchViewModel>();
             builder.Services.AddTransient<MaterialFrameQueryViewModel>();
             builder.Services.AddTransient<FrameLoadOperationViewModel>();
+            builder.Services.AddTransient<FrameLoadOperationDetailViewModel>();
             builder.Services.AddTransient<FrameUnloadOperationViewModel>();
             builder.Services.AddTransient<FrameMergeOperationViewModel>();
             builder.Services.AddTransient<FrameDumpOperationViewModel>();
@@ -171,6 +172,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<StockCheckSearchPage>();
             builder.Services.AddTransient<MaterialFrameQueryPage>();
             builder.Services.AddTransient<FrameLoadOperationPage>();
+            builder.Services.AddTransient<FrameLoadOperationDetailPage>();
             builder.Services.AddTransient<FrameUnloadOperationPage>();
             builder.Services.AddTransient<FrameMergeOperationPage>();
             builder.Services.AddTransient<FrameDumpOperationPage>();

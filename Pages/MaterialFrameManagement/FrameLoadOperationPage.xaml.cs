@@ -1,4 +1,5 @@
 using IndustrialControlMAUI.ViewModels;
+using IndustrialControlMAUI.Models;
 
 namespace IndustrialControlMAUI.Pages;
 
@@ -21,5 +22,12 @@ public partial class FrameLoadOperationPage : ContentPage
     private async void OnAddRecordClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync(nameof(FrameLoadAddPage));
+    }
+
+    private async void OnItemTapped(object sender, TappedEventArgs e)
+    {
+        if (e.Parameter is not FrameUseRecordOperation record) return;
+        var key = FrameLoadOperationNavigationStore.Put(record);
+        await Shell.Current.GoToAsync($"{nameof(FrameLoadOperationDetailPage)}?recordKey={Uri.EscapeDataString(key)}");
     }
 }
