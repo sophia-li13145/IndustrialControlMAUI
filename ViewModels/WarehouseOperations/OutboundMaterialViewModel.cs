@@ -403,6 +403,7 @@ namespace IndustrialControlMAUI.ViewModels
             try
             {
                 // ③ 线程安全占位
+                var addedPlaceholder = false;
                 lock (_listLock)
                 {
                     var exist = ScannedList.FirstOrDefault(x =>
@@ -425,6 +426,7 @@ namespace IndustrialControlMAUI.ViewModels
                         };
                         ScannedList.Add(placeholder);
                         SelectedScanItem = placeholder;
+                        addedPlaceholder = true;
                     }
                     else
                     {
@@ -441,6 +443,17 @@ namespace IndustrialControlMAUI.ViewModels
                     var resp = await _api.OutStockByBarcodeAsync(OutstockId!, barcode);
                     if (!resp.Succeeded)
                     {
+                        if (addedPlaceholder)
+                        {
+                            lock (_listLock)
+                            {
+                                var idx = ScannedList
+                                    .Select((x, i) => new { x, i })
+                                    .FirstOrDefault(t => string.Equals(t.x.Barcode, barcode, StringComparison.OrdinalIgnoreCase))?.i;
+                                if (idx.HasValue) ScannedList.RemoveAt(idx.Value);
+                            }
+                        }
+
                         await ShowTip(string.IsNullOrWhiteSpace(resp.Message)
                             ? "出库失败，请重试或检查条码。"
                             : resp.Message!);
