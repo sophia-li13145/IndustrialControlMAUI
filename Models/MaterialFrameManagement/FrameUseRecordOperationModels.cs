@@ -19,6 +19,11 @@ public class FrameUseRecordOperation
     public string? sourceLocation { get; set; }
     public string? targetLocation { get; set; }
     public decimal? totalQty { get; set; }
+    public int? sourceFrameCount { get; set; }
+    public string? targetFrameNo { get; set; }
+    public FrameUseRecordDetail? sourceFrame { get; set; }
+    public List<FrameUseRecordDetail>? targetFrames { get; set; }
+    public FrameUseRecordDetail? targetFrame { get; set; }
 
     public string BizNoDisplay => string.IsNullOrWhiteSpace(recordNo) ? "-" : recordNo!;
     public string MaterialNameDisplay => string.IsNullOrWhiteSpace(materialName) ? "-" : materialName!;
@@ -52,6 +57,9 @@ public class FrameUseRecordDetail
     public string? beforeStatus { get; set; }
     public string? frameNo { get; set; }
     public string? frameRole { get; set; }
+    public string? sourceFrameNo { get; set; }
+    public List<FrameUseRecordMaterial>? materialList { get; set; }
+    public List<FrameUseRecordMaterial>? materials { get; set; }
 }
 
 public class FrameUseRecordMaterial

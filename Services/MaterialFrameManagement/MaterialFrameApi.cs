@@ -18,6 +18,10 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _getStatusDictListEndpoint;
     private readonly string _addLoadingRecordEndpoint;
     private readonly string _getLoadingRecordDetailEndpoint;
+    private readonly string _getUnloadRecordDetailEndpoint;
+    private readonly string _getPouringRecordDetailEndpoint;
+    private readonly string _getFrameMergingDetailEndpoint;
+    private readonly string _getFrameReturnDetailEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
     {
@@ -52,6 +56,18 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _getLoadingRecordDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getLoadingRecordDetail", "/pda/dev/frameUseRecord/getLoadingRecordDetail"),
+            servicePath);
+        _getUnloadRecordDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getUnloadRecordDetail", "/pda/dev/frameUseRecord/getUnloadDetail"),
+            servicePath);
+        _getPouringRecordDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getPouringRecordDetail", "/pda/dev/frameUseRecord/getPouringDetail"),
+            servicePath);
+        _getFrameMergingDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getFrameMergingDetail", "/pda/dev/frameUseRecord/getFrameMergingDetail"),
+            servicePath);
+        _getFrameReturnDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getFrameReturnDetail", "/pda/dev/frameUseRecord/getFrameReturnDetail"),
             servicePath);
     }
 
@@ -279,6 +295,108 @@ public class MaterialFrameApi : IMaterialFrameApi
         var query = string.Join("&", pairs.Select(kv =>
             $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
         var url = _getLoadingRecordDetailEndpoint + "?" + query;
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ObjResp<FrameUseRecordOperation> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ObjResp<FrameUseRecordOperation>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ObjResp<FrameUseRecordOperation>();
+    }
+
+
+    public async Task<ObjResp<FrameUseRecordOperation>?> GetUnloadRecordDetailAsync(
+        string recordId,
+        CancellationToken ct = default)
+    {
+        var req = new
+        {
+            recordId = recordId.Trim()
+        };
+
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getUnloadRecordDetailEndpoint);
+
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(req)
+        };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ObjResp<FrameUseRecordOperation> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ObjResp<FrameUseRecordOperation>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ObjResp<FrameUseRecordOperation>();
+    }
+
+
+    public async Task<ObjResp<FrameUseRecordOperation>?> GetPouringRecordDetailAsync(
+        string recordId,
+        CancellationToken ct = default)
+    {
+        var req = new
+        {
+            recordId = recordId.Trim()
+        };
+
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getPouringRecordDetailEndpoint);
+
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(req)
+        };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ObjResp<FrameUseRecordOperation> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ObjResp<FrameUseRecordOperation>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ObjResp<FrameUseRecordOperation>();
+    }
+
+
+    public async Task<ObjResp<FrameUseRecordOperation>?> GetFrameMergingDetailAsync(
+        string useRecordId,
+        CancellationToken ct = default)
+    {
+        var pairs = new List<KeyValuePair<string, string>>
+        {
+            new("useRecordId", useRecordId.Trim())
+        };
+        var query = string.Join("&", pairs.Select(kv =>
+            $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+
+        var url = _getFrameMergingDetailEndpoint + "?" + query;
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ObjResp<FrameUseRecordOperation> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ObjResp<FrameUseRecordOperation>>(json,
+                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ObjResp<FrameUseRecordOperation>();
+    }
+
+
+    public async Task<ObjResp<FrameUseRecordOperation>?> GetFrameReturnDetailAsync(
+        string useRecordId,
+        CancellationToken ct = default)
+    {
+        var query = $"useRecordId={Uri.EscapeDataString(useRecordId.Trim())}";
+        var url = _getFrameReturnDetailEndpoint + "?" + query;
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));

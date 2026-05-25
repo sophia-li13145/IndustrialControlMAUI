@@ -26,63 +26,46 @@
                 </HorizontalStackLayout>
 
                 <Grid ColumnDefinitions="*,*"
-              ColumnSpacing="12">
+              ColumnSpacing="12"
+              IsVisible="{Binding ShowMaterialPickerActions}">
 
-                    <!-- 下拉选择 -->
                     <Border HeightRequest="84"
                     Stroke="#CBD5E1"
                     StrokeThickness="1.5"
                     StrokeDashArray="6,4"
                     StrokeShape="RoundRectangle 10"
                     BackgroundColor="#FAFCFF">
-
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding OpenPickerCommand}" />
-                        </Border.GestureRecognizers>
-
-                        <VerticalStackLayout HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     Spacing="6">
-                            <Label Text="☰"
-                           Rotation="90"
-                           FontSize="22"
-                           TextColor="#6B7280"
-                           HorizontalOptions="Center"/>
-                            <Label Text="下拉选择"
-                           FontSize="14"
-                           TextColor="#6B7280"
-                           HorizontalOptions="Center"/>
+                        <Border.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenPickerCommand}" /></Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="6">
+                            <Label Text="☰" Rotation="90" FontSize="22" TextColor="#6B7280" HorizontalOptions="Center"/>
+                            <Label Text="下拉选择" FontSize="14" TextColor="#6B7280" HorizontalOptions="Center"/>
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- 扫码输入 -->
-                    <Border Grid.Column="1"
-                    HeightRequest="84"
-                    Stroke="#93C5FD"
-                    StrokeThickness="1.5"
-                    StrokeDashArray="6,4"
-                    StrokeShape="RoundRectangle 10"
-                    BackgroundColor="#EFF6FF">
-
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnScanClicked" />
-                        </Border.GestureRecognizers>
-
-                        <VerticalStackLayout HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     Spacing="6">
-                            <Label Text="⌗"
-                           FontSize="26"
-                           TextColor="#2D73FF"
-                           HorizontalOptions="Center"/>
-                            <Label Text="扫码输入"
-                           FontSize="14"
-                           TextColor="#2D73FF"
-                           HorizontalOptions="Center"/>
+                    <Border Grid.Column="1" HeightRequest="84" Stroke="#93C5FD" StrokeThickness="1.5" StrokeDashArray="6,4" StrokeShape="RoundRectangle 10" BackgroundColor="#EFF6FF">
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnScanClicked" /></Border.GestureRecognizers>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="6">
+                            <Label Text="⌗" FontSize="26" TextColor="#2D73FF" HorizontalOptions="Center"/>
+                            <Label Text="扫码输入" FontSize="14" TextColor="#2D73FF" HorizontalOptions="Center"/>
                         </VerticalStackLayout>
                     </Border>
-
                 </Grid>
+
+                <Border IsVisible="{Binding HasSelectedMaterial}"
+                        Stroke="#93C5FD"
+                        StrokeThickness="1.2"
+                        StrokeShape="RoundRectangle 10"
+                        BackgroundColor="#EFF6FF"
+                        Padding="12">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="{Binding SelectedMaterialName}" FontSize="16" FontAttributes="Bold" TextColor="#1D4ED8" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="✕" FontSize="18" TextColor="#60A5FA" VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ClearSelectedMaterialCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                </Border>
 
             </VerticalStackLayout>
         </Frame>
