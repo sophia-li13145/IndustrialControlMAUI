@@ -155,7 +155,7 @@ namespace IndustrialControlMAUI.ViewModels
             };
 
             ReturnResult(result);
-            await Application.Current.MainPage.Navigation.PopModalAsync();
+            await Application.Current.MainPage.Navigation.PopAsync();
         }
 
         public void SetResultTcs(TaskCompletionSource<OutputPopupResult?> tcs) => _tcs = tcs;
@@ -165,7 +165,7 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task Cancel()
         {
             ReturnResult(null);
-            await Application.Current.MainPage.Navigation.PopModalAsync();
+            await Application.Current.MainPage.Navigation.PopAsync();
         }
     }
 
