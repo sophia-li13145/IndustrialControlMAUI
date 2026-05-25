@@ -278,10 +278,24 @@
                     </Entry>
                     <VerticalStackLayout Grid.Row="6" Grid.ColumnSpan="2" Spacing="6">
                         <Label Text="料框明细维护" FontAttributes="Bold"/>
-                        <Grid ColumnDefinitions="*,42,56" ColumnSpacing="4">
+                        <Grid ColumnDefinitions="*,42,56" RowDefinitions="Auto" ColumnSpacing="4">
                             <Entry Grid.Column="0" Placeholder="扫码/输入新增料框" Text="{Binding EditFrameNoInput}" />
-                            <ImageButton Grid.Column="1" Source="scan_button.png" BackgroundColor="Transparent" />
-                            <Button Grid.Column="2" Text="添加" Command="{Binding AddFrameToEditingCommand}" BackgroundColor="#22C55E" TextColor="White" />
+                            <ImageButton Grid.Column="1"
+                                         Source="scan_button.png"
+                                         WidthRequest="28"
+                                         HeightRequest="28"
+                                         Padding="0"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         BackgroundColor="Transparent" />
+                            <Button Grid.Column="2"
+                                    Text="添加"
+                                    HeightRequest="32"
+                                    Padding="0"
+                                    VerticalOptions="Center"
+                                    Command="{Binding AddFrameToEditingCommand}"
+                                    BackgroundColor="#22C55E"
+                                    TextColor="White" />
                         </Grid>
                         <CollectionView ItemsSource="{Binding EditingItem.wmsInstockCheckFrameDetailList}" HeightRequest="180">
                             <CollectionView.ItemTemplate>
