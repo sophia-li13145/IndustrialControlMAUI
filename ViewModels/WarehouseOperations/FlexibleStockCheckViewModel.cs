@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -46,6 +47,8 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty]
         private string? locationCode;
+        [ObservableProperty]
+        private string? frameNo;
 
         /// <summary>正在查询/保存</summary>
         [ObservableProperty]
@@ -81,6 +84,8 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>弹窗里的备注</summary>
         [ObservableProperty]
         private string? editMemo;
+        [ObservableProperty]
+        private string? editFrameNoInput;
         [ObservableProperty]
         private string? auditStatus;      // 0-待执行 1-执行中 2-已完成
 
@@ -163,7 +168,7 @@ namespace IndustrialControlMAUI.ViewModels
             // 只在还没加载过的情况下加载一次
             if (!string.IsNullOrWhiteSpace(CheckNo) && Details.Count == 0)
             {
-                return QueryDetailsAsync(null, null);
+                return QueryDetailsAsync(null, null, null);
             }
             return Task.CompletedTask;
         }
@@ -179,7 +184,7 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            await QueryDetailsAsync(loc, MaterialBarcode);
+            await QueryDetailsAsync(loc, MaterialBarcode, FrameNo);
 
             // 如果只有一条数据，直接弹窗编辑
             if (Details.Count == 1)
@@ -199,7 +204,7 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            await QueryDetailsAsync(LocationCode, code);
+            await QueryDetailsAsync(LocationCode, code, FrameNo);
 
             if (Details.Count == 1)
             {
@@ -234,6 +239,12 @@ namespace IndustrialControlMAUI.ViewModels
                 EditingItem = item;
                 EditCheckQtyText = item.checkQty.ToString();
                 EditMemo = item.memo;
+                foreach (var f in item.wmsInstockCheckFrameDetailList ?? new())
+                {
+                    f.CheckQtyText = f.checkQty?.ToString() ?? "";
+                    f.EditMemo = f.memo;
+                    f.IsScannedMatch = false;
+                }
 
                 IsEditDialogVisible = true;
             }
@@ -255,6 +266,79 @@ namespace IndustrialControlMAUI.ViewModels
             EditingItem = null;
             EditCheckQtyText = null;
             EditMemo = null;
+        }
+
+        [RelayCommand]
+        private async Task AddFrameToEditingAsync()
+        {
+            if (EditingItem == null) return;
+            var frameOrBatch = EditFrameNoInput?.Trim();
+            if (string.IsNullOrWhiteSpace(frameOrBatch))
+            {
+                await ShowTip("请先输入料框编号/库存批号。");
+                return;
+            }
+            foreach (var f in EditingItem.wmsInstockCheckFrameDetailList) f.IsScannedMatch = false;
+
+            if (IsFlexibleMode)
+            {
+                var listResp = await _api.ListStockCheckFrameLoadDetailsByBatchNoAsync(frameOrBatch, _cts.Token);
+                if (listResp.success != true || listResp.result == null || listResp.result.Count == 0)
+                {
+                    await ShowTip(listResp.message ?? "未查询到批号对应料框。");
+                    return;
+                }
+                foreach (var it in listResp.result)
+                {
+                    var existsByNo = EditingItem.wmsInstockCheckFrameDetailList.FirstOrDefault(x => string.Equals(x.frameNo, it.frameNo, StringComparison.OrdinalIgnoreCase));
+                    if (existsByNo == null)
+                    {
+                        existsByNo = new StockCheckFrameDetailItem
+                        {
+                            frameNo = it.frameNo,
+                            frameName = it.frameName,
+                            bookQty = it.qty,
+                            checkQty = 0,
+                            memo = ""
+                        };
+                        EditingItem.wmsInstockCheckFrameDetailList.Add(existsByNo);
+                    }
+                    existsByNo.IsScannedMatch = true;
+                    existsByNo.CheckQtyText = existsByNo.checkQty?.ToString() ?? "";
+                    existsByNo.EditMemo = existsByNo.memo;
+                }
+                EditFrameNoInput = string.Empty;
+                OnPropertyChanged(nameof(EditingItem));
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(EditingItem.materialCode))
+            {
+                await ShowTip("当前明细缺少物料编码。");
+                return;
+            }
+            var resp = await _api.ScanStockCheckFrameAsync(frameOrBatch, EditingItem.materialCode!, _cts.Token);
+            if (resp.success != true || resp.result == null)
+            {
+                await ShowTip(resp.message ?? "料框扫码失败");
+                return;
+            }
+            var exists = EditingItem.wmsInstockCheckFrameDetailList.FirstOrDefault(x => string.Equals(x.frameNo, resp.result.frameNo, StringComparison.OrdinalIgnoreCase));
+            if (exists == null)
+            {
+                exists = new StockCheckFrameDetailItem
+                {
+                    frameNo = resp.result.frameNo ?? frameOrBatch,
+                    checkQty = 0,
+                    bookQty = resp.result.loadedQty,
+                    memo = ""
+                };
+                EditingItem.wmsInstockCheckFrameDetailList.Add(exists);
+            }
+            exists.IsScannedMatch = true;
+            exists.CheckQtyText = exists.checkQty?.ToString() ?? "";
+            exists.EditMemo = exists.memo;
+            EditFrameNoInput = string.Empty;
+            OnPropertyChanged(nameof(EditingItem));
         }
 
         /// <summary>弹窗点“确认” —— 普通盘点调接口，灵活盘点只改本地缓存</summary>
@@ -282,13 +366,31 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            if (!decimal.TryParse(EditCheckQtyText?.Trim(), out var checkQty))
+            var item = EditingItem;
+            decimal checkQty;
+            var hasFrameInput = item.wmsInstockCheckFrameDetailList?.Any() == true;
+            if (hasFrameInput)
+            {
+                checkQty = 0;
+                foreach (var f in item.wmsInstockCheckFrameDetailList)
+                {
+                    if (!string.IsNullOrWhiteSpace(f.CheckQtyText) && !decimal.TryParse(f.CheckQtyText.Trim(), out var fq))
+                    {
+                        await ShowTip($"料框 {f.frameNo} 盘点数量格式不正确。");
+                        return;
+                    }
+                    var parsed = string.IsNullOrWhiteSpace(f.CheckQtyText) ? 0 : decimal.Parse(f.CheckQtyText.Trim());
+                    f.checkQty = parsed;
+                    f.memo = f.EditMemo;
+                    checkQty += parsed;
+                }
+            }
+            else if (!decimal.TryParse(EditCheckQtyText?.Trim(), out checkQty))
             {
                 await ShowTip("请输入正确的盘点数量。");
                 return;
             }
 
-            var item = EditingItem;
             var profitLoss = checkQty - item.instockQty;
 
             // ===== 分支 1：灵活盘点 —— 只改页面缓存，不调接口 =====
@@ -328,7 +430,21 @@ namespace IndustrialControlMAUI.ViewModels
                 checkQty = checkQty,
                 profitLossQty = profitLoss,
                 dataBelong = item.dataBelong,
-                memo = EditMemo
+                memo = EditMemo,
+                materialCode = item.materialCode,
+                qualityStatus = item.inspectResult,
+                wmsInstockCheckFrameDetailList = (item.wmsInstockCheckFrameDetailList ?? new())
+                    .Select(f => new StockCheckEditFrameDetailReq
+                    {
+                        id = f.id,
+                        frameNo = f.frameNo,
+                        frameName = f.frameName,
+                        bookQty = f.bookQty,
+                        checkQty = f.checkQty,
+                        profitLossQty = (f.checkQty ?? 0) - (f.bookQty ?? 0),
+                        newFrameFlag = string.IsNullOrWhiteSpace(f.id),
+                        memo = f.memo
+                    }).ToList()
             }
         }
             };
@@ -433,7 +549,19 @@ namespace IndustrialControlMAUI.ViewModels
                             spec = r.spec,
                             model = r.model,
                             productionBatch = r.productionBatch,
-                            productionDate = r.productionDate
+                            productionDate = r.productionDate,
+                            qualityStatus = r.inspectResult,
+                            wmsInstockCheckFrameDetailList = (r.wmsInstockCheckFrameDetailList ?? new())
+                                .Select(f => new StockCheckEditFrameDetailReq
+                                {
+                                    frameNo = f.frameNo,
+                                    frameName = f.frameName,
+                                    bookQty = f.bookQty,
+                                    checkQty = f.checkQty,
+                                    memo = f.memo,
+                                    newFrameFlag = string.IsNullOrWhiteSpace(f.id),
+                                    profitLossQty = (f.checkQty ?? 0) - (f.bookQty ?? 0)
+                                }).ToList()
                         });
                     }
 
@@ -503,7 +631,7 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            var resp = await _api.PageStockCheckDetailsAsync(CheckNo!, null, null, false, 1, 2000, _cts.Token);
+            var resp = await _api.PageStockCheckDetailsAsync(CheckNo!, null, null, null, false, 1, 2000, _cts.Token);
             if (resp == null || resp.success != true || resp.result == null)
             {
                 await ShowTip(resp?.message ?? "查询盘点明细失败。");
@@ -537,7 +665,21 @@ namespace IndustrialControlMAUI.ViewModels
                     checkQty = r.checkQty,
                     profitLossQty = r.profitLossQty,
                     dataBelong = r.dataBelong,
-                    memo = r.memo
+                    memo = r.memo,
+                    materialCode = r.materialCode,
+                    qualityStatus = r.inspectResult,
+                    wmsInstockCheckFrameDetailList = (r.wmsInstockCheckFrameDetailList ?? new())
+                        .Select(f => new StockCheckEditFrameDetailReq
+                        {
+                            id = f.id,
+                            frameNo = f.frameNo,
+                            frameName = f.frameName,
+                            bookQty = f.bookQty,
+                            checkQty = f.checkQty,
+                            profitLossQty = (f.checkQty ?? 0) - (f.bookQty ?? 0),
+                            newFrameFlag = string.IsNullOrWhiteSpace(f.id),
+                            memo = f.memo
+                        }).ToList()
                 });
             }
 
@@ -557,7 +699,7 @@ namespace IndustrialControlMAUI.ViewModels
 
 
         /// <summary>执行 QueryDetailsAsync 逻辑。</summary>
-        public async Task QueryDetailsAsync(string? location, string? materialBarcode)
+        public async Task QueryDetailsAsync(string? location, string? materialBarcode, string? frameNo)
         {
             if (!IsFlexibleMode && string.IsNullOrWhiteSpace(CheckNo))
             {
@@ -577,6 +719,7 @@ namespace IndustrialControlMAUI.ViewModels
                     checkNo: CheckNo!,
                     location: location,
                     materialBarcode: materialBarcode,
+                    frameNo: frameNo,
                     searchCount: false,
                     pageNo: 1,
                     pageSize: 10,
