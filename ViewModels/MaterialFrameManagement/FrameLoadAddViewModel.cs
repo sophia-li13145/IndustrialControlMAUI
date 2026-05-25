@@ -115,8 +115,12 @@ public partial class FrameLoadAddViewModel : ObservableObject
         {
             TargetFrameList.Add(new TargetFrameSelectableItem
             {
+                id = x.id,
                 frameNo = x.frameNo,
+                frameTypeCode = x.frameTypeCode,
+                frameTypeName = x.frameTypeName,
                 frameStatus = x.frameStatus,
+                fullLoadStatus = x.fullLoadStatus,
                 frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus),
                 IsSelected = SelectedTargetFrames.Any(t => t.FrameNo == x.frameNo)
             });
@@ -148,8 +152,12 @@ public partial class FrameLoadAddViewModel : ObservableObject
         {
             exists = new TargetFrameSelectableItem
             {
+                id = frame.id,
                 frameNo = frame.frameNo,
+                frameTypeCode = frame.frameTypeCode,
+                frameTypeName = frame.frameTypeName,
                 frameStatus = frame.frameStatus,
+                fullLoadStatus = frame.fullLoadStatus,
                 frameStatusDisplay = ResolveFrameStatusDisplay(frame.frameStatus)
             };
             TargetFrameList.Add(exists);
@@ -274,9 +282,12 @@ public partial class FrameLoadAddViewModel : ObservableObject
             .Where(x => x.IsSelected)
             .Select(x => new TargetFrameSelectableItem
             {
+                id = x.id,
                 frameNo = x.frameNo,
                 frameStatus = x.frameStatus,
-                frameTypeCode = "framing"
+                frameTypeCode = x.frameTypeCode,
+                frameTypeName = x.frameTypeName,
+                fullLoadStatus = x.fullLoadStatus
             })
             .ToList();
         var detailList = SelectedTargetFrames
@@ -320,10 +331,13 @@ public partial class SelectedTargetFrameItem : ObservableObject
 }
 public partial class TargetFrameSelectableItem : ObservableObject
 {
+    public string? id { get; set; }
     public string? frameNo { get; set; }
     public string? frameStatus { get; set; }
     public string? frameStatusDisplay { get; set; }
     public string? frameTypeCode { get; set; }
+    public string? frameTypeName { get; set; }
+    public bool? fullLoadStatus { get; set; }
 
     [ObservableProperty]
     private bool isSelected;

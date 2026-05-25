@@ -5,10 +5,13 @@
              Title="{Binding PageTitle}"
              BackgroundColor="#F4F5F7">
     <Grid Padding="12" RowDefinitions="*,Auto">
-        <CollectionView Grid.Row="0" ItemsSource="{Binding Items}" SelectionMode="Single" SelectionChanged="OnItemSelected" RemainingItemsThreshold="2" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+        <CollectionView Grid.Row="0" ItemsSource="{Binding Items}" RemainingItemsThreshold="2" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Frame Margin="0,0,0,10" Padding="14" CornerRadius="12" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnItemTapped" CommandParameter="{Binding .}"/>
+                        </Frame.GestureRecognizers>
                         <VerticalStackLayout Spacing="10">
                             <Label Text="{Binding BizNoDisplay}" FontAttributes="Bold" FontSize="24" TextColor="#111827"/>
 
