@@ -21,7 +21,7 @@
 
                 <!-- 顶部：库位号 / 物料条码 + 保存 -->
                 <Grid ColumnDefinitions="80,*,80"
-                      RowDefinitions="Auto,Auto,Auto,Auto"
+                      RowDefinitions="Auto,Auto,Auto"
                       ColumnSpacing="6"
                       RowSpacing="6">
 
@@ -56,22 +56,7 @@
                                  BackgroundColor="Transparent"
                                  Aspect="AspectFit"
                                  Clicked="OnMaterialScanClicked" />
-                    <!-- 料框条码 -->
-                    <Label Grid.Row="2" Grid.Column="0"
-                           Text="料框条码：" VerticalTextAlignment="Center" />
-                    <Entry x:Name="FrameEntry"
-                           Grid.Row="2" Grid.Column="1"
-                           Placeholder="请扫描/输入料框编号"
-                           Text="{Binding FrameNo}"
-                           Completed="OnFrameCompleted" />
-                    <ImageButton Grid.Row="2" Grid.Column="2"
-                                  Source="scan_button.png"
-                                  WidthRequest="36"
-                                  HeightRequest="36"
-                                  BackgroundColor="Transparent"
-                                  Aspect="AspectFit"
-                                  Clicked="OnFrameScanClicked" />
-                    <Grid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+                    <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
                           ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Grid.Column="0"
                                 Text="保存"
@@ -307,17 +292,6 @@
                                 TextColor="#1976D2"
                                 Command="{Binding CancelEditCommand}" />
                     </Grid>
-                    <Label Grid.Row="8" Grid.ColumnSpan="2" Text="料框明细" FontAttributes="Bold" />
-                    <CollectionView Grid.Row="9" Grid.ColumnSpan="2" ItemsSource="{Binding EditingItem.wmsInstockCheckFrameDetailList}" HeightRequest="120">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid ColumnDefinitions="*,Auto" Padding="0,2">
-                                    <Label Text="{Binding frameNo}" />
-                                    <Label Grid.Column="1" Text="{Binding bookQty, StringFormat='账存:{0}'}" />
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
                 </Grid>
             </Frame>
         </Grid>

@@ -1341,7 +1341,6 @@ namespace IndustrialControlMAUI.Services
     string checkNo,
     string? location,
     string? materialBarcode,
-    string? frameNo,
     bool? searchCount = null,
     int pageNo = 1,
     int pageSize = 50,
@@ -1364,9 +1363,6 @@ namespace IndustrialControlMAUI.Services
 
             if (!string.IsNullOrWhiteSpace(materialBarcode))
                 pairs.Add(new("materialBarcode", materialBarcode.Trim()));
-
-            if (!string.IsNullOrWhiteSpace(frameNo))
-                pairs.Add(new("frameNo", frameNo.Trim()));
 
             if (searchCount.HasValue)
                 pairs.Add(new("searchCount", searchCount.Value ? "true" : "false"));
