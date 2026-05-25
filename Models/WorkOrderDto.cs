@@ -695,6 +695,8 @@ public class AddWorkProcessTaskReportReq
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? unqualifiedQty { get; set; }
+    public string? unqualifiedMaterialCode { get; set; }
+    public string? unqualifiedMaterialName { get; set; }
     public decimal? workHours { get; set; }
     public string workOrderNo { get; set; } = "";
 }
