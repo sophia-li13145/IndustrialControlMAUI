@@ -596,6 +596,25 @@ public class AddWorkProcessTaskProductOutputReq
     public string? unit { get; set; }
     public string workOrderNo { get; set; } = "";
     public string operationTime { get; set; }
+    public List<OutputFrameSelectionItem>? frameNoList { get; set; }
+}
+
+
+public class ScanOutputFrameResp
+{
+    public decimal availableQty { get; set; }
+    public string? factoryCode { get; set; }
+    public string? frameInfoId { get; set; }
+    public string? frameName { get; set; }
+    public string? frameNo { get; set; }
+    public string? frameTypeCode { get; set; }
+    public string? frameTypeName { get; set; }
+    public decimal loadedQty { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public decimal maxLimit { get; set; }
+    public decimal minLimit { get; set; }
+    public bool mixedLoad { get; set; }
 }
 
 public class OutputPlanItem
@@ -612,6 +631,12 @@ public class OutputPlanItem
     public string? materialTypeName { get; set; }
 }
 
+public class OutputFrameSelectionItem
+{
+    public string frameNo { get; set; } = string.Empty;
+    public int sort { get; set; }
+}
+
 public class OutputPopupResult
 {
     public string materialClassName { get; set; } = "";
@@ -622,6 +647,7 @@ public class OutputPopupResult
     public string? Memo { get; set; }
     public string? Unit { get; set; }
     public DateTime? OperationTime { get; set; }
+    public List<OutputFrameSelectionItem> frameNoList { get; set; } = new();
 }
 
 public class MaterialInputResult

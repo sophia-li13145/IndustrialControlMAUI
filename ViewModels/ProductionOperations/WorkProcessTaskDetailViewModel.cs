@@ -789,7 +789,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             processCode = Detail.processCode,
             processName = Detail.processName,
             schemeNo = Detail.schemeNo,
-            platPlanNo = Detail.platPlanNo
+            platPlanNo = Detail.platPlanNo,
+            frameNoList = picked.frameNoList
+            frameNoList = picked.frameNoList
         };
 
         var resp = await _api.AddWorkProcessTaskMaterialInputAsync(req);
@@ -870,7 +872,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             processCode = Detail.processCode,
             processName = Detail.processName,
             schemeNo = Detail.schemeNo,
-            platPlanNo = Detail.platPlanNo
+            platPlanNo = Detail.platPlanNo,
+            frameNoList = picked.frameNoList
         };
 
         var resp = await _api.AddWorkProcessTaskProductOutputAsync(req);

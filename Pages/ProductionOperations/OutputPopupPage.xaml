@@ -3,43 +3,49 @@
     x:Class="IndustrialControlMAUI.Pages.OutputPopupPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:IndustrialControlMAUI.ViewModels"
+    x:DataType="vm:OutputPopupViewModel"
     Title="新增产出"
     Padding="12"
     BackgroundColor="White">
 
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
+            <Label Text="*产出物料：" TextColor="#D0021B" VerticalTextAlignment="Center" />
+            <Picker Grid.Column="1" ItemsSource="{Binding MaterialOptions}" ItemDisplayBinding="{Binding materialName}" SelectedItem="{Binding SelectedMaterial}" IsEnabled="{Binding IsPickerEnabled}" />
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
-        <!-- 产出物料 -->
-        <Label Text="*产出物料：" TextColor="#D0021B" VerticalTextAlignment="Center" />
-        <Picker Grid.Column="1"
-        ItemsSource="{Binding MaterialOptions}"
-        ItemDisplayBinding="{Binding materialName}"  
-        SelectedItem="{Binding SelectedMaterial}"
-        IsEnabled="{Binding IsPickerEnabled}" />
+            <Label Grid.Row="1" Text="*产出数量：" TextColor="#D0021B" VerticalTextAlignment="Center" />
+            <Entry Grid.Row="1" Grid.Column="1" Placeholder="自动带出可修改" Keyboard="Numeric" Text="{Binding QuantityText}" />
 
-        <!-- 产出数量 -->
-        <Label Grid.Row="1" Text="*产出数量：" TextColor="#D0021B" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="1" Grid.Column="1"
-               Placeholder="请输入"
-               Keyboard="Numeric"
-               Text="{Binding QuantityText}" />
+            <Label Grid.Row="2" Text="*料框：" TextColor="#D0021B" VerticalTextAlignment="Start" />
+            <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="6">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <Picker Grid.Column="0" ItemsSource="{Binding AvailableFrames}" ItemDisplayBinding="{Binding DisplayText}" SelectedItem="{Binding SelectedFrameToAdd}" Title="选择料框"/>
+                    <Button Grid.Column="1" Text="添加" Command="{Binding AddFrameFromDropdownCommand}" />
+                </Grid>
+                <CollectionView ItemsSource="{Binding SelectedFrames}" HeightRequest="100">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FrameOptionItem">
+                            <Grid ColumnDefinitions="*,Auto" Padding="2">
+                                <Label Text="{Binding FrameNo}" VerticalTextAlignment="Center"/>
+                                <Button Grid.Column="1" Text="×" Padding="8,0" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OutputPopupViewModel}}, Path=RemoveFrameCommand}" CommandParameter="{Binding .}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <Label Text="{Binding FrameHint}" TextColor="#D0021B" FontSize="12" VerticalTextAlignment="Center" />
+                    <Button Grid.Column="1" Text="扫码" Command="{Binding ScanFrameCommand}" />
+                </Grid>
+            </VerticalStackLayout>
 
-        <!-- 备注 -->
-        <Label Grid.Row="2" Text="备注：" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="2" Grid.Column="1"
-               Placeholder="请输入"
-               Text="{Binding Memo}" />
+            <Label Grid.Row="3" Text="备注：" VerticalTextAlignment="Center" />
+            <Editor Grid.Row="3" Grid.Column="1" Placeholder="请输入备注（最多200字）" AutoSize="TextChanges" MaxLength="200" Text="{Binding Memo}" HeightRequest="80" />
 
-        <!-- 底部按钮 -->
-        <Grid Grid.Row="3" ColumnDefinitions="*,*" Margin="0,16,0,0">
-            <Button
-        Text="确认产出"
-        Command="{Binding ConfirmCommand}"
-        Margin="0,0,6,0" />
-            <Button
-        Grid.Column="1"
-        Text="取消"
-        Command="{Binding CancelCommand}" />
+            <Grid Grid.Row="5" Grid.ColumnSpan="2" ColumnDefinitions="*,*" Margin="0,16,0,0">
+                <Button Text="确认产出" Command="{Binding ConfirmCommand}" Margin="0,0,6,0" />
+                <Button Grid.Column="1" Text="取消" Command="{Binding CancelCommand}" />
+            </Grid>
         </Grid>
-    </Grid>
+    </ScrollView>
 </ContentPage>
