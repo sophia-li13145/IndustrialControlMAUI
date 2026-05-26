@@ -10,6 +10,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class FrameUnloadAddViewModel : ObservableObject
 {
     private readonly IMaterialFrameApi _api;
+    private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
     public ObservableCollection<FrameStatusItem> SourceFrameList { get; } = new();
     public ObservableCollection<FrameUnloadMaterialChipVm> SelectedSourceMaterials { get; } = new();
@@ -19,6 +20,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     [ObservableProperty] private bool isSourcePickerVisible;
     [ObservableProperty] private bool isTargetPickerVisible;
     [ObservableProperty] private bool hasSelectedSourceFrame;
+    [ObservableProperty] private FrameStatusItem? pickedSourceFrame;
     [ObservableProperty] private string selectedSourceFrameNo = "请选择";
     [ObservableProperty] private string selectedSourceFrameId = string.Empty;
     [ObservableProperty] private string selectedSourceFrameTypeCode = string.Empty;
@@ -34,11 +36,13 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenSourcePickerAsync()
     {
+        await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListAsync();
         SourceFrameList.Clear();
         foreach (var frame in resp?.result ?? new List<FrameStatusItem>())
         {
             frame.IsSelected = string.Equals(frame.frameNo, SelectedSourceFrameNo, StringComparison.OrdinalIgnoreCase);
+            frame.frameStatusDisplay = ResolveFrameStatusDisplay(frame.frameStatus);
             SourceFrameList.Add(frame);
         }
         IsSourcePickerVisible = true;
@@ -46,18 +50,11 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
     [RelayCommand] private void CloseSourcePicker() => IsSourcePickerVisible = false;
 
-    [RelayCommand]
-    private void SelectSourceFrame(FrameStatusItem? item)
-    {
-        if (item is null) return;
-        foreach (var x in SourceFrameList) x.IsSelected = false;
-        item.IsSelected = true;
-    }
 
     [RelayCommand]
     private void ConfirmPickSourceFrame()
     {
-        var picked = SourceFrameList.FirstOrDefault(x => x.IsSelected);
+        var picked = PickedSourceFrame ?? SourceFrameList.FirstOrDefault(x => x.IsSelected);
         if (picked is null) return;
         ApplySourceFrame(picked);
         IsSourcePickerVisible = false;
@@ -69,6 +66,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         await nav.PushAsync(new QrScanPage(tcs));
         var frameNo = (await tcs.Task)?.Trim();
         if (string.IsNullOrWhiteSpace(frameNo)) return;
+        await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListAsync(frameNo);
         var picked = resp?.result?.FirstOrDefault();
         if (picked is null) return;
@@ -122,11 +120,13 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
+        await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameStatusListForUnloadAsync(materialCodes, materialNames);
         TargetFrameList.Clear();
         foreach (var item in resp?.result ?? new List<FrameStatusItem>())
         {
             item.IsSelected = SelectedTargetFrames.Any(x => x.TargetFrameNo == item.frameNo);
+            item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
             TargetFrameList.Add(item);
         }
         IsTargetPickerVisible = true;
@@ -224,6 +224,13 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
     partial void OnHasSelectedSourceFrameChanged(bool value) => OnPropertyChanged(nameof(ShowSourcePickerActions));
 
+    partial void OnPickedSourceFrameChanged(FrameStatusItem? value)
+    {
+        if (value is null) return;
+        foreach (var x in SourceFrameList) x.IsSelected = false;
+        value.IsSelected = true;
+    }
+
     partial void OnCanConfirmUnloadChanged(bool value)
     {
         ConfirmButtonColor = value ? Color.FromArgb("#2F66E8") : Color.FromArgb("#D1D5DB");
@@ -234,6 +241,28 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     {
         CanConfirmUnload = HasSelectedSourceFrame && SelectedTargetFrames.Count > 0;
     }
+    private async Task EnsureFrameStatusDictLoadedAsync()
+    {
+        if (_frameStatusDict.Count > 0) return;
+        var fields = await _api.GetStatusDictListAsync();
+        var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
+        var dict = (statusField?.dictItems ?? new List<DictItem>())
+            .Where(x => !string.IsNullOrWhiteSpace(x.dictItemValue))
+            .GroupBy(x => x.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                k => k.Key,
+                v => string.IsNullOrWhiteSpace(v.First().dictItemName) ? v.First().dictItemValue! : v.First().dictItemName!,
+                StringComparer.OrdinalIgnoreCase);
+        _frameStatusDict = dict;
+    }
+
+    private string ResolveFrameStatusDisplay(string? frameStatus)
+    {
+        var key = frameStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(key)) return "-";
+        return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
+    }
+
 }
 
 public class FrameUnloadMaterialChipVm
