@@ -1,9 +1,80 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="IndustrialControlMAUI.Pages.FramePourAddPage" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" Title="新增倒框" BackgroundColor="#F4F5F7">
-<Grid Padding="12" RowDefinitions="Auto,Auto,*,Auto">
-<Frame Padding="12"><VerticalStackLayout><Grid ColumnDefinitions="*,Auto"><Label Text="原料框（来源）" FontAttributes="Bold"/><Button Grid.Column="1" Text="手动选择" Command="{Binding OpenSourcePickerCommand}"/></Grid><Frame Margin="0,6,0,0" Padding="8" BorderColor="#FDBA74" BackgroundColor="#FFF7ED" HasShadow="False"><Label Text="{Binding SelectedSource.frameNo}" FontAttributes="Bold"/></Frame></VerticalStackLayout></Frame>
-<Frame Grid.Row="1" Padding="12" Margin="0,12,0,0"><VerticalStackLayout><Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8"><Label Text="目标倒框（去向）" FontAttributes="Bold"/><Button Grid.Column="1" Text="手动选择" Command="{Binding OpenTargetPickerCommand}"/><Button Grid.Column="2" Text="扫码添加" Clicked="OnScanTargetClicked"/></Grid><Frame Margin="0,6,0,0" Padding="8" BorderColor="#86EFAC" BackgroundColor="#F0FDF4" HasShadow="False"><Label Text="{Binding SelectedTarget.frameNo}" FontAttributes="Bold"/></Frame></VerticalStackLayout></Frame>
-<Grid Grid.Row="2"/><Button Grid.Row="3" Text="确认一键倒框" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}"/>
-<Grid Grid.RowSpan="4" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End"><VerticalStackLayout><Label Text="选择原料框（单选）" FontAttributes="Bold"/><CollectionView ItemsSource="{Binding SourceFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,6" Padding="10" BorderColor="#D9D9D9" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickSourceCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Label Text="{Binding frameNo}" FontAttributes="Bold"/></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmSourceCommand}"/></VerticalStackLayout></Frame></Grid>
-<Grid Grid.RowSpan="4" IsVisible="{Binding IsTargetPickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End"><VerticalStackLayout><Label Text="选择目标倒框（空闲,单选）" FontAttributes="Bold"/><CollectionView ItemsSource="{Binding TargetFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,6" Padding="10" BorderColor="#D9D9D9" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickTargetCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Label Text="{Binding frameNo}" FontAttributes="Bold"/></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmTargetCommand}"/></VerticalStackLayout></Frame></Grid>
-</Grid></ContentPage>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.FramePourAddPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:conv="clr-namespace:IndustrialControlMAUI.Converters"
+             Title="新增倒框"
+             BackgroundColor="#F3F4F6">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid Padding="12" RowDefinitions="Auto,18,Auto,16,Auto,*,Auto">
+        <Frame Grid.Row="0" Padding="14" BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="14" HasShadow="False">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Label Text="⬢" TextColor="#F97316"/>
+                    <Label Grid.Column="1" Text="原料框 (来源)" FontAttributes="Bold" TextColor="#374151"/>
+                    <Label Grid.Column="2" Text="清除" TextColor="#9CA3AF" IsVisible="{Binding HasSelectedSource}"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding ClearSourceCommand}"/></Label.GestureRecognizers></Label>
+                </Grid>
+                <Grid IsVisible="{Binding HasSelectedSource}">
+                    <Frame Padding="12" BorderColor="#FDBA74" BackgroundColor="#FFF7ED" CornerRadius="12" HasShadow="False">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding SelectedSource.frameNo}" FontSize="32" FontAttributes="Bold" TextColor="#1F2937"/>
+                                <Label Text="{Binding SelectedSource.loadDetailList.Count, StringFormat='包含 {0} 种物料'}" TextColor="#6B7280" FontSize="12"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="✓" TextColor="#F97316" VerticalOptions="Center" FontSize="22"/>
+                        </Grid>
+                    </Frame>
+                </Grid>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding HasSelectedSource, Converter={StaticResource InverseBoolConverter}}">
+                    <Frame Padding="10" BorderColor="#CBD5E1" BackgroundColor="#F9FAFB" CornerRadius="12" HasShadow="False">
+                        <Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenSourcePickerCommand}"/></Frame.GestureRecognizers>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="6"><Label Text="☰" TextColor="#6B7280"/><Label Text="手动选择" TextColor="#6B7280"/></VerticalStackLayout>
+                    </Frame>
+                    <Frame Grid.Column="1" Padding="10" BorderColor="#FDBA74" BackgroundColor="#FFF7ED" CornerRadius="12" HasShadow="False">
+                        <Frame.GestureRecognizers><TapGestureRecognizer Tapped="OnScanSourceClicked"/></Frame.GestureRecognizers>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="6"><Label Text="⌘" TextColor="#EA580C"/><Label Text="扫码源料框" TextColor="#EA580C"/></VerticalStackLayout>
+                    </Frame>
+                </Grid>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Label Grid.Row="1" Text="⇄" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#F97316" FontSize="22"/>
+
+        <Frame Grid.Row="2" Padding="14" BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="14" HasShadow="False">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Label Text="⌃" TextColor="#16A34A"/>
+                    <Label Grid.Column="1" Text="目标倒框 (去向)" FontAttributes="Bold" TextColor="#374151"/>
+                    <Label Grid.Column="2" Text="清除" TextColor="#9CA3AF" IsVisible="{Binding HasSelectedTarget}"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding ClearTargetCommand}"/></Label.GestureRecognizers></Label>
+                </Grid>
+                <Grid IsVisible="{Binding HasSelectedTarget}">
+                    <Frame Padding="12" BorderColor="#86EFAC" BackgroundColor="#F0FDF4" CornerRadius="12" HasShadow="False">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding SelectedTarget.frameNo}" FontSize="32" FontAttributes="Bold" TextColor="#1F2937"/>
+                                <Label Text="{Binding SelectedTarget.FrameStatusDisplayText, StringFormat='● 状态: {0}'}" TextColor="#16A34A" FontSize="12"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="✓" TextColor="#22C55E" VerticalOptions="Center" FontSize="22"/>
+                        </Grid>
+                    </Frame>
+                </Grid>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding HasSelectedTarget, Converter={StaticResource InverseBoolConverter}}">
+                    <Frame Padding="10" BorderColor="#CBD5E1" BackgroundColor="#F9FAFB" CornerRadius="12" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding OpenTargetPickerCommand}"/></Frame.GestureRecognizers><VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="6"><Label Text="☰" TextColor="#6B7280"/><Label Text="手动选择" TextColor="#6B7280"/></VerticalStackLayout></Frame>
+                    <Frame Grid.Column="1" Padding="10" BorderColor="#86EFAC" BackgroundColor="#ECFDF5" CornerRadius="12" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Tapped="OnScanTargetClicked"/></Frame.GestureRecognizers><VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="6"><Label Text="⌘" TextColor="#15803D"/><Label Text="扫码目标框" TextColor="#15803D"/></VerticalStackLayout></Frame>
+                </Grid>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Frame Grid.Row="4" Padding="12" BackgroundColor="White" BorderColor="#E5E7EB" CornerRadius="0" HasShadow="False">
+            <Button Text="确认一键倒框" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}" BackgroundColor="{Binding ConfirmButtonColor}" TextColor="{Binding ConfirmButtonTextColor}"/>
+        </Frame>
+
+        <Grid Grid.RowSpan="7" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12"><VerticalStackLayout Spacing="10"><Grid ColumnDefinitions="*,Auto"><Label Text="选择原料框 (单选)" FontAttributes="Bold" FontSize="24"/><Button Grid.Column="1" Text="✕" Command="{Binding ConfirmSourceCommand}"/></Grid><CollectionView ItemsSource="{Binding SourceFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Padding="12" Margin="0,6" BorderColor="#D9D9D9" CornerRadius="10" HasShadow="False" BackgroundColor="White"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickSourceCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Frame.Triggers><DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderColor" Value="#2D73FF"/><Setter Property="BackgroundColor" Value="#EEF5FF"/></DataTrigger></Frame.Triggers><VerticalStackLayout><Label Text="{Binding frameNo}" FontAttributes="Bold"/><HorizontalStackLayout Spacing="6"><Label Text="状态:" FontSize="12" TextColor="#6B7280"/><Border StrokeThickness="0" BackgroundColor="#FEF3C7" Padding="6,1"><Label Text="{Binding FrameStatusDisplayText}" FontSize="11" TextColor="#92400E"/></Border><Border StrokeThickness="0" BackgroundColor="#E5E7EB" Padding="6,1"><Label Text="{Binding MaterialTypeCountDisplay}" FontSize="11" TextColor="#4B5563"/></Border></HorizontalStackLayout></VerticalStackLayout></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmSourceCommand}" BackgroundColor="#2F66E8" TextColor="White"/></VerticalStackLayout></Frame></Grid>
+
+        <Grid Grid.RowSpan="7" IsVisible="{Binding IsTargetPickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12"><VerticalStackLayout Spacing="10"><Grid ColumnDefinitions="*,Auto"><Label Text="选择目标倒框 (空闲, 单选)" FontAttributes="Bold" FontSize="24"/><Button Grid.Column="1" Text="✕" Command="{Binding ConfirmTargetCommand}"/></Grid><CollectionView ItemsSource="{Binding TargetFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Padding="12" Margin="0,6" BorderColor="#D9D9D9" CornerRadius="10" HasShadow="False" BackgroundColor="White"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickTargetCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Frame.Triggers><DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderColor" Value="#16A34A"/><Setter Property="BackgroundColor" Value="#F0FDF4"/></DataTrigger></Frame.Triggers><VerticalStackLayout><Label Text="{Binding frameNo}" FontAttributes="Bold"/><HorizontalStackLayout Spacing="4"><Label Text="状态:" FontSize="12" TextColor="#6B7280"/><Border Background="#DCFCE7" StrokeThickness="0" Padding="6,2"><Label Text="{Binding FrameStatusDisplayText}" FontSize="11" TextColor="#15803D"/></Border></HorizontalStackLayout></VerticalStackLayout></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmTargetCommand}" BackgroundColor="#2F66E8" TextColor="White"/></VerticalStackLayout></Frame></Grid>
+    </Grid>
+</ContentPage>
