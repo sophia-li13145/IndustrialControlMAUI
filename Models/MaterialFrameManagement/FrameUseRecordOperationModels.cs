@@ -175,3 +175,9 @@ public sealed class AddPouringRecordReq
     public string? targetFrameTypeCode { get; set; }
     public string? targetFrameTypeName { get; set; }
 }
+
+public sealed class AddFrameReturnRecordReq
+{
+    public string? frameStatusIdList { get; set; }
+    public string? memo { get; set; }
+}

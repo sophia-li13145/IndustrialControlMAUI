@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
@@ -32,11 +33,31 @@ public partial class FrameMergeAddViewModel : ObservableObject
     [RelayCommand] private void ConfirmSource() { SelectedSourceFrames.Clear(); foreach (var x in SourceFrameList.Where(x => x.IsSelected)) SelectedSourceFrames.Add(x); IsSourcePickerVisible = false; OnPropertyChanged(nameof(TotalQtyDisplay)); OnPropertyChanged(nameof(TotalMaterialNameDisplay)); Refresh(); }
     [RelayCommand] private void RemoveSource(FrameStatusItem? i){ if(i is null) return; SelectedSourceFrames.Remove(i); var src=SourceFrameList.FirstOrDefault(x=>x.id==i.id); if(src is not null) src.IsSelected=false; OnPropertyChanged(nameof(TotalQtyDisplay)); OnPropertyChanged(nameof(TotalMaterialNameDisplay)); Refresh(); }
 
-    [RelayCommand] private async Task OpenTargetPickerAsync() { if(SelectedSourceFrames.Count==0) return; var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList(); var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList(); var r = await _api.GetFrameStatusListForUnloadAsync(codes, names); TargetFrameList.Clear(); foreach (var x in r?.result ?? new()) TargetFrameList.Add(x); IsTargetPickerVisible = true; }
+    [RelayCommand] private async Task OpenTargetPickerAsync() { if(SelectedSourceFrames.Count==0) return; var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList(); var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList(); var r = await _api.GetFrameStatusListForUnloadAsync(codes, names, null); TargetFrameList.Clear(); foreach (var x in r?.result ?? new()) TargetFrameList.Add(x); IsTargetPickerVisible = true; }
     [RelayCommand] private void CloseTargetPicker() => IsTargetPickerVisible = false;
     [RelayCommand] private void PickTarget(FrameStatusItem? i) { if (i is null) return; SelectedTargetFrame = i; foreach (var x in TargetFrameList) x.IsSelected = ReferenceEquals(x, i); IsTargetPickerVisible = false; Refresh(); OnPropertyChanged(nameof(HasTargetFrame)); }
     [RelayCommand] private void ConfirmTarget() { IsTargetPickerVisible = false; Refresh(); }
     [RelayCommand] private void ClearTarget(){ SelectedTargetFrame=null; foreach(var x in TargetFrameList)x.IsSelected=false; Refresh(); OnPropertyChanged(nameof(HasTargetFrame)); }
+
+    public async Task ScanAndPickTargetFrameAsync(INavigation nav)
+    {
+        if (SelectedSourceFrames.Count == 0) return;
+        var tcs = new TaskCompletionSource<string>();
+        await nav.PushAsync(new QrScanPage(tcs));
+        var frameNo = (await tcs.Task)?.Trim();
+        if (string.IsNullOrWhiteSpace(frameNo)) return;
+
+        var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList();
+        var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList();
+        var r = await _api.GetFrameStatusListForUnloadAsync(codes, names, frameNo);
+        var target = r?.result?.FirstOrDefault();
+        if (target is null) return;
+
+        SelectedTargetFrame = target;
+        foreach (var x in TargetFrameList) x.IsSelected = string.Equals(x.id, target.id, StringComparison.OrdinalIgnoreCase);
+        Refresh();
+        OnPropertyChanged(nameof(HasTargetFrame));
+    }
 
     [RelayCommand]
     private async Task ConfirmAsync()

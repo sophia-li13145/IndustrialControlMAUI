@@ -190,6 +190,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<FrameDumpOperationDetailPage>();
             builder.Services.AddTransient<FramePourAddPage>();
             builder.Services.AddTransient<FrameEmptyOperationPage>();
+            builder.Services.AddTransient<FrameEmptyAddPage>();
+            builder.Services.AddTransient<FrameEmptyAddViewModel>();
             builder.Services.AddTransient<FrameEmptyOperationDetailPage>();
             builder.Services.AddTransient<FrameLoadAddPage>();
             builder.Services.AddTransient<MaterialFrameDetailPage>();
