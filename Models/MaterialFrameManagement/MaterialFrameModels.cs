@@ -50,7 +50,9 @@ public partial class FrameStatusItem : ObservableObject
     public decimal? minLimit { get; set; }
     [ObservableProperty] public bool isSelected;
     public List<MaterialFrameLoadDetail>? loadDetailList { get; set; }
-    public string StatusAndCountDisplay => $"状态: {(string.IsNullOrWhiteSpace(frameStatusDisplay) ? frameStatus : frameStatusDisplay) ?? "-"}   物料: {(loadDetailList?.Count ?? 0)}种";
+    public string FrameStatusDisplayText => (string.IsNullOrWhiteSpace(frameStatusDisplay) ? frameStatus : frameStatusDisplay) ?? "-";
+    public string MaterialTypeCountDisplay => $"物料: {(loadDetailList?.Count ?? 0)}种";
+    public string StatusAndCountDisplay => $"状态: {FrameStatusDisplayText}   {MaterialTypeCountDisplay}";
 }
 
 
