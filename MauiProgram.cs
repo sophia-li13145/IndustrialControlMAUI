@@ -112,8 +112,10 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<FrameUnloadAddViewModel>();
             builder.Services.AddTransient<FrameMergeOperationViewModel>();
             builder.Services.AddTransient<FrameMergeOperationDetailViewModel>();
+            builder.Services.AddTransient<FrameMergeAddViewModel>();
             builder.Services.AddTransient<FrameDumpOperationViewModel>();
             builder.Services.AddTransient<FrameDumpOperationDetailViewModel>();
+            builder.Services.AddTransient<FramePourAddViewModel>();
             builder.Services.AddTransient<FrameEmptyOperationViewModel>();
             builder.Services.AddTransient<FrameEmptyOperationDetailViewModel>();
             builder.Services.AddTransient<MaterialFrameDetailViewModel>();
@@ -183,8 +185,10 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<FrameUnloadAddPage>();
             builder.Services.AddTransient<FrameMergeOperationPage>();
             builder.Services.AddTransient<FrameMergeOperationDetailPage>();
+            builder.Services.AddTransient<FrameMergeAddPage>();
             builder.Services.AddTransient<FrameDumpOperationPage>();
             builder.Services.AddTransient<FrameDumpOperationDetailPage>();
+            builder.Services.AddTransient<FramePourAddPage>();
             builder.Services.AddTransient<FrameEmptyOperationPage>();
             builder.Services.AddTransient<FrameEmptyOperationDetailPage>();
             builder.Services.AddTransient<FrameLoadAddPage>();

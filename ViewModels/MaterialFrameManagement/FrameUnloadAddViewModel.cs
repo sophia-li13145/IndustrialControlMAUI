@@ -57,6 +57,16 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     [RelayCommand] private void CloseSourcePicker() => IsSourcePickerVisible = false;
 
 
+
+    [RelayCommand]
+    private void SelectSourceFrame(FrameStatusItem? item)
+    {
+        if (item is null) return;
+        PickedSourceFrame = item;
+        foreach (var x in SourceFrameList) x.IsSelected = false;
+        item.IsSelected = true;
+    }
+
     [RelayCommand]
     private void ConfirmPickSourceFrame()
     {

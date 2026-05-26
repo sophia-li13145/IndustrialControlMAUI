@@ -145,3 +145,33 @@ public sealed class AddUnloadingDetail
     public string? targetFrameTypeName { get; set; }
     public decimal unloadQty { get; set; }
 }
+
+public sealed class AddFrameMergingRecordReq
+{
+    public List<AddFrameMergingMaterialDetail>? materialDetails { get; set; }
+    public string? memo { get; set; }
+    public List<string>? sourceFrameStatusIdList { get; set; }
+    public string? targetFrameStatusId { get; set; }
+}
+
+public sealed class AddFrameMergingMaterialDetail
+{
+    public string? batchNo { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public decimal qty { get; set; }
+    public string? sourceFrameNo { get; set; }
+    public string? unit { get; set; }
+}
+
+public sealed class AddPouringRecordReq
+{
+    public string? sourceFrameId { get; set; }
+    public string? sourceFrameNo { get; set; }
+    public string? sourceFrameTypeCode { get; set; }
+    public string? sourceFrameTypeName { get; set; }
+    public string? targetFrameId { get; set; }
+    public string? targetFrameNo { get; set; }
+    public string? targetFrameTypeCode { get; set; }
+    public string? targetFrameTypeName { get; set; }
+}

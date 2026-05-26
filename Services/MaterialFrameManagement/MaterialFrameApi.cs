@@ -25,6 +25,8 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _getFrameReturnDetailEndpoint;
     private readonly string _getFrameStatusListForUnloadEndpoint;
     private readonly string _addUnloadingRecordEndpoint;
+    private readonly string _addFrameMergingRecordEndpoint;
+    private readonly string _addPouringRecordEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
     {
@@ -77,6 +79,12 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _addUnloadingRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.addUnloadingRecord", "/pda/dev/frameUseRecord/addUnloadingRecord"),
+            servicePath);
+        _addFrameMergingRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.addFrameMergingRecord", "/pda/dev/frameUseRecord/addFrameMergingRecord"),
+            servicePath);
+        _addPouringRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.addPouringRecord", "/pda/dev/frameUseRecord/addPouringRecord"),
             servicePath);
         _getFrameReturnDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameReturnDetail", "/pda/dev/frameUseRecord/getFrameReturnDetail"),
@@ -495,6 +503,26 @@ public class MaterialFrameApi : IMaterialFrameApi
         var obj = JsonSerializer.Deserialize<ListResp<DictField>>(json,
                   new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         return obj?.result ?? new List<DictField>();
+    }
+
+    public async Task<BoolResp?> AddFrameMergingRecordAsync(AddFrameMergingRecordReq req, CancellationToken ct = default)
+    {
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addFrameMergingRecordEndpoint);
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute)) { Content = JsonContent.Create(req) };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+        if (!res.IsSuccessStatusCode) return new BoolResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+        return JsonSerializer.Deserialize<BoolResp>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new BoolResp();
+    }
+
+    public async Task<BoolResp?> AddPouringRecordAsync(AddPouringRecordReq req, CancellationToken ct = default)
+    {
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addPouringRecordEndpoint);
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute)) { Content = JsonContent.Create(req) };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+        if (!res.IsSuccessStatusCode) return new BoolResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+        return JsonSerializer.Deserialize<BoolResp>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new BoolResp();
     }
 
     public async Task<BoolResp?> AddLoadingRecordAsync(

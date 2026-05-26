@@ -76,6 +76,14 @@ public interface IMaterialFrameApi
 
     Task<List<DictField>?> GetStatusDictListAsync(CancellationToken ct = default);
 
+    Task<BoolResp?> AddFrameMergingRecordAsync(
+        AddFrameMergingRecordReq req,
+        CancellationToken ct = default);
+
+    Task<BoolResp?> AddPouringRecordAsync(
+        AddPouringRecordReq req,
+        CancellationToken ct = default);
+
     Task<BoolResp?> AddLoadingRecordAsync(
         AddLoadingRecordReq req,
         CancellationToken ct = default);
