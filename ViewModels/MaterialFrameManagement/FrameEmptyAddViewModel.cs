@@ -9,6 +9,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class FrameEmptyAddViewModel : ObservableObject
 {
     private readonly IMaterialFrameApi _api;
+    private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
     public ObservableCollection<FrameStatusItem> PickerFrameList { get; } = new();
     public ObservableCollection<FrameStatusItem> SelectedFrames { get; } = new();
@@ -25,11 +26,13 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenPickerAsync()
     {
+        await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameReturnSelectableListAsync(1, 10);
         PickerFrameList.Clear();
         foreach (var item in resp?.result?.records ?? new List<FrameStatusItem>())
         {
             item.IsSelected = SelectedFrames.Any(x => string.Equals(x.id, item.id, StringComparison.OrdinalIgnoreCase));
+            item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
             PickerFrameList.Add(item);
         }
 
@@ -105,5 +108,25 @@ public partial class FrameEmptyAddViewModel : ObservableObject
         CanConfirm = SelectedFrames.Count > 0;
         ConfirmButtonColor = CanConfirm ? Color.FromArgb("#EF4444") : Color.FromArgb("#D1D5DB");
         ConfirmButtonTextColor = CanConfirm ? Colors.White : Color.FromArgb("#9CA3AF");
+    }
+
+    private async Task EnsureFrameStatusDictLoadedAsync()
+    {
+        if (_frameStatusDict.Count > 0) return;
+        var fields = await _api.GetStatusDictListAsync();
+        var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
+        var dict = statusField?.dictDataList?
+            .Where(x => !string.IsNullOrWhiteSpace(x.dictValue) && !string.IsNullOrWhiteSpace(x.dictLabel))
+            .GroupBy(x => x.dictValue!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().dictLabel!.Trim(), StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        _frameStatusDict = dict;
+    }
+
+    private string ResolveFrameStatusDisplay(string? frameStatus)
+    {
+        var key = frameStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(key)) return "-";
+        return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
     }
 }

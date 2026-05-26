@@ -10,6 +10,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class FrameMergeAddViewModel : ObservableObject
 {
     private readonly IMaterialFrameApi _api;
+    private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
     public ObservableCollection<FrameStatusItem> SourceFrameList { get; } = new();
     public ObservableCollection<FrameStatusItem> TargetFrameList { get; } = new();
     public ObservableCollection<FrameStatusItem> SelectedSourceFrames { get; } = new();
@@ -27,13 +28,13 @@ public partial class FrameMergeAddViewModel : ObservableObject
 
     public FrameMergeAddViewModel(IMaterialFrameApi api) => _api = api;
 
-    [RelayCommand] private async Task OpenSourcePickerAsync() { var r = await _api.GetMaterialFrameListAsync(); SourceFrameList.Clear(); foreach (var x in r?.result ?? new()) SourceFrameList.Add(x); IsSourcePickerVisible = true; }
+    [RelayCommand] private async Task OpenSourcePickerAsync() { await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListAsync(); SourceFrameList.Clear(); foreach (var x in r?.result ?? new()) { x.frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus); SourceFrameList.Add(x); } IsSourcePickerVisible = true; }
     [RelayCommand] private void CloseSourcePicker() => IsSourcePickerVisible = false;
     [RelayCommand] private void ToggleSource(FrameStatusItem? i) { if (i is null) return; i.IsSelected = !i.IsSelected; }
     [RelayCommand] private void ConfirmSource() { SelectedSourceFrames.Clear(); foreach (var x in SourceFrameList.Where(x => x.IsSelected)) SelectedSourceFrames.Add(x); IsSourcePickerVisible = false; OnPropertyChanged(nameof(TotalQtyDisplay)); OnPropertyChanged(nameof(TotalMaterialNameDisplay)); Refresh(); }
     [RelayCommand] private void RemoveSource(FrameStatusItem? i){ if(i is null) return; SelectedSourceFrames.Remove(i); var src=SourceFrameList.FirstOrDefault(x=>x.id==i.id); if(src is not null) src.IsSelected=false; OnPropertyChanged(nameof(TotalQtyDisplay)); OnPropertyChanged(nameof(TotalMaterialNameDisplay)); Refresh(); }
 
-    [RelayCommand] private async Task OpenTargetPickerAsync() { if(SelectedSourceFrames.Count==0) return; var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList(); var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList(); var r = await _api.GetFrameStatusListForUnloadAsync(codes, names, null); TargetFrameList.Clear(); foreach (var x in r?.result ?? new()) TargetFrameList.Add(x); IsTargetPickerVisible = true; }
+    [RelayCommand] private async Task OpenTargetPickerAsync() { if(SelectedSourceFrames.Count==0) return; var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList(); var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList(); await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetFrameStatusListForUnloadAsync(codes, names, null); TargetFrameList.Clear(); foreach (var x in r?.result ?? new()) { x.frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus); TargetFrameList.Add(x); } IsTargetPickerVisible = true; }
     [RelayCommand] private void CloseTargetPicker() => IsTargetPickerVisible = false;
     [RelayCommand] private void PickTarget(FrameStatusItem? i) { if (i is null) return; SelectedTargetFrame = i; foreach (var x in TargetFrameList) x.IsSelected = ReferenceEquals(x, i); IsTargetPickerVisible = false; Refresh(); OnPropertyChanged(nameof(HasTargetFrame)); }
     [RelayCommand] private void ConfirmTarget() { IsTargetPickerVisible = false; Refresh(); }
@@ -49,9 +50,12 @@ public partial class FrameMergeAddViewModel : ObservableObject
 
         var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList();
         var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList();
+        await EnsureFrameStatusDictLoadedAsync();
         var r = await _api.GetFrameStatusListForUnloadAsync(codes, names, frameNo);
         var target = r?.result?.FirstOrDefault();
         if (target is null) return;
+
+        target.frameStatusDisplay = ResolveFrameStatusDisplay(target.frameStatus);
 
         SelectedTargetFrame = target;
         foreach (var x in TargetFrameList) x.IsSelected = string.Equals(x.id, target.id, StringComparison.OrdinalIgnoreCase);
@@ -102,5 +106,25 @@ public partial class FrameMergeAddViewModel : ObservableObject
         CanConfirm = SelectedSourceFrames.Count > 0 && SelectedTargetFrame is not null;
         ConfirmButtonColor = CanConfirm ? Color.FromArgb("#4F46E5") : Color.FromArgb("#D1D5DB");
         ConfirmButtonTextColor = CanConfirm ? Colors.White : Color.FromArgb("#9CA3AF");
+    }
+
+    private async Task EnsureFrameStatusDictLoadedAsync()
+    {
+        if (_frameStatusDict.Count > 0) return;
+        var fields = await _api.GetStatusDictListAsync();
+        var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
+        var dict = statusField?.dictDataList?
+            .Where(x => !string.IsNullOrWhiteSpace(x.dictValue) && !string.IsNullOrWhiteSpace(x.dictLabel))
+            .GroupBy(x => x.dictValue!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().dictLabel!.Trim(), StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        _frameStatusDict = dict;
+    }
+
+    private string ResolveFrameStatusDisplay(string? frameStatus)
+    {
+        var key = frameStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(key)) return "-";
+        return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
     }
 }
