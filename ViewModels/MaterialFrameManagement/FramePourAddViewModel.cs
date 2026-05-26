@@ -46,11 +46,14 @@ public partial class FramePourAddViewModel : ObservableObject
         if (_frameStatusDict.Count > 0) return;
         var fields = await _api.GetStatusDictListAsync();
         var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
-        _frameStatusDict = statusField?.dictDataList?
-            .Where(x => !string.IsNullOrWhiteSpace(x.dictValue) && !string.IsNullOrWhiteSpace(x.dictLabel))
-            .GroupBy(x => x.dictValue!.Trim(), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First().dictLabel!.Trim(), StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var dict = (statusField?.dictItems ?? new List<DictItem>())
+             .Where(x => !string.IsNullOrWhiteSpace(x.dictItemValue))
+             .GroupBy(x => x.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+             .ToDictionary(
+                 k => k.Key,
+                 v => string.IsNullOrWhiteSpace(v.First().dictItemName) ? v.First().dictItemValue! : v.First().dictItemName!,
+                 StringComparer.OrdinalIgnoreCase);
+        _frameStatusDict = dict;
     }
 
     private string ResolveFrameStatusDisplay(string? frameStatus)
