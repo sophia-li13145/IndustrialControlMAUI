@@ -16,12 +16,15 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _getFrameStatusListEndpoint;
     private readonly string _getFrameStatusListByFrameNoEndpoint;
     private readonly string _getStatusDictListEndpoint;
+    private readonly string _getMaterialFrameListEndpoint;
     private readonly string _addLoadingRecordEndpoint;
     private readonly string _getLoadingRecordDetailEndpoint;
     private readonly string _getUnloadRecordDetailEndpoint;
     private readonly string _getPouringRecordDetailEndpoint;
     private readonly string _getFrameMergingDetailEndpoint;
     private readonly string _getFrameReturnDetailEndpoint;
+    private readonly string _getFrameStatusListForUnloadEndpoint;
+    private readonly string _addUnloadingRecordEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
     {
@@ -48,6 +51,9 @@ public class MaterialFrameApi : IMaterialFrameApi
         _getFrameStatusListByFrameNoEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameStatusListByFrameNo", "/pda/dev/frameUseRecord/getFrameStatusListByFrameNo"),
             servicePath);
+        _getMaterialFrameListEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getMaterialFrameList", "/pda/dev/frameUseRecord/getMaterialFrameList"),
+            servicePath);
         _getStatusDictListEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getStatusDictList", "/pda/dev/frameUseRecord/getStatusDictList"),
             servicePath);
@@ -65,6 +71,12 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _getFrameMergingDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameMergingDetail", "/pda/dev/frameUseRecord/getFrameMergingDetail"),
+            servicePath);
+        _getFrameStatusListForUnloadEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getFrameStatusListForUnload", "/pda/dev/frameUseRecord/getFrameStatusListForUnload"),
+            servicePath);
+        _addUnloadingRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.addUnloadingRecord", "/pda/dev/frameUseRecord/addUnloadingRecord"),
             servicePath);
         _getFrameReturnDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameReturnDetail", "/pda/dev/frameUseRecord/getFrameReturnDetail"),
@@ -409,6 +421,65 @@ public class MaterialFrameApi : IMaterialFrameApi
         return JsonSerializer.Deserialize<ObjResp<FrameUseRecordOperation>>(json,
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                ?? new ObjResp<FrameUseRecordOperation>();
+    }
+
+    public async Task<ListResp<FrameStatusItem>?> GetMaterialFrameListAsync(string? frameNo = null, CancellationToken ct = default)
+    {
+        var url = _getMaterialFrameListEndpoint;
+        if (!string.IsNullOrWhiteSpace(frameNo))
+            url += "?frameNo=" + Uri.EscapeDataString(frameNo.Trim());
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameStatusItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameStatusItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameStatusItem>();
+    }
+
+    public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(List<string> materialCodes, List<string> materialNames, CancellationToken ct = default)
+    {
+        var reqBody = new
+        {
+            materialCodes = materialCodes ?? new List<string>(),
+            materialNames = materialNames ?? new List<string>()
+        };
+
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getFrameStatusListForUnloadEndpoint);
+        using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(reqBody)
+        };
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameStatusItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameStatusItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameStatusItem>();
+    }
+
+    public async Task<BoolResp?> AddUnloadingRecordAsync(AddUnloadingRecordReq req, CancellationToken ct = default)
+    {
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addUnloadingRecordEndpoint);
+
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(req)
+        };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new BoolResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<BoolResp>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new BoolResp();
     }
 
     public async Task<List<DictField>?> GetStatusDictListAsync(CancellationToken ct = default)

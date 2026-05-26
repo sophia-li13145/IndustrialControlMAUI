@@ -71,6 +71,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(FrameLoadOperationDetailPage), typeof(FrameLoadOperationDetailPage));
         Routing.RegisterRoute(nameof(FrameUnloadOperationPage), typeof(FrameUnloadOperationPage));
         Routing.RegisterRoute(nameof(FrameUnloadOperationDetailPage), typeof(FrameUnloadOperationDetailPage));
+        Routing.RegisterRoute(nameof(FrameUnloadAddPage), typeof(FrameUnloadAddPage));
         Routing.RegisterRoute(nameof(FrameMergeOperationPage), typeof(FrameMergeOperationPage));
         Routing.RegisterRoute(nameof(FrameMergeOperationDetailPage), typeof(FrameMergeOperationDetailPage));
         Routing.RegisterRoute(nameof(FrameDumpOperationPage), typeof(FrameDumpOperationPage));
