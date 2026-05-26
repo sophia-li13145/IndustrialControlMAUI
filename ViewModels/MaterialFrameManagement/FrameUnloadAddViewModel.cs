@@ -144,7 +144,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetFrameStatusListForUnloadAsync(materialCodes, materialNames);
+        var resp = await _api.GetFrameStatusListForUnloadAsync(materialCodes, materialNames, null);
         TargetFrameList.Clear();
         foreach (var item in resp?.result ?? new List<FrameStatusItem>())
         {
@@ -156,6 +156,40 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     }
 
     [RelayCommand] private void CloseTargetPicker() => IsTargetPickerVisible = false;
+
+    public async Task ScanAndAddTargetFrameAsync(INavigation nav)
+    {
+        if (!HasSelectedSourceFrame || SelectedSourceMaterials.Count == 0) return;
+        var tcs = new TaskCompletionSource<string>();
+        await nav.PushAsync(new QrScanPage(tcs));
+        var frameNo = (await tcs.Task)?.Trim();
+        if (string.IsNullOrWhiteSpace(frameNo)) return;
+
+        var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var resp = await _api.GetFrameStatusListForUnloadAsync(materialCodes, materialNames, frameNo);
+        var item = resp?.result?.FirstOrDefault();
+        if (item is null) return;
+
+        var exists = SelectedTargetFrames.FirstOrDefault(x => string.Equals(x.TargetFrameId, item.id, StringComparison.OrdinalIgnoreCase));
+        if (exists is not null) return;
+
+        SelectedTargetFrames.Add(new SelectedUnloadTargetFrameVm
+        {
+            Index = SelectedTargetFrames.Count + 1,
+            TargetFrameId = item.id ?? string.Empty,
+            TargetFrameNo = item.frameNo ?? "-",
+            TargetFrameTypeCode = item.frameTypeCode ?? string.Empty,
+            TargetFrameTypeName = item.frameTypeName ?? string.Empty,
+            MaterialName = SelectedSourceMaterials.FirstOrDefault()?.MaterialName ?? "-",
+            BatchNo = SelectedSourceMaterials.FirstOrDefault()?.BatchNo ?? string.Empty,
+            UnloadQty = string.Empty
+        });
+
+        var listed = TargetFrameList.FirstOrDefault(x => string.Equals(x.id, item.id, StringComparison.OrdinalIgnoreCase));
+        if (listed is not null) listed.IsSelected = true;
+        RefreshConfirmState();
+    }
 
     [RelayCommand]
     private void ToggleTargetFrame(FrameStatusItem? item)

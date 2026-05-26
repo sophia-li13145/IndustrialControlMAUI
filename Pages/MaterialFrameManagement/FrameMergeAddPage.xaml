@@ -42,7 +42,7 @@
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Label Text="目标合框（去向，空闲）" FontAttributes="Bold" TextColor="#1F2937"/>
                     <Button Grid.Column="1" Text="手动选择" Command="{Binding OpenTargetPickerCommand}" BackgroundColor="#ECFDF5" TextColor="#16A34A"/>
-                    <Button Grid.Column="2" Text="扫码目标" IsEnabled="False" BackgroundColor="#ECFDF5" TextColor="#16A34A"/>
+                    <Button Grid.Column="2" Text="扫码目标" Clicked="OnScanTargetClicked" BackgroundColor="#ECFDF5" TextColor="#16A34A"/>
                 </Grid>
 
                 <Frame IsVisible="{Binding HasTargetFrame}" Padding="0" BorderColor="#86EFAC" BackgroundColor="#F0FDF4" CornerRadius="10" HasShadow="False">

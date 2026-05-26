@@ -27,6 +27,8 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _addUnloadingRecordEndpoint;
     private readonly string _addFrameMergingRecordEndpoint;
     private readonly string _addPouringRecordEndpoint;
+    private readonly string _getMaterialFrameStatusListEndpoint;
+    private readonly string _addFrameReturnRecordEndpoint;
 
     public MaterialFrameApi(HttpClient http, IConfigLoader configLoader, AuthState auth)
     {
@@ -88,6 +90,12 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _getFrameReturnDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameReturnDetail", "/pda/dev/frameUseRecord/getFrameReturnDetail"),
+            servicePath);
+        _getMaterialFrameStatusListEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getMaterialFrameStatusList", "/pda/dev/frameUseRecord/getMaterialFrameStatusList"),
+            servicePath);
+        _addFrameReturnRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.addFrameReturnRecord", "/pda/dev/frameUseRecord/addFrameReturnRecord"),
             servicePath);
     }
 
@@ -449,12 +457,13 @@ public class MaterialFrameApi : IMaterialFrameApi
                ?? new ListResp<FrameStatusItem>();
     }
 
-    public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(List<string> materialCodes, List<string> materialNames, CancellationToken ct = default)
+    public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(List<string> materialCodes, List<string> materialNames, string? frameNo = null, CancellationToken ct = default)
     {
         var reqBody = new
         {
             materialCodes = materialCodes ?? new List<string>(),
-            materialNames = materialNames ?? new List<string>()
+            materialNames = materialNames ?? new List<string>(),
+            frameNo = string.IsNullOrWhiteSpace(frameNo) ? null : frameNo.Trim()
         };
 
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getFrameStatusListForUnloadEndpoint);
@@ -545,4 +554,36 @@ public class MaterialFrameApi : IMaterialFrameApi
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                ?? new BoolResp();
     }
+
+
+    public async Task<PageResp<FrameStatusItem>?> GetFrameReturnSelectableListAsync(int pageNo = 1, int pageSize = 10, CancellationToken ct = default)
+    {
+        if (pageNo <= 0) pageNo = 1;
+        if (pageSize <= 0) pageSize = 10;
+        var url = _getMaterialFrameStatusListEndpoint + $"?pageNo={pageNo}&pageSize={pageSize}";
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+        if (!res.IsSuccessStatusCode)
+            return new PageResp<FrameStatusItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+        return JsonSerializer.Deserialize<PageResp<FrameStatusItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new PageResp<FrameStatusItem>();
+    }
+
+    public async Task<BoolResp?> AddFrameReturnRecordAsync(AddFrameReturnRecordReq req, CancellationToken ct = default)
+    {
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addFrameReturnRecordEndpoint);
+        using var reqMsg = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(req)
+        };
+        using var res = await _http.SendAsync(reqMsg, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+        if (!res.IsSuccessStatusCode)
+            return new BoolResp { success = false, message = $"HTTP {(int)res.StatusCode}" };
+        return JsonSerializer.Deserialize<BoolResp>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new BoolResp();
+    }
+
 }

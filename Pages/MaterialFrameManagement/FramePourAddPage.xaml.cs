@@ -1,3 +1,11 @@
 using IndustrialControlMAUI.ViewModels;
 namespace IndustrialControlMAUI.Pages;
-public partial class FramePourAddPage : ContentPage { public FramePourAddPage(FramePourAddViewModel vm){ InitializeComponent(); BindingContext=vm; } }
+public partial class FramePourAddPage : ContentPage
+{
+    private readonly FramePourAddViewModel _vm;
+    public FramePourAddPage(FramePourAddViewModel vm){ InitializeComponent(); BindingContext=_vm=vm; }
+    private async void OnScanTargetClicked(object sender, EventArgs e)
+    {
+        await _vm.ScanAndPickTargetFrameAsync(Navigation);
+    }
+}

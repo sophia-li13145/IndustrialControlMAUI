@@ -68,6 +68,7 @@ public interface IMaterialFrameApi
     Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(
         List<string> materialCodes,
         List<string> materialNames,
+        string? frameNo = null,
         CancellationToken ct = default);
 
     Task<BoolResp?> AddUnloadingRecordAsync(
@@ -82,6 +83,15 @@ public interface IMaterialFrameApi
 
     Task<BoolResp?> AddPouringRecordAsync(
         AddPouringRecordReq req,
+        CancellationToken ct = default);
+
+    Task<PageResp<FrameStatusItem>?> GetFrameReturnSelectableListAsync(
+        int pageNo = 1,
+        int pageSize = 10,
+        CancellationToken ct = default);
+
+    Task<BoolResp?> AddFrameReturnRecordAsync(
+        AddFrameReturnRecordReq req,
         CancellationToken ct = default);
 
     Task<BoolResp?> AddLoadingRecordAsync(

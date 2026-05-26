@@ -20,7 +20,7 @@ public partial class FrameEmptyOperationPage : ContentPage
 
     private async void OnAddRecordClicked(object sender, EventArgs e)
     {
-        await DisplayAlert("料框管理", "新增记录页面待接入", "确定");
+        await Shell.Current.GoToAsync(nameof(FrameEmptyAddPage));
     }
 
     private async void OnItemTapped(object sender, TappedEventArgs e)
