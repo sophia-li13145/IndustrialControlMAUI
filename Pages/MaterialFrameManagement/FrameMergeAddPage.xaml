@@ -1,9 +1,76 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="IndustrialControlMAUI.Pages.FrameMergeAddPage" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" Title="新增合框" BackgroundColor="#F4F5F7">
-<Grid Padding="12" RowDefinitions="Auto,Auto,*,Auto">
-<Frame Padding="12"><VerticalStackLayout><Grid ColumnDefinitions="*,Auto"><Label Text="原料框（来源，可多选）" FontAttributes="Bold"/><Button Grid.Column="1" Text="列表选择" Command="{Binding OpenSourcePickerCommand}"/></Grid><CollectionView ItemsSource="{Binding SelectedSourceFrames}"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,4" Padding="8" BorderColor="#BFDBFE" BackgroundColor="#EFF6FF" HasShadow="False"><Label Text="{Binding frameNo}" FontAttributes="Bold"/></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView></VerticalStackLayout></Frame>
-<Frame Grid.Row="1" Padding="12" Margin="0,12,0,0"><VerticalStackLayout><Grid ColumnDefinitions="*,Auto"><Label Text="目标合框（去向，空闲）" FontAttributes="Bold"/><Button Grid.Column="1" Text="手动选择" Command="{Binding OpenTargetPickerCommand}"/></Grid><Frame Margin="0,6,0,0" Padding="8" BorderColor="#BBF7D0" BackgroundColor="#F0FDF4" HasShadow="False"><Label Text="{Binding SelectedTargetFrame.frameNo}" FontAttributes="Bold"/></Frame></VerticalStackLayout></Frame>
-<Grid Grid.Row="2"/><Button Grid.Row="3" Text="确认合框" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}"/>
-<Grid Grid.RowSpan="4" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End"><VerticalStackLayout><Label Text="选择原料框（多选）" FontAttributes="Bold"/><CollectionView ItemsSource="{Binding SourceFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,6" Padding="10" BorderColor="#D9D9D9" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleSourceCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Frame.Triggers><DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderColor" Value="#2D73FF"/><Setter Property="BackgroundColor" Value="#EEF5FF"/></DataTrigger></Frame.Triggers><Grid ColumnDefinitions="34,*"><Grid WidthRequest="22" HeightRequest="22" VerticalOptions="Center"><Border Stroke="#C0C4CC" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White"/><Border Stroke="#2D73FF" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#2D73FF" IsVisible="{Binding IsSelected}"/><Label Text="✓" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsSelected}"/></Grid><Label Grid.Column="1" Text="{Binding frameNo}" FontAttributes="Bold"/></Grid></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmSourceCommand}"/></VerticalStackLayout></Frame></Grid>
-<Grid Grid.RowSpan="4" IsVisible="{Binding IsTargetPickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End"><VerticalStackLayout><Label Text="选择目标合框（单选）" FontAttributes="Bold"/><CollectionView ItemsSource="{Binding TargetFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,6" Padding="10" BorderColor="#D9D9D9" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickTargetCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Frame.Triggers><DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderColor" Value="#16A34A"/><Setter Property="BackgroundColor" Value="#F0FDF4"/></DataTrigger></Frame.Triggers><Label Text="{Binding frameNo}" FontAttributes="Bold"/></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmTargetCommand}"/></VerticalStackLayout></Frame></Grid>
-</Grid></ContentPage>
+<ContentPage x:Class="IndustrialControlMAUI.Pages.FrameMergeAddPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="新增合框"
+             BackgroundColor="#F4F5F7">
+    <Grid Padding="12" RowDefinitions="Auto,Auto,*,Auto">
+        <Frame CornerRadius="12" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Label Text="原料框（来源，可多选）" FontAttributes="Bold" TextColor="#1F2937"/>
+                    <Button Grid.Column="1" Text="扫码添加" IsEnabled="False" BackgroundColor="#EEF2FF" TextColor="#6366F1"/>
+                    <Button Grid.Column="2" Text="列表选择" Command="{Binding OpenSourcePickerCommand}" BackgroundColor="#EEF2FF" TextColor="#6366F1"/>
+                </Grid>
+
+                <CollectionView ItemsSource="{Binding SelectedSourceFrames}">
+                    <CollectionView.EmptyView>
+                        <Border Stroke="#D1D5DB" StrokeDashArray="6,4" StrokeShape="RoundRectangle 10" HeightRequest="110" BackgroundColor="#F9FAFB">
+                            <Label Text="请扫码或选择需要合并的原料框" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF"/>
+                        </Border>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,4" Padding="10" BorderColor="#BFDBFE" BackgroundColor="#EFF6FF" HasShadow="False" CornerRadius="10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding frameNo}" FontAttributes="Bold" TextColor="#1D4ED8"/>
+                                    <Label Grid.Column="1" Text="✕" TextColor="#9CA3AF">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveSourceCommand}" CommandParameter="{Binding .}"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Frame Grid.Row="1" Margin="0,12,0,0" CornerRadius="12" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Label Text="目标合框（去向，空闲）" FontAttributes="Bold" TextColor="#1F2937"/>
+                    <Button Grid.Column="1" Text="手动选择" Command="{Binding OpenTargetPickerCommand}" BackgroundColor="#ECFDF5" TextColor="#16A34A"/>
+                    <Button Grid.Column="2" Text="扫码目标" IsEnabled="False" BackgroundColor="#ECFDF5" TextColor="#16A34A"/>
+                </Grid>
+
+                <Frame IsVisible="{Binding HasTargetFrame}" Padding="0" BorderColor="#86EFAC" BackgroundColor="#F0FDF4" CornerRadius="10" HasShadow="False">
+                    <VerticalStackLayout Spacing="0">
+                        <Grid Padding="10,8" BackgroundColor="#ECFDF5" ColumnDefinitions="*,Auto,Auto">
+                            <Label Text="{Binding SelectedTargetFrame.frameNo}" FontSize="16" FontAttributes="Bold" TextColor="#1F2937"/>
+                            <Label Grid.Column="1" Text="接受合入" TextColor="#16A34A" BackgroundColor="#DCFCE7" Padding="8,2"/>
+                            <Label Grid.Column="2" Text="✕" TextColor="#9CA3AF">
+                                <Label.GestureRecognizers><TapGestureRecognizer Command="{Binding ClearTargetCommand}"/></Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                        <Frame Margin="10" Padding="8" BorderColor="#E5E7EB" BackgroundColor="#FFFFFF" HasShadow="False">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                <Label Text="合并后物料清单预览" TextColor="#6B7280"/>
+                                <Label Grid.Column="1" Grid.RowSpan="2" Text="{Binding TotalQtyDisplay}" FontSize="30" FontAttributes="Bold" TextColor="#4F46E5" VerticalOptions="Center"/>
+                                <Label Grid.Row="1" Text="{Binding TotalMaterialNameDisplay}" TextColor="#111827"/>
+                            </Grid>
+                        </Frame>
+                    </VerticalStackLayout>
+                </Frame>
+            </VerticalStackLayout>
+        </Frame>
+
+        <Grid Grid.Row="2"/>
+        <Button Grid.Row="3" Margin="0,24,0,18" Text="确认合框" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}" BackgroundColor="{Binding ConfirmButtonColor}" TextColor="{Binding ConfirmButtonTextColor}"/>
+
+        <Grid Grid.RowSpan="4" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12"><VerticalStackLayout><Grid ColumnDefinitions="*,Auto"><Label Text="选择原料框（多选）" FontAttributes="Bold"/><Button Grid.Column="1" Text="✕" Command="{Binding CloseSourcePickerCommand}"/></Grid><CollectionView ItemsSource="{Binding SourceFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,6" Padding="10" BorderColor="#D9D9D9" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleSourceCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Frame.Triggers><DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderColor" Value="#2D73FF"/><Setter Property="BackgroundColor" Value="#EEF5FF"/></DataTrigger></Frame.Triggers><Grid ColumnDefinitions="34,*"><Grid WidthRequest="22" HeightRequest="22" VerticalOptions="Center"><Border Stroke="#C0C4CC" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White"/><Border Stroke="#2D73FF" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#2D73FF" IsVisible="{Binding IsSelected}"/><Label Text="✓" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsSelected}"/></Grid><Label Grid.Column="1" Text="{Binding frameNo}" FontAttributes="Bold"/></Grid></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmSourceCommand}" BackgroundColor="#2F66E8" TextColor="White"/></VerticalStackLayout></Frame></Grid>
+
+        <Grid Grid.RowSpan="4" IsVisible="{Binding IsTargetPickerVisible}" BackgroundColor="#66000000"><Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12"><VerticalStackLayout><Grid ColumnDefinitions="*,Auto"><Label Text="选择目标合框（单选）" FontAttributes="Bold"/><Button Grid.Column="1" Text="✕" Command="{Binding CloseTargetPickerCommand}"/></Grid><CollectionView ItemsSource="{Binding TargetFrameList}" SelectionMode="None"><CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,6" Padding="10" BorderColor="#D9D9D9" HasShadow="False"><Frame.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickTargetCommand}" CommandParameter="{Binding .}"/></Frame.GestureRecognizers><Frame.Triggers><DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True"><Setter Property="BorderColor" Value="#16A34A"/><Setter Property="BackgroundColor" Value="#F0FDF4"/></DataTrigger></Frame.Triggers><Label Text="{Binding frameNo}" FontAttributes="Bold"/></Frame></DataTemplate></CollectionView.ItemTemplate></CollectionView><Button Text="确认选择" Command="{Binding ConfirmTargetCommand}" BackgroundColor="#2F66E8" TextColor="White"/></VerticalStackLayout></Frame></Grid>
+    </Grid>
+</ContentPage>

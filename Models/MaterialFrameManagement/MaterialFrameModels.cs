@@ -27,6 +27,7 @@ public class MaterialFrameLoadDetail
     public decimal? quantity { get; set; }
     public decimal? currentQty { get; set; }
     public decimal? currentQuantity { get; set; }
+    public string? unit { get; set; }
 }
 
 public partial class FrameStatusItem : ObservableObject

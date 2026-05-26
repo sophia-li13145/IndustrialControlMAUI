@@ -100,14 +100,17 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         SelectedSourceFrameTypeName = picked.frameTypeName ?? string.Empty;
         HasSelectedSourceFrame = true;
         SelectedSourceMaterials.Clear();
+        var showBatchNo = string.Equals(picked.frameStatus, "warehouse", StringComparison.OrdinalIgnoreCase);
         foreach (var x in picked.loadDetailList ?? new List<MaterialFrameLoadDetail>())
         {
+            var batchText = showBatchNo && !string.IsNullOrWhiteSpace(x.batchNo) ? $"批号: {x.batchNo}" : string.Empty;
             SelectedSourceMaterials.Add(new FrameUnloadMaterialChipVm
             {
                 MaterialCode = x.materialCode ?? string.Empty,
                 MaterialName = x.materialName ?? "-",
                 MaterialDisplay = x.materialName ?? "-",
-                BatchDisplay = $"批号: {x.batchNo ?? "-"}",
+                BatchNo = x.batchNo,
+                BatchDisplay = batchText,
                 QtyDisplay = $"可用数: {(x.currentQuantity ?? x.currentQty ?? x.quantity ?? 0):0.##}",
                 SourceQty = (x.currentQuantity ?? x.currentQty ?? x.quantity ?? 0)
             });
@@ -178,7 +181,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
                 TargetFrameTypeCode = t.frameTypeCode ?? string.Empty,
                 TargetFrameTypeName = t.frameTypeName ?? string.Empty,
                 MaterialName = sourceMaterial?.MaterialName ?? "-",
-                BatchNo = SelectedSourceMaterials.FirstOrDefault()?.BatchDisplay?.Replace("批号: ", "") ?? "-",
+                BatchNo = SelectedSourceMaterials.FirstOrDefault()?.BatchNo ?? string.Empty,
                 UnloadQty = string.Empty
             });
         }
@@ -311,7 +314,8 @@ public class FrameUnloadMaterialChipVm
     public string MaterialCode { get; set; } = string.Empty;
     public string MaterialName { get; set; } = "-";
     public string MaterialDisplay { get; set; } = "-";
-    public string BatchDisplay { get; set; } = "-";
+    public string? BatchNo { get; set; }
+    public string BatchDisplay { get; set; } = string.Empty;
     public string QtyDisplay { get; set; } = "-";
     public decimal SourceQty { get; set; }
 }
