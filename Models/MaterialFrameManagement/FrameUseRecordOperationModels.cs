@@ -119,3 +119,29 @@ public sealed class AddLoadingMaterial
     public string? materialName { get; set; }
     public string? unit { get; set; }
 }
+
+public sealed class AddUnloadingRecordReq
+{
+    public string? sourceFrameId { get; set; }
+    public string? sourceFrameNo { get; set; }
+    public string? sourceFrameTypeCode { get; set; }
+    public string? sourceFrameTypeName { get; set; }
+    public List<AddUnloadingMaterial>? unloadMaterials { get; set; }
+}
+
+public sealed class AddUnloadingMaterial
+{
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public decimal sourceQty { get; set; }
+    public List<AddUnloadingDetail>? unloadDetailList { get; set; }
+}
+
+public sealed class AddUnloadingDetail
+{
+    public string? targetFrameId { get; set; }
+    public string? targetFrameNo { get; set; }
+    public string? targetFrameTypeCode { get; set; }
+    public string? targetFrameTypeName { get; set; }
+    public decimal unloadQty { get; set; }
+}
