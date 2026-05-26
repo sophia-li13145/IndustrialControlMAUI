@@ -18,6 +18,7 @@ public class FrameInfoLite
 
 public class MaterialFrameLoadDetail
 {
+    public string? materialCode { get; set; }
     public string? materialName { get; set; }
     public string? productName { get; set; }
     public string? itemName { get; set; }
@@ -42,7 +43,21 @@ public partial class FrameStatusItem : ObservableObject
     public string? id { get; set; }
     public string? materialCode { get; set; }
     public string? materialName { get; set; }
+    public List<FrameStatusMaterialItem>? materials { get; set; }
     public decimal? maxLimit { get; set; }
     public decimal? minLimit { get; set; }
     [ObservableProperty] public bool isSelected;
+    public List<MaterialFrameLoadDetail>? loadDetailList { get; set; }
+    public string StatusAndCountDisplay => $"状态: {frameStatus ?? "-"}   物料: {(loadDetailList?.Count ?? 0)}种";
+}
+
+
+public class FrameStatusMaterialItem
+{
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
+    public decimal? minLimit { get; set; }
+    public decimal? maxLimit { get; set; }
+    public decimal? currentLoadQty { get; set; }
+    public decimal? availableQty { get; set; }
 }
