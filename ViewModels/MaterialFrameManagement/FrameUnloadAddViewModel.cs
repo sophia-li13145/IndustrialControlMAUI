@@ -4,6 +4,8 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace IndustrialControlMAUI.ViewModels;
 
@@ -31,7 +33,11 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
     public bool ShowSourcePickerActions => !HasSelectedSourceFrame;
 
-    public FrameUnloadAddViewModel(IMaterialFrameApi api) { _api = api; }
+    public FrameUnloadAddViewModel(IMaterialFrameApi api)
+    {
+        _api = api;
+        SelectedTargetFrames.CollectionChanged += OnSelectedTargetFramesChanged;
+    }
 
     [RelayCommand]
     private async Task OpenSourcePickerAsync()
@@ -107,6 +113,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         SelectedSourceFrameId = string.Empty;
         SelectedSourceFrameTypeCode = string.Empty;
         SelectedSourceFrameTypeName = string.Empty;
+        PickedSourceFrame = null;
         SelectedSourceMaterials.Clear();
         SelectedTargetFrames.Clear();
         TargetFrameList.Clear();
@@ -204,7 +211,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
                             targetFrameNo = x.TargetFrameNo,
                             targetFrameTypeCode = x.TargetFrameTypeCode,
                             targetFrameTypeName = x.TargetFrameTypeName,
-                            unloadQty = decimal.Parse(x.UnloadQty)
+                            unloadQty = decimal.TryParse(x.UnloadQty, out var qty) ? qty : 0
                         }).ToList()
                 }
             }
@@ -220,6 +227,26 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var msg = string.IsNullOrWhiteSpace(resp?.message) ? "拆框失败，请稍后重试" : resp!.message!;
         if (Shell.Current?.CurrentPage is Page page)
             await page.DisplayAlert("提示", msg, "确定");
+    }
+
+
+    private void OnSelectedTargetFramesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+            foreach (var item in e.NewItems.OfType<SelectedUnloadTargetFrameVm>())
+                item.PropertyChanged += OnSelectedTargetFrameItemChanged;
+
+        if (e.OldItems != null)
+            foreach (var item in e.OldItems.OfType<SelectedUnloadTargetFrameVm>())
+                item.PropertyChanged -= OnSelectedTargetFrameItemChanged;
+
+        RefreshConfirmState();
+    }
+
+    private void OnSelectedTargetFrameItemChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SelectedUnloadTargetFrameVm.UnloadQty))
+            RefreshConfirmState();
     }
 
     partial void OnHasSelectedSourceFrameChanged(bool value) => OnPropertyChanged(nameof(ShowSourcePickerActions));
@@ -239,7 +266,8 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
     private void RefreshConfirmState()
     {
-        CanConfirmUnload = HasSelectedSourceFrame && SelectedTargetFrames.Count > 0;
+        var allQtyValid = SelectedTargetFrames.Count > 0 && SelectedTargetFrames.All(x => decimal.TryParse(x.UnloadQty, out var qty) && qty > 0);
+        CanConfirmUnload = HasSelectedSourceFrame && allQtyValid;
     }
     private async Task EnsureFrameStatusDictLoadedAsync()
     {
