@@ -65,6 +65,9 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         PickedSourceFrame = item;
         foreach (var x in SourceFrameList) x.IsSelected = false;
         item.IsSelected = true;
+
+        ApplySourceFrame(item);
+        IsSourcePickerVisible = false;
     }
 
     [RelayCommand]
