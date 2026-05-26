@@ -61,7 +61,28 @@ public interface IMaterialFrameApi
         string frameNo,
         string materialCode,
         CancellationToken ct = default);
+    Task<ListResp<FrameStatusItem>?> GetMaterialFrameListAsync(
+        string? frameNo = null,
+        CancellationToken ct = default);
+
+    Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(
+        List<string> materialCodes,
+        List<string> materialNames,
+        CancellationToken ct = default);
+
+    Task<BoolResp?> AddUnloadingRecordAsync(
+        AddUnloadingRecordReq req,
+        CancellationToken ct = default);
+
     Task<List<DictField>?> GetStatusDictListAsync(CancellationToken ct = default);
+
+    Task<BoolResp?> AddFrameMergingRecordAsync(
+        AddFrameMergingRecordReq req,
+        CancellationToken ct = default);
+
+    Task<BoolResp?> AddPouringRecordAsync(
+        AddPouringRecordReq req,
+        CancellationToken ct = default);
 
     Task<BoolResp?> AddLoadingRecordAsync(
         AddLoadingRecordReq req,
