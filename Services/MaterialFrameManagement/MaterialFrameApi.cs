@@ -457,7 +457,26 @@ public class MaterialFrameApi : IMaterialFrameApi
                ?? new ListResp<FrameStatusItem>();
     }
 
-    public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(List<string> materialCodes, List<string> materialNames, string? frameNo = null, CancellationToken ct = default)
+    
+    public async Task<ListResp<FrameUnloadAddSourceFrameItem>?> GetMaterialFrameListForUnloadAddAsync(string? frameNo = null, CancellationToken ct = default)
+    {
+        var url = _getMaterialFrameListEndpoint;
+        if (!string.IsNullOrWhiteSpace(frameNo))
+            url += "?frameNo=" + Uri.EscapeDataString(frameNo.Trim());
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameUnloadAddSourceFrameItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameUnloadAddSourceFrameItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameUnloadAddSourceFrameItem>();
+    }
+
+public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(List<string> materialCodes, List<string> materialNames, string? frameNo = null, CancellationToken ct = default)
     {
         var reqBody = new
         {
@@ -481,7 +500,32 @@ public class MaterialFrameApi : IMaterialFrameApi
                ?? new ListResp<FrameStatusItem>();
     }
 
-    public async Task<BoolResp?> AddUnloadingRecordAsync(AddUnloadingRecordReq req, CancellationToken ct = default)
+    
+    public async Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForUnloadAddAsync(List<string> materialCodes, List<string> materialNames, string? frameNo = null, CancellationToken ct = default)
+    {
+        var reqBody = new
+        {
+            materialCodes = materialCodes ?? new List<string>(),
+            materialNames = materialNames ?? new List<string>(),
+            frameNo = string.IsNullOrWhiteSpace(frameNo) ? null : frameNo.Trim()
+        };
+
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getFrameStatusListForUnloadEndpoint);
+        using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(reqBody)
+        };
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameUnloadAddTargetFrameItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameUnloadAddTargetFrameItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameUnloadAddTargetFrameItem>();
+    }
+
+public async Task<BoolResp?> AddUnloadingRecordAsync(AddUnloadingRecordReq req, CancellationToken ct = default)
     {
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addUnloadingRecordEndpoint);
 

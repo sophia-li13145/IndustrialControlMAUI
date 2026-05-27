@@ -14,15 +14,15 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     private readonly IMaterialFrameApi _api;
     private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
-    public ObservableCollection<FrameStatusItem> SourceFrameList { get; } = new();
+    public ObservableCollection<FrameUnloadAddSourceFrameItem> SourceFrameList { get; } = new();
     public ObservableCollection<FrameUnloadMaterialChipVm> SelectedSourceMaterials { get; } = new();
-    public ObservableCollection<FrameStatusItem> TargetFrameList { get; } = new();
+    public ObservableCollection<FrameUnloadAddTargetFrameItem> TargetFrameList { get; } = new();
     public ObservableCollection<SelectedUnloadTargetFrameVm> SelectedTargetFrames { get; } = new();
 
     [ObservableProperty] private bool isSourcePickerVisible;
     [ObservableProperty] private bool isTargetPickerVisible;
     [ObservableProperty] private bool hasSelectedSourceFrame;
-    [ObservableProperty] private FrameStatusItem? pickedSourceFrame;
+    [ObservableProperty] private FrameUnloadAddSourceFrameItem? pickedSourceFrame;
     [ObservableProperty] private string selectedSourceFrameNo = "请选择";
     [ObservableProperty] private string selectedSourceFrameId = string.Empty;
     [ObservableProperty] private string selectedSourceFrameTypeCode = string.Empty;
@@ -43,9 +43,9 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     private async Task OpenSourcePickerAsync()
     {
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetMaterialFrameListAsync();
+        var resp = await _api.GetMaterialFrameListForUnloadAddAsync();
         SourceFrameList.Clear();
-        foreach (var frame in resp?.result ?? new List<FrameStatusItem>())
+        foreach (var frame in resp?.result ?? new List<FrameUnloadAddSourceFrameItem>())
         {
             frame.IsSelected = string.Equals(frame.frameNo, SelectedSourceFrameNo, StringComparison.OrdinalIgnoreCase);
             frame.frameStatusDisplay = ResolveFrameStatusDisplay(frame.frameStatus);
@@ -59,7 +59,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
 
     [RelayCommand]
-    private void SelectSourceFrame(FrameStatusItem? item)
+    private void SelectSourceFrame(FrameUnloadAddSourceFrameItem? item)
     {
         if (item is null) return;
         PickedSourceFrame = item;
@@ -86,13 +86,13 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var frameNo = (await tcs.Task)?.Trim();
         if (string.IsNullOrWhiteSpace(frameNo)) return;
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetMaterialFrameListAsync(frameNo);
+        var resp = await _api.GetMaterialFrameListForUnloadAddAsync(frameNo);
         var picked = resp?.result?.FirstOrDefault();
         if (picked is null) return;
         ApplySourceFrame(picked);
     }
 
-    private void ApplySourceFrame(FrameStatusItem picked)
+    private void ApplySourceFrame(FrameUnloadAddSourceFrameItem picked)
     {
         SelectedSourceFrameNo = string.IsNullOrWhiteSpace(picked.frameNo) ? "-" : picked.frameNo!;
         SelectedSourceFrameId = picked.id ?? string.Empty;
@@ -101,7 +101,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         HasSelectedSourceFrame = true;
         SelectedSourceMaterials.Clear();
         var showBatchNo = string.Equals(picked.frameStatus, "warehouse", StringComparison.OrdinalIgnoreCase);
-        foreach (var x in picked.loadDetailList ?? new List<MaterialFrameLoadDetail>())
+        foreach (var x in picked.loadDetailList ?? new List<FrameUnloadAddLoadDetailItem>())
         {
             var batchText = showBatchNo && !string.IsNullOrWhiteSpace(x.batchNo) ? $"批号: {x.batchNo}" : string.Empty;
             SelectedSourceMaterials.Add(new FrameUnloadMaterialChipVm
@@ -144,9 +144,9 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetFrameStatusListForUnloadAsync(materialCodes, materialNames, null);
+        var resp = await _api.GetFrameStatusListForUnloadAddAsync(materialCodes, materialNames, null);
         TargetFrameList.Clear();
-        foreach (var item in resp?.result ?? new List<FrameStatusItem>())
+        foreach (var item in resp?.result ?? new List<FrameUnloadAddTargetFrameItem>())
         {
             item.IsSelected = SelectedTargetFrames.Any(x => x.TargetFrameNo == item.frameNo);
             item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
@@ -167,7 +167,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
         var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var resp = await _api.GetFrameStatusListForUnloadAsync(materialCodes, materialNames, frameNo);
+        var resp = await _api.GetFrameStatusListForUnloadAddAsync(materialCodes, materialNames, frameNo);
         var item = resp?.result?.FirstOrDefault();
         if (item is null) return;
 
@@ -192,7 +192,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ToggleTargetFrame(FrameStatusItem? item)
+    private void ToggleTargetFrame(FrameUnloadAddTargetFrameItem? item)
     {
         if (item is null) return;
         item.IsSelected = !item.IsSelected;
@@ -308,7 +308,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
     partial void OnHasSelectedSourceFrameChanged(bool value) => OnPropertyChanged(nameof(ShowSourcePickerActions));
 
-    partial void OnPickedSourceFrameChanged(FrameStatusItem? value)
+    partial void OnPickedSourceFrameChanged(FrameUnloadAddSourceFrameItem? value)
     {
         if (value is null) return;
         foreach (var x in SourceFrameList) x.IsSelected = false;

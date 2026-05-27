@@ -65,7 +65,17 @@ public interface IMaterialFrameApi
         string? frameNo = null,
         CancellationToken ct = default);
 
+    Task<ListResp<FrameUnloadAddSourceFrameItem>?> GetMaterialFrameListForUnloadAddAsync(
+        string? frameNo = null,
+        CancellationToken ct = default);
+
     Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(
+        List<string> materialCodes,
+        List<string> materialNames,
+        string? frameNo = null,
+        CancellationToken ct = default);
+
+    Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForUnloadAddAsync(
         List<string> materialCodes,
         List<string> materialNames,
         string? frameNo = null,
