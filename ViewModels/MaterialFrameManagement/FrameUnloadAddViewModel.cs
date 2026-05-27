@@ -167,9 +167,13 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
         var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        await EnsureFrameStatusDictLoadedAsync();
+        // 与“列表添加”使用同一个接口，仅额外传入扫码得到的 frameNo 进行精确筛选
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo);
         var item = resp?.result?.FirstOrDefault();
         if (item is null) return;
+
+        item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
 
         var exists = SelectedTargetFrames.FirstOrDefault(x => string.Equals(x.TargetFrameId, item.id, StringComparison.OrdinalIgnoreCase));
         if (exists is not null) return;
