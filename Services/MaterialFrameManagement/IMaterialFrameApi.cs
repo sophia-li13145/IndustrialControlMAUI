@@ -4,14 +4,14 @@ namespace IndustrialControlMAUI.Services;
 
 public interface IMaterialFrameApi
 {
-    Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameInfoAsync(
+    Task<PageResp<MaterialFrameQueryRecord>?> PageMaterialFrameInfoAsync(
         int pageNo = 1,
         int pageSize = 10,
         string? operationType = null,
         string? frameNo = null,
         CancellationToken ct = default);
 
-    Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameOperationAsync(
+    Task<PageResp<MaterialFrameQueryRecord>?> PageMaterialFrameOperationAsync(
         int pageNo = 1,
         int pageSize = 10,
         string operationType = "framing",
@@ -53,6 +53,16 @@ public interface IMaterialFrameApi
         string? materialCode = null,
         CancellationToken ct = default);
 
+
+    Task<ListResp<FrameLoadAddTargetFrameItem>?> GetFrameStatusListForLoadAddAsync(
+        string materialCode,
+        string materialName,
+        CancellationToken ct = default);
+    Task<ListResp<FrameLoadAddTargetFrameItem>?> GetFrameStatusListByFrameNoForLoadAddAsync(
+        string frameNo,
+        string materialCode,
+        CancellationToken ct = default);
+
     Task<ListResp<FrameStatusItem>?> GetFrameStatusListAsync(
         string materialCode,
         string materialName,
@@ -65,7 +75,19 @@ public interface IMaterialFrameApi
         string? frameNo = null,
         CancellationToken ct = default);
 
+
+    Task<ListResp<FrameUnloadAddSourceFrameItem>?> GetMaterialFrameListForTransferAddAsync(
+        string? frameNo = null,
+        CancellationToken ct = default);
+
     Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(
+        List<string> materialCodes,
+        List<string> materialNames,
+        string? frameNo = null,
+        CancellationToken ct = default);
+
+
+    Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForTransferAddAsync(
         List<string> materialCodes,
         List<string> materialNames,
         string? frameNo = null,
@@ -85,7 +107,14 @@ public interface IMaterialFrameApi
         AddPouringRecordReq req,
         CancellationToken ct = default);
 
+
     Task<PageResp<FrameStatusItem>?> GetFrameReturnSelectableListAsync(
+        int pageNo = 1,
+        int pageSize = 10,
+        CancellationToken ct = default);
+
+
+    Task<PageResp<FrameEmptyAddFrameItem>?> GetFrameReturnSelectableListForEmptyAddAsync(
         int pageNo = 1,
         int pageSize = 10,
         CancellationToken ct = default);

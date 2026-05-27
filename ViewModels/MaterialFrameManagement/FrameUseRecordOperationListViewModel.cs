@@ -35,6 +35,12 @@ public partial class FrameUseRecordOperationListViewModel : ObservableObject
         await LoadPageAsync(true);
     }
 
+    public async Task RefreshAsync()
+    {
+        if (IsBusy || IsLoadingMore) return;
+        await LoadPageAsync(true);
+    }
+
     [RelayCommand]
     public async Task LoadMoreAsync()
     {

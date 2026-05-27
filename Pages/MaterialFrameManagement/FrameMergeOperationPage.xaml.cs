@@ -15,7 +15,7 @@ public partial class FrameMergeOperationPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _vm.InitializeAsync();
+        await _vm.RefreshAsync();
     }
 
     private async void OnAddRecordClicked(object sender, EventArgs e)
