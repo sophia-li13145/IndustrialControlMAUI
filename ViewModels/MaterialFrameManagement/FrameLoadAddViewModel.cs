@@ -107,11 +107,11 @@ public partial class FrameLoadAddViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(SelectedMaterialCode) || string.IsNullOrWhiteSpace(SelectedMaterialName))
             return;
 
-        var resp = await _api.GetFrameStatusListAsync(SelectedMaterialCode!, SelectedMaterialName!);
+        var resp = await _api.GetFrameStatusListForLoadAddAsync(SelectedMaterialCode!, SelectedMaterialName!);
 
         TargetFrameList.Clear();
 
-        foreach (var x in resp?.result ?? new List<FrameStatusItem>())
+        foreach (var x in resp?.result ?? new List<FrameLoadAddTargetFrameItem>())
         {
             TargetFrameList.Add(new TargetFrameSelectableItem
             {
@@ -142,7 +142,7 @@ public partial class FrameLoadAddViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(frameNo)) return;
 
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetFrameStatusListByFrameNoAsync(frameNo, SelectedMaterialCode!);
+        var resp = await _api.GetFrameStatusListByFrameNoForLoadAddAsync(frameNo, SelectedMaterialCode!);
         var frame = resp?.result?.FirstOrDefault();
         if (frame is null) return;
 
