@@ -24,16 +24,16 @@
                                 <Label Text="释放料框明细" FontAttributes="Bold" TextColor="#DC2626"/>
                                 <Label Grid.Column="1" Text="{Binding FrameCountDisplay, StringFormat='共 {0} 个'}" HorizontalOptions="End" FontAttributes="Bold" TextColor="#B91C1C"/>
                             </Grid>
-                            <CollectionView ItemsSource="{Binding ReleasedFrames}">
-                                <CollectionView.ItemTemplate>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding ReleasedFrames}" Spacing="6">
+                                <BindableLayout.ItemTemplate>
                                     <DataTemplate>
                                         <Grid ColumnDefinitions="*,Auto" Margin="0,3,0,3">
                                             <Label Text="{Binding FrameNoDisplay}" TextColor="#374151"/>
                                             <Label Grid.Column="1" Text="{Binding BeforeStatusDisplay, StringFormat='原状态 {0}'}" TextColor="#9CA3AF"/>
                                         </Grid>
                                     </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
                         </VerticalStackLayout>
                     </Frame>
                 </VerticalStackLayout>
