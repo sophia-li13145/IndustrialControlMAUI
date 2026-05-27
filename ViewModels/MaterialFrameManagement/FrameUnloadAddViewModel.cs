@@ -139,7 +139,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenTargetPickerAsync()
     {
-        if (!HasSelectedSourceFrame || SelectedSourceMaterials.Count == 0) return;
+        if (!HasSelectedSourceFrame || SelectedSourceMaterials.Count == 0) { await ShowSelectSourceTipAsync(); return; }
         var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
@@ -159,7 +159,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
     public async Task ScanAndAddTargetFrameAsync(INavigation nav)
     {
-        if (!HasSelectedSourceFrame || SelectedSourceMaterials.Count == 0) return;
+        if (!HasSelectedSourceFrame || SelectedSourceMaterials.Count == 0) { await ShowSelectSourceTipAsync(); return; }
         var tcs = new TaskCompletionSource<string>();
         await nav.PushAsync(new QrScanPage(tcs));
         var frameNo = (await tcs.Task)?.Trim();
@@ -167,9 +167,13 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
         var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        await EnsureFrameStatusDictLoadedAsync();
+        // 与“列表添加”使用同一个接口，仅额外传入扫码得到的 frameNo 进行精确筛选
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo);
         var item = resp?.result?.FirstOrDefault();
         if (item is null) return;
+
+        item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
 
         var exists = SelectedTargetFrames.FirstOrDefault(x => string.Equals(x.TargetFrameId, item.id, StringComparison.OrdinalIgnoreCase));
         if (exists is not null) return;
@@ -339,6 +343,12 @@ public partial class FrameUnloadAddViewModel : ObservableObject
                 v => string.IsNullOrWhiteSpace(v.First().dictItemName) ? v.First().dictItemValue! : v.First().dictItemName!,
                 StringComparer.OrdinalIgnoreCase);
         _frameStatusDict = dict;
+    }
+
+    private async Task ShowSelectSourceTipAsync()
+    {
+        if (Shell.Current?.CurrentPage is Page p)
+            await p.DisplayAlert("提示", "请选择原料框", "确定");
     }
 
     private string ResolveFrameStatusDisplay(string? frameStatus)
