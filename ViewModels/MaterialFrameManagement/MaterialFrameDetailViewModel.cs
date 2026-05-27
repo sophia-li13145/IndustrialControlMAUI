@@ -24,7 +24,7 @@ public partial class MaterialFrameDetailViewModel : ObservableObject
 
     public int DetailCount => LoadDetails.Count;
 
-    public void Apply(MaterialFrameQueryRecord? record)
+    public async Task ApplyAsync(MaterialFrameQueryRecord? record)
     {
         LoadDetails.Clear();
         if (record == null)
@@ -35,7 +35,7 @@ public partial class MaterialFrameDetailViewModel : ObservableObject
 
         FrameNoDisplay = string.IsNullOrWhiteSpace(record.frameNo) ? "-" : record.frameNo!;
         CurrentLocationDisplay = string.IsNullOrWhiteSpace(record.currentLocation) ? "未分配位置" : record.currentLocation!;
-        EnsureFrameStatusDictLoaded();
+        await EnsureFrameStatusDictLoadedAsync();
         UseStatusText = ResolveFrameStatusDisplay(record.frameStatus);
         UseStatusColor = ResolveFrameStatusColor(record.frameStatus);
 
@@ -45,10 +45,10 @@ public partial class MaterialFrameDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(DetailCount));
     }
 
-    private void EnsureFrameStatusDictLoaded()
+    private async Task EnsureFrameStatusDictLoadedAsync()
     {
         if (_frameStatusDict.Count > 0) return;
-        var fields = _api.GetStatusDictListAsync().GetAwaiter().GetResult();
+        var fields = await _api.GetStatusDictListAsync();
         var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
         var dict = (statusField?.dictItems ?? new List<DictItem>())
              .Where(x => !string.IsNullOrWhiteSpace(x.dictItemValue))
