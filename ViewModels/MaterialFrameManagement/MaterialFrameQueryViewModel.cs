@@ -85,12 +85,13 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
         if (_frameStatusDict.Count > 0) return;
         var fields = await _api.GetStatusDictListAsync();
         var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
-        var dict = statusField?.dictItems?
-            .Where(x => !string.IsNullOrWhiteSpace(x.value))
-            .GroupBy(x => x.value!.Trim(), StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First().name ?? g.First().value ?? g.Key, StringComparer.OrdinalIgnoreCase)
-            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
+        var dict = (statusField?.dictItems ?? new List<DictItem>())
+            .Where(x => !string.IsNullOrWhiteSpace(x.dictItemValue))
+            .GroupBy(x => x.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                k => k.Key,
+                v => string.IsNullOrWhiteSpace(v.First().dictItemName) ? v.First().dictItemValue! : v.First().dictItemName!,
+                StringComparer.OrdinalIgnoreCase);
         _frameStatusDict = dict;
     }
 
