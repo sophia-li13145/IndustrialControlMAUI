@@ -58,15 +58,18 @@
                                  Clicked="OnMaterialScanClicked" />
                     <Label Grid.Row="2" Grid.Column="0"
                            Text="料框条码：" VerticalTextAlignment="Center" TextColor="#2C6BED"/>
-                    <Entry Grid.Row="2" Grid.Column="1"
+                    <Entry x:Name="FrameEntry"
+                           Grid.Row="2" Grid.Column="1"
                            Placeholder="请扫描/输入料框编号"
-                           Text="{Binding FrameNo}" />
+                           Text="{Binding FrameNo}"
+                           Completed="OnFrameCompleted" />
                     <ImageButton Grid.Row="2" Grid.Column="2"
                                  Source="scan_button.png"
                                  WidthRequest="36"
                                  HeightRequest="36"
                                  BackgroundColor="Transparent"
-                                 Aspect="AspectFit" />
+                                 Aspect="AspectFit"
+                                 Clicked="OnFrameScanClicked" />
                     <Grid Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
                           ColumnDefinitions="*,*" ColumnSpacing="8">
                         <Button Grid.Column="0"
@@ -276,6 +279,7 @@
                             x:Name="CheckQtyEntry"
                            Placeholder="请输入"
                            Text="{Binding EditCheckQtyText, Mode=TwoWay}"
+                           IsReadOnly="{Binding IsEditCheckQtyReadOnly}"
                            Keyboard="Numeric">
                         <Entry.Behaviors>
                             <behaviors:ClearOnFocusBehavior />
@@ -284,7 +288,7 @@
                     <VerticalStackLayout Grid.Row="6" Grid.ColumnSpan="2" Spacing="6">
                         <Label Text="料框明细维护" FontAttributes="Bold"/>
                         <Grid ColumnDefinitions="*,42,56" RowDefinitions="Auto" ColumnSpacing="4">
-                            <Entry Grid.Column="0" Placeholder="扫码/输入新增料框" Text="{Binding EditFrameNoInput}" />
+                            <Entry Grid.Column="0" Placeholder="扫码/输入新增料框" Text="{Binding EditFrameNoInput}" Completed="OnEditFrameCompleted" ReturnType="Done" />
                             <ImageButton Grid.Column="1"
                                          Source="scan_button.png"
                                          WidthRequest="28"
@@ -292,7 +296,8 @@
                                          Padding="0"
                                          VerticalOptions="Center"
                                          HorizontalOptions="Center"
-                                         BackgroundColor="Transparent" />
+                                         BackgroundColor="Transparent"
+                                         Clicked="OnEditFrameScanClicked" />
                             <Button Grid.Column="2"
                                     Text="添加"
                                     HeightRequest="32"
@@ -316,7 +321,7 @@
                                         <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
                                             <Label Text="{Binding frameNo, StringFormat='□ {0}'}" FontAttributes="Bold"/>
                                             <Label Grid.Column="1" Text="{Binding bookQty, StringFormat='账存 {0}'}"/>
-                                            <Entry Grid.Row="1" Placeholder="盘点数量" Keyboard="Numeric" Text="{Binding CheckQtyText}" />
+                                            <Entry Grid.Row="1" Placeholder="盘点数量" Keyboard="Numeric" Text="{Binding CheckQtyText}" TextChanged="OnFrameCheckQtyTextChanged" />
                                             <Entry Grid.Row="1" Grid.Column="1" Placeholder="备注" Text="{Binding EditMemo}" />
                                         </Grid>
                                     </Frame>

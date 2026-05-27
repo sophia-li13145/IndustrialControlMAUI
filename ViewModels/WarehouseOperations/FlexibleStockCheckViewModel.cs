@@ -86,6 +86,8 @@ namespace IndustrialControlMAUI.ViewModels
         private string? editMemo;
         [ObservableProperty]
         private string? editFrameNoInput;
+        public bool IsEditCheckQtyReadOnly => EditingItem?.wmsInstockCheckFrameDetailList?.Any() == true;
+
         [ObservableProperty]
         private string? auditStatus;      // 0-待执行 1-执行中 2-已完成
 
@@ -105,6 +107,28 @@ namespace IndustrialControlMAUI.ViewModels
         public string SettleButtonBackgroundColor => IsSettleButtonEnabled ? "#00C853" : "#BDBDBD";
 
         private StockCheckDetailItem? _lastSelectedItem;
+
+        partial void OnEditingItemChanged(StockCheckDetailItem? value)
+        {
+            RefreshEditCheckQtyState();
+        }
+
+        private void RefreshEditCheckQtyState()
+        {
+            var hasFrameInput = EditingItem?.wmsInstockCheckFrameDetailList?.Any() == true;
+            if (hasFrameInput)
+            {
+                var sum = 0m;
+                foreach (var f in EditingItem!.wmsInstockCheckFrameDetailList)
+                {
+                    if (!string.IsNullOrWhiteSpace(f.CheckQtyText) && decimal.TryParse(f.CheckQtyText.Trim(), out var parsed))
+                        sum += parsed;
+                }
+                EditCheckQtyText = sum.ToString();
+            }
+
+            OnPropertyChanged(nameof(IsEditCheckQtyReadOnly));
+        }
 
         /// <summary>执行 OnAuditStatusChanged 逻辑。</summary>
         partial void OnAuditStatusChanged(string? value)
@@ -246,6 +270,7 @@ namespace IndustrialControlMAUI.ViewModels
                     f.IsScannedMatch = false;
                 }
 
+                RefreshEditCheckQtyState();
                 IsEditDialogVisible = true;
             }
             finally
@@ -308,7 +333,7 @@ namespace IndustrialControlMAUI.ViewModels
                     existsByNo.EditMemo = existsByNo.memo;
                 }
                 EditFrameNoInput = string.Empty;
-                OnPropertyChanged(nameof(EditingItem));
+                RefreshEditingFrameList();
                 return;
             }
             if (string.IsNullOrWhiteSpace(EditingItem.materialCode))
@@ -338,7 +363,23 @@ namespace IndustrialControlMAUI.ViewModels
             exists.CheckQtyText = exists.checkQty?.ToString() ?? "";
             exists.EditMemo = exists.memo;
             EditFrameNoInput = string.Empty;
+            RefreshEditingFrameList();
+        }
+
+        private void RefreshEditingFrameList()
+        {
+            if (EditingItem == null) return;
+
+            EditingItem.wmsInstockCheckFrameDetailList = (EditingItem.wmsInstockCheckFrameDetailList ?? new())
+                .ToList();
+
+            RefreshEditCheckQtyState();
             OnPropertyChanged(nameof(EditingItem));
+        }
+
+        public void OnEditingFrameQtyTextChanged()
+        {
+            RefreshEditCheckQtyState();
         }
 
         /// <summary>弹窗点“确认” —— 普通盘点调接口，灵活盘点只改本地缓存</summary>

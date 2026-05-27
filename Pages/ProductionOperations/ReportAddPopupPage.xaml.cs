@@ -22,8 +22,11 @@ public partial class ReportAddPopupPage : ContentPage
         await vm.InitAsync(detail);
         vm.SetResultTcs(tcs);
         var page = new ReportAddPopupPage(vm);
+        page.Disappearing += (_, _) => tcs.TrySetResult(false);
+
         if (Application.Current?.MainPage?.Navigation is not null)
             await Application.Current.MainPage.Navigation.PushModalAsync(page);
+
         return await tcs.Task;
     }
 }
