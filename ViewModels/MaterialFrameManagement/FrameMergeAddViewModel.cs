@@ -9,6 +9,9 @@ namespace IndustrialControlMAUI.ViewModels;
 
 public partial class FrameMergeAddViewModel : ObservableObject
 {
+    private const int PickerPageSize = 7;
+    private int _sourceDisplayCount;
+    private int _targetDisplayCount;
     private readonly IMaterialFrameApi _api;
     private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
     public ObservableCollection<FrameMergeAddFrameItem> SourceFrameList { get; } = new();
@@ -28,13 +31,13 @@ public partial class FrameMergeAddViewModel : ObservableObject
 
     public FrameMergeAddViewModel(IMaterialFrameApi api) => _api = api;
 
-    [RelayCommand] private async Task OpenSourcePickerAsync() { await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(); SourceFrameList.Clear(); foreach (var x in r?.result ?? new()) { var m = MapSource(x); m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus); SourceFrameList.Add(m); } IsSourcePickerVisible = true; }
+    [RelayCommand] private async Task OpenSourcePickerAsync() { await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(); var all = (r?.result ?? new()).Select(MapSource).ToList(); SourceFrameList.Clear(); foreach (var x in all.Take(PickerPageSize)) { x.frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus); x.IsSelected = SelectedSourceFrames.Any(s => string.Equals(s.id, x.id, StringComparison.OrdinalIgnoreCase)); SourceFrameList.Add(x); } _sourceDisplayCount = SourceFrameList.Count; IsSourcePickerVisible = true; }
     [RelayCommand] private void CloseSourcePicker() => IsSourcePickerVisible = false;
     [RelayCommand] private void ToggleSource(FrameMergeAddFrameItem? i) { if (i is null) return; i.IsSelected = !i.IsSelected; }
     [RelayCommand] private void ConfirmSource() { SelectedSourceFrames.Clear(); foreach (var x in SourceFrameList.Where(x => x.IsSelected)) SelectedSourceFrames.Add(x); IsSourcePickerVisible = false; OnPropertyChanged(nameof(TotalQtyDisplay)); OnPropertyChanged(nameof(TotalMaterialNameDisplay)); Refresh(); }
     [RelayCommand] private void RemoveSource(FrameMergeAddFrameItem? i){ if(i is null) return; SelectedSourceFrames.Remove(i); var src=SourceFrameList.FirstOrDefault(x=>x.id==i.id); if(src is not null) src.IsSelected=false; OnPropertyChanged(nameof(TotalQtyDisplay)); OnPropertyChanged(nameof(TotalMaterialNameDisplay)); Refresh(); }
 
-    [RelayCommand] private async Task OpenTargetPickerAsync() { if(SelectedSourceFrames.Count==0) { await ShowSelectSourceTipAsync(); return; } var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList(); var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList(); await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetFrameStatusListForTransferAddAsync(codes, names, null); TargetFrameList.Clear(); foreach (var x in r?.result ?? new()) { var m = MapTarget(x); m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus); TargetFrameList.Add(m); } IsTargetPickerVisible = true; }
+    [RelayCommand] private async Task OpenTargetPickerAsync() { if(SelectedSourceFrames.Count==0) { await ShowSelectSourceTipAsync(); return; } var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList(); var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList(); await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetFrameStatusListForTransferAddAsync(codes, names, null); var all = (r?.result ?? new()).Select(MapTarget).ToList(); TargetFrameList.Clear(); foreach (var x in all.Take(PickerPageSize)) { x.frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus); x.IsSelected = string.Equals(x.id, SelectedTargetFrame?.id, StringComparison.OrdinalIgnoreCase); TargetFrameList.Add(x); } _targetDisplayCount = TargetFrameList.Count; IsTargetPickerVisible = true; }
     [RelayCommand] private void CloseTargetPicker() => IsTargetPickerVisible = false;
     [RelayCommand] private void PickTarget(FrameMergeAddTargetFrameItem? i) { if (i is null) return; SelectedTargetFrame = i; foreach (var x in TargetFrameList) x.IsSelected = ReferenceEquals(x, i); IsTargetPickerVisible = false; Refresh(); OnPropertyChanged(nameof(HasTargetFrame)); }
     [RelayCommand] private void ConfirmTarget() { IsTargetPickerVisible = false; Refresh(); }
@@ -167,4 +170,40 @@ public partial class FrameMergeAddViewModel : ObservableObject
         loadDetailList = (x.loadDetailList ?? new()).Select(m => new FrameMergeAddLoadDetailItem { materialCode = m.materialCode, materialName = m.materialName, batchNo = m.batchNo, unit = m.unit, qty = m.qty }).ToList()
     };
     private static FrameMergeAddTargetFrameItem MapTarget(FrameUnloadAddTargetFrameItem x) => new() { id = x.id, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected };
+
+    [RelayCommand]
+    private async Task LoadMoreSourceFramesAsync()
+    {
+        if (!IsSourcePickerVisible) return;
+        await EnsureFrameStatusDictLoadedAsync();
+        var r = await _api.GetMaterialFrameListForTransferAddAsync();
+        var merged = (r?.result ?? new()).Select(MapSource).ToList();
+        if (_sourceDisplayCount >= merged.Count) return;
+        foreach (var m in merged.Skip(_sourceDisplayCount).Take(PickerPageSize))
+        {
+            m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus);
+            m.IsSelected = SelectedSourceFrames.Any(x => string.Equals(x.id, m.id, StringComparison.OrdinalIgnoreCase));
+            SourceFrameList.Add(m);
+        }
+        _sourceDisplayCount = SourceFrameList.Count;
+    }
+
+    [RelayCommand]
+    private async Task LoadMoreTargetFramesAsync()
+    {
+        if (!IsTargetPickerVisible || SelectedSourceFrames.Count == 0) return;
+        var codes = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => x != "").Distinct().ToList();
+        var names = SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => x != "").Distinct().ToList();
+        await EnsureFrameStatusDictLoadedAsync();
+        var r = await _api.GetFrameStatusListForTransferAddAsync(codes, names, null);
+        var merged = (r?.result ?? new()).Select(MapTarget).ToList();
+        if (_targetDisplayCount >= merged.Count) return;
+        foreach (var m in merged.Skip(_targetDisplayCount).Take(PickerPageSize))
+        {
+            m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus);
+            m.IsSelected = string.Equals(m.id, SelectedTargetFrame?.id, StringComparison.OrdinalIgnoreCase);
+            TargetFrameList.Add(m);
+        }
+        _targetDisplayCount = TargetFrameList.Count;
+    }
 }
