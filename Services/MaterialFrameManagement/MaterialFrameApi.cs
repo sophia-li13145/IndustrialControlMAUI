@@ -439,6 +439,36 @@ public class MaterialFrameApi : IMaterialFrameApi
                ?? new ObjResp<FrameUseRecordOperation>();
     }
 
+    public async Task<ListResp<FrameLoadAddTargetFrameItem>?> GetFrameStatusListForLoadAddAsync(string materialCode, string materialName, CancellationToken ct = default)
+    {
+        var r = await GetFrameStatusListAsync(materialCode, materialName, ct);
+        return new ListResp<FrameLoadAddTargetFrameItem>
+        {
+            success = r?.success,
+            message = r?.message,
+            result = (r?.result ?? new List<FrameStatusItem>()).Select(x => new FrameLoadAddTargetFrameItem
+            {
+                id = x.id, frameNo = x.frameNo, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName,
+                frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, fullLoadStatus = x.fullLoadStatus, IsSelected = x.IsSelected
+            }).ToList()
+        };
+    }
+
+    public async Task<ListResp<FrameLoadAddTargetFrameItem>?> GetFrameStatusListByFrameNoForLoadAddAsync(string frameNo, string materialCode, CancellationToken ct = default)
+    {
+        var r = await GetFrameStatusListByFrameNoAsync(frameNo, materialCode, ct);
+        return new ListResp<FrameLoadAddTargetFrameItem>
+        {
+            success = r?.success,
+            message = r?.message,
+            result = (r?.result ?? new List<FrameStatusItem>()).Select(x => new FrameLoadAddTargetFrameItem
+            {
+                id = x.id, frameNo = x.frameNo, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName,
+                frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, fullLoadStatus = x.fullLoadStatus, IsSelected = x.IsSelected
+            }).ToList()
+        };
+    }
+
     public async Task<ListResp<FrameStatusItem>?> GetMaterialFrameListAsync(string? frameNo = null, CancellationToken ct = default)
     {
         var url = _getMaterialFrameListEndpoint;
@@ -458,7 +488,7 @@ public class MaterialFrameApi : IMaterialFrameApi
     }
 
     
-    public async Task<ListResp<FrameUnloadAddSourceFrameItem>?> GetMaterialFrameListForUnloadAddAsync(string? frameNo = null, CancellationToken ct = default)
+    public async Task<ListResp<FrameUnloadAddSourceFrameItem>?> GetMaterialFrameListForTransferAddAsync(string? frameNo = null, CancellationToken ct = default)
     {
         var url = _getMaterialFrameListEndpoint;
         if (!string.IsNullOrWhiteSpace(frameNo))
@@ -501,7 +531,7 @@ public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(L
     }
 
     
-    public async Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForUnloadAddAsync(List<string> materialCodes, List<string> materialNames, string? frameNo = null, CancellationToken ct = default)
+    public async Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForTransferAddAsync(List<string> materialCodes, List<string> materialNames, string? frameNo = null, CancellationToken ct = default)
     {
         var reqBody = new
         {
@@ -613,6 +643,21 @@ public async Task<BoolResp?> AddUnloadingRecordAsync(AddUnloadingRecordReq req, 
             return new PageResp<FrameStatusItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
         return JsonSerializer.Deserialize<PageResp<FrameStatusItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                ?? new PageResp<FrameStatusItem>();
+    }
+
+    public async Task<PageResp<FrameEmptyAddFrameItem>?> GetFrameReturnSelectableListForEmptyAddAsync(int pageNo = 1, int pageSize = 10, CancellationToken ct = default)
+    {
+        var r = await GetFrameReturnSelectableListAsync(pageNo, pageSize, ct);
+        return new PageResp<FrameEmptyAddFrameItem>
+        {
+            success = r?.success,
+            message = r?.message,
+            result = new PageResult<FrameEmptyAddFrameItem>
+            {
+                total = r?.result?.total ?? 0,
+                records = (r?.result?.records ?? new List<FrameStatusItem>()).Select(x => new FrameEmptyAddFrameItem { id=x.id, frameNo=x.frameNo, frameStatus=x.frameStatus, frameStatusDisplay=x.frameStatusDisplay, IsSelected=x.IsSelected }).ToList()
+            }
+        };
     }
 
     public async Task<BoolResp?> AddFrameReturnRecordAsync(AddFrameReturnRecordReq req, CancellationToken ct = default)

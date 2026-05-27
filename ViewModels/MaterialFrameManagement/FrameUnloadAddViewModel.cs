@@ -43,7 +43,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     private async Task OpenSourcePickerAsync()
     {
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetMaterialFrameListForUnloadAddAsync();
+        var resp = await _api.GetMaterialFrameListForTransferAddAsync();
         SourceFrameList.Clear();
         foreach (var frame in resp?.result ?? new List<FrameUnloadAddSourceFrameItem>())
         {
@@ -86,7 +86,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var frameNo = (await tcs.Task)?.Trim();
         if (string.IsNullOrWhiteSpace(frameNo)) return;
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetMaterialFrameListForUnloadAddAsync(frameNo);
+        var resp = await _api.GetMaterialFrameListForTransferAddAsync(frameNo);
         var picked = resp?.result?.FirstOrDefault();
         if (picked is null) return;
         ApplySourceFrame(picked);
@@ -144,7 +144,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetFrameStatusListForUnloadAddAsync(materialCodes, materialNames, null);
+        var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null);
         TargetFrameList.Clear();
         foreach (var item in resp?.result ?? new List<FrameUnloadAddTargetFrameItem>())
         {
@@ -167,7 +167,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
         var materialCodes = SelectedSourceMaterials.Select(x => x.MaterialCode).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-        var resp = await _api.GetFrameStatusListForUnloadAddAsync(materialCodes, materialNames, frameNo);
+        var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo);
         var item = resp?.result?.FirstOrDefault();
         if (item is null) return;
 
