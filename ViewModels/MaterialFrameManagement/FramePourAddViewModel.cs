@@ -33,7 +33,34 @@ public partial class FramePourAddViewModel : ObservableObject
     [RelayCommand] private void ClearTarget() { SelectedTarget = null; foreach (var x in TargetFrameList) x.IsSelected = false; OnPropertyChanged(nameof(HasSelectedTarget)); Refresh(); }
     public async Task ScanAndPickSourceFrameAsync(INavigation nav) { var tcs = new TaskCompletionSource<string>(); await nav.PushAsync(new QrScanPage(tcs)); var frameNo = (await tcs.Task)?.Trim(); if (string.IsNullOrWhiteSpace(frameNo)) return; await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(frameNo); var source = r?.result?.Select(MapSource).FirstOrDefault(); if (source is null) return; source.frameStatusDisplay = ResolveFrameStatusDisplay(source.frameStatus); SelectedSource = source; OnPropertyChanged(nameof(HasSelectedSource)); Refresh(); }
     public async Task ScanAndPickTargetFrameAsync(INavigation nav) { var tcs = new TaskCompletionSource<string>(); await nav.PushAsync(new QrScanPage(tcs)); var frameNo = (await tcs.Task)?.Trim(); if (string.IsNullOrWhiteSpace(frameNo)) return; await EnsureFrameStatusDictLoadedAsync(); var materialCodes = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var materialNames = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var r = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo); var target = r?.result?.Select(MapTarget).FirstOrDefault(); if (target is null) return; target.frameStatusDisplay = ResolveFrameStatusDisplay(target.frameStatus); SelectedTarget = target; OnPropertyChanged(nameof(HasSelectedTarget)); Refresh(); }
-    [RelayCommand] private async Task ConfirmAsync() { if (!CanConfirm || SelectedSource is null || SelectedTarget is null) return; var req = new AddPouringRecordReq { sourceFrameId = SelectedSource.id, sourceFrameNo = SelectedSource.frameNo, sourceFrameTypeCode = SelectedSource.frameTypeCode, sourceFrameTypeName = SelectedSource.frameTypeName, targetFrameId = SelectedTarget.id, targetFrameNo = SelectedTarget.frameNo, targetFrameTypeCode = SelectedTarget.frameTypeCode, targetFrameTypeName = SelectedTarget.frameTypeName }; var resp = await _api.AddPouringRecordAsync(req); if (resp?.success == true && resp.result == true) await Shell.Current.GoToAsync(".."); }
+    [RelayCommand]
+    private async Task ConfirmAsync()
+    {
+        if (!CanConfirm || SelectedSource is null || SelectedTarget is null) return;
+
+        var req = new AddPouringRecordReq
+        {
+            sourceFrameId = SelectedSource.id,
+            sourceFrameNo = SelectedSource.frameNo,
+            sourceFrameTypeCode = SelectedSource.frameTypeCode,
+            sourceFrameTypeName = SelectedSource.frameTypeName,
+            targetFrameId = SelectedTarget.id,
+            targetFrameNo = SelectedTarget.frameNo,
+            targetFrameTypeCode = SelectedTarget.frameTypeCode,
+            targetFrameTypeName = SelectedTarget.frameTypeName
+        };
+
+        var resp = await _api.AddPouringRecordAsync(req);
+        if (resp?.success == true && resp.result == true)
+        {
+            await Shell.Current.GoToAsync("..");
+            return;
+        }
+
+        var msg = string.IsNullOrWhiteSpace(resp?.message) ? "倒框失败，请稍后重试" : resp!.message!;
+        if (Shell.Current?.CurrentPage is Page p)
+            await p.DisplayAlert("提示", msg, "确定");
+    }
     private void Refresh()
     {
         CanConfirm = SelectedSource is not null && SelectedTarget is not null;

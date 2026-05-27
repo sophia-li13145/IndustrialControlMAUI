@@ -93,4 +93,6 @@ public partial class FrameEmptyAddFrameItem : ObservableObject
     public string? frameStatus { get; set; }
     public string? frameStatusDisplay { get; set; }
     [ObservableProperty] public bool isSelected;
+
+    public string FrameStatusDisplayText => (string.IsNullOrWhiteSpace(frameStatusDisplay) ? frameStatus : frameStatusDisplay) ?? "-";
 }
