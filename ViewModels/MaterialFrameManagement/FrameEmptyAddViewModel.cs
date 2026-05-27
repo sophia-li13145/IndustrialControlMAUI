@@ -11,8 +11,8 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     private readonly IMaterialFrameApi _api;
     private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
-    public ObservableCollection<FrameStatusItem> PickerFrameList { get; } = new();
-    public ObservableCollection<FrameStatusItem> SelectedFrames { get; } = new();
+    public ObservableCollection<FrameEmptyAddFrameItem> PickerFrameList { get; } = new();
+    public ObservableCollection<FrameEmptyAddFrameItem> SelectedFrames { get; } = new();
 
     [ObservableProperty] private bool isPickerVisible;
     [ObservableProperty] private bool canConfirm;
@@ -27,9 +27,9 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     private async Task OpenPickerAsync()
     {
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetFrameReturnSelectableListAsync(1, 10);
+        var resp = await _api.GetFrameReturnSelectableListForEmptyAddAsync(1, 10);
         PickerFrameList.Clear();
-        foreach (var item in resp?.result?.records ?? new List<FrameStatusItem>())
+        foreach (var item in resp?.result?.records ?? new List<FrameEmptyAddFrameItem>())
         {
             item.IsSelected = SelectedFrames.Any(x => string.Equals(x.id, item.id, StringComparison.OrdinalIgnoreCase));
             item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
@@ -42,7 +42,7 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     [RelayCommand] private void ClosePicker() => IsPickerVisible = false;
 
     [RelayCommand]
-    private void TogglePick(FrameStatusItem? item)
+    private void TogglePick(FrameEmptyAddFrameItem? item)
     {
         if (item is null) return;
         item.IsSelected = !item.IsSelected;
@@ -61,7 +61,7 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void RemoveSelected(FrameStatusItem? item)
+    private void RemoveSelected(FrameEmptyAddFrameItem? item)
     {
         if (item is null) return;
         SelectedFrames.Remove(item);

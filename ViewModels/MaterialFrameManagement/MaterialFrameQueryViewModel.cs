@@ -53,7 +53,7 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
             var resp = string.IsNullOrWhiteSpace(OperationType)
                 ? await _api.PageMaterialFrameInfoAsync(nextPage, DefaultPageSize, operationType: null, frameNo: frameNo)
                 : await _api.PageMaterialFrameOperationAsync(nextPage, DefaultPageSize, OperationType!, frameNo);
-            var records = resp?.result?.records ?? new List<MaterialFrameRecord>();
+            var records = resp?.result?.records ?? new List<MaterialFrameQueryRecord>();
 
             if (reset) Items.Clear();
 

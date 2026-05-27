@@ -15,7 +15,7 @@ public partial class MaterialFrameDetailViewModel : ObservableObject
 
     public int DetailCount => LoadDetails.Count;
 
-    public void Apply(MaterialFrameRecord? record)
+    public void Apply(MaterialFrameQueryRecord? record)
     {
         LoadDetails.Clear();
         if (record == null)
@@ -30,7 +30,7 @@ public partial class MaterialFrameDetailViewModel : ObservableObject
         UseStatusText = use == 1 ? "占用" : "空闲";
         UseStatusColor = use == 1 ? "#EF4444" : "#22C55E";
 
-        foreach (var detail in record.loadDetailList ?? new List<MaterialFrameLoadDetail>())
+        foreach (var detail in record.loadDetailList ?? new List<MaterialFrameQueryLoadDetail>())
             LoadDetails.Add(new MaterialFrameDetailLoadItemVm(detail));
 
         OnPropertyChanged(nameof(DetailCount));

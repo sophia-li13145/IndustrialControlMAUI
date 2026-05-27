@@ -4,9 +4,9 @@ namespace IndustrialControlMAUI.ViewModels;
 
 public class MaterialFrameItemVm
 {
-    public MaterialFrameRecord Source { get; }
+    public MaterialFrameQueryRecord Source { get; }
 
-    public MaterialFrameItemVm(MaterialFrameRecord r)
+    public MaterialFrameItemVm(MaterialFrameQueryRecord r)
     {
         Source = r;
         FrameNoDisplay = string.IsNullOrWhiteSpace(r.frameNo) ? "-" : r.frameNo!;
