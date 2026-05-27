@@ -6,9 +6,9 @@ public class MaterialFrameDetailLoadItemVm
 {
     public MaterialFrameDetailLoadItemVm(MaterialFrameQueryLoadDetail d)
     {
-        MaterialName = FirstNotEmpty(d.materialName, d.productName, d.itemName, "-");
-        BatchNo = FirstNotEmpty(d.batchNo, d.lotNo, "-");
-        QtyDisplay = (d.currentQty ?? d.currentQuantity ?? d.quantity ?? 0m).ToString("0.##");
+        MaterialName = FirstNotEmpty(d.materialName, "-");
+        BatchNo = FirstNotEmpty(d.batchNo, "-");
+        QtyDisplay = (d.qty ?? 0m).ToString("0.##");
     }
 
     public string MaterialName { get; }
