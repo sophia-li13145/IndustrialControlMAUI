@@ -12,6 +12,8 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class FrameUnloadAddViewModel : ObservableObject
 {
     private const int PickerPageSize = 7;
+    private int _sourceDisplayCount;
+    private int _targetDisplayCount;
     private readonly IMaterialFrameApi _api;
     private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
@@ -46,12 +48,14 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListForTransferAddAsync();
         SourceFrameList.Clear();
-        foreach (var frame in (resp?.result ?? new List<FrameUnloadAddSourceFrameItem>()).Take(PickerPageSize))
+        var all = resp?.result ?? new List<FrameUnloadAddSourceFrameItem>();
+        foreach (var frame in all.Take(PickerPageSize))
         {
             frame.IsSelected = string.Equals(frame.frameNo, SelectedSourceFrameNo, StringComparison.OrdinalIgnoreCase);
             frame.frameStatusDisplay = ResolveFrameStatusDisplay(frame.frameStatus);
             SourceFrameList.Add(frame);
         }
+        _sourceDisplayCount = SourceFrameList.Count;
         IsSourcePickerVisible = true;
     }
 
@@ -147,12 +151,14 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null);
         TargetFrameList.Clear();
-        foreach (var item in (resp?.result ?? new List<FrameUnloadAddTargetFrameItem>()).Take(PickerPageSize))
+        var all = resp?.result ?? new List<FrameUnloadAddTargetFrameItem>();
+        foreach (var item in all.Take(PickerPageSize))
         {
             item.IsSelected = SelectedTargetFrames.Any(x => x.TargetFrameNo == item.frameNo);
             item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
             TargetFrameList.Add(item);
         }
+        _targetDisplayCount = TargetFrameList.Count;
         IsTargetPickerVisible = true;
     }
 
@@ -365,15 +371,15 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         if (!IsSourcePickerVisible) return;
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListForTransferAddAsync();
-        var existingIds = SourceFrameList.Select(x => x.id).Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var frame in (resp?.result ?? new List<FrameUnloadAddSourceFrameItem>())
-                     .Where(x => !string.IsNullOrWhiteSpace(x.id) && !existingIds.Contains(x.id!))
-                     .Take(PickerPageSize))
+        var all = resp?.result ?? new List<FrameUnloadAddSourceFrameItem>();
+        if (_sourceDisplayCount >= all.Count) return;
+        foreach (var frame in all.Skip(_sourceDisplayCount).Take(PickerPageSize))
         {
             frame.IsSelected = string.Equals(frame.frameNo, SelectedSourceFrameNo, StringComparison.OrdinalIgnoreCase);
             frame.frameStatusDisplay = ResolveFrameStatusDisplay(frame.frameStatus);
             SourceFrameList.Add(frame);
         }
+        _sourceDisplayCount = SourceFrameList.Count;
     }
 
     [RelayCommand]
@@ -384,15 +390,15 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null);
-        var existingIds = TargetFrameList.Select(x => x.id).Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in (resp?.result ?? new List<FrameUnloadAddTargetFrameItem>())
-                     .Where(x => !string.IsNullOrWhiteSpace(x.id) && !existingIds.Contains(x.id!))
-                     .Take(PickerPageSize))
+        var all = resp?.result ?? new List<FrameUnloadAddTargetFrameItem>();
+        if (_targetDisplayCount >= all.Count) return;
+        foreach (var item in all.Skip(_targetDisplayCount).Take(PickerPageSize))
         {
             item.IsSelected = SelectedTargetFrames.Any(x => x.TargetFrameNo == item.frameNo);
             item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
             TargetFrameList.Add(item);
         }
+        _targetDisplayCount = TargetFrameList.Count;
     }
 
 }
