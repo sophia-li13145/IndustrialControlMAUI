@@ -239,32 +239,39 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     {
         if (!CanConfirmUnload || SelectedSourceMaterials.Count == 0) return;
 
-        var firstMaterial = SelectedSourceMaterials[0];
+        var validUnloadDetails = SelectedTargetFrames
+            .Where(x => decimal.TryParse(x.UnloadQty, out var qty) && qty > 0)
+            .Select(x => new AddUnloadingDetail
+            {
+                targetFrameId = x.TargetFrameId,
+                targetFrameNo = x.TargetFrameNo,
+                targetFrameTypeCode = x.TargetFrameTypeCode,
+                targetFrameTypeName = x.TargetFrameTypeName,
+                unloadQty = decimal.TryParse(x.UnloadQty, out var qty) ? qty : 0
+            }).ToList();
+
         var req = new AddUnloadingRecordReq
         {
             sourceFrameId = SelectedSourceFrameId,
             sourceFrameNo = SelectedSourceFrameNo,
             sourceFrameTypeCode = SelectedSourceFrameTypeCode,
             sourceFrameTypeName = SelectedSourceFrameTypeName,
-            unloadMaterials = new List<AddUnloadingMaterial>
-            {
-                new()
+            unloadMaterials = SelectedSourceMaterials
+                .Select(material => new AddUnloadingMaterial
                 {
-                    materialCode = firstMaterial.MaterialCode,
-                    materialName = firstMaterial.MaterialName,
-                    sourceQty = firstMaterial.SourceQty,
-                    unloadDetailList = SelectedTargetFrames
-                        .Where(x => decimal.TryParse(x.UnloadQty, out var qty) && qty > 0)
-                        .Select(x => new AddUnloadingDetail
+                    materialCode = material.MaterialCode,
+                    materialName = material.MaterialName,
+                    sourceQty = material.SourceQty,
+                    unloadDetailList = validUnloadDetails
+                        .Select(d => new AddUnloadingDetail
                         {
-                            targetFrameId = x.TargetFrameId,
-                            targetFrameNo = x.TargetFrameNo,
-                            targetFrameTypeCode = x.TargetFrameTypeCode,
-                            targetFrameTypeName = x.TargetFrameTypeName,
-                            unloadQty = decimal.TryParse(x.UnloadQty, out var qty) ? qty : 0
+                            targetFrameId = d.targetFrameId,
+                            targetFrameNo = d.targetFrameNo,
+                            targetFrameTypeCode = d.targetFrameTypeCode,
+                            targetFrameTypeName = d.targetFrameTypeName,
+                            unloadQty = d.unloadQty
                         }).ToList()
-                }
-            }
+                }).ToList()
         };
 
         var resp = await _api.AddUnloadingRecordAsync(req);
