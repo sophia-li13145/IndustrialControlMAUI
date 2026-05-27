@@ -20,9 +20,8 @@ public class FrameMergeAddLoadDetailItem
     public string? materialName { get; set; }
     public string? batchNo { get; set; }
     public string? unit { get; set; }
-    public decimal? quantity { get; set; }
-    public decimal? currentQty { get; set; }
-    public decimal? currentQuantity { get; set; }
+    public decimal? qty { get; set; }
+
 }
 
 public partial class FrameMergeAddFrameItem : ObservableObject
