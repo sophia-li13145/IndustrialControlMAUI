@@ -88,7 +88,7 @@ public partial class FrameEmptyAddViewModel : ObservableObject
         var req = new AddFrameReturnRecordReq
         {
             memo = string.Empty,
-            frameStatusIdList = $"[\"{string.Join("\",\"", ids)}\"]"
+            frameStatusIdList = ids
         };
 
         var resp = await _api.AddFrameReturnRecordAsync(req);

@@ -178,6 +178,6 @@ public sealed class AddPouringRecordReq
 
 public sealed class AddFrameReturnRecordReq
 {
-    public string? frameStatusIdList { get; set; }
+    public List<string>? frameStatusIdList { get; set; }
     public string? memo { get; set; }
 }
