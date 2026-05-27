@@ -120,15 +120,17 @@
 
         <Grid x:Name="PickerOverlay" Grid.RowSpan="4" BackgroundColor="#66000000" IsVisible="{Binding IsPickerVisible}">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12" Margin="0,0,0,0">
-                <VerticalStackLayout Spacing="10">
+                <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10" MaximumHeightRequest="560">
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Text="选择物料" FontSize="24" FontAttributes="Bold"/>
                         <Button Grid.Column="1" Text="✕" Command="{Binding ClosePickerCommand}"/>
                     </Grid>
-                    <SearchBar Placeholder="输入物料名模糊查询" Text="{Binding MaterialNameKeyword}" SearchCommand="{Binding SearchMaterialsCommand}"/>
-                    <CollectionView ItemsSource="{Binding MaterialList}"
+                    <SearchBar Grid.Row="1" Placeholder="输入物料名模糊查询" Text="{Binding MaterialNameKeyword}" SearchCommand="{Binding SearchMaterialsCommand}"/>
+                    <CollectionView Grid.Row="2" ItemsSource="{Binding MaterialList}"
                                     SelectionMode="Single"
-                                    SelectedItem="{Binding PickedMaterial, Mode=TwoWay}">
+                                    SelectedItem="{Binding PickedMaterial, Mode=TwoWay}"
+                                    RemainingItemsThreshold="1"
+                                    RemainingItemsThresholdReachedCommand="{Binding LoadMoreMaterialsCommand}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Frame Padding="12" BorderColor="#E5E7EB" CornerRadius="10" HasShadow="False">
@@ -144,19 +146,19 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
+                </Grid>
             </Frame>
         </Grid>
 
         <Grid Grid.RowSpan="4" BackgroundColor="#66000000" IsVisible="{Binding IsTargetFramePopupVisible}">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12">
-                <VerticalStackLayout Spacing="10">
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10" MaximumHeightRequest="560">
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Text="选择目标料框（空闲, 多选）" FontSize="24" FontAttributes="Bold"/>
                         <Button Grid.Column="1" Text="✕" Command="{Binding CloseTargetFramePopupCommand}"/>
                     </Grid>
-                    <CollectionView ItemsSource="{Binding TargetFrameList}"
-                SelectionMode="None">
+                    <CollectionView Grid.Row="1" ItemsSource="{Binding TargetFrameList}"
+                SelectionMode="None" RemainingItemsThreshold="1" RemainingItemsThresholdReachedCommand="{Binding LoadMoreTargetFramesCommand}">
 
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
@@ -253,8 +255,8 @@
                         </CollectionView.ItemTemplate>
 
                     </CollectionView>
-                    <Button Text="{Binding SelectedTargetFrameCount, StringFormat='确认选择 ({0})'}" Command="{Binding CloseTargetFramePopupCommand}" BackgroundColor="#2F66E8" TextColor="White"/>
-                </VerticalStackLayout>
+                    <Button Grid.Row="2" Text="{Binding SelectedTargetFrameCount, StringFormat='确认选择 ({0})'}" Command="{Binding CloseTargetFramePopupCommand}" BackgroundColor="#2F66E8" TextColor="White" HeightRequest="44"/>
+                </Grid>
             </Frame>
         </Grid>
     </Grid>

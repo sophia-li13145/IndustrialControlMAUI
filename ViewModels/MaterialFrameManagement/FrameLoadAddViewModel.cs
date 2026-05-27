@@ -11,8 +11,11 @@ namespace IndustrialControlMAUI.ViewModels;
 
 public partial class FrameLoadAddViewModel : ObservableObject
 {
+    private const int PickerPageSize = 7;
     private readonly IMaterialFrameApi _api;
     private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
+    private int _materialPageNo = 1;
+    private int _targetFrameDisplayCount = 0;
 
     public ObservableCollection<BasMaterialRecord> MaterialList { get; } = new();
     public ObservableCollection<TargetFrameSelectableItem> TargetFrameList { get; } = new();
@@ -41,7 +44,8 @@ public partial class FrameLoadAddViewModel : ObservableObject
     public async Task LoadMaterialsAsync()
     {
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.PageBasMaterialsAsync(1, 50, MaterialNameKeyword, null);
+        _materialPageNo = 1;
+        var resp = await _api.PageBasMaterialsAsync(_materialPageNo, PickerPageSize, MaterialNameKeyword, null);
         MaterialList.Clear();
         foreach (var m in resp?.result?.records ?? new List<BasMaterialRecord>())
             MaterialList.Add(m);
@@ -113,8 +117,8 @@ public partial class FrameLoadAddViewModel : ObservableObject
         var resp = await _api.GetFrameStatusListForLoadAddAsync(SelectedMaterialCode!, SelectedMaterialName!);
 
         TargetFrameList.Clear();
-
-        foreach (var x in resp?.result ?? new List<FrameLoadAddTargetFrameItem>())
+        _targetFrameDisplayCount = 0;
+        foreach (var x in (resp?.result ?? new List<FrameLoadAddTargetFrameItem>()).Take(PickerPageSize))
         {
             TargetFrameList.Add(new TargetFrameSelectableItem
             {
@@ -128,12 +132,52 @@ public partial class FrameLoadAddViewModel : ObservableObject
                 IsSelected = SelectedTargetFrames.Any(t => t.FrameNo == x.frameNo)
             });
         }
+        _targetFrameDisplayCount = TargetFrameList.Count;
 
         IsTargetFramePopupVisible = true;
     }
 
     [RelayCommand]
     private void CloseTargetFramePopup() => IsTargetFramePopupVisible = false;
+
+    [RelayCommand]
+    private async Task LoadMoreMaterialsAsync()
+    {
+        if (!IsPickerVisible) return;
+        var nextPage = _materialPageNo + 1;
+        var resp = await _api.PageBasMaterialsAsync(nextPage, PickerPageSize, MaterialNameKeyword, null);
+        var rows = resp?.result?.records ?? new List<BasMaterialRecord>();
+        if (rows.Count == 0) return;
+        _materialPageNo = nextPage;
+        var existingCodes = MaterialList.Select(x => x.materialCode).Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var m in rows.Where(x => string.IsNullOrWhiteSpace(x.materialCode) || !existingCodes.Contains(x.materialCode!)))
+            MaterialList.Add(m);
+    }
+
+    [RelayCommand]
+    private async Task LoadMoreTargetFramesAsync()
+    {
+        if (!IsTargetFramePopupVisible || string.IsNullOrWhiteSpace(SelectedMaterialCode) || string.IsNullOrWhiteSpace(SelectedMaterialName)) return;
+        var resp = await _api.GetFrameStatusListForLoadAddAsync(SelectedMaterialCode!, SelectedMaterialName!);
+        var all = resp?.result ?? new List<FrameLoadAddTargetFrameItem>();
+        if (_targetFrameDisplayCount >= all.Count) return;
+        foreach (var x in all.Skip(_targetFrameDisplayCount).Take(PickerPageSize))
+        {
+            if (TargetFrameList.Any(t => string.Equals(t.id, x.id, StringComparison.OrdinalIgnoreCase))) continue;
+            TargetFrameList.Add(new TargetFrameSelectableItem
+            {
+                id = x.id,
+                frameNo = x.frameNo,
+                frameTypeCode = x.frameTypeCode,
+                frameTypeName = x.frameTypeName,
+                frameStatus = x.frameStatus,
+                fullLoadStatus = x.fullLoadStatus,
+                frameStatusDisplay = ResolveFrameStatusDisplay(x.frameStatus),
+                IsSelected = SelectedTargetFrames.Any(t => t.FrameNo == x.frameNo)
+            });
+        }
+        _targetFrameDisplayCount = TargetFrameList.Count;
+    }
 
     public async Task ScanAndAddTargetFrameAsync(INavigation nav)
     {
