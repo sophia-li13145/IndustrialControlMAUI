@@ -14,7 +14,7 @@ public partial class MaterialFrameDetailPage : ContentPage
         {
             if (string.IsNullOrWhiteSpace(value)) return;
             if (MaterialFrameNavigationStore.TryTake(value!, out var record))
-                _vm.Apply(record);
+                MainThread.BeginInvokeOnMainThread(async () => await _vm.ApplyAsync(record));
         }
     }
 
