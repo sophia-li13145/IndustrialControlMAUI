@@ -1,4 +1,5 @@
 using IndustrialControlMAUI.ViewModels;
+using System.ComponentModel;
 
 namespace IndustrialControlMAUI.Pages;
 
@@ -10,6 +11,9 @@ public partial class FrameUnloadAddPage : ContentPage
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+
+        _vm.PropertyChanged += OnViewModelPropertyChanged;
+        UpdateOverlayInputState();
     }
 
     private async void OnScanSourceClicked(object sender, TappedEventArgs e)
@@ -20,5 +24,20 @@ public partial class FrameUnloadAddPage : ContentPage
     private async void OnScanTargetClicked(object sender, EventArgs e)
     {
         await _vm.ScanAndAddTargetFrameAsync(Navigation);
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FrameUnloadAddViewModel.IsSourcePickerVisible)
+            || e.PropertyName == nameof(FrameUnloadAddViewModel.IsTargetPickerVisible))
+        {
+            UpdateOverlayInputState();
+        }
+    }
+
+    private void UpdateOverlayInputState()
+    {
+        SourcePickerOverlay.InputTransparent = !_vm.IsSourcePickerVisible;
+        TargetPickerOverlay.InputTransparent = !_vm.IsTargetPickerVisible;
     }
 }
