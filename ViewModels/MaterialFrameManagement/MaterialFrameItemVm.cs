@@ -4,19 +4,30 @@ namespace IndustrialControlMAUI.ViewModels;
 
 public class MaterialFrameItemVm
 {
-    public MaterialFrameRecord Source { get; }
+    public MaterialFrameQueryRecord Source { get; }
 
-    public MaterialFrameItemVm(MaterialFrameRecord r)
+    public MaterialFrameItemVm(MaterialFrameQueryRecord r, string frameStatusDisplay)
     {
         Source = r;
         FrameNoDisplay = string.IsNullOrWhiteSpace(r.frameNo) ? "-" : r.frameNo!;
         CurrentLocationDisplay = string.IsNullOrWhiteSpace(r.currentLocation) ? "未分配位置" : r.currentLocation!;
-        var use = r.frameInfo?.useStatus ?? 0;
-        UseStatusText = use == 1 ? "占用" : "空闲";
-        UseStatusColor = use == 1 ? "#EF4444" : "#22C55E";
+        UseStatusText = string.IsNullOrWhiteSpace(frameStatusDisplay) ? "-" : frameStatusDisplay;
+        UseStatusColor = ResolveFrameStatusColor(r.frameStatus);
         var full = r.fullLoadStatus == true;
         FullLoadStatusText = full ? "已满载" : "未满载";
         FullLoadStatusColor = full ? "#F97316" : "#9CA3AF";
+    }
+
+    private static string ResolveFrameStatusColor(string? frameStatus)
+    {
+        var key = frameStatus?.Trim().ToLowerInvariant();
+        return key switch
+        {
+            "warehouse" => "#22C55E",
+            "disable" => "#9CA3AF",
+            "damaged" => "#EF4444",
+            _ => "#3B82F6"
+        };
     }
 
     public string FrameNoDisplay { get; }

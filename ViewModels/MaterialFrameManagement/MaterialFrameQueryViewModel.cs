@@ -12,6 +12,7 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
     private int _pageNo;
     private const int DefaultPageSize = 10;
     private bool _initialized;
+    private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
     public ObservableCollection<MaterialFrameItemVm> Items { get; } = new();
 
@@ -30,6 +31,7 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
     {
         if (_initialized) return;
         _initialized = true;
+        await EnsureFrameStatusDictLoadedAsync();
         await LoadPageAsync(reset: true);
     }
 
@@ -53,12 +55,12 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
             var resp = string.IsNullOrWhiteSpace(OperationType)
                 ? await _api.PageMaterialFrameInfoAsync(nextPage, DefaultPageSize, operationType: null, frameNo: frameNo)
                 : await _api.PageMaterialFrameOperationAsync(nextPage, DefaultPageSize, OperationType!, frameNo);
-            var records = resp?.result?.records ?? new List<MaterialFrameRecord>();
+            var records = resp?.result?.records ?? new List<MaterialFrameQueryRecord>();
 
             if (reset) Items.Clear();
 
             foreach (var r in records)
-                Items.Add(new MaterialFrameItemVm(r));
+                Items.Add(new MaterialFrameItemVm(r, ResolveFrameStatusDisplay(r.frameStatus)));
 
             _pageNo = nextPage;
             HasMore = records.Count >= DefaultPageSize;
@@ -76,5 +78,26 @@ public partial class MaterialFrameQueryViewModel : ObservableObject
         ActionButtonText = "新增记录";
         OperationType = operationTypeValue;
         ShowBottomActionButton = true;
+    }
+
+    private async Task EnsureFrameStatusDictLoadedAsync()
+    {
+        if (_frameStatusDict.Count > 0) return;
+        var fields = await _api.GetStatusDictListAsync();
+        var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
+        var dict = statusField?.dictItems?
+            .Where(x => !string.IsNullOrWhiteSpace(x.value))
+            .GroupBy(x => x.value!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().name ?? g.First().value ?? g.Key, StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        _frameStatusDict = dict;
+    }
+
+    private string ResolveFrameStatusDisplay(string? frameStatus)
+    {
+        var key = frameStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(key)) return "-";
+        return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
     }
 }
