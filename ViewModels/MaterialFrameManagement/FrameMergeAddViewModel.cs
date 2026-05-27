@@ -23,7 +23,7 @@ public partial class FrameMergeAddViewModel : ObservableObject
     [ObservableProperty] private Color confirmButtonTextColor = Color.FromArgb("#9CA3AF");
 
     public bool HasTargetFrame => SelectedTargetFrame is not null;
-    public string TotalQtyDisplay => $"{SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new List<FrameMergeAddLoadDetailItem>()).Sum(x => x.currentQuantity ?? x.currentQty ?? x.quantity ?? 0):0.##}";
+    public string TotalQtyDisplay => $"{SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new List<FrameMergeAddLoadDetailItem>()).Sum(x => x.qty ?? 0):0.##}";
     public string TotalMaterialNameDisplay => SelectedSourceFrames.SelectMany(x => x.loadDetailList ?? new List<FrameMergeAddLoadDetailItem>()).FirstOrDefault()?.materialName ?? "-";
 
     public FrameMergeAddViewModel(IMaterialFrameApi api) => _api = api;
@@ -76,7 +76,7 @@ public partial class FrameMergeAddViewModel : ObservableObject
                 batchNo = string.Equals(frame.frameStatus, "warehouse", StringComparison.OrdinalIgnoreCase) ? m.batchNo : null,
                 materialCode = m.materialCode,
                 materialName = m.materialName,
-                qty = m.currentQuantity ?? m.currentQty ?? m.quantity ?? 0,
+                qty = m.qty ?? 0,
                 sourceFrameNo = frame.frameNo,
                 unit = string.IsNullOrWhiteSpace(m.unit) ? null : m.unit
             });
@@ -133,7 +133,7 @@ public partial class FrameMergeAddViewModel : ObservableObject
     private static FrameMergeAddFrameItem MapSource(FrameUnloadAddSourceFrameItem x) => new()
     {
         id = x.id, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected,
-        loadDetailList = (x.loadDetailList ?? new()).Select(m => new FrameMergeAddLoadDetailItem { materialCode = m.materialCode, materialName = m.materialName, batchNo = m.batchNo, unit = m.unit, quantity = m.quantity, currentQty = m.currentQty, currentQuantity = m.currentQuantity }).ToList()
+        loadDetailList = (x.loadDetailList ?? new()).Select(m => new FrameMergeAddLoadDetailItem { materialCode = m.materialCode, materialName = m.materialName, batchNo = m.batchNo, unit = m.unit, qty = m.qty }).ToList()
     };
     private static FrameMergeAddTargetFrameItem MapTarget(FrameUnloadAddTargetFrameItem x) => new() { id = x.id, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected };
 }
