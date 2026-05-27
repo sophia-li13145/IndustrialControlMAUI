@@ -18,11 +18,6 @@ public partial class ReportAddPopupViewModel : ObservableObject
     public ObservableCollection<UserInfoDto> UserOptions { get; } = new();
     public ObservableCollection<ReworkBomDetailFlattenItem> UnqualifiedMaterialOptions { get; } = new();
 
-    private static readonly ReworkBomDetailFlattenItem UnqualifiedMaterialPlaceholder = new()
-    {
-        materialCode = string.Empty,
-        materialName = "请选择"
-    };
 
     [ObservableProperty] private StatusOption? selectedDevice;
     [ObservableProperty] private StatusOption? selectedShift;
@@ -74,8 +69,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
             ShiftOptions.Clear();
             UserOptions.Clear();
             UnqualifiedMaterialOptions.Clear();
-            UnqualifiedMaterialOptions.Add(UnqualifiedMaterialPlaceholder);
-            SelectedUnqualifiedMaterial = UnqualifiedMaterialPlaceholder;
+            SelectedDevice = null;
+            SelectedShift = null;
+            SelectedUnqualifiedMaterial = null;
 
             if (detail is null)
             {
@@ -133,7 +129,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
                         UnqualifiedMaterialOptions.Add(item);
                     }
 
-                    SelectedUnqualifiedMaterial = UnqualifiedMaterialPlaceholder;
+                    SelectedUnqualifiedMaterial = null;
                 }
             }
 
@@ -175,18 +171,6 @@ public partial class ReportAddPopupViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(_detail.processCode) || string.IsNullOrWhiteSpace(_detail.workOrderNo))
             {
                 await AlertAsync("工单信息缺失，无法新增报工");
-                return;
-            }
-
-            if (SelectedDevice is null || string.IsNullOrWhiteSpace(SelectedDevice.Value))
-            {
-                await AlertAsync("请选择设备");
-                return;
-            }
-
-            if (SelectedShift is null || string.IsNullOrWhiteSpace(SelectedShift.Value))
-            {
-                await AlertAsync("请选择班组");
                 return;
             }
 
@@ -236,11 +220,11 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 @operator = SelectedUser.realname ?? SelectedUser.username ?? string.Empty,
                 operatorName = SelectedUser.realname ?? SelectedUser.username ?? string.Empty,
                 processCode = _detail.processCode!,
-                productionMachine = SelectedDevice.Value,
-                productionMachineName = SelectedDevice.Text,
+                productionMachine = SelectedDevice?.Value,
+                productionMachineName = SelectedDevice?.Text,
                 reportQty = qty,
-                teamCode = SelectedShift.Value,
-                teamName = SelectedShift.Text,
+                teamCode = SelectedShift?.Value,
+                teamName = SelectedShift?.Text,
                 unqualifiedQty = unqualifiedQty,
                 unqualifiedMaterialCode = unqualifiedQty > 0 ? SelectedUnqualifiedMaterial?.materialCode : null,
                 unqualifiedMaterialName = unqualifiedQty > 0 ? SelectedUnqualifiedMaterial?.materialName : null,
