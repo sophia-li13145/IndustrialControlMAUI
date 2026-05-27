@@ -8,6 +8,7 @@ namespace IndustrialControlMAUI.ViewModels;
 public partial class FrameEmptyOperationDetailViewModel : ObservableObject
 {
     private readonly IMaterialFrameApi _api;
+    private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
     public FrameEmptyOperationDetailViewModel(IMaterialFrameApi api) => _api = api;
 
@@ -22,6 +23,7 @@ public partial class FrameEmptyOperationDetailViewModel : ObservableObject
     {
         Reset();
         if (string.IsNullOrWhiteSpace(useRecordId)) return;
+        await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameReturnDetailAsync(useRecordId.Trim());
         Apply(resp?.result);
     }
@@ -49,9 +51,28 @@ public partial class FrameEmptyOperationDetailViewModel : ObservableObject
             ReleasedFrames.Add(new FrameEmptyFrameItemVm
             {
                 FrameNoDisplay = string.IsNullOrWhiteSpace(d.frameNo) ? "-" : d.frameNo!,
-                BeforeStatusDisplay = string.IsNullOrWhiteSpace(d.beforeStatus) ? "-" : d.beforeStatus!
+                BeforeStatusDisplay = ResolveFrameStatusDisplay(d.beforeStatus)
             });
         }
+    }
+
+    private async Task EnsureFrameStatusDictLoadedAsync()
+    {
+        if (_frameStatusDict.Count > 0) return;
+        var fields = await _api.GetStatusDictListAsync();
+        var statusField = fields?.FirstOrDefault(x => string.Equals(x.field, "frameStatus", StringComparison.OrdinalIgnoreCase));
+        _frameStatusDict = statusField?.dictItems?
+            .Where(x => !string.IsNullOrWhiteSpace(x.value))
+            .GroupBy(x => x.value!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First().name ?? g.First().value ?? g.Key, StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private string ResolveFrameStatusDisplay(string? frameStatus)
+    {
+        var key = frameStatus?.Trim();
+        if (string.IsNullOrWhiteSpace(key)) return "-";
+        return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
     }
 }
 
