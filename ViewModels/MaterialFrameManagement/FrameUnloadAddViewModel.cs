@@ -111,8 +111,8 @@ public partial class FrameUnloadAddViewModel : ObservableObject
                 MaterialDisplay = x.materialName ?? "-",
                 BatchNo = x.batchNo,
                 BatchDisplay = batchText,
-                QtyDisplay = $"可用数: {(x.currentQuantity ?? x.currentQty ?? x.quantity ?? 0):0.##}",
-                SourceQty = (x.currentQuantity ?? x.currentQty ?? x.quantity ?? 0)
+                QtyDisplay = $"可用数: {(x.qty ?? 0):0.##}",
+                SourceQty = (x.qty ?? 0)
             });
         }
 
