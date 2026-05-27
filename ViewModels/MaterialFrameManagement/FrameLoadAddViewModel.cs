@@ -105,7 +105,10 @@ public partial class FrameLoadAddViewModel : ObservableObject
     private async Task OpenTargetFramePopupAsync()
     {
         if (string.IsNullOrWhiteSpace(SelectedMaterialCode) || string.IsNullOrWhiteSpace(SelectedMaterialName))
+        {
+            await ShowSelectSourceTipAsync();
             return;
+        }
 
         var resp = await _api.GetFrameStatusListForLoadAddAsync(SelectedMaterialCode!, SelectedMaterialName!);
 
@@ -134,7 +137,11 @@ public partial class FrameLoadAddViewModel : ObservableObject
 
     public async Task ScanAndAddTargetFrameAsync(INavigation nav)
     {
-        if (string.IsNullOrWhiteSpace(SelectedMaterialCode)) return;
+        if (string.IsNullOrWhiteSpace(SelectedMaterialCode))
+        {
+            await ShowSelectSourceTipAsync();
+            return;
+        }
 
         var tcs = new TaskCompletionSource<string>();
         await nav.PushAsync(new QrScanPage(tcs));
@@ -249,6 +256,13 @@ public partial class FrameLoadAddViewModel : ObservableObject
     partial void OnHasSelectedMaterialChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowMaterialPickerActions));
+    }
+
+
+    private async Task ShowSelectSourceTipAsync()
+    {
+        if (Shell.Current?.CurrentPage is Page p)
+            await p.DisplayAlert("提示", "请选择原料框", "确定");
     }
 
     private async Task EnsureFrameStatusDictLoadedAsync()

@@ -23,6 +23,12 @@ public partial class FrameUnloadAddPage : ContentPage
 
     private async void OnScanTargetClicked(object sender, EventArgs e)
     {
+        if (!_vm.HasSelectedSourceFrame)
+        {
+            await DisplayAlert("提示", "请先选择或扫码来源料框", "确定");
+            return;
+        }
+
         await _vm.ScanAndAddTargetFrameAsync(Navigation);
     }
 
