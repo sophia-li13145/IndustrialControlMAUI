@@ -4,7 +4,7 @@ namespace IndustrialControlMAUI.ViewModels;
 
 public class MaterialFrameDetailLoadItemVm
 {
-    public MaterialFrameDetailLoadItemVm(MaterialFrameLoadDetail d)
+    public MaterialFrameDetailLoadItemVm(MaterialFrameQueryLoadDetail d)
     {
         MaterialName = FirstNotEmpty(d.materialName, d.productName, d.itemName, "-");
         BatchNo = FirstNotEmpty(d.batchNo, d.lotNo, "-");

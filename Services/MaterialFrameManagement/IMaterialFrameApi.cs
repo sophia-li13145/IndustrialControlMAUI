@@ -4,14 +4,14 @@ namespace IndustrialControlMAUI.Services;
 
 public interface IMaterialFrameApi
 {
-    Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameInfoAsync(
+    Task<PageResp<MaterialFrameQueryRecord>?> PageMaterialFrameInfoAsync(
         int pageNo = 1,
         int pageSize = 10,
         string? operationType = null,
         string? frameNo = null,
         CancellationToken ct = default);
 
-    Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameOperationAsync(
+    Task<PageResp<MaterialFrameQueryRecord>?> PageMaterialFrameOperationAsync(
         int pageNo = 1,
         int pageSize = 10,
         string operationType = "framing",

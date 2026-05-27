@@ -27,16 +27,16 @@ public partial class MaterialFrameDetailPage : ContentPage
 
 public static class MaterialFrameNavigationStore
 {
-    private static readonly Dictionary<string, MaterialFrameRecord> Cache = new();
+    private static readonly Dictionary<string, MaterialFrameQueryRecord> Cache = new();
 
-    public static string Put(MaterialFrameRecord record)
+    public static string Put(MaterialFrameQueryRecord record)
     {
         var key = Guid.NewGuid().ToString("N");
         Cache[key] = record;
         return key;
     }
 
-    public static bool TryTake(string key, out MaterialFrameRecord? record)
+    public static bool TryTake(string key, out MaterialFrameQueryRecord? record)
     {
         if (Cache.TryGetValue(key, out var found))
         {

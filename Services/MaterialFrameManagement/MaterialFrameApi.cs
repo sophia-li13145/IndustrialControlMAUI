@@ -99,7 +99,7 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
     }
 
-    public async Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameInfoAsync(
+    public async Task<PageResp<MaterialFrameQueryRecord>?> PageMaterialFrameInfoAsync(
         int pageNo = 1,
         int pageSize = 10,
         string? operationType = null,
@@ -134,14 +134,14 @@ public class MaterialFrameApi : IMaterialFrameApi
         var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
 
         if (!res.IsSuccessStatusCode)
-            return new PageResp<MaterialFrameRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return new PageResp<MaterialFrameQueryRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
 
-        return JsonSerializer.Deserialize<PageResp<MaterialFrameRecord>>(json,
+        return JsonSerializer.Deserialize<PageResp<MaterialFrameQueryRecord>>(json,
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-               ?? new PageResp<MaterialFrameRecord>();
+               ?? new PageResp<MaterialFrameQueryRecord>();
     }
 
-    public async Task<PageResp<MaterialFrameRecord>?> PageMaterialFrameOperationAsync(
+    public async Task<PageResp<MaterialFrameQueryRecord>?> PageMaterialFrameOperationAsync(
         int pageNo = 1,
         int pageSize = 10,
         string operationType = "framing",
@@ -172,11 +172,11 @@ public class MaterialFrameApi : IMaterialFrameApi
         var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
 
         if (!res.IsSuccessStatusCode)
-            return new PageResp<MaterialFrameRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return new PageResp<MaterialFrameQueryRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
 
-        return JsonSerializer.Deserialize<PageResp<MaterialFrameRecord>>(json,
+        return JsonSerializer.Deserialize<PageResp<MaterialFrameQueryRecord>>(json,
                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-               ?? new PageResp<MaterialFrameRecord>();
+               ?? new PageResp<MaterialFrameQueryRecord>();
     }
 
     public async Task<PageResp<FrameUseRecordOperation>?> PageFrameUseRecordPageAsync(
