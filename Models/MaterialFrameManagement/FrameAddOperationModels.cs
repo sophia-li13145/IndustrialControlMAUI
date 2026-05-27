@@ -34,6 +34,10 @@ public partial class FrameMergeAddFrameItem : ObservableObject
     public string? frameTypeName { get; set; }
     public List<FrameMergeAddLoadDetailItem>? loadDetailList { get; set; }
     [ObservableProperty] public bool isSelected;
+
+    public string FrameStatusDisplayText => (string.IsNullOrWhiteSpace(frameStatusDisplay) ? frameStatus : frameStatusDisplay) ?? "-";
+    public string MaterialTypeCountDisplay => $"物料: {(loadDetailList?.Count ?? 0)}种";
+    public string StatusAndCountDisplay => $"状态: {FrameStatusDisplayText}   {MaterialTypeCountDisplay}";
 }
 
 public partial class FrameMergeAddTargetFrameItem : ObservableObject
