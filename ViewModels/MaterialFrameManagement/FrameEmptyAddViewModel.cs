@@ -8,6 +8,8 @@ namespace IndustrialControlMAUI.ViewModels;
 
 public partial class FrameEmptyAddViewModel : ObservableObject
 {
+    private const int PickerPageSize = 7;
+    private int _pickerPageNo = 1;
     private readonly IMaterialFrameApi _api;
     private Dictionary<string, string> _frameStatusDict = new(StringComparer.OrdinalIgnoreCase);
 
@@ -27,7 +29,8 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     private async Task OpenPickerAsync()
     {
         await EnsureFrameStatusDictLoadedAsync();
-        var resp = await _api.GetFrameReturnSelectableListForEmptyAddAsync(1, 10);
+        _pickerPageNo = 1;
+        var resp = await _api.GetFrameReturnSelectableListForEmptyAddAsync(_pickerPageNo, PickerPageSize);
         PickerFrameList.Clear();
         foreach (var item in resp?.result?.records ?? new List<FrameEmptyAddFrameItem>())
         {
@@ -37,6 +40,25 @@ public partial class FrameEmptyAddViewModel : ObservableObject
         }
 
         IsPickerVisible = true;
+    }
+
+    [RelayCommand]
+    private async Task LoadMorePickerFramesAsync()
+    {
+        if (!IsPickerVisible) return;
+        await EnsureFrameStatusDictLoadedAsync();
+        var nextPage = _pickerPageNo + 1;
+        var resp = await _api.GetFrameReturnSelectableListForEmptyAddAsync(nextPage, PickerPageSize);
+        var rows = resp?.result?.records ?? new List<FrameEmptyAddFrameItem>();
+        if (rows.Count == 0) return;
+        _pickerPageNo = nextPage;
+        var existingIds = PickerFrameList.Select(x => x.id).Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in rows.Where(x => !string.IsNullOrWhiteSpace(x.id) && !existingIds.Contains(x.id!)))
+        {
+            item.IsSelected = SelectedFrames.Any(x => string.Equals(x.id, item.id, StringComparison.OrdinalIgnoreCase));
+            item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
+            PickerFrameList.Add(item);
+        }
     }
 
     [RelayCommand] private void ClosePicker() => IsPickerVisible = false;
