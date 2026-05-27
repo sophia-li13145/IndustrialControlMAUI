@@ -44,6 +44,8 @@ public partial class MaterialInputPopupPage : ContentPage
 
         // 3) 打开弹窗并等待结果
         var page = new MaterialInputPopupPage(vm);
+        page.Disappearing += (_, _) => tcs.TrySetResult(null);
+
         if (Application.Current?.MainPage?.Navigation is not null)
             await Application.Current.MainPage.Navigation.PushModalAsync(page);
 
