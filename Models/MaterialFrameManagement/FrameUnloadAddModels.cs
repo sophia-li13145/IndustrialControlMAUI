@@ -43,4 +43,6 @@ public partial class FrameUnloadAddTargetFrameItem : ObservableObject
     public string? frameTypeCode { get; set; }
     public string? frameTypeName { get; set; }
     [ObservableProperty] public bool isSelected;
+
+    public string FrameStatusDisplayText => (string.IsNullOrWhiteSpace(frameStatusDisplay) ? frameStatus : frameStatusDisplay) ?? "-";
 }
