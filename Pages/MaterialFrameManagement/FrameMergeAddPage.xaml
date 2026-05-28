@@ -73,9 +73,11 @@
         <Grid Grid.RowSpan="4" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12">
                 <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="选择原料框（多选）" FontAttributes="Bold"/>
-                        <Button Grid.Column="1" Text="✕" Command="{Binding CloseSourcePickerCommand}"/>
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                        <Label Text="选择原料框（多选）" FontAttributes="Bold" VerticalOptions="Center"/>
+                        <Button Grid.Column="1" Text="全选" Command="{Binding SelectAllSourceInPickerCommand}" FontSize="12" BackgroundColor="#EEF2FF" TextColor="#4F46E5" HeightRequest="34"/>
+                        <Button Grid.Column="2" Text="清空" Command="{Binding ClearAllSourceInPickerCommand}" FontSize="12" BackgroundColor="#F3F4F6" TextColor="#6B7280" HeightRequest="34"/>
+                        <Button Grid.Column="3" Text="✕" Command="{Binding CloseSourcePickerCommand}" HeightRequest="34"/>
                     </Grid>
 
                     <CollectionView Grid.Row="1" ItemsSource="{Binding SourceFrameList}" SelectionMode="None" HeightRequest="260" RemainingItemsThreshold="1" RemainingItemsThresholdReachedCommand="{Binding LoadMoreSourceFramesCommand}">
@@ -92,11 +94,7 @@
                                         </DataTrigger>
                                     </Frame.Triggers>
                                     <Grid ColumnDefinitions="34,*" ColumnSpacing="4">
-                                        <Grid WidthRequest="22" HeightRequest="22" VerticalOptions="Center">
-                                            <Border Stroke="#C0C4CC" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White"/>
-                                            <Border Stroke="#2D73FF" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#2D73FF" IsVisible="{Binding IsSelected}"/>
-                                            <Label Text="✓" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsSelected}"/>
-                                        </Grid>
+                                        <CheckBox IsChecked="{Binding IsSelected}" HorizontalOptions="Center" VerticalOptions="Center" Color="#2D73FF"/>
                                         <VerticalStackLayout Grid.Column="1" Spacing="3">
                                             <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
                                             <HorizontalStackLayout Spacing="6">
