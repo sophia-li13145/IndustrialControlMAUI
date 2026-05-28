@@ -24,7 +24,7 @@
                                 <Label Grid.Column="0" Text="目标框:" TextColor="#6B7280"/>
                                 <HorizontalStackLayout Grid.Column="1" Spacing="8">
                                     <Label Text="{Binding TargetLocationDisplay}" TextColor="#111827"/>
-                                    <Label Text="{Binding FrameCountDisplay, StringFormat='分配至 {0} 个料框'}" TextColor="#6B7280"/>
+                                    <Label Text="{Binding TargetFrameCountDisplay, StringFormat='分配至 {0} 个料框'}" TextColor="#6B7280"/>
                                 </HorizontalStackLayout>
                             </Grid>
 

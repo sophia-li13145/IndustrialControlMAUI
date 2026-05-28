@@ -8,6 +8,9 @@ public class FrameUseRecordOperation
     public string? bizType { get; set; }
     public List<FrameUseRecordDetail>? detailList { get; set; }
     public int? frameCount { get; set; }
+
+    public int? targetFrameCount { get; set; }
+    
     public string? id { get; set; }
     public List<FrameUseRecordMaterial>? materialList { get; set; }
     public string? materialName { get; set; }
@@ -33,6 +36,14 @@ public class FrameUseRecordOperation
         get
         {
             return (frameCount ?? 0).ToString();
+        }
+    }
+
+    public string TargetFrameCountDisplay
+    {
+        get
+        {
+            return (targetFrameCount ?? 0).ToString();
         }
     }
     public string OperationTimeDisplay => string.IsNullOrWhiteSpace(operationTime) ? "-" : operationTime!;
