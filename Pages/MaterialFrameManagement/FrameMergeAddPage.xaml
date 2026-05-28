@@ -21,15 +21,42 @@
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame Margin="0,4" Padding="10" BorderColor="#BFDBFE" BackgroundColor="#EFF6FF" HasShadow="False" CornerRadius="10">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="{Binding frameNo}" FontAttributes="Bold" TextColor="#1D4ED8"/>
-                                    <Label Grid.Column="1" Text="✕" TextColor="#9CA3AF">
-                                        <Label.GestureRecognizers>
+                            <Frame Margin="0,4" Padding="0" BorderColor="#C7D2FE" BackgroundColor="#EEF2FF" HasShadow="False" CornerRadius="12">
+                                <VerticalStackLayout Spacing="0">
+                                    <Grid Padding="12,10" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Text="{Binding frameNo}" FontSize="24" FontAttributes="Bold" TextColor="#3730A3"/>
+                                        <Border Grid.Column="1" WidthRequest="30" HeightRequest="30" Stroke="#E5E7EB" StrokeThickness="1" BackgroundColor="#F3F4F6" StrokeShape="RoundRectangle 15">
+                                            <Label Text="×" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF" FontSize="14"/>
+                                        </Border>
+                                        <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveSourceCommand}" CommandParameter="{Binding .}"/>
-                                        </Label.GestureRecognizers>
-                                    </Label>
-                                </Grid>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+
+                                    <VerticalStackLayout Padding="10,0,10,10" Spacing="6" BindableLayout.ItemsSource="{Binding loadDetailList}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Stroke="#D1D5DB" BackgroundColor="#F3F4F6" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="10,8">
+                                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                        <Label LineBreakMode="TailTruncation" TextColor="#374151">
+                                                            <Label.FormattedText>
+                                                                <FormattedString>
+                                                                    <Span Text="{Binding materialName}"/>
+                                                                    <Span Text=" (" TextColor="#9CA3AF"/>
+                                                                    <Span Text="{Binding batchNo}" TextColor="#94A3B8"/>
+                                                                    <Span Text=")" TextColor="#9CA3AF"/>
+                                                                </FormattedString>
+                                                            </Label.FormattedText>
+                                                        </Label>
+                                                        <Border Grid.Column="1" BackgroundColor="#E0E7FF" StrokeThickness="0" StrokeShape="RoundRectangle 6" Padding="8,2">
+                                                            <Label Text="{Binding qty, StringFormat=数量: {0}}" TextColor="#4F46E5" FontAttributes="Bold" FontSize="13"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -73,9 +100,11 @@
         <Grid Grid.RowSpan="4" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12">
                 <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="选择原料框（多选）" FontAttributes="Bold"/>
-                        <Button Grid.Column="1" Text="✕" Command="{Binding CloseSourcePickerCommand}"/>
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                        <Label Text="选择原料框（多选）" FontAttributes="Bold" VerticalOptions="Center"/>
+                        <Button Grid.Column="1" Text="全选" Command="{Binding SelectAllSourceInPickerCommand}" FontSize="12" BackgroundColor="#EEF2FF" TextColor="#4F46E5" HeightRequest="34"/>
+                        <Button Grid.Column="2" Text="清空" Command="{Binding ClearAllSourceInPickerCommand}" FontSize="12" BackgroundColor="#F3F4F6" TextColor="#6B7280" HeightRequest="34"/>
+                        <Button Grid.Column="3" Text="✕" Command="{Binding CloseSourcePickerCommand}" HeightRequest="34"/>
                     </Grid>
 
                     <CollectionView Grid.Row="1" ItemsSource="{Binding SourceFrameList}" SelectionMode="None" HeightRequest="260" RemainingItemsThreshold="1" RemainingItemsThresholdReachedCommand="{Binding LoadMoreSourceFramesCommand}">
@@ -92,11 +121,7 @@
                                         </DataTrigger>
                                     </Frame.Triggers>
                                     <Grid ColumnDefinitions="34,*" ColumnSpacing="4">
-                                        <Grid WidthRequest="22" HeightRequest="22" VerticalOptions="Center">
-                                            <Border Stroke="#C0C4CC" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White"/>
-                                            <Border Stroke="#2D73FF" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="#2D73FF" IsVisible="{Binding IsSelected}"/>
-                                            <Label Text="✓" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsSelected}"/>
-                                        </Grid>
+                                        <CheckBox IsChecked="{Binding IsSelected}" HorizontalOptions="Center" VerticalOptions="Center" Color="#2D73FF"/>
                                         <VerticalStackLayout Grid.Column="1" Spacing="3">
                                             <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
                                             <HorizontalStackLayout Spacing="6">
@@ -142,7 +167,7 @@
                                         <HorizontalStackLayout Spacing="4">
                                             <Label Text="状态:" FontSize="12" TextColor="#6B7280"/>
                                             <Border Background="#DCFCE7" StrokeThickness="0" Padding="6,2">
-                                                <Label Text="{Binding FrameStatusDisplay}" FontSize="11" TextColor="#15803D"/>
+                                                <Label Text="{Binding FrameStatusDisplayText}" FontSize="11" TextColor="#15803D"/>
                                             </Border>
                                         </HorizontalStackLayout>
                                     </VerticalStackLayout>
