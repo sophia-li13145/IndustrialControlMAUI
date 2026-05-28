@@ -36,6 +36,7 @@ public partial class FrameUnloadAddSourceFrameItem : ObservableObject
 public partial class FrameUnloadAddTargetFrameItem : ObservableObject
 {
     public string? id { get; set; }
+    public string? frameInfoId { get; set; }
     public string? frameNo { get; set; }
     public string? frameStatus { get; set; }
     public string? frameStatusDisplay { get; set; }

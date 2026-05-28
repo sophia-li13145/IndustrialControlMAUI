@@ -6,6 +6,7 @@ public partial class FrameLoadAddTargetFrameItem : ObservableObject
 {
     public string? id { get; set; }
     public string? frameNo { get; set; }
+    public string? frameInfoId { get; set; }
     public string? frameTypeCode { get; set; }
     public string? frameTypeName { get; set; }
     public string? frameStatus { get; set; }
@@ -60,6 +61,8 @@ public class FramePourAddLoadDetailItem
 public partial class FramePourAddSourceFrameItem : ObservableObject
 {
     public string? id { get; set; }
+
+    public string? frameInfoId { get; set; }
     public string? frameNo { get; set; }
     public string? frameStatus { get; set; }
     public string? frameStatusDisplay { get; set; }
@@ -77,6 +80,8 @@ public partial class FramePourAddTargetFrameItem : ObservableObject
 {
     public string? id { get; set; }
     public string? frameNo { get; set; }
+
+    public string? frameInfoId { get; set; }
     public string? frameStatus { get; set; }
     public string? frameStatusDisplay { get; set; }
     public string? frameTypeCode { get; set; }

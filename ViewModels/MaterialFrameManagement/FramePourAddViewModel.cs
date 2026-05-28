@@ -43,11 +43,11 @@ public partial class FramePourAddViewModel : ObservableObject
 
         var req = new AddPouringRecordReq
         {
-            sourceFrameId = SelectedSource.id,
+            sourceFrameId = SelectedSource.frameInfoId,
             sourceFrameNo = SelectedSource.frameNo,
             sourceFrameTypeCode = SelectedSource.frameTypeCode,
             sourceFrameTypeName = SelectedSource.frameTypeName,
-            targetFrameId = SelectedTarget.id,
+            targetFrameId = SelectedTarget.frameInfoId,
             targetFrameNo = SelectedTarget.frameNo,
             targetFrameTypeCode = SelectedTarget.frameTypeCode,
             targetFrameTypeName = SelectedTarget.frameTypeName
@@ -99,8 +99,8 @@ public partial class FramePourAddViewModel : ObservableObject
         return _frameStatusDict.TryGetValue(key, out var name) ? name : key;
     }
 
-    private static FramePourAddSourceFrameItem MapSource(FrameUnloadAddSourceFrameItem x) => new() { id = x.id, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected, loadDetailList = (x.loadDetailList ?? new()).Select(m => new FramePourAddLoadDetailItem { materialCode = m.materialCode, materialName = m.materialName }).ToList() };
-    private static FramePourAddTargetFrameItem MapTarget(FrameUnloadAddTargetFrameItem x) => new() { id = x.id, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected };
+    private static FramePourAddSourceFrameItem MapSource(FrameUnloadAddSourceFrameItem x) => new() { id = x.id,frameInfoId = x.frameInfoId, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected, loadDetailList = (x.loadDetailList ?? new()).Select(m => new FramePourAddLoadDetailItem { materialCode = m.materialCode, materialName = m.materialName }).ToList() };
+    private static FramePourAddTargetFrameItem MapTarget(FrameUnloadAddTargetFrameItem x) => new() { id = x.id, frameInfoId = x.frameInfoId, frameNo = x.frameNo, frameStatus = x.frameStatus, frameStatusDisplay = x.frameStatusDisplay, frameTypeCode = x.frameTypeCode, frameTypeName = x.frameTypeName, IsSelected = x.IsSelected };
 
     [RelayCommand]
     private async Task LoadMoreSourceFramesAsync()

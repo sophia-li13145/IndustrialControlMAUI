@@ -100,7 +100,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     private void ApplySourceFrame(FrameUnloadAddSourceFrameItem picked)
     {
         SelectedSourceFrameNo = string.IsNullOrWhiteSpace(picked.frameNo) ? "-" : picked.frameNo!;
-        SelectedSourceFrameId = picked.id ?? string.Empty;
+        SelectedSourceFrameId = picked.frameInfoId ?? string.Empty;
         SelectedSourceFrameTypeCode = picked.frameTypeCode ?? string.Empty;
         SelectedSourceFrameTypeName = picked.frameTypeName ?? string.Empty;
         HasSelectedSourceFrame = true;
@@ -188,7 +188,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         SelectedTargetFrames.Add(new SelectedUnloadTargetFrameVm
         {
             Index = SelectedTargetFrames.Count + 1,
-            TargetFrameId = item.id ?? string.Empty,
+            TargetFrameId = item.frameInfoId ?? string.Empty,
             TargetFrameNo = item.frameNo ?? "-",
             TargetFrameTypeCode = item.frameTypeCode ?? string.Empty,
             TargetFrameTypeName = item.frameTypeName ?? string.Empty,
@@ -221,7 +221,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
             SelectedTargetFrames.Add(new SelectedUnloadTargetFrameVm
             {
                 Index = i + 1,
-                TargetFrameId = t.id ?? string.Empty,
+                TargetFrameId = t.frameInfoId ?? string.Empty,
                 TargetFrameNo = t.frameNo ?? "-",
                 TargetFrameTypeCode = t.frameTypeCode ?? string.Empty,
                 TargetFrameTypeName = t.frameTypeName ?? string.Empty,
