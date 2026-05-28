@@ -44,7 +44,7 @@ public partial class FrameEmptyOperationDetailViewModel : ObservableObject
         OperatorDisplay = string.IsNullOrWhiteSpace(record.@operator) ? "-" : record.@operator!;
 
         var details = record.detailList ?? new List<FrameUseRecordDetail>();
-        FrameCountDisplay = (record.frameCount ?? details.Count).ToString();
+        FrameCountDisplay = (record.frameCount ?? 0).ToString();
 
         foreach (var d in details)
         {

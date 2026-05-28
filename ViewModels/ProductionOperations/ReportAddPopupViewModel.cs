@@ -121,10 +121,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 var bomResp = await _api.GetReworkBomFlattenDetailsAsync(detail.workOrderNo);
                 if (bomResp?.success == true)
                 {
-                    foreach (var item in (bomResp.result ?? new List<ReworkBomDetailFlattenItem>())
-                        .Where(IsUnqualifiedMaterialCandidate)
-                        .GroupBy(x => x.materialCode ?? string.Empty)
-                        .Select(x => x.First()))
+                    foreach (var item in (bomResp.result ?? new List<ReworkBomDetailFlattenItem>()))
                     {
                         UnqualifiedMaterialOptions.Add(item);
                     }

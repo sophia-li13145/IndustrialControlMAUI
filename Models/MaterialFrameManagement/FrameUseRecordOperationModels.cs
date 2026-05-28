@@ -32,15 +32,6 @@ public class FrameUseRecordOperation
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(targetLocation))
-            {
-                var targetCount = targetLocation.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length;
-                if (targetCount > 0)
-                {
-                    return targetCount.ToString();
-                }
-            }
-
             return (frameCount ?? 0).ToString();
         }
     }
