@@ -21,15 +21,42 @@
                     </CollectionView.EmptyView>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame Margin="0,4" Padding="10" BorderColor="#BFDBFE" BackgroundColor="#EFF6FF" HasShadow="False" CornerRadius="10">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="{Binding frameNo}" FontAttributes="Bold" TextColor="#1D4ED8"/>
-                                    <Label Grid.Column="1" Text="✕" TextColor="#9CA3AF">
-                                        <Label.GestureRecognizers>
+                            <Frame Margin="0,4" Padding="0" BorderColor="#C7D2FE" BackgroundColor="#EEF2FF" HasShadow="False" CornerRadius="12">
+                                <VerticalStackLayout Spacing="0">
+                                    <Grid Padding="12,10" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                        <Label Text="{Binding frameNo}" FontSize="24" FontAttributes="Bold" TextColor="#3730A3"/>
+                                        <Border Grid.Column="1" WidthRequest="30" HeightRequest="30" Stroke="#E5E7EB" StrokeThickness="1" BackgroundColor="#F3F4F6" StrokeShape="RoundRectangle 15">
+                                            <Label Text="×" HorizontalOptions="Center" VerticalOptions="Center" TextColor="#9CA3AF" FontSize="14"/>
+                                        </Border>
+                                        <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveSourceCommand}" CommandParameter="{Binding .}"/>
-                                        </Label.GestureRecognizers>
-                                    </Label>
-                                </Grid>
+                                        </Grid.GestureRecognizers>
+                                    </Grid>
+
+                                    <VerticalStackLayout Padding="10,0,10,10" Spacing="6" BindableLayout.ItemsSource="{Binding loadDetailList}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Stroke="#D1D5DB" BackgroundColor="#F3F4F6" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="10,8">
+                                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                        <Label LineBreakMode="TailTruncation" TextColor="#374151">
+                                                            <Label.FormattedText>
+                                                                <FormattedString>
+                                                                    <Span Text="{Binding materialName}"/>
+                                                                    <Span Text=" (" TextColor="#9CA3AF"/>
+                                                                    <Span Text="{Binding batchNo}" TextColor="#94A3B8"/>
+                                                                    <Span Text=")" TextColor="#9CA3AF"/>
+                                                                </FormattedString>
+                                                            </Label.FormattedText>
+                                                        </Label>
+                                                        <Border Grid.Column="1" BackgroundColor="#E0E7FF" StrokeThickness="0" StrokeShape="RoundRectangle 6" Padding="8,2">
+                                                            <Label Text="{Binding qty, StringFormat=数量: {0}}" TextColor="#4F46E5" FontAttributes="Bold" FontSize="13"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
