@@ -167,7 +167,7 @@
                                         <HorizontalStackLayout Spacing="4">
                                             <Label Text="状态:" FontSize="12" TextColor="#6B7280"/>
                                             <Border Background="#DCFCE7" StrokeThickness="0" Padding="6,2">
-                                                <Label Text="{Binding FrameStatusDisplay}" FontSize="11" TextColor="#15803D"/>
+                                                <Label Text="{Binding FrameStatusDisplayText}" FontSize="11" TextColor="#15803D"/>
                                             </Border>
                                         </HorizontalStackLayout>
                                     </VerticalStackLayout>
