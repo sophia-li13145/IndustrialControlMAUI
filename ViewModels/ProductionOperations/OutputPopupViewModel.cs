@@ -123,6 +123,11 @@ namespace IndustrialControlMAUI.ViewModels
                 await Application.Current.MainPage.DisplayAlert("提示", "请输入大于0的产出数量。", "好的");
                 return;
             }
+            if (SelectedFrames.Count <= 0 || SelectedFrames.Count >= 6)
+            {
+                await Application.Current.MainPage.DisplayAlert("提示", "请选择1到5个料框。", "好的");
+                return;
+            }
             if ((Memo?.Length ?? 0) > 200)
             {
                 await Application.Current.MainPage.DisplayAlert("提示", "备注不能超过200个字符。", "好的");
