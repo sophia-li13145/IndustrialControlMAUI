@@ -636,7 +636,7 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                     <Label Grid.Column="3" Text="装框数量" FontAttributes="Bold" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
                 </Grid>
 
-                <CollectionView x:Name="OutputFrameView" ItemsSource="{Binding OutputFrameRecords}" IsVisible="{Binding IsFrameVisible}">
+                <CollectionView x:Name="OutputFrameView" ItemsSource="{Binding OutputFrameRecords}" IsVisible="{Binding IsFrameVisible}" HeightRequest="240">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid ColumnDefinitions="32,*,*,*"

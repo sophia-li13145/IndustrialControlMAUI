@@ -91,22 +91,51 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<OutputAuRecord> OutputRecords { get; } = new();
     public ObservableCollection<WorkProcessTaskReportRecord> ReportRecords { get; } = new();
-    public ObservableCollection<OutputFrameRecord> OutputFrameRecords { get; } = new();
-    public int SelectedOutputFrameCount => OutputFrameRecords.Count(x => x.IsSelected);
-    public int OutputFrameCount => OutputFrameRecords.Count;
+    [ObservableProperty] private IReadOnlyList<OutputFrameRecord> outputFrameRecords = Array.Empty<OutputFrameRecord>();
+
+    private int _outputFrameCount;
+    private int _selectableOutputFrameCount;
+    private int _selectedOutputFrameCount;
+    private bool _isBulkUpdatingOutputFrameSelection;
+    private bool _isLoadingOutputFrameRecords;
+
+    public int SelectedOutputFrameCount
+    {
+        get => _selectedOutputFrameCount;
+        private set => SetProperty(ref _selectedOutputFrameCount, value);
+    }
+
+    public int OutputFrameCount
+    {
+        get => _outputFrameCount;
+        private set => SetProperty(ref _outputFrameCount, value);
+    }
+
     public bool CanBatchApplyOutputFrameInstock => !IsBusy && SelectedOutputFrameCount > 0;
 
     public bool IsAllOutputFramesSelected
     {
-        get
-        {
-            var selectable = OutputFrameRecords.Where(x => x.CanApplyInstock).ToList();
-            return selectable.Count > 0 && selectable.All(x => x.IsSelected);
-        }
+        get => _selectableOutputFrameCount > 0 && SelectedOutputFrameCount == _selectableOutputFrameCount;
         set
         {
-            foreach (var row in OutputFrameRecords.Where(x => x.CanApplyInstock))
-                row.IsSelected = value;
+            if (_selectableOutputFrameCount == 0 || value == IsAllOutputFramesSelected)
+                return;
+
+            _isBulkUpdatingOutputFrameSelection = true;
+            try
+            {
+                foreach (var row in OutputFrameRecords)
+                {
+                    if (row.CanApplyInstock)
+                        row.IsSelected = value;
+                }
+
+                SelectedOutputFrameCount = value ? _selectableOutputFrameCount : 0;
+            }
+            finally
+            {
+                _isBulkUpdatingOutputFrameSelection = false;
+            }
 
             NotifyOutputFrameSelectionChanged();
         }
@@ -195,6 +224,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
     }
     partial void OnQueryWorkOrderAuditStatusChanged(string? value)
     {
@@ -203,6 +233,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
     }
     /// <summary>执行 NotifyAllCanExec 逻辑。</summary>
     private void NotifyAllCanExec()
@@ -455,7 +486,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     {
         Debug.WriteLine("切换到料框");
         ActiveTab = DetailTab.Frame;
-        _ = LoadOutputFrameRecordsAsync();
+
+        if (OutputFrameCount == 0 && !_isLoadingOutputFrameRecords)
+            _ = LoadOutputFrameRecordsAsync();
     }
 
     /// <summary>执行 InitAsync 逻辑。</summary>
@@ -673,44 +706,64 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
     private async Task LoadOutputFrameRecordsAsync()
     {
-        if (Detail is null
+        if (_isLoadingOutputFrameRecords
+            || Detail is null
             || string.IsNullOrWhiteSpace(Detail.processCode)
             || string.IsNullOrWhiteSpace(Detail.schemeNo)
             || string.IsNullOrWhiteSpace(Detail.workOrderNo))
             return;
 
-        var resp = await _api.ListOutputFrameRecordsAsync(
-            processCode: Detail.processCode!,
-            schemeNo: Detail.schemeNo!,
-            workOrderNo: Detail.workOrderNo!);
-
-        foreach (var old in OutputFrameRecords)
-            old.PropertyChanged -= OnOutputFramePropertyChanged;
-
-        OutputFrameRecords.Clear();
-        if (resp?.result != null)
+        _isLoadingOutputFrameRecords = true;
+        try
         {
-            foreach (var item in resp.result)
-            {
-                item.IsSelected = false;
-                item.PropertyChanged += OnOutputFramePropertyChanged;
-                OutputFrameRecords.Add(item);
-            }
-        }
+            var resp = await _api.ListOutputFrameRecordsAsync(
+                processCode: Detail.processCode!,
+                schemeNo: Detail.schemeNo!,
+                workOrderNo: Detail.workOrderNo!);
 
-        NotifyOutputFrameSelectionChanged();
-        OnPropertyChanged(nameof(OutputFrameCount));
+            foreach (var old in OutputFrameRecords)
+                old.PropertyChanged -= OnOutputFramePropertyChanged;
+
+            var records = new List<OutputFrameRecord>();
+            var selectableCount = 0;
+            if (resp?.result != null)
+            {
+                foreach (var item in resp.result)
+                {
+                    item.IsSelected = false;
+                    item.PropertyChanged += OnOutputFramePropertyChanged;
+                    records.Add(item);
+
+                    if (item.CanApplyInstock)
+                        selectableCount++;
+                }
+            }
+
+            OutputFrameRecords = records;
+            OutputFrameCount = records.Count;
+            _selectableOutputFrameCount = selectableCount;
+            SelectedOutputFrameCount = 0;
+            NotifyOutputFrameSelectionChanged();
+        }
+        finally
+        {
+            _isLoadingOutputFrameRecords = false;
+        }
     }
 
     private void OnOutputFramePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(OutputFrameRecord.IsSelected))
-            NotifyOutputFrameSelectionChanged();
+        if (_isBulkUpdatingOutputFrameSelection || e.PropertyName != nameof(OutputFrameRecord.IsSelected))
+            return;
+
+        if (sender is OutputFrameRecord row)
+            SelectedOutputFrameCount += row.IsSelected ? 1 : -1;
+
+        NotifyOutputFrameSelectionChanged();
     }
 
     private void NotifyOutputFrameSelectionChanged()
     {
-        OnPropertyChanged(nameof(SelectedOutputFrameCount));
         OnPropertyChanged(nameof(IsAllOutputFramesSelected));
         OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
         (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
