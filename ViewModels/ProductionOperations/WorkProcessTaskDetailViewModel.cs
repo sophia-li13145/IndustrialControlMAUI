@@ -1035,6 +1035,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
         // 打开新增产出页；新增产出接口在该页面确认时调用，失败提示也保留在该页面。
         var picked = await OutputPopupPage.ShowAsync(_sp, list, preset, Detail);
+        ActiveTab = DetailTab.Output;
         if (picked is null) return;
 
         // 成功：插入下表顶部
