@@ -63,11 +63,7 @@ public partial class QrScanPage : ContentPage
             try { barcodeView.IsDetecting = false; } catch { }
             ResultLabel.Text = "正在打开相册...";
 
-            var pick = await FilePicker.PickAsync(new PickOptions
-            {
-                PickerTitle = "选择包含二维码/条码的图片",
-                FileTypes = FilePickerFileType.Images
-            });
+            var pick = await PickGalleryImageAsync();
 
             if (pick is null)
             {
@@ -77,7 +73,7 @@ public partial class QrScanPage : ContentPage
 
             ResultLabel.Text = "正在识别图片...";
             await using var stream = await pick.OpenReadAsync();
-            using var skBitmap = SKBitmap.Decode(stream);
+            using var skBitmap = DecodeBitmap(stream);
             if (skBitmap is null)
             {
                 await DisplayAlert("提示", "无法读取该图片。", "确定");
@@ -113,30 +109,54 @@ public partial class QrScanPage : ContentPage
         }
     }
 
+    private static async Task<FileResult?> PickGalleryImageAsync()
+    {
+        try
+        {
+            // Android 模拟器里的“Photos/相册”图片通过 MediaPicker 读取最稳定；失败时再退回文件选择器。
+            return await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+            {
+                Title = "选择包含二维码/条码的图片"
+            });
+        }
+        catch (FeatureNotSupportedException)
+        {
+            return await PickImageWithFilePickerAsync();
+        }
+        catch (PermissionException)
+        {
+            return await PickImageWithFilePickerAsync();
+        }
+    }
+
+    private static Task<FileResult?> PickImageWithFilePickerAsync()
+    {
+        return FilePicker.PickAsync(new PickOptions
+        {
+            PickerTitle = "选择包含二维码/条码的图片",
+            FileTypes = FilePickerFileType.Images
+        });
+    }
+
     /// <summary>
-    /// 统一的 ZXing 解码逻辑（原图和放大图都走它）
+    /// 统一的 ZXing 解码逻辑。相册图片常见问题包括：没有二维码留白、透明底、尺寸过小、
+    /// 模拟器导入后压缩/发灰、深色模式反色等，所以需要按多种预处理方式重试。
     /// </summary>
     private ZXing.Result? DecodeWithZxing(SKBitmap bitmap)
     {
         var reader = CreateImageBarcodeReader();
+        using var normalized = NormalizeBitmap(bitmap);
 
-        // 相册图片可能是小图、深色码、透明底或模拟器导入后被压缩；多种预处理可以明显提升识别率。
-        var direct = reader.Decode(bitmap);
-        if (direct is not null) return direct;
-
-        foreach (var scale in new[] { 1.5f, 2.5f, 4f })
+        foreach (var candidate in CreateDecodeCandidates(normalized))
         {
-            using var resized = ResizeBitmap(bitmap, scale);
-            var resizedResult = reader.Decode(resized);
-            if (resizedResult is not null) return resizedResult;
-
-            using var grayscale = ToGrayscaleBitmap(resized);
-            var grayscaleResult = reader.Decode(grayscale);
-            if (grayscaleResult is not null) return grayscaleResult;
+            using (candidate)
+            {
+                var result = reader.Decode(candidate);
+                if (result is not null) return result;
+            }
         }
 
-        using var originalGrayscale = ToGrayscaleBitmap(bitmap);
-        return reader.Decode(originalGrayscale);
+        return null;
     }
 
     private static ZXing.SkiaSharp.BarcodeReader CreateImageBarcodeReader()
@@ -164,6 +184,135 @@ public partial class QrScanPage : ContentPage
             AutoRotate = true,
             Options = options
         };
+    }
+
+    private static SKBitmap? DecodeBitmap(Stream stream)
+    {
+        using var codec = SKCodec.Create(stream);
+        if (codec is null) return null;
+
+        var bitmap = SKBitmap.Decode(codec);
+        if (bitmap is null) return null;
+
+        return ApplyCodecOrigin(bitmap, codec.EncodedOrigin);
+    }
+
+    private static SKBitmap ApplyCodecOrigin(SKBitmap source, SKEncodedOrigin origin)
+    {
+        if (origin is SKEncodedOrigin.TopLeft)
+        {
+            return source;
+        }
+
+        var swapsSize = origin is SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.LeftBottom;
+        var width = swapsSize ? source.Height : source.Width;
+        var height = swapsSize ? source.Width : source.Height;
+        var rotated = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque));
+
+        using (var canvas = new SKCanvas(rotated))
+        {
+            canvas.Clear(SKColors.White);
+
+            switch (origin)
+            {
+                case SKEncodedOrigin.TopRight:
+                    canvas.Scale(-1, 1, width / 2f, height / 2f);
+                    break;
+                case SKEncodedOrigin.BottomRight:
+                    canvas.RotateDegrees(180, width / 2f, height / 2f);
+                    break;
+                case SKEncodedOrigin.BottomLeft:
+                    canvas.Scale(1, -1, width / 2f, height / 2f);
+                    break;
+                case SKEncodedOrigin.LeftTop:
+                    canvas.RotateDegrees(90);
+                    canvas.Scale(1, -1);
+                    break;
+                case SKEncodedOrigin.RightTop:
+                    canvas.Translate(width, 0);
+                    canvas.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.RightBottom:
+                    canvas.Translate(width, height);
+                    canvas.RotateDegrees(90);
+                    canvas.Scale(-1, 1);
+                    break;
+                case SKEncodedOrigin.LeftBottom:
+                    canvas.Translate(0, height);
+                    canvas.RotateDegrees(270);
+                    break;
+            }
+
+            canvas.DrawBitmap(source, 0, 0);
+            canvas.Flush();
+        }
+
+        source.Dispose();
+        return rotated;
+    }
+
+    private static IEnumerable<SKBitmap> CreateDecodeCandidates(SKBitmap source)
+    {
+        yield return source.Copy();
+
+        using var padded = AddQuietZone(source);
+        yield return padded.Copy();
+
+        yield return ToGrayscaleBitmap(source);
+        yield return ToHighContrastBitmap(source);
+        yield return ToGrayscaleBitmap(padded);
+        yield return ToHighContrastBitmap(padded);
+
+        foreach (var scale in new[] { 1.5f, 2.5f, 4f })
+        {
+            using var resized = ResizeBitmap(padded, scale);
+            yield return resized.Copy();
+            yield return ToGrayscaleBitmap(resized);
+            yield return ToHighContrastBitmap(resized);
+        }
+    }
+
+    private static SKBitmap NormalizeBitmap(SKBitmap source)
+    {
+        var normalized = new SKBitmap(new SKImageInfo(source.Width, source.Height, SKColorType.Bgra8888, SKAlphaType.Opaque));
+
+        using var canvas = new SKCanvas(normalized);
+        canvas.Clear(SKColors.White);
+        canvas.DrawBitmap(source, 0, 0);
+        canvas.Flush();
+
+        return normalized;
+    }
+
+    private static SKBitmap AddQuietZone(SKBitmap source)
+    {
+        // 二维码边缘没有白色 quiet zone 时，ZXing 很容易定位失败；相册截图/裁剪图尤其常见。
+        var padding = Math.Max(32, (int)Math.Round(Math.Min(source.Width, source.Height) * 0.12));
+        var padded = new SKBitmap(new SKImageInfo(source.Width + padding * 2, source.Height + padding * 2, SKColorType.Bgra8888, SKAlphaType.Opaque));
+
+        using var canvas = new SKCanvas(padded);
+        canvas.Clear(SKColors.White);
+        canvas.DrawBitmap(source, padding, padding);
+        canvas.Flush();
+
+        return padded;
+    }
+
+    private static SKBitmap ToHighContrastBitmap(SKBitmap source)
+    {
+        var highContrast = new SKBitmap(new SKImageInfo(source.Width, source.Height, SKColorType.Bgra8888, SKAlphaType.Opaque));
+
+        for (var y = 0; y < source.Height; y++)
+        {
+            for (var x = 0; x < source.Width; x++)
+            {
+                var color = source.GetPixel(x, y);
+                var luminance = (color.Red * 299 + color.Green * 587 + color.Blue * 114) / 1000;
+                highContrast.SetPixel(x, y, luminance < 160 ? SKColors.Black : SKColors.White);
+            }
+        }
+
+        return highContrast;
     }
 
     private static SKBitmap ResizeBitmap(SKBitmap source, float scale)
@@ -246,16 +395,15 @@ public partial class QrScanPage : ContentPage
 
         if (_isPickingImage) return;
 
-        // ✅ 动态请求相机权限（防止直接闪退）
+        // 动态请求相机权限；即使拒绝，也保留页面让用户可以继续使用“相册识别”。
         var status = await Permissions.RequestAsync<Permissions.Camera>();
         if (status != PermissionStatus.Granted)
         {
-            _returned = true;
-            _tcs.TrySetResult(string.Empty);
-            await DisplayAlert("提示", "未授予相机权限，无法使用扫码功能。", "确定");
-            await Navigation.PopAsync();
+            ResultLabel.Text = "未授予相机权限，可点击相册识别二维码/条码";
+            try { barcodeView.IsDetecting = false; } catch { }
             return;
         }
+
         ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
             ? "请对准二维码..."
             : "模拟器已默认使用前置/虚拟摄像头，请对准二维码...";
