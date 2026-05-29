@@ -6,35 +6,33 @@
     x:Class="IndustrialControlMAUI.Pages.QrScanPage"
     Title="扫码">
 
-    <Grid RowDefinitions="*,Auto">
-        <!-- 扫码取码：模拟器摄像头清晰度较低，预览区域必须尽量大，否则很难识别二维码。 -->
+    <Grid RowDefinitions="1*,3*,1*">
+        <!-- 扫码取码 -->
         <zxing:CameraBarcodeReaderView
             x:Name="barcodeView"
             Grid.Row="0"
             BarcodesDetected="BarcodesDetected"
-            IsDetecting="False" />
+            IsDetecting="False"
+            CameraLocation="Rear" />
 
-        <!-- 显示扫码结果/提示，覆盖在预览区域底部，避免压缩摄像头画面。 -->
+
+        <!-- 显示扫码结果 -->
         <Label x:Name="ResultLabel"
-               Grid.Row="0"
+               Grid.Row="1"
                Text="请对准二维码..."
                FontSize="18"
-               TextColor="White"
-               BackgroundColor="#99000000"
-               Padding="12,8"
-               Margin="16"
                HorizontalOptions="Center"
-               VerticalOptions="End" />
+               VerticalOptions="Center" />
 
         <!-- 底部按钮区 -->
-        <Grid Grid.Row="1"
+        <Grid Grid.Row="2"
               ColumnDefinitions="Auto,Auto,*,Auto"
               Padding="20"
               BackgroundColor="#222">
             <!-- 新增：相册识别 -->
             <Button Text="相册识别"
                     Grid.Column="0"
-                    Clicked="PickFromGalleryButton_Clicked" />
+            Clicked="PickFromGalleryButton_Clicked" />
             
             <Button Text="🔄"
                     Grid.Column="1"
