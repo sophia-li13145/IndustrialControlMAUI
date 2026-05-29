@@ -1,6 +1,5 @@
 ﻿using ZXing.Net.Maui;                     
 using SkiaSharp;
-using Microsoft.Maui.Devices;
 using BarcodeFormat = ZXing.BarcodeFormat;                       
 
 namespace IndustrialControlMAUI.Pages;
@@ -16,10 +15,8 @@ public partial class QrScanPage : ContentPage
         InitializeComponent();
         _tcs = tcs;
 
-        // 模拟器通常只配置前置/虚拟摄像头；手持机默认使用后置摄像头。
-        barcodeView.CameraLocation = DeviceInfo.DeviceType == DeviceType.Virtual
-            ? CameraLocation.Front
-            : CameraLocation.Rear;
+        // 扫码默认使用后置摄像头；如当前设备没有可用后置摄像头，可通过“切换摄像头”手动切到前置/虚拟摄像头。
+        barcodeView.CameraLocation = CameraLocation.Rear;
 
         // 直接在这里设置一次就够了
         barcodeView.Options = new BarcodeReaderOptions
@@ -384,7 +381,7 @@ public partial class QrScanPage : ContentPage
         _isPickingImage = false;
         ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
             ? "请对准二维码..."
-            : "模拟器已默认使用前置/虚拟摄像头，请对准二维码...";
+            : "当前为前置/虚拟摄像头，请对准二维码...";
         try { barcodeView.IsDetecting = true; } catch { }
     }
 
@@ -406,7 +403,7 @@ public partial class QrScanPage : ContentPage
 
         ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
             ? "请对准二维码..."
-            : "模拟器已默认使用前置/虚拟摄像头，请对准二维码...";
+            : "当前为前置/虚拟摄像头，请对准二维码...";
         barcodeView.IsDetecting = true;
     }
 
