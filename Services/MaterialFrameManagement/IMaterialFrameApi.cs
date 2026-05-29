@@ -111,12 +111,14 @@ public interface IMaterialFrameApi
     Task<PageResp<FrameStatusItem>?> GetFrameReturnSelectableListAsync(
         int pageNo = 1,
         int pageSize = 10,
+        string? frameNo = null,
         CancellationToken ct = default);
 
 
     Task<PageResp<FrameEmptyAddFrameItem>?> GetFrameReturnSelectableListForEmptyAddAsync(
         int pageNo = 1,
         int pageSize = 10,
+        string? frameNo = null,
         CancellationToken ct = default);
 
     Task<BoolResp?> AddFrameReturnRecordAsync(
