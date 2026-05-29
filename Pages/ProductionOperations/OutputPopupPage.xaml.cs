@@ -40,7 +40,20 @@ public partial class OutputPopupPage : ContentPage
 
         // 3) 打开弹窗并等待结果
         var page = new OutputPopupPage(vm);
-        page.Disappearing += (_, _) => tcs.TrySetResult(null);
+        page.Disappearing += (_, _) =>
+        {
+            // 跳转到扫码页时，新增产出页也会触发 Disappearing，但此时页面仍在导航栈中，
+            // 不能提前把弹窗结果置为 null，否则扫码回来后确认产出不会再触发新增产出接口。
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var navigation = Application.Current?.MainPage?.Navigation;
+                var isStillOpen = navigation?.NavigationStack.Contains(page) == true
+                                  || navigation?.ModalStack.Contains(page) == true;
+
+                if (!isStillOpen)
+                    tcs.TrySetResult(null);
+            });
+        };
 
         if (Application.Current?.MainPage?.Navigation is not null)
             await Application.Current.MainPage.Navigation.PushAsync(page);
