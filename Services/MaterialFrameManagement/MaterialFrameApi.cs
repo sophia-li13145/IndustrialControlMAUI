@@ -630,11 +630,26 @@ public async Task<BoolResp?> AddUnloadingRecordAsync(AddUnloadingRecordReq req, 
     }
 
 
-    public async Task<PageResp<FrameStatusItem>?> GetFrameReturnSelectableListAsync(int pageNo = 1, int pageSize = 10, CancellationToken ct = default)
+    public async Task<PageResp<FrameStatusItem>?> GetFrameReturnSelectableListAsync(
+        int pageNo = 1,
+        int pageSize = 10,
+        string? frameNo = null,
+        CancellationToken ct = default)
     {
         if (pageNo <= 0) pageNo = 1;
         if (pageSize <= 0) pageSize = 10;
-        var url = _getMaterialFrameStatusListEndpoint + $"?pageNo={pageNo}&pageSize={pageSize}";
+
+        var pairs = new List<KeyValuePair<string, string>>
+        {
+            new("pageNo", pageNo.ToString()),
+            new("pageSize", pageSize.ToString())
+        };
+        if (!string.IsNullOrWhiteSpace(frameNo))
+            pairs.Add(new("frameNo", frameNo.Trim()));
+
+        var query = string.Join("&", pairs.Select(kv =>
+            $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+        var url = _getMaterialFrameStatusListEndpoint + "?" + query;
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
         using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
         using var res = await _http.SendAsync(req, ct);
@@ -645,9 +660,13 @@ public async Task<BoolResp?> AddUnloadingRecordAsync(AddUnloadingRecordReq req, 
                ?? new PageResp<FrameStatusItem>();
     }
 
-    public async Task<PageResp<FrameEmptyAddFrameItem>?> GetFrameReturnSelectableListForEmptyAddAsync(int pageNo = 1, int pageSize = 10, CancellationToken ct = default)
+    public async Task<PageResp<FrameEmptyAddFrameItem>?> GetFrameReturnSelectableListForEmptyAddAsync(
+        int pageNo = 1,
+        int pageSize = 10,
+        string? frameNo = null,
+        CancellationToken ct = default)
     {
-        var r = await GetFrameReturnSelectableListAsync(pageNo, pageSize, ct);
+        var r = await GetFrameReturnSelectableListAsync(pageNo, pageSize, frameNo, ct);
         return new PageResp<FrameEmptyAddFrameItem>
         {
             success = r?.success,

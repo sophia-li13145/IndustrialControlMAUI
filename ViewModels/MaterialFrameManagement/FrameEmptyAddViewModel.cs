@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
@@ -34,7 +35,7 @@ public partial class FrameEmptyAddViewModel : ObservableObject
         PickerFrameList.Clear();
         foreach (var item in resp?.result?.records ?? new List<FrameEmptyAddFrameItem>())
         {
-            item.IsSelected = SelectedFrames.Any(x => string.Equals(x.id, item.id, StringComparison.OrdinalIgnoreCase));
+            item.IsSelected = SelectedFrames.Any(x => IsSameFrame(x, item));
             item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
             PickerFrameList.Add(item);
         }
@@ -52,13 +53,47 @@ public partial class FrameEmptyAddViewModel : ObservableObject
         var rows = resp?.result?.records ?? new List<FrameEmptyAddFrameItem>();
         if (rows.Count == 0) return;
         _pickerPageNo = nextPage;
-        var existingIds = PickerFrameList.Select(x => x.id).Where(x => !string.IsNullOrWhiteSpace(x)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in rows.Where(x => !string.IsNullOrWhiteSpace(x.id) && !existingIds.Contains(x.id!)))
+        foreach (var item in rows.Where(x => !PickerFrameList.Any(existing => IsSameFrame(existing, x))))
         {
-            item.IsSelected = SelectedFrames.Any(x => string.Equals(x.id, item.id, StringComparison.OrdinalIgnoreCase));
+            item.IsSelected = SelectedFrames.Any(x => IsSameFrame(x, item));
             item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
             PickerFrameList.Add(item);
         }
+    }
+
+    public async Task ScanAndAddFrameAsync(INavigation nav)
+    {
+        var tcs = new TaskCompletionSource<string>();
+        await nav.PushAsync(new QrScanPage(tcs));
+        var frameNo = (await tcs.Task)?.Trim();
+        if (string.IsNullOrWhiteSpace(frameNo)) return;
+
+        await EnsureFrameStatusDictLoadedAsync();
+        // 与“列表选择”使用同一个分页查询接口，仅额外传入扫码得到的 frameNo。
+        var resp = await _api.GetFrameReturnSelectableListForEmptyAddAsync(1, PickerPageSize, frameNo);
+        var item = resp?.result?.records?.FirstOrDefault(x => string.Equals(x.frameNo?.Trim(), frameNo, StringComparison.OrdinalIgnoreCase))
+            ?? resp?.result?.records?.FirstOrDefault();
+        if (item is null)
+        {
+            await ShowTipAsync("未查询到该料框");
+            return;
+        }
+
+        item.frameStatusDisplay = ResolveFrameStatusDisplay(item.frameStatus);
+
+        if (SelectedFrames.Any(x => IsSameFrame(x, item)))
+        {
+            await ShowTipAsync("该料框已添加");
+            return;
+        }
+
+        SelectedFrames.Add(item);
+
+        var listed = PickerFrameList.FirstOrDefault(x => IsSameFrame(x, item));
+        if (listed is not null) listed.IsSelected = true;
+
+        Refresh();
+        OnPropertyChanged(nameof(SelectedCountText));
     }
 
     [RelayCommand] private void ClosePicker() => IsPickerVisible = false;
@@ -73,9 +108,19 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     [RelayCommand]
     private void ConfirmPick()
     {
-        SelectedFrames.Clear();
-        foreach (var item in PickerFrameList.Where(x => x.IsSelected))
-            SelectedFrames.Add(item);
+        foreach (var item in PickerFrameList)
+        {
+            var selected = SelectedFrames.FirstOrDefault(x => IsSameFrame(x, item));
+            if (item.IsSelected)
+            {
+                if (selected is null)
+                    SelectedFrames.Add(item);
+            }
+            else if (selected is not null)
+            {
+                SelectedFrames.Remove(selected);
+            }
+        }
 
         IsPickerVisible = false;
         Refresh();
@@ -87,7 +132,7 @@ public partial class FrameEmptyAddViewModel : ObservableObject
     {
         if (item is null) return;
         SelectedFrames.Remove(item);
-        var source = PickerFrameList.FirstOrDefault(x => x.id == item.id);
+        var source = PickerFrameList.FirstOrDefault(x => IsSameFrame(x, item));
         if (source is not null) source.IsSelected = false;
         Refresh();
         OnPropertyChanged(nameof(SelectedCountText));
@@ -123,6 +168,22 @@ public partial class FrameEmptyAddViewModel : ObservableObject
         var msg = string.IsNullOrWhiteSpace(resp?.message) ? "释放失败，请稍后重试" : resp!.message!;
         if (Shell.Current?.CurrentPage is Page p)
             await p.DisplayAlert("提示", msg, "确定");
+    }
+
+    private static bool IsSameFrame(FrameEmptyAddFrameItem left, FrameEmptyAddFrameItem right)
+    {
+        if (!string.IsNullOrWhiteSpace(left.id) && !string.IsNullOrWhiteSpace(right.id))
+            return string.Equals(left.id, right.id, StringComparison.OrdinalIgnoreCase);
+
+        return !string.IsNullOrWhiteSpace(left.frameNo)
+            && !string.IsNullOrWhiteSpace(right.frameNo)
+            && string.Equals(left.frameNo.Trim(), right.frameNo.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task ShowTipAsync(string message)
+    {
+        if (Shell.Current?.CurrentPage is Page p)
+            await p.DisplayAlert("提示", message, "确定");
     }
 
     private void Refresh()

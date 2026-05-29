@@ -9,7 +9,7 @@
             <VerticalStackLayout Spacing="12">
                 <Label Text="释放料框" FontAttributes="Bold" FontSize="24"/>
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="扫码添加" IsEnabled="False" BackgroundColor="#FEF2F2" TextColor="#EF4444"/>
+                    <Button Text="扫码添加" Clicked="OnScanClicked" BackgroundColor="#FEF2F2" TextColor="#EF4444"/>
                     <Button Grid.Column="1" Text="列表选择" Command="{Binding OpenPickerCommand}" BackgroundColor="#EEF2FF" TextColor="#374151"/>
                 </Grid>
 
