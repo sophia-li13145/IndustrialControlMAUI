@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Class="IndustrialControlMAUI.Pages.OutputPopupPage"
+    x:Name="Root"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:IndustrialControlMAUI.ViewModels"
@@ -18,26 +19,56 @@
             <Entry Grid.Row="1" Grid.Column="1" Placeholder="自动带出可修改" Keyboard="Numeric" Text="{Binding QuantityText}" />
 
             <Label Grid.Row="2" Text="*料框：" TextColor="#D0021B" VerticalTextAlignment="Start" />
-            <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="6">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                    <Picker Grid.Column="0" ItemsSource="{Binding AvailableFrames}" ItemDisplayBinding="{Binding DisplayText}" SelectedItem="{Binding SelectedFrameToAdd}" Title="选择料框"/>
-                    <Button Grid.Column="1" Text="添加" Command="{Binding AddFrameFromDropdownCommand}" />
-                </Grid>
-                <CollectionView ItemsSource="{Binding SelectedFrames}" HeightRequest="100">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="vm:FrameOptionItem">
-                            <Grid ColumnDefinitions="*,Auto" Padding="2">
-                                <Label Text="{Binding FrameNo}" VerticalTextAlignment="Center"/>
-                                <Button Grid.Column="1" Text="×" Padding="8,0" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OutputPopupViewModel}}, Path=RemoveFrameCommand}" CommandParameter="{Binding .}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                    <Label Text="{Binding FrameHint}" TextColor="#D0021B" FontSize="12" VerticalTextAlignment="Center" />
-                    <Button Grid.Column="1" Text="扫码" Command="{Binding ScanFrameCommand}" />
-                </Grid>
-            </VerticalStackLayout>
+            <Grid Grid.Row="2" Grid.Column="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
+                <Border Grid.Row="0"
+                        Grid.Column="0"
+                        Stroke="#2D6AE3"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 4"
+                        Padding="6"
+                        MinimumHeightRequest="48">
+                    <FlexLayout BindableLayout.ItemsSource="{Binding SelectedFrames}"
+                                AlignItems="Start"
+                                AlignContent="Start"
+                                Direction="Row"
+                                Wrap="Wrap">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FrameOptionItem">
+                                <Border Stroke="#D1D5DB"
+                                        BackgroundColor="#EEF2F7"
+                                        StrokeShape="RoundRectangle 4"
+                                        Padding="6,2"
+                                        Margin="0,0,6,6">
+                                    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="4">
+                                        <Label Text="{Binding FrameNo}" TextColor="#1D4ED8" VerticalTextAlignment="Center" />
+                                        <Label Grid.Column="1" Text="×" TextColor="#374151" VerticalTextAlignment="Center" Padding="4,0">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={x:Reference Root}, Path=BindingContext.RemoveFrameCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </Border>
+
+                <Button Grid.Row="0"
+                        Grid.Column="1"
+                        Text="扫码"
+                        Command="{Binding ScanFrameCommand}"
+                        VerticalOptions="Start" />
+
+                <Label Grid.Row="1"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="2"
+                       Text="{Binding FrameHint}"
+                       TextColor="#D0021B"
+                       FontSize="12"
+                       VerticalTextAlignment="Center" />
+            </Grid>
 
             <Label Grid.Row="3" Text="备注：" VerticalTextAlignment="Center" />
             <Editor Grid.Row="3" Grid.Column="1" Placeholder="请输入备注（最多200字）" AutoSize="TextChanges" MaxLength="200" Text="{Binding Memo}" HeightRequest="80" />

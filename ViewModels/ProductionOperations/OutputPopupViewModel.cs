@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
+using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
 
@@ -10,14 +11,12 @@ namespace IndustrialControlMAUI.ViewModels
     {
         private readonly IWorkOrderApi? _api;
         public ObservableCollection<TaskMaterialOutput> MaterialOptions { get; } = new();
-        public ObservableCollection<FrameOptionItem> AvailableFrames { get; } = new();
         public ObservableCollection<FrameOptionItem> SelectedFrames { get; } = new();
 
         [ObservableProperty] private TaskMaterialOutput? selectedMaterial;
         [ObservableProperty] private string? quantityText;
         [ObservableProperty] private string? memo;
         [ObservableProperty] private bool isPickerEnabled = true;
-        [ObservableProperty] private FrameOptionItem? selectedFrameToAdd;
         [ObservableProperty] private string frameHint = "提示：该料框最大容量5件";
         private TaskCompletionSource<OutputPopupResult?>? _tcs;
 
@@ -26,7 +25,6 @@ namespace IndustrialControlMAUI.ViewModels
         public void Init(IEnumerable<TaskMaterialOutput> materialOutputList, TaskMaterialOutput? presetMaterialCode = null)
         {
             MaterialOptions.Clear();
-            AvailableFrames.Clear();
             SelectedFrames.Clear();
             foreach (var m in materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>())
             {
@@ -51,14 +49,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             QuantityText = "";
             Memo = "";
-            BuildDefaultFrames();
-        }
-
-        private void BuildDefaultFrames()
-        {
-            var candidates = new[] { "K001", "K002", "K003", "K004", "K005", "K006" };
-            foreach (var no in candidates)
-                AvailableFrames.Add(new FrameOptionItem { FrameNo = no, FrameStatus = "空闲" });
+            FrameHint = "提示：该料框最大容量5件";
         }
 
         private static bool IsSame(TaskMaterialOutput a, TaskMaterialOutput b)
@@ -73,7 +64,11 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
-            var scanned = await Application.Current.MainPage.DisplayPromptAsync("扫码", "请输入料框编码", "确定", "取消");
+            if (Application.Current?.MainPage?.Navigation is null) return;
+
+            var tcs = new TaskCompletionSource<string>();
+            await Application.Current.MainPage.Navigation.PushAsync(new QrScanPage(tcs));
+            var scanned = await tcs.Task;
             if (string.IsNullOrWhiteSpace(scanned)) return;
 
             var frameNo = scanned.Trim();
@@ -88,7 +83,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                 AddSelectedFrame(new FrameOptionItem
                 {
-                    FrameNo = resp.result.frameNo ?? frameNo,
+                    FrameNo = string.IsNullOrWhiteSpace(resp.result.frameNo) ? frameNo : resp.result.frameNo!,
                     FrameStatus = "占用",
                     MaxLimit = resp.result.maxLimit,
                     MinLimit = resp.result.minLimit
@@ -100,13 +95,6 @@ namespace IndustrialControlMAUI.ViewModels
             AddSelectedFrame(new FrameOptionItem { FrameNo = frameNo, FrameStatus = "占用" });
         }
 
-        [RelayCommand]
-        private void AddFrameFromDropdown()
-        {
-            if (SelectedFrameToAdd is null) return;
-            AddSelectedFrame(SelectedFrameToAdd);
-            SelectedFrameToAdd = null;
-        }
 
         [RelayCommand]
         private void RemoveFrame(FrameOptionItem? item)
