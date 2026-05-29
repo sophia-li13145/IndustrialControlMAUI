@@ -1083,12 +1083,15 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         //    Memo = picked.Memo
         //});
        
-        MainThread.BeginInvokeOnMainThread(() =>
+        await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            IsInputVisible = false;
-            IsOutputVisible = true;
+            ActiveTab = DetailTab.Output;
         });
         await LoadOutputInputsAsync();
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            ActiveTab = DetailTab.Output;
+        });
         SelectedOutputItem = null;
     }
 
