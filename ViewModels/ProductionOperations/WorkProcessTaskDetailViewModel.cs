@@ -1013,8 +1013,11 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             ? null
             : new TaskMaterialOutput
             {
+                materialClassName = SelectedOutputItem.materialClassName,
                 materialCode = SelectedOutputItem.materialCode,
-                materialName = SelectedOutputItem.materialName
+                materialName = SelectedOutputItem.materialName,
+                materialTypeName = SelectedOutputItem.materialTypeName,
+                unit = SelectedOutputItem.unit
             };
 
         // 打开弹窗（新重载）：有预设则只输入数量/备注；无预设则先选物料再输入
@@ -1025,9 +1028,16 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         var finalCode = preset?.materialCode ?? picked.MaterialCode;
         var finalName = preset?.materialName ?? picked.MaterialName;
 
-        // 组装请求
+        if (Detail is null)
+        {
+            await Shell.Current.DisplayAlert("提示", "工序任务详情未加载，无法提交产出。", "OK");
+            return;
+        }
+
+        // 组装请求：字段与 /pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput 接口保持一致
         var req = new AddWorkProcessTaskProductOutputReq
         {
+            batchNo = Detail.stockBatch,
             materialClassName = picked.materialClassName,
             materialCode = finalCode,
             materialName = finalName,
@@ -1035,7 +1045,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             qty = (double)picked.Quantity,                    // 从弹窗取
             memo = picked.Memo,
             unit = picked.Unit,
-            workOrderNo = Detail.workOrderNo,
+            workOrderNo = Detail.workOrderNo ?? string.Empty,
             processCode = Detail.processCode,
             processName = Detail.processName,
             schemeNo = Detail.schemeNo,
@@ -1043,7 +1053,18 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             outputFrameList = picked.frameNoList
         };
 
-        var resp = await _api.AddWorkProcessTaskProductOutputAsync(req);
+        ApiResp<bool> resp;
+        try
+        {
+            resp = await _api.AddWorkProcessTaskProductOutputAsync(req);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            await Shell.Current.DisplayAlert("失败", $"提交产出异常：{ex.Message}", "OK");
+            return;
+        }
+
         if (!resp.success)
         {
             await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
