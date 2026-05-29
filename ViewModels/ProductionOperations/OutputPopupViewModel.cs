@@ -4,12 +4,14 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace IndustrialControlMAUI.ViewModels
 {
     public partial class OutputPopupViewModel : ObservableObject
     {
         private readonly IWorkOrderApi? _api;
+        private WorkProcessTaskDetail? _detail;
         public ObservableCollection<TaskMaterialOutput> MaterialOptions { get; } = new();
         public ObservableCollection<FrameOptionItem> SelectedFrames { get; } = new();
 
@@ -22,8 +24,12 @@ namespace IndustrialControlMAUI.ViewModels
 
         public OutputPopupViewModel(IWorkOrderApi? api = null) => _api = api;
 
-        public void Init(IEnumerable<TaskMaterialOutput> materialOutputList, TaskMaterialOutput? presetMaterialCode = null)
+        public void Init(
+            IEnumerable<TaskMaterialOutput> materialOutputList,
+            TaskMaterialOutput? presetMaterialCode = null,
+            WorkProcessTaskDetail? detail = null)
         {
+            _detail = detail;
             MaterialOptions.Clear();
             SelectedFrames.Clear();
             foreach (var m in materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>())
@@ -141,8 +147,55 @@ namespace IndustrialControlMAUI.ViewModels
                 Unit = SelectedMaterial.unit,
                 OperationTime = DateTime.Now,
                 Memo = Memo,
-                frameNoList = SelectedFrames.Select((x, idx) => new OutputFrameSelectionItem { frameNo = x.FrameNo}).ToList()
+                frameNoList = SelectedFrames.Select(x => new OutputFrameSelectionItem { frameNo = x.FrameNo }).ToList()
             };
+
+            if (_detail is null)
+            {
+                await Application.Current.MainPage.DisplayAlert("提示", "工序任务详情未加载，无法提交产出。", "OK");
+                return;
+            }
+
+            if (_api is null)
+            {
+                await Application.Current.MainPage.DisplayAlert("失败", "新增产出服务未初始化。", "OK");
+                return;
+            }
+
+            var req = new AddWorkProcessTaskProductOutputReq
+            {
+                materialClassName = result.materialClassName,
+                materialCode = result.MaterialCode,
+                materialName = result.MaterialName,
+                materialTypeName = result.materialTypeName,
+                qty = (double)result.Quantity,
+                memo = result.Memo,
+                unit = result.Unit,
+                workOrderNo = _detail.workOrderNo ?? string.Empty,
+                processCode = _detail.processCode,
+                processName = _detail.processName,
+                schemeNo = _detail.schemeNo,
+                platPlanNo = _detail.platPlanNo,
+                outputFrameList = result.frameNoList
+            };
+
+            ApiResp<bool?> resp;
+            try
+            {
+                resp = await _api.AddWorkProcessTaskProductOutputAsync(req);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                await Application.Current.MainPage.DisplayAlert("失败", $"提交产出异常：{ex.Message}", "OK");
+                return;
+            }
+
+            if (!resp.success)
+            {
+                await Application.Current.MainPage.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
+                return;
+            }
 
             ReturnResult(result);
             await Application.Current.MainPage.Navigation.PopAsync();
