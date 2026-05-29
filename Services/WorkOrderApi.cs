@@ -34,6 +34,8 @@ namespace IndustrialControlMAUI.Services
         private readonly string _addOutputEndpoint;
         private readonly string _autMaterialListEndpoint;
         private readonly string _autOutputListEndpoint;
+        private readonly string _outputFrameRecordListEndpoint;
+        private readonly string _batchApplyOutputFrameInstockEndpoint;
         private readonly string _reportListEndpoint;
         private readonly string _addReportEndpoint;
         private readonly string _deleteReportEndpoint;
@@ -122,6 +124,10 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.autMaterialList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs"), servicePath);
             _autOutputListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.autOutputList", "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs"), servicePath);
+            _outputFrameRecordListEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.outputFrameRecordList", "/pda/outputFrameRecord/listOutputFrameRecords"), servicePath);
+            _batchApplyOutputFrameInstockEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.batchApplyOutputFrameInstock", "/pda/outputFrameRecord/batchApplyInstock"), servicePath);
             _reportListEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.reportList", "/pda/pmsWorkProcessTaskReport/listWorkProcessTaskReports"), servicePath);
             _addReportEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -934,6 +940,84 @@ namespace IndustrialControlMAUI.Services
             return JsonSerializer.Deserialize<PageResp<OutputAuRecord>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 ?? new PageResp<OutputAuRecord>();
+        }
+
+        public async Task<ApiResp<List<OutputFrameRecord>>> ListOutputFrameRecordsAsync(
+            string processCode,
+            string schemeNo,
+            string workOrderNo,
+            string? frameNo = null,
+            string? instockStatus = null,
+            string? materialCode = null,
+            CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(processCode))
+                throw new ArgumentException("processCode 不能为空", nameof(processCode));
+            if (string.IsNullOrWhiteSpace(schemeNo))
+                throw new ArgumentException("schemeNo 不能为空", nameof(schemeNo));
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+                throw new ArgumentException("workOrderNo 不能为空", nameof(workOrderNo));
+
+            var pairs = new List<KeyValuePair<string, string>>
+            {
+                new("processCode", processCode.Trim()),
+                new("schemeNo", schemeNo.Trim()),
+                new("workOrderNo", workOrderNo.Trim())
+            };
+
+            if (!string.IsNullOrWhiteSpace(frameNo))
+                pairs.Add(new("frameNo", frameNo.Trim()));
+            if (!string.IsNullOrWhiteSpace(instockStatus))
+                pairs.Add(new("instockStatus", instockStatus.Trim()));
+            if (!string.IsNullOrWhiteSpace(materialCode))
+                pairs.Add(new("materialCode", materialCode.Trim()));
+
+            var query = string.Join("&", pairs.Select(kv =>
+                $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+            var url = _outputFrameRecordListEndpoint + "?" + query;
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<List<OutputFrameRecord>> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<List<OutputFrameRecord>>>(json, _json)
+                ?? new ApiResp<List<OutputFrameRecord>> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<bool>> BatchApplyOutputFrameInstockAsync(
+            IEnumerable<string> idList,
+            CancellationToken ct = default)
+        {
+            var ids = idList
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id.Trim())
+                .Distinct()
+                .ToList();
+
+            if (ids.Count == 0)
+                return new ApiResp<bool> { success = false, message = "请选择需要申请入库的料框" };
+
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _batchApplyOutputFrameInstockEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new BatchApplyOutputFrameInstockReq { idList = ids }, _json),
+                    Encoding.UTF8,
+                    "application/json")
+            };
+
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
+                ?? new ApiResp<bool> { success = false, message = "empty response" };
         }
 
         public async Task<PageResp<WorkProcessTaskReportRecord>?> PageWorkProcessTaskReports(

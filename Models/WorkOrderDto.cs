@@ -421,7 +421,55 @@ public sealed class MaterialIO
     public string? memo { get; set; }
     public string? createdTime { get; set; }
 }
-public enum DetailTab { Report, Input, Output }
+public enum DetailTab { Report, Input, Output, Frame }
+
+public partial class OutputFrameRecord : ObservableObject
+{
+    private bool _isSelected;
+
+    public string? CreatedTime { get; set; }
+    public string? Creator { get; set; }
+    public string? FrameNo { get; set; }
+    public string? FrameType { get; set; }
+    public string? FrameTypeName { get; set; }
+    public decimal? FrameOutputQty { get; set; }
+    public int? FrameSortNumber { get; set; }
+    public string? Id { get; set; }
+    public string? InstockApplyTime { get; set; }
+    public string? InstockStatus { get; set; }
+    public string? InstockTime { get; set; }
+    public string? MaterialCode { get; set; }
+    public string? MaterialTypeName { get; set; }
+    public string? Memo { get; set; }
+    public string? OperateTime { get; set; }
+    public string? Operator { get; set; }
+    public string? OutputRecordNo { get; set; }
+    public string? ProcessCode { get; set; }
+    public string? SchemeNo { get; set; }
+    public string? WorkOrderNo { get; set; }
+
+    [JsonIgnore]
+    public bool CanApplyInstock => string.Equals(InstockStatus?.Trim(), "0", StringComparison.OrdinalIgnoreCase);
+
+    [JsonIgnore]
+    public string? FrameTypeDisplay => FrameTypeName ?? FrameType ?? MaterialTypeName ?? Memo;
+
+    [JsonIgnore]
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            var next = CanApplyInstock && value;
+            SetProperty(ref _isSelected, next);
+        }
+    }
+}
+
+public class BatchApplyOutputFrameInstockReq
+{
+    public List<string> idList { get; set; } = new();
+}
 public class WorkProcessTaskReportRecord
 {
     public string? id { get; set; }

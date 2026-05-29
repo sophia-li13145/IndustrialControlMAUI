@@ -173,7 +173,7 @@
       InputTransparent="True"
                         
                        />
-                    <Grid  ColumnDefinitions="*,*,*">
+                    <Grid  ColumnDefinitions="*,*,*,*">
                     <!-- 白色滑块：默认在左列；上边留更大间距以露出更多紫色；带轻微阴影 -->
                         <Border x:Name="Knob"
                                   Grid.Column="0"
@@ -193,6 +193,9 @@
                                 </DataTrigger>
                                 <DataTrigger TargetType="Border" Binding="{Binding ActiveTab}" Value="Output">
                                     <Setter Property="Grid.Column" Value="2" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding ActiveTab}" Value="Frame">
+                                    <Setter Property="Grid.Column" Value="3" />
                                 </DataTrigger>
                             </Border.Triggers>
                             <Border.Shadow>
@@ -215,6 +218,9 @@
                                         <Setter Property="TextColor" Value="White"/>
                                     </DataTrigger>
                                     <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Output">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Frame">
                                         <Setter Property="TextColor" Value="White"/>
                                     </DataTrigger>
                                 </Label.Triggers>
@@ -265,11 +271,31 @@
                                     <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Input">
                                         <Setter Property="TextColor" Value="White"/>
                                     </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Frame">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
                                 </Label.Triggers>
                             </Label>
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding ShowOutputCommand}" />
                                 <SwipeGestureRecognizer Direction="Left" Command="{Binding ShowOutputCommand}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                        <!-- 料框（选中→紫字；未选中→白字） -->
+                        <Grid Grid.Column="3">
+                            <Label Text="料框"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   FontAttributes="Bold"
+                                   TextColor="White">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding ActiveTab}" Value="Frame">
+                                        <Setter Property="TextColor" Value="#5B3FF3"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowFrameCommand}" />
                             </Grid.GestureRecognizers>
                         </Grid>
                 </Grid>
@@ -591,6 +617,56 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+
+                <!-- 产出料框 -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,4" IsVisible="{Binding IsFrameVisible}">
+                    <Label Text="产出料框" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding OutputFrameCount, StringFormat='共 {0} 个'}" TextColor="#6B7280" VerticalOptions="Center" />
+                </Grid>
+
+                <Grid ColumnDefinitions="32,*,*,*"
+                      BackgroundColor="#F7F8FA"
+                      Padding="4"
+                      RowSpacing="1"
+                      ColumnSpacing="1"
+                      IsVisible="{Binding IsFrameVisible}">
+                    <CheckBox IsChecked="{Binding IsAllOutputFramesSelected}" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Grid.Column="1" Text="料框类型" FontAttributes="Bold" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
+                    <Label Grid.Column="2" Text="料框编号" FontAttributes="Bold" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
+                    <Label Grid.Column="3" Text="装框数量" FontAttributes="Bold" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
+                </Grid>
+
+                <CollectionView x:Name="OutputFrameView" ItemsSource="{Binding OutputFrameRecords}" IsVisible="{Binding IsFrameVisible}" HeightRequest="240">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="32,*,*,*"
+                                  Padding="4"
+                                  RowSpacing="1"
+                                  ColumnSpacing="1"
+                                  BackgroundColor="White">
+                                <CheckBox IsChecked="{Binding IsSelected}"
+                                          IsEnabled="{Binding CanApplyInstock}"
+                                          VerticalOptions="Center"
+                                          HorizontalOptions="Center" />
+                                <Label Grid.Column="1" Text="{Binding FrameTypeDisplay, Converter={StaticResource PlaceholderConverter}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                <Label Grid.Column="2" Text="{Binding FrameNo}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                <Label Grid.Column="3" Text="{Binding FrameOutputQty, StringFormat='{0:G29}'}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,8" IsVisible="{Binding IsFrameVisible}">
+                    <Label Text="{Binding SelectedOutputFrameCount, StringFormat='已选 {0} 个'}" TextColor="#0EA5E9" VerticalOptions="Center" HorizontalOptions="End" Margin="0,0,12,0" />
+                    <Button Grid.Column="1"
+                            Text="批量申请入库"
+                            BackgroundColor="#2196F3"
+                            TextColor="White"
+                            CornerRadius="4"
+                            Padding="14,6"
+                            Command="{Binding BatchApplyOutputFrameInstockCommand}"
+                            IsEnabled="{Binding CanBatchApplyOutputFrameInstock}" />
+                </Grid>
 
             </VerticalStackLayout>
         </ScrollView>
