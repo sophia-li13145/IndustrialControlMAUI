@@ -1,5 +1,6 @@
 ﻿using ZXing.Net.Maui;                     
 using SkiaSharp;
+using Microsoft.Maui.Devices;
 using BarcodeFormat = ZXing.BarcodeFormat;                       
 
 namespace IndustrialControlMAUI.Pages;
@@ -8,11 +9,17 @@ public partial class QrScanPage : ContentPage
 {
     private readonly TaskCompletionSource<string> _tcs;
     private bool _returned;
+    private bool _isPickingImage;
     /// <summary>执行 QrScanPage 初始化逻辑。</summary>
     public QrScanPage(TaskCompletionSource<string> tcs)
     {
         InitializeComponent();
         _tcs = tcs;
+
+        // 模拟器通常只配置前置/虚拟摄像头；手持机默认使用后置摄像头。
+        barcodeView.CameraLocation = DeviceInfo.DeviceType == DeviceType.Virtual
+            ? CameraLocation.Front
+            : CameraLocation.Rear;
 
         // 直接在这里设置一次就够了
         barcodeView.Options = new BarcodeReaderOptions
@@ -48,9 +55,13 @@ public partial class QrScanPage : ContentPage
     /// <summary>执行 PickFromGalleryButton_Clicked 逻辑。</summary>
     private async void PickFromGalleryButton_Clicked(object? sender, EventArgs e)
     {
+        if (_returned || _isPickingImage) return;
+
+        _isPickingImage = true;
         try
         {
             try { barcodeView.IsDetecting = false; } catch { }
+            ResultLabel.Text = "正在打开相册...";
 
             var pick = await FilePicker.PickAsync(new PickOptions
             {
@@ -60,54 +71,28 @@ public partial class QrScanPage : ContentPage
 
             if (pick is null)
             {
-                try { barcodeView.IsDetecting = true; } catch { }
+                RestartDetectingAfterImagePick();
                 return;
             }
 
+            ResultLabel.Text = "正在识别图片...";
             await using var stream = await pick.OpenReadAsync();
             using var skBitmap = SKBitmap.Decode(stream);
             if (skBitmap is null)
             {
                 await DisplayAlert("提示", "无法读取该图片。", "确定");
-                try { barcodeView.IsDetecting = true; } catch { }
+                RestartDetectingAfterImagePick();
                 return;
             }
 
-            // 原图尺寸
-            var w0 = skBitmap.Width;
-            var h0 = skBitmap.Height;
-
-            // === 第一次：直接对原图识别 ===
             var result = DecodeWithZxing(skBitmap);
-
-            // === 第二次：原图失败的话，把图放大 2.5 倍再识别 ===
-            if (result is null)
-            {
-                var factor = 2.5f;                       // 可再调大一点，比如 3
-                var newW = (int)(w0 * factor);
-                var newH = (int)(h0 * factor);
-                var info = new SKImageInfo(newW, newH);
-
-                using var enlarged = new SKBitmap(info);
-                using (var canvas = new SKCanvas(enlarged))
-                {
-                    canvas.Clear(SKColors.White);
-                    canvas.DrawBitmap(skBitmap,
-                        new SKRect(0, 0, w0, h0),
-                        new SKRect(0, 0, newW, newH));
-                    canvas.Flush();
-                }
-
-                result = DecodeWithZxing(enlarged);
-            }
-
             if (result is null || string.IsNullOrWhiteSpace(result.Text))
             {
                 await DisplayAlert(
                     "提示",
-                    $"未识别到条码。\n原图: {w0}x{h0}",
+                    $"未识别到条码。\n原图: {skBitmap.Width}x{skBitmap.Height}\n请确认图片里的二维码/条码清晰且四周留有空白边距。",
                     "确定");
-                try { barcodeView.IsDetecting = true; } catch { }
+                RestartDetectingAfterImagePick();
                 return;
             }
 
@@ -120,7 +105,11 @@ public partial class QrScanPage : ContentPage
         catch (Exception ex)
         {
             await DisplayAlert("错误", $"识别失败：{ex.Message}", "确定");
-            try { barcodeView.IsDetecting = true; } catch { }
+            RestartDetectingAfterImagePick();
+        }
+        finally
+        {
+            _isPickingImage = false;
         }
     }
 
@@ -129,35 +118,92 @@ public partial class QrScanPage : ContentPage
     /// </summary>
     private ZXing.Result? DecodeWithZxing(SKBitmap bitmap)
     {
+        var reader = CreateImageBarcodeReader();
+
+        // 相册图片可能是小图、深色码、透明底或模拟器导入后被压缩；多种预处理可以明显提升识别率。
+        var direct = reader.Decode(bitmap);
+        if (direct is not null) return direct;
+
+        foreach (var scale in new[] { 1.5f, 2.5f, 4f })
+        {
+            using var resized = ResizeBitmap(bitmap, scale);
+            var resizedResult = reader.Decode(resized);
+            if (resizedResult is not null) return resizedResult;
+
+            using var grayscale = ToGrayscaleBitmap(resized);
+            var grayscaleResult = reader.Decode(grayscale);
+            if (grayscaleResult is not null) return grayscaleResult;
+        }
+
+        using var originalGrayscale = ToGrayscaleBitmap(bitmap);
+        return reader.Decode(originalGrayscale);
+    }
+
+    private static ZXing.SkiaSharp.BarcodeReader CreateImageBarcodeReader()
+    {
         var options = new ZXing.Common.DecodingOptions
         {
             TryHarder = true,
-            TryInverted = true, // 新版写在 Options 里
+            TryInverted = true,
             PossibleFormats = new[]
             {
-            BarcodeFormat.CODE_128,
-            BarcodeFormat.CODE_39,
-            BarcodeFormat.EAN_13,
-            BarcodeFormat.EAN_8,
-            BarcodeFormat.ITF,
-            BarcodeFormat.UPC_A,
-            BarcodeFormat.UPC_E
-            // 如果后面你也要扫二维码，再加上：
-            // BarcodeFormat.QR_CODE
-        }
+                BarcodeFormat.QR_CODE,
+                BarcodeFormat.DATA_MATRIX,
+                BarcodeFormat.CODE_128,
+                BarcodeFormat.CODE_39,
+                BarcodeFormat.EAN_13,
+                BarcodeFormat.EAN_8,
+                BarcodeFormat.ITF,
+                BarcodeFormat.UPC_A,
+                BarcodeFormat.UPC_E
+            }
         };
 
-        var reader = new ZXing.SkiaSharp.BarcodeReader
+        return new ZXing.SkiaSharp.BarcodeReader
         {
             AutoRotate = true,
             Options = options
         };
-
-        // 这里不再裁剪，先用整图识别，成功率反而更高
-        return reader.Decode(bitmap);
     }
 
+    private static SKBitmap ResizeBitmap(SKBitmap source, float scale)
+    {
+        var width = Math.Max(1, (int)Math.Round(source.Width * scale));
+        var height = Math.Max(1, (int)Math.Round(source.Height * scale));
+        var resized = new SKBitmap(new SKImageInfo(width, height));
 
+        using var canvas = new SKCanvas(resized);
+        canvas.Clear(SKColors.White);
+        canvas.DrawBitmap(source,
+            new SKRect(0, 0, source.Width, source.Height),
+            new SKRect(0, 0, width, height));
+        canvas.Flush();
+
+        return resized;
+    }
+
+    private static SKBitmap ToGrayscaleBitmap(SKBitmap source)
+    {
+        var grayscale = new SKBitmap(new SKImageInfo(source.Width, source.Height, SKColorType.Bgra8888, SKAlphaType.Opaque));
+
+        using var canvas = new SKCanvas(grayscale);
+        using var paint = new SKPaint
+        {
+            ColorFilter = SKColorFilter.CreateColorMatrix(new[]
+            {
+                0.299f, 0.587f, 0.114f, 0, 0,
+                0.299f, 0.587f, 0.114f, 0, 0,
+                0.299f, 0.587f, 0.114f, 0, 0,
+                0,      0,      0,      1, 0
+            })
+        };
+
+        canvas.Clear(SKColors.White);
+        canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
+
+        return grayscale;
+    }
 
 
 
@@ -165,10 +211,16 @@ public partial class QrScanPage : ContentPage
     /// <summary>执行 SwitchCameraButton_Clicked 逻辑。</summary>
     private void SwitchCameraButton_Clicked(object sender, EventArgs e)
     {
+        var wasDetecting = barcodeView.IsDetecting;
+        barcodeView.IsDetecting = false;
         barcodeView.CameraLocation =
             barcodeView.CameraLocation == CameraLocation.Rear
             ? CameraLocation.Front
             : CameraLocation.Rear;
+        ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
+            ? "已切换到后置摄像头"
+            : "已切换到前置/虚拟摄像头";
+        barcodeView.IsDetecting = wasDetecting;
     }
 
     // 手电筒开关
@@ -178,10 +230,21 @@ public partial class QrScanPage : ContentPage
         barcodeView.IsTorchOn = !barcodeView.IsTorchOn;
     }
 
+    private void RestartDetectingAfterImagePick()
+    {
+        _isPickingImage = false;
+        ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
+            ? "请对准二维码..."
+            : "模拟器已默认使用前置/虚拟摄像头，请对准二维码...";
+        try { barcodeView.IsDetecting = true; } catch { }
+    }
+
     /// <summary>执行 OnAppearing 逻辑。</summary>
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+
+        if (_isPickingImage) return;
 
         // ✅ 动态请求相机权限（防止直接闪退）
         var status = await Permissions.RequestAsync<Permissions.Camera>();
@@ -193,6 +256,9 @@ public partial class QrScanPage : ContentPage
             await Navigation.PopAsync();
             return;
         }
+        ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
+            ? "请对准二维码..."
+            : "模拟器已默认使用前置/虚拟摄像头，请对准二维码...";
         barcodeView.IsDetecting = true;
     }
 
@@ -206,6 +272,9 @@ public partial class QrScanPage : ContentPage
         {
             barcodeView.IsDetecting = false;
         }
+
+        // Android 打开系统相册/文件选择器时页面可能触发 OnDisappearing；此时不能提前返回空扫码结果。
+        if (_isPickingImage) return;
 
         if (!_returned)
         {
