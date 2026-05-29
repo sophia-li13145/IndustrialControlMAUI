@@ -41,11 +41,12 @@ public partial class OutputPopupPage : ContentPage
 
         // 3) 打开弹窗并等待结果
         var page = new OutputPopupPage(vm);
-        page.Disappearing += (_, _) =>
+        page.Disappearing += async (_, _) =>
         {
-            // 跳转到扫码页时，新增产出页也会触发 Disappearing，但此时页面仍在导航栈中，
-            // 不能提前把弹窗结果置为 null，否则扫码回来后确认产出不会再触发新增产出接口。
-            MainThread.BeginInvokeOnMainThread(() =>
+            // 跳转到扫码页时，新增产出页也会触发 Disappearing；返回/系统回退真正移除页面时也会触发。
+            // 等一帧让导航栈完成更新后再判断，避免页面还未从栈中移除时漏掉取消结果，导致调用方命令一直处于执行中。
+            await Task.Delay(100);
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 var navigation = Application.Current?.MainPage?.Navigation;
                 var isStillOpen = navigation?.NavigationStack.Contains(page) == true
