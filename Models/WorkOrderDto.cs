@@ -681,8 +681,8 @@ public class OutputPlanItem
 public class OutputFrameSelectionItem
 {
     public string frameNo { get; set; } = string.Empty;
-    public int sort { get; set; }
 }
+
 
 public class OutputPopupResult
 {

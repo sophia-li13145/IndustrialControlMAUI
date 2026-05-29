@@ -133,7 +133,6 @@ namespace IndustrialControlMAUI.ViewModels
                 await Application.Current.MainPage.DisplayAlert("提示", "备注不能超过200个字符。", "好的");
                 return;
             }
-
             var result = new OutputPopupResult
             {
                 materialClassName = SelectedMaterial.materialClassName,
@@ -144,7 +143,7 @@ namespace IndustrialControlMAUI.ViewModels
                 Unit = SelectedMaterial.unit,
                 OperationTime = DateTime.Now,
                 Memo = Memo,
-                frameNoList = SelectedFrames.Select((x, idx) => new OutputFrameSelectionItem { frameNo = x.FrameNo, sort = idx + 1 }).ToList()
+                frameNoList = SelectedFrames.Select((x, idx) => new OutputFrameSelectionItem { frameNo = x.FrameNo}).ToList()
             };
 
             ReturnResult(result);

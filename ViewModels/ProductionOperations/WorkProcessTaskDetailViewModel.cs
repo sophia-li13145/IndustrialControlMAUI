@@ -1052,7 +1052,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             outputFrameList = picked.frameNoList
         };
 
-        ApiResp<bool> resp;
+        ApiResp<bool?> resp;
         try
         {
             resp = await _api.AddWorkProcessTaskProductOutputAsync(req);
