@@ -587,6 +587,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await LoadDevicesAsync();
             await LoadMaterialInputsAsync();
             await LoadOutputInputsAsync();
+            await LoadOutputFrameRecordsAsync();
 
             // 关键：抑制更新 → 设定选中项
             _suppressRemoteUpdate = true;
