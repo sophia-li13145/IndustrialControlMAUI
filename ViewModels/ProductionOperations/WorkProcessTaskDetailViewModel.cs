@@ -1037,7 +1037,6 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         // 组装请求：字段与 /pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput 接口保持一致
         var req = new AddWorkProcessTaskProductOutputReq
         {
-            batchNo = Detail.stockBatch,
             materialClassName = picked.materialClassName,
             materialCode = finalCode,
             materialName = finalName,
