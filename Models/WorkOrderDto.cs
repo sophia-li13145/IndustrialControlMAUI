@@ -630,6 +630,7 @@ public class OutputRecord
 
 public class AddWorkProcessTaskProductOutputReq
 {
+    public string? batchNo { get; set; }
     public string? materialClassName { get; set; }
     public string? materialCode { get; set; }
     public string? materialName { get; set; }
@@ -638,13 +639,10 @@ public class AddWorkProcessTaskProductOutputReq
     public string? platPlanNo { get; set; }
     public string? processCode { get; set; }
     public string? processName { get; set; }
-    public bool? preStartInspectionEnabled { get; set; }
     public double qty { get; set; }
-    public string? rawMaterialProductionDate { get; set; } // "yyyy-MM-dd HH:mm:ss"
     public string? schemeNo { get; set; }
     public string? unit { get; set; }
     public string workOrderNo { get; set; } = "";
-    public string operationTime { get; set; }
     public List<OutputFrameSelectionItem>? outputFrameList { get; set; }
 }
 
