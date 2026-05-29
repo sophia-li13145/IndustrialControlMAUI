@@ -359,7 +359,7 @@
        IsVisible="{Binding IsInputVisible}" />
 
                 <!-- 表头 -->
-                <Grid ColumnDefinitions="40,80,60,60,60,60"
+                <Grid ColumnDefinitions="30,60,30,60,60,30"
                   BackgroundColor="#F0F0F0"
                   Padding="4"
                   RowSpacing="1"
@@ -384,7 +384,7 @@
                                 >
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="40,80,60,60,60,60"
+                            <Grid ColumnDefinitions="30,60,30,60,60,30"
                               Padding="4"
                               RowSpacing="1"
                               ColumnSpacing="1"
@@ -420,7 +420,7 @@
                 </Grid>
 
                 <!-- ③ 投料记录表头 -->
-                <Grid ColumnDefinitions="20,60,30,30,60,60,60,40"
+                <Grid ColumnDefinitions="20,40,30,30,40,40,60,40"
       BackgroundColor="#E8F0FE"
       Padding="4"
       RowSpacing="1"
@@ -440,7 +440,7 @@
                 <CollectionView x:Name="MaterialListView" ItemsSource="{Binding MaterialInputRecords}" IsVisible="{Binding IsInputVisible}" >
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="20,60,30,30,60,60,60,40"
+                            <Grid ColumnDefinitions="20,40,30,30,40,40,60,40"
                   Padding="4"
                   RowSpacing="1"
                   ColumnSpacing="1"
@@ -503,7 +503,7 @@ Text="{Binding OperateTime, StringFormat='{0:yyyy-M-d H:mm}'}" />
                 <Label Text="应产出明细" FontAttributes="Bold" Margin="0,8,0,4"
        IsVisible="{Binding IsOutputVisible}" />
                 <!-- 表头 -->
-                <Grid ColumnDefinitions="40,80,60,60,60,60"
+                <Grid ColumnDefinitions="30,80,30,40,40,40"
                   BackgroundColor="#F0F0F0"
                   Padding="4"
                   RowSpacing="1"
@@ -527,7 +527,7 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                             >
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="40,80,60,60,60,60"
+                            <Grid ColumnDefinitions="30,80,40,40,40,40"
                               Padding="4"
                               RowSpacing="1"
                               ColumnSpacing="1"
@@ -563,7 +563,7 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                 </Grid>
 
                 <!-- 产出记录表头 -->
-                <Grid ColumnDefinitions="40,60,40,60,80,60,60"
+                <Grid ColumnDefinitions="20,60,20,30,80,40,40"
                       BackgroundColor="#E8F0FE"
                       Padding="4"
                       RowSpacing="1"
@@ -582,7 +582,7 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                 <CollectionView x:Name="OutputView" ItemsSource="{Binding OutputRecords}" IsVisible="{Binding IsOutputVisible}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="40,60,40,60,80,60,60"
+                            <Grid ColumnDefinitions="20,60,20,30,80,40,40"
                   Padding="4"
                   RowSpacing="1"
                   ColumnSpacing="1"
@@ -624,7 +624,7 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                     <Label Grid.Column="1" Text="{Binding OutputFrameCount, StringFormat='共 {0} 个'}" TextColor="#6B7280" VerticalOptions="Center" />
                 </Grid>
 
-                <Grid ColumnDefinitions="32,*,*,*"
+                <Grid ColumnDefinitions="32,60,60,60"
                       BackgroundColor="#F7F8FA"
                       Padding="4"
                       RowSpacing="1"
@@ -639,7 +639,7 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                 <CollectionView x:Name="OutputFrameView" ItemsSource="{Binding OutputFrameRecords}" IsVisible="{Binding IsFrameVisible}" HeightRequest="240">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="32,*,*,*"
+                            <Grid ColumnDefinitions="32,60,60,60"
                                   Padding="4"
                                   RowSpacing="1"
                                   ColumnSpacing="1"

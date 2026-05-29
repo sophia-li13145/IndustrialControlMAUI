@@ -88,11 +88,9 @@ namespace IndustrialControlMAUI.ViewModels
                     MaxLimit = resp.result.maxLimit,
                     MinLimit = resp.result.minLimit
                 });
-                if (resp.result.maxLimit > 0) FrameHint = $"提示：该料框最大容量{resp.result.maxLimit}件";
-                return;
+                
             }
 
-            AddSelectedFrame(new FrameOptionItem { FrameNo = frameNo, FrameStatus = "占用" });
         }
 
 
