@@ -22,7 +22,8 @@ public partial class OutputPopupPage : ContentPage
     public static async Task<OutputPopupResult?> ShowAsync(
         IServiceProvider? sp,
         IEnumerable<TaskMaterialOutput> materialOutputList,
-        TaskMaterialOutput? presetMaterial = null)
+        TaskMaterialOutput? presetMaterial = null,
+        WorkProcessTaskDetail? detail = null)
     {
         var tcs = new TaskCompletionSource<OutputPopupResult?>();
 
@@ -35,12 +36,26 @@ public partial class OutputPopupPage : ContentPage
                 : new OutputPopupViewModel();
 
         // 2) 初始化 VM 并绑定
-        vm.Init(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial);
+        vm.Init(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial, detail);
         vm.SetResultTcs(tcs);
 
         // 3) 打开弹窗并等待结果
         var page = new OutputPopupPage(vm);
-        page.Disappearing += (_, _) => tcs.TrySetResult(null);
+        page.Disappearing += async (_, _) =>
+        {
+            // 跳转到扫码页时，新增产出页也会触发 Disappearing；返回/系统回退真正移除页面时也会触发。
+            // 等一帧让导航栈完成更新后再判断，避免页面还未从栈中移除时漏掉取消结果，导致调用方命令一直处于执行中。
+            await Task.Delay(100);
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                var navigation = Application.Current?.MainPage?.Navigation;
+                var isStillOpen = navigation?.NavigationStack.Contains(page) == true
+                                  || navigation?.ModalStack.Contains(page) == true;
+
+                if (!isStillOpen)
+                    tcs.TrySetResult(null);
+            });
+        };
 
         if (Application.Current?.MainPage?.Navigation is not null)
             await Application.Current.MainPage.Navigation.PushAsync(page);

@@ -261,6 +261,13 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         TabChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    private async Task RefreshTabRecordsAsync(DetailTab tab, Func<Task> refreshAsync)
+    {
+        await MainThread.InvokeOnMainThreadAsync(() => ActiveTab = tab);
+        await refreshAsync();
+        await MainThread.InvokeOnMainThreadAsync(() => ActiveTab = tab);
+    }
+
 
     /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -499,9 +506,13 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         IsBusy = true;
         try
         {
+            var tabToRestore = string.Equals(Detail?.id, id, StringComparison.OrdinalIgnoreCase)
+                ? ActiveTab
+                : DetailTab.Report;
+
             await LoadAuditDictAsync();
             await LoadDetailAsync(id);
-            ActiveTab = DetailTab.Report; // 会同步设置各 Tab 可见性
+            ActiveTab = tabToRestore; // 同一任务刷新保留当前 Tab；进入新任务默认报工。
             CurrentLoginUserName = Preferences.Get("UserName", string.Empty);
             CurrentUserName = CurrentLoginUserName.Split('@')[0]; // 页面显示名
             await LoadReportRecordsAsync();
@@ -794,7 +805,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             }
 
             await ShowTip("批量申请入库成功");
-            await LoadOutputFrameRecordsAsync();
+            await RefreshTabRecordsAsync(DetailTab.Frame, LoadOutputFrameRecordsAsync);
         }
         finally
         {
@@ -898,7 +909,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         var ok = await ReportAddPopupPage.ShowAsync(null, Detail);
         if (ok)
         {
-            await LoadReportRecordsAsync();
+            await RefreshTabRecordsAsync(DetailTab.Report, LoadReportRecordsAsync);
         }
     }
 
@@ -917,7 +928,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         }
 
         await ShowTip("删除成功");
-        await LoadReportRecordsAsync();
+        await RefreshTabRecordsAsync(DetailTab.Report, LoadReportRecordsAsync);
     }
 
     // 点击“新增投料”
@@ -980,7 +991,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         //    Memo = picked.Memo
         //});
         SelectedMaterialItem = null;
-        await LoadMaterialInputsAsync();
+        await RefreshTabRecordsAsync(DetailTab.Input, LoadMaterialInputsAsync);
     }
 
 
@@ -998,6 +1009,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
             return;
         }
+
+        ActiveTab = DetailTab.Input;
     }
 
     // 新增产出：只用选中行 + 弹窗返回的数量/备注
@@ -1020,55 +1033,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 unit = SelectedOutputItem.unit
             };
 
-        // 打开弹窗（新重载）：有预设则只输入数量/备注；无预设则先选物料再输入
-        var picked = await OutputPopupPage.ShowAsync(_sp, list, preset);
+        // 打开新增产出页；新增产出接口在该页面确认时调用，失败提示也保留在该页面。
+        var picked = await OutputPopupPage.ShowAsync(_sp, list, preset, Detail);
+        ActiveTab = DetailTab.Output;
         if (picked is null) return;
-
-        // 统一取“最终物料信息”（优先用预设；没有预设时用弹窗选择结果）
-        var finalCode = preset?.materialCode ?? picked.MaterialCode;
-        var finalName = preset?.materialName ?? picked.MaterialName;
-
-        if (Detail is null)
-        {
-            await Shell.Current.DisplayAlert("提示", "工序任务详情未加载，无法提交产出。", "OK");
-            return;
-        }
-
-        // 组装请求：字段与 /pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput 接口保持一致
-        var req = new AddWorkProcessTaskProductOutputReq
-        {
-            materialClassName = picked.materialClassName,
-            materialCode = finalCode,
-            materialName = finalName,
-            materialTypeName = picked.materialTypeName,
-            qty = (double)picked.Quantity,                    // 从弹窗取
-            memo = picked.Memo,
-            unit = picked.Unit,
-            workOrderNo = Detail.workOrderNo ?? string.Empty,
-            processCode = Detail.processCode,
-            processName = Detail.processName,
-            schemeNo = Detail.schemeNo,
-            platPlanNo = Detail.platPlanNo,
-            outputFrameList = picked.frameNoList
-        };
-
-        ApiResp<bool?> resp;
-        try
-        {
-            resp = await _api.AddWorkProcessTaskProductOutputAsync(req);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-            await Shell.Current.DisplayAlert("失败", $"提交产出异常：{ex.Message}", "OK");
-            return;
-        }
-
-        if (!resp.success)
-        {
-            await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
-            return;
-        }
 
         // 成功：插入下表顶部
         //var idx = (OutputRecords.Count == 0) ? 1 : (OutputRecords[0].Index + 1);
@@ -1082,15 +1050,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         //    Memo = picked.Memo
         //});
        
-        await MainThread.InvokeOnMainThreadAsync(() =>
-        {
-            ActiveTab = DetailTab.Output;
-        });
-        await LoadOutputInputsAsync();
-        await MainThread.InvokeOnMainThreadAsync(() =>
-        {
-            ActiveTab = DetailTab.Output;
-        });
+        await RefreshTabRecordsAsync(DetailTab.Output, LoadOutputInputsAsync);
         SelectedOutputItem = null;
     }
 
@@ -1108,6 +1068,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
             return;
         }
+
+        ActiveTab = DetailTab.Output;
     }
 
     /// <summary>执行 MaterialItemSelected 逻辑。</summary>
@@ -1165,7 +1127,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             var i = MaterialInputRecords.IndexOf(row);
             if (i >= 0) { MaterialInputRecords[i] = row; }
             await ShowTip("已更新原料生产日期。");
-            await LoadMaterialInputsAsync();
+            await RefreshTabRecordsAsync(DetailTab.Input, LoadMaterialInputsAsync);
         }
         else
         {
