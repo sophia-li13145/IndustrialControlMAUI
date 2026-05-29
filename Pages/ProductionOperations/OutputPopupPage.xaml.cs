@@ -22,7 +22,8 @@ public partial class OutputPopupPage : ContentPage
     public static async Task<OutputPopupResult?> ShowAsync(
         IServiceProvider? sp,
         IEnumerable<TaskMaterialOutput> materialOutputList,
-        TaskMaterialOutput? presetMaterial = null)
+        TaskMaterialOutput? presetMaterial = null,
+        WorkProcessTaskDetail? detail = null)
     {
         var tcs = new TaskCompletionSource<OutputPopupResult?>();
 
@@ -35,7 +36,7 @@ public partial class OutputPopupPage : ContentPage
                 : new OutputPopupViewModel();
 
         // 2) 初始化 VM 并绑定
-        vm.Init(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial);
+        vm.Init(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial, detail);
         vm.SetResultTcs(tcs);
 
         // 3) 打开弹窗并等待结果
