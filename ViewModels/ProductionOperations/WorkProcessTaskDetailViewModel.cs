@@ -978,18 +978,6 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
             return;
         }
-
-        // 成功：插入下表顶部
-        //var idx = (MaterialInputRecords.Count == 0) ? 1 : (MaterialInputRecords[0].Index + 1);
-        //MaterialInputRecords.Insert(0, new MaterialAuRecord
-        //{
-        //    //Index = idx,
-        //    MaterialName = finalName,
-        //    Unit = picked.Unit,
-        //    Qty =  picked.Quantity,
-        //    OperateTime = picked.OperationTime?.ToString("yyyy-MM-dd HH:mm:ss"),
-        //    Memo = picked.Memo
-        //});
         SelectedMaterialItem = null;
         await RefreshTabRecordsAsync(DetailTab.Input, LoadMaterialInputsAsync);
     }
@@ -1037,19 +1025,6 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         var picked = await OutputPopupPage.ShowAsync(_sp, list, preset, Detail);
         ActiveTab = DetailTab.Output;
         if (picked is null) return;
-
-        // 成功：插入下表顶部
-        //var idx = (OutputRecords.Count == 0) ? 1 : (OutputRecords[0].Index + 1);
-        //OutputRecords.Insert(0, new OutputAuRecord
-        //{
-        //    //Index = idx,
-        //    MaterialName = finalName,
-        //    Unit = picked.Unit,
-        //    Qty = picked.Quantity,
-        //    OperateTime = picked.OperationTime?.ToString("yyyy-MM-dd HH:mm:ss"),
-        //    Memo = picked.Memo
-        //});
-       
         await RefreshTabRecordsAsync(DetailTab.Output, LoadOutputInputsAsync);
         SelectedOutputItem = null;
     }
