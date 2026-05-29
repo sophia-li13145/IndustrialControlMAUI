@@ -23,7 +23,15 @@ public partial class WorkProcessTaskDetailPage : ContentPage
     /// <summary>执行 ApplyTab 逻辑。</summary>
     private void ApplyTab(DetailTab tab)
     {
-        Grid.SetColumn(Knob, tab == DetailTab.Input ? 0 : 1);
+        var column = tab switch
+        {
+            DetailTab.Report => 0,
+            DetailTab.Input => 1,
+            DetailTab.Output => 2,
+            DetailTab.Frame => 3,
+            _ => 0
+        };
+        Grid.SetColumn(Knob, column);
     }
 
 

@@ -88,6 +88,17 @@ namespace IndustrialControlMAUI.Services
                 string processCode,
                 string workOrderNo,
                 CancellationToken ct = default);
+        Task<ApiResp<List<OutputFrameRecord>>> ListOutputFrameRecordsAsync(
+                string processCode,
+                string schemeNo,
+                string workOrderNo,
+                string? frameNo = null,
+                string? instockStatus = null,
+                string? materialCode = null,
+                CancellationToken ct = default);
+        Task<ApiResp<bool>> BatchApplyOutputFrameInstockAsync(
+                IEnumerable<string> idList,
+                CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(
     string id,
     CancellationToken ct = default);
