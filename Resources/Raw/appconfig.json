@@ -57,6 +57,8 @@
 
       "autMaterialList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs",
       "autOutputList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs",
+      "outputFrameRecordList": "/pda/outputFrameRecord/listOutputFrameRecords",
+      "batchApplyOutputFrameInstock": "/pda/outputFrameRecord/batchApplyInstock",
 
       "deleteWorkProcessTaskMaterialInput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialInput",
       "deleteWorkProcessTaskOutput": "/pda/pmsWorkOrder/deleteWorkProcessTaskMaterialOutput",

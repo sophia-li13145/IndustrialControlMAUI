@@ -5,6 +5,7 @@ using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 
 
@@ -41,11 +42,13 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [ObservableProperty] private DetailTab activeTab = DetailTab.Report;
     [ObservableProperty] private bool isInputVisible = false;   // 默认隐藏投料
     [ObservableProperty] private bool isOutputVisible = false; // 默认隐藏产出
+    [ObservableProperty] private bool isFrameVisible = false; // 默认隐藏料框
     [ObservableProperty] private bool isReportVisible = true;  // 默认显示报工
 
     public bool IsReportTab => ActiveTab == DetailTab.Report;
     public bool IsInputTab => ActiveTab == DetailTab.Input;
     public bool IsOutputTab => ActiveTab == DetailTab.Output;
+    public bool IsFrameTab => ActiveTab == DetailTab.Frame;
 
 
     [ObservableProperty] private WorkProcessTaskDetail? detail;
@@ -88,6 +91,26 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     /// <summary>执行 new 逻辑。</summary>
     public ObservableCollection<OutputAuRecord> OutputRecords { get; } = new();
     public ObservableCollection<WorkProcessTaskReportRecord> ReportRecords { get; } = new();
+    public ObservableCollection<OutputFrameRecord> OutputFrameRecords { get; } = new();
+    public int SelectedOutputFrameCount => OutputFrameRecords.Count(x => x.IsSelected);
+    public int OutputFrameCount => OutputFrameRecords.Count;
+    public bool CanBatchApplyOutputFrameInstock => !IsBusy && SelectedOutputFrameCount > 0;
+
+    public bool IsAllOutputFramesSelected
+    {
+        get
+        {
+            var selectable = OutputFrameRecords.Where(x => x.CanApplyInstock).ToList();
+            return selectable.Count > 0 && selectable.All(x => x.IsSelected);
+        }
+        set
+        {
+            foreach (var row in OutputFrameRecords.Where(x => x.CanApplyInstock))
+                row.IsSelected = value;
+
+            NotifyOutputFrameSelectionChanged();
+        }
+    }
     public event EventHandler? TabChanged;
 
     private TaskMaterialInput? _selectedMaterialItem;
@@ -171,6 +194,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(CanRework));
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
     partial void OnQueryWorkOrderAuditStatusChanged(string? value)
     {
@@ -178,6 +202,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(CanRework));
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
     /// <summary>执行 NotifyAllCanExec 逻辑。</summary>
     private void NotifyAllCanExec()
@@ -187,6 +212,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (FinishCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
     }
     /// <summary>执行 OnActiveTabChanged 逻辑。</summary>
     partial void OnActiveTabChanged(DetailTab value)
@@ -194,10 +221,12 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         IsReportVisible = (value == DetailTab.Report);
         IsInputVisible = (value == DetailTab.Input);
         IsOutputVisible = (value == DetailTab.Output);
+        IsFrameVisible = (value == DetailTab.Frame);
 
         OnPropertyChanged(nameof(IsReportTab));
         OnPropertyChanged(nameof(IsInputTab));
         OnPropertyChanged(nameof(IsOutputTab));
+        OnPropertyChanged(nameof(IsFrameTab));
         TabChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -421,6 +450,14 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         ActiveTab = DetailTab.Output;  // 同上
     }
 
+    [RelayCommand]
+    public void ShowFrame()
+    {
+        Debug.WriteLine("切换到料框");
+        ActiveTab = DetailTab.Frame;
+        _ = LoadOutputFrameRecordsAsync();
+    }
+
     /// <summary>执行 InitAsync 逻辑。</summary>
     [RelayCommand]
     private async Task InitAsync(string id)
@@ -517,6 +554,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             await LoadDevicesAsync();
             await LoadMaterialInputsAsync();
             await LoadOutputInputsAsync();
+            await LoadOutputFrameRecordsAsync();
 
             // 关键：抑制更新 → 设定选中项
             _suppressRemoteUpdate = true;
@@ -633,6 +671,84 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 OutputRecords.Add(item);
         }
     }
+    private async Task LoadOutputFrameRecordsAsync()
+    {
+        if (Detail is null
+            || string.IsNullOrWhiteSpace(Detail.processCode)
+            || string.IsNullOrWhiteSpace(Detail.schemeNo)
+            || string.IsNullOrWhiteSpace(Detail.workOrderNo))
+            return;
+
+        var resp = await _api.ListOutputFrameRecordsAsync(
+            processCode: Detail.processCode!,
+            schemeNo: Detail.schemeNo!,
+            workOrderNo: Detail.workOrderNo!);
+
+        foreach (var old in OutputFrameRecords)
+            old.PropertyChanged -= OnOutputFramePropertyChanged;
+
+        OutputFrameRecords.Clear();
+        if (resp?.result != null)
+        {
+            foreach (var item in resp.result)
+            {
+                item.IsSelected = false;
+                item.PropertyChanged += OnOutputFramePropertyChanged;
+                OutputFrameRecords.Add(item);
+            }
+        }
+
+        NotifyOutputFrameSelectionChanged();
+        OnPropertyChanged(nameof(OutputFrameCount));
+    }
+
+    private void OnOutputFramePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(OutputFrameRecord.IsSelected))
+            NotifyOutputFrameSelectionChanged();
+    }
+
+    private void NotifyOutputFrameSelectionChanged()
+    {
+        OnPropertyChanged(nameof(SelectedOutputFrameCount));
+        OnPropertyChanged(nameof(IsAllOutputFramesSelected));
+        OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
+        (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanBatchApplyOutputFrameInstock))]
+    private async Task BatchApplyOutputFrameInstockAsync()
+    {
+        var ids = OutputFrameRecords
+            .Where(x => x.IsSelected && x.CanApplyInstock && !string.IsNullOrWhiteSpace(x.Id))
+            .Select(x => x.Id!)
+            .ToList();
+
+        if (ids.Count == 0)
+        {
+            await ShowTip("请选择待申请的料框。");
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var resp = await _api.BatchApplyOutputFrameInstockAsync(ids);
+            if (!resp.success)
+            {
+                await ShowTip(string.IsNullOrWhiteSpace(resp.message) ? "批量申请入库失败" : resp.message!);
+                return;
+            }
+
+            await ShowTip("批量申请入库成功");
+            await LoadOutputFrameRecordsAsync();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     /// <summary>执行 UpdateShiftAsync 逻辑。</summary>
     private async Task UpdateShiftAsync(StatusOption? opt)
     {
