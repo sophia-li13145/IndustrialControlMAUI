@@ -18,7 +18,7 @@
             <Label Grid.Row="1" Text="*产出数量：" TextColor="#D0021B" VerticalTextAlignment="Center" />
             <Entry Grid.Row="1" Grid.Column="1" Placeholder="自动带出可修改" Keyboard="Numeric" Text="{Binding QuantityText}" />
 
-            <Label Grid.Row="2" Text="*料框：" TextColor="#D0021B" VerticalTextAlignment="Start" />
+            <Label Grid.Row="2" Text="料框：" VerticalTextAlignment="Start" />
             <Grid Grid.Row="2" Grid.Column="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
                 <Border Grid.Row="0"
                         Grid.Column="0"
@@ -65,7 +65,7 @@
                        Grid.Column="0"
                        Grid.ColumnSpan="2"
                        Text="{Binding FrameHint}"
-                       TextColor="#D0021B"
+                       TextColor="#6B7280"
                        FontSize="12"
                        VerticalTextAlignment="Center" />
             </Grid>
