@@ -32,6 +32,7 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
 
+        [ObservableProperty] private bool isExceptionPhotoTipVisible;
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private QualityDetailDto? detail;
         [ObservableProperty]
@@ -60,6 +61,7 @@ namespace IndustrialControlMAUI.ViewModels
                     // 选中后回写到 Detail.inspectResult（不去改 total*，避免触发连锁）
                     if (Detail != null)
                         Detail.inspectResult = value?.Value ?? value?.Text;
+                    RefreshExceptionPhotoTip();
                 }
             }
         }
@@ -89,6 +91,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             InspectorSuggestions = new ObservableCollection<UserInfoDto>();
             AllUsers = new List<UserInfoDto>();
+            ImageAttachments.CollectionChanged += (_, _) => RefreshExceptionPhotoTip();
            
         }
 
@@ -116,6 +119,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         partial void OnDetailChanged(QualityDetailDto? value)
         {
+            RefreshExceptionPhotoTip();
             OnPropertyChanged(nameof(IsReworkVisible));
             OnPropertyChanged(nameof(CanRework));
             (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
@@ -551,6 +555,11 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
+            if (!ValidateExceptionPhotoRequirement())
+            {
+                return;
+            }
+
             try
             {
                 IsBusy = true;
@@ -850,6 +859,8 @@ namespace IndustrialControlMAUI.ViewModels
                         localItem.Name = string.IsNullOrWhiteSpace(localItem.Name) ? localItem.AttachmentName : localItem.Name;
                         localItem.Percent = 100;
                         localItem.Status = "done";
+                        localItem.IsUploaded = true;
+                        RefreshExceptionPhotoTip();
                         localItem.QualityNo ??= Detail?.qualityNo;      // 从详情带过来
 
                         // 如果服务端给了 URL，就让图片改走网络地址展示；本地临时可清掉
@@ -897,6 +908,31 @@ namespace IndustrialControlMAUI.ViewModels
         private static bool IsAllowedFile(string? ext)
             => IsImageExt(ext) || ext is "pdf" or "doc" or "docx" or "xls" or "xlsx" or "txt" or "rar" or "zip";
 
+
+        private bool IsUnqualifiedResult => string.Equals(Detail?.inspectResult, "不合格", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(SelectedInspectResult?.Text, "不合格", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(SelectedInspectResult?.Value, "不合格", StringComparison.OrdinalIgnoreCase);
+
+        private bool HasUploadedImageAttachment()
+            => ImageAttachments.Any(a => a.IsUploaded && !string.IsNullOrWhiteSpace(a.AttachmentUrl));
+
+        private bool ShouldShowExceptionPhotoTip()
+            => Detail?.enableExceptionPhoto == true && IsUnqualifiedResult && !HasUploadedImageAttachment();
+
+        private void RefreshExceptionPhotoTip()
+        {
+            if (IsExceptionPhotoTipVisible && !ShouldShowExceptionPhotoTip())
+            {
+                IsExceptionPhotoTipVisible = false;
+            }
+        }
+
+        private bool ValidateExceptionPhotoRequirement()
+        {
+            var shouldBlockSave = ShouldShowExceptionPhotoTip();
+            IsExceptionPhotoTipVisible = shouldBlockSave;
+            return !shouldBlockSave;
+        }
 
         /// <summary>
         /// 将前端的 Attachments/Items 回填到 Detail，用于提交

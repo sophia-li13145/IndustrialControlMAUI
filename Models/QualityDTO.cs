@@ -121,6 +121,7 @@ public class QualityDetailDto : ObservableObject
     public string supplierName { get; set; } = "";
     public string? qualityNo { get; set; }
     public string? inspectStatus { get; set; }     // 0/1/2/3
+    public bool enableExceptionPhoto { get; set; }
 
     public string? createdTime { get; set; }
     public string? modifiedTime { get; set; }
