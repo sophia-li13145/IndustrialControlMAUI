@@ -436,7 +436,21 @@ public partial class OutputFrameRecord : ObservableObject
     public int? FrameSortNumber { get; set; }
     public string? Id { get; set; }
     public string? InstockApplyTime { get; set; }
-    public string? InstockStatus { get; set; }
+    private string? _instockStatus;
+
+    public string? InstockStatus
+    {
+        get => _instockStatus;
+        set
+        {
+            if (SetProperty(ref _instockStatus, value))
+            {
+                OnPropertyChanged(nameof(CanApplyInstock));
+                if (!CanApplyInstock && IsSelected)
+                    IsSelected = false;
+            }
+        }
+    }
     public string? InstockTime { get; set; }
     public string? MaterialCode { get; set; }
     public string? MaterialTypeName { get; set; }
