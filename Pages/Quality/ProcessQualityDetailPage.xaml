@@ -567,7 +567,7 @@
                 <!-- 图片附件 -->
                 <Label Text="图片附件" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
                 <!-- 左窄右宽两列 -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="40,*" RowSpacing="8">
 
                     <!-- Row0 左：图片上传标题 -->
                     <Label Grid.Row="0" Grid.Column="0" Text="图片上传：" VerticalTextAlignment="Start" />
@@ -613,11 +613,18 @@
                         </Frame>
                     </HorizontalStackLayout>
 
-                    <!-- Row1 左：附件信息标题 -->
-                    <Label Grid.Row="1" Grid.Column="0" Text="附件信息：" VerticalTextAlignment="Center" />
+                    <!-- Row1 右：异常拍照提示 -->
+                    <Label Grid.Row="1" Grid.Column="1"
+                           Text="当前检测结果为不合格，且该方案已开启异常拍照，请上传图片后提交"
+                           FontSize="12"
+                           TextColor="#F56C6C"
+                           IsVisible="{Binding IsExceptionPhotoTipVisible}" />
 
-                    <!-- Row1 右：上传附件链接 -->
-                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="12" VerticalOptions="Center" IsVisible="{Binding IsEditing}">
+                    <!-- Row2 左：附件信息标题 -->
+                    <Label Grid.Row="2" Grid.Column="0" Text="附件信息：" VerticalTextAlignment="Center" />
+
+                    <!-- Row2 右：上传附件链接 -->
+                    <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Spacing="12" VerticalOptions="Center" IsVisible="{Binding IsEditing}">
                         <Label Text="上传附件" TextColor="#3B82F6">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnPickFileClicked" />
@@ -625,13 +632,13 @@
                         </Label>
                     </HorizontalStackLayout>
 
-                    <!-- Row2 右：提示 -->
-                    <Label Grid.Row="2" Grid.Column="1"
+                    <!-- Row3 右：提示 -->
+                    <Label Grid.Row="3" Grid.Column="1"
          Text="（单个附件最大支持20M，支持格式PDF、Word、Excel、Txt、JPG、PNG、RAR）"
          FontSize="12" TextColor="#9CA3AF" IsVisible="{Binding IsEditing}" />
 
-                    <!-- Row3 右：附件表格 -->
-                    <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*" Margin="0,4,0,0">
+                    <!-- Row4 右：附件表格 -->
+                    <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*" Margin="0,4,0,0">
                         <Grid Grid.Row="0" ColumnDefinitions="40,100,40,80,120"
           BackgroundColor="#E5EEF9" Padding="8,8">
                             <Label Grid.Column="0" Text="序号" />
@@ -673,21 +680,19 @@
                         </CollectionView>
                     </Grid>
 
-                    <Grid Grid.Row="4"  Grid.Column="0" Grid.ColumnSpan="2" RowDefinitions="Auto,*">
-                        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
-                            <Label Grid.Column="0" Text="创建人：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="1" Text="{Binding Detail.creator}" Style="{StaticResource FieldValue}" />
-                            <Label Grid.Column="2" Text="创建日期：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="3" Text="{Binding Detail.createdTime}" Style="{StaticResource FieldValue}" />
-                        </Grid>
-                        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
-                            <Label Grid.Column="0" Text="最近修改人：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="1" Text="{Binding Detail.modifier}" Style="{StaticResource FieldValue}" />
-                            <Label Grid.Column="2" Text="修改日期：" Style="{StaticResource FieldLabel}" />
-                            <Label Grid.Column="3" Text="{Binding Detail.modifiedTime}" Style="{StaticResource FieldValue}" />
-                        </Grid>
+                    <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnDefinitions="80,*"
+                          RowSpacing="6"
+                          ColumnSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0" Text="创建人：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Detail.creator}" Style="{StaticResource FieldValue}" LineBreakMode="TailTruncation" />
+                        <Label Grid.Row="1" Grid.Column="0" Text="创建日期：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Detail.createdTime}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="2" Grid.Column="0" Text="最近修改人：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Detail.modifier}" Style="{StaticResource FieldValue}" LineBreakMode="TailTruncation" />
+                        <Label Grid.Row="3" Grid.Column="0" Text="修改日期：" Style="{StaticResource FieldLabel}" />
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.modifiedTime}" Style="{StaticResource FieldValue}" />
                     </Grid>
                 </Grid>
 
