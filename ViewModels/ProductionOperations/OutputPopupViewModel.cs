@@ -19,7 +19,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string? quantityText;
         [ObservableProperty] private string? memo;
         [ObservableProperty] private bool isPickerEnabled = true;
-        [ObservableProperty] private string frameHint = "提示：该料框最大容量5件";
+        [ObservableProperty] private string frameHint = "提示：料框非必填，最多选择5个";
         private TaskCompletionSource<OutputPopupResult?>? _tcs;
 
         public OutputPopupViewModel(IWorkOrderApi? api = null) => _api = api;
@@ -55,7 +55,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             QuantityText = "";
             Memo = "";
-            FrameHint = "提示：该料框最大容量5件";
+            FrameHint = "提示：料框非必填，最多选择5个";
         }
 
         private static bool IsSame(TaskMaterialOutput a, TaskMaterialOutput b)
@@ -127,9 +127,9 @@ namespace IndustrialControlMAUI.ViewModels
                 await Application.Current.MainPage.DisplayAlert("提示", "请输入大于0的产出数量。", "好的");
                 return;
             }
-            if (SelectedFrames.Count <= 0 || SelectedFrames.Count >= 6)
+            if (SelectedFrames.Count > 5)
             {
-                await Application.Current.MainPage.DisplayAlert("提示", "请选择1到5个料框。", "好的");
+                await Application.Current.MainPage.DisplayAlert("提示", "最多选择5个料框。", "好的");
                 return;
             }
             if ((Memo?.Length ?? 0) > 200)
@@ -176,7 +176,7 @@ namespace IndustrialControlMAUI.ViewModels
                 processName = _detail.processName,
                 schemeNo = _detail.schemeNo,
                 platPlanNo = _detail.platPlanNo,
-                outputFrameList = result.frameNoList
+                outputFrameList = result.frameNoList.Count > 0 ? result.frameNoList : null
             };
 
             ApiResp<bool?> resp;
