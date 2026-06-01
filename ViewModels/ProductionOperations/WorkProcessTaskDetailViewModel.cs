@@ -804,13 +804,50 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
                 return;
             }
 
-            await ShowTip("批量申请入库成功");
+            ApplyOutputFrameInstockApplied(ids);
             await RefreshTabRecordsAsync(DetailTab.Frame, LoadOutputFrameRecordsAsync);
+            await ShowTip("批量申请入库成功");
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+
+    private void ApplyOutputFrameInstockApplied(IReadOnlyCollection<string> appliedIds)
+    {
+        if (appliedIds.Count == 0)
+            return;
+
+        var appliedIdSet = appliedIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _isBulkUpdatingOutputFrameSelection = true;
+        try
+        {
+            foreach (var row in OutputFrameRecords)
+            {
+                if (!string.IsNullOrWhiteSpace(row.Id) && appliedIdSet.Contains(row.Id))
+                {
+                    row.IsSelected = false;
+                    if (row.CanApplyInstock)
+                        row.InstockStatus = "1";
+                }
+            }
+
+            RecalculateOutputFrameSelection();
+        }
+        finally
+        {
+            _isBulkUpdatingOutputFrameSelection = false;
+        }
+
+        NotifyOutputFrameSelectionChanged();
+    }
+
+    private void RecalculateOutputFrameSelection()
+    {
+        _selectableOutputFrameCount = OutputFrameRecords.Count(x => x.CanApplyInstock);
+        SelectedOutputFrameCount = OutputFrameRecords.Count(x => x.IsSelected && x.CanApplyInstock);
     }
 
     /// <summary>执行 UpdateShiftAsync 逻辑。</summary>
