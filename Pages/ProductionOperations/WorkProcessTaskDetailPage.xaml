@@ -94,6 +94,24 @@
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
+
+            <Style x:Key="OutputFrameRowCheckBoxStyle" TargetType="CheckBox">
+                <Setter Property="Color" Value="#2196F3" />
+                <Setter Property="Opacity" Value="1" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup Name="CommonStates">
+                            <VisualState Name="Normal" />
+                            <VisualState Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="Color" Value="#9CA3AF" />
+                                    <Setter Property="Opacity" Value="0.35" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -644,13 +662,37 @@ SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference Out
                                   RowSpacing="1"
                                   ColumnSpacing="1"
                                   BackgroundColor="White">
+                                <Grid.Triggers>
+                                    <DataTrigger TargetType="Grid" Binding="{Binding CanApplyInstock}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="#F3F4F6" />
+                                    </DataTrigger>
+                                </Grid.Triggers>
                                 <CheckBox IsChecked="{Binding IsSelected}"
                                           IsEnabled="{Binding CanApplyInstock}"
+                                          Style="{StaticResource OutputFrameRowCheckBoxStyle}"
                                           VerticalOptions="Center"
                                           HorizontalOptions="Center" />
-                                <Label Grid.Column="1" Text="{Binding FrameTypeDisplay, Converter={StaticResource PlaceholderConverter}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
-                                <Label Grid.Column="2" Text="{Binding FrameNo}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
-                                <Label Grid.Column="3" Text="{Binding FrameOutputQty, StringFormat='{0:G29}'}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                <Label Grid.Column="1" Text="{Binding FrameTypeDisplay, Converter={StaticResource PlaceholderConverter}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding CanApplyInstock}" Value="False">
+                                            <Setter Property="TextColor" Value="#9CA3AF" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Grid.Column="2" Text="{Binding FrameNo}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding CanApplyInstock}" Value="False">
+                                            <Setter Property="TextColor" Value="#9CA3AF" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Grid.Column="3" Text="{Binding FrameOutputQty, StringFormat='{0:G29}'}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding CanApplyInstock}" Value="False">
+                                            <Setter Property="TextColor" Value="#9CA3AF" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
