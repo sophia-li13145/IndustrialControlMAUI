@@ -192,6 +192,18 @@
 
                         <Label Grid.Row="3" Grid.Column="2" Text="检验日期：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="3" Grid.Column="3" Text="{Binding Detail.inspectTime}" Style="{StaticResource FieldValue}" />
+
+                        <!-- 第五行：过程质检开启时选择过程类型 -->
+                        <Label Grid.Row="4" Grid.Column="0"
+                               Text="过程类型："
+                               Style="{StaticResource FieldLabel}"
+                               IsVisible="{Binding IsProcessQualityTypeVisible}" />
+                        <Picker Grid.Row="4" Grid.Column="1"
+                                ItemsSource="{Binding ProcessQualityTypeOptions}"
+                                ItemDisplayBinding="{Binding Text}"
+                                SelectedItem="{Binding SelectedProcessQualityType, Mode=TwoWay}"
+                                IsEnabled="{Binding IsEditing}"
+                                IsVisible="{Binding IsProcessQualityTypeVisible}" />
                     </Grid>
                 </Frame>
 

@@ -48,7 +48,23 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<StatusOption> InspectResultOptions { get; } = new();
         /// <summary>执行 new 逻辑。</summary>
+        public ObservableCollection<StatusOption> ProcessQualityTypeOptions { get; } = new();
+        /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<InspectDeviceOption> InspectDeviceList { get; } = new();
+
+        private StatusOption? _selectedProcessQualityType;
+        public StatusOption? SelectedProcessQualityType
+        {
+            get => _selectedProcessQualityType;
+            set
+            {
+                if (SetProperty(ref _selectedProcessQualityType, value) && Detail != null)
+                {
+                    Detail.processQualityType = value?.Value ?? value?.Text;
+                    Detail.processQualityTypeName = value?.Text ?? value?.Value;
+                }
+            }
+        }
 
         private StatusOption? _selectedInspectResult;
         public StatusOption? SelectedInspectResult
@@ -68,6 +84,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
         [ObservableProperty] private bool isEditing = true;
+        public bool IsProcessQualityTypeVisible => Detail?.enableProcessQuality == true;
         public bool IsReworkVisible =>
             !string.IsNullOrWhiteSpace(Detail?.orderNumber)
             && (Detail?.workOrderStatus is "1" or "2" or "4");
@@ -120,6 +137,7 @@ namespace IndustrialControlMAUI.ViewModels
         partial void OnDetailChanged(QualityDetailDto? value)
         {
             RefreshExceptionPhotoTip();
+            OnPropertyChanged(nameof(IsProcessQualityTypeVisible));
             OnPropertyChanged(nameof(IsReworkVisible));
             OnPropertyChanged(nameof(CanRework));
             (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
@@ -329,6 +347,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();
+                await LoadProcessQualityTypeOptionsAsync();
 
                 // ===== 明细 =====
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -505,6 +524,65 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip($"加载设备参数失败：{ex.Message}");
             }
         }
+        private async Task LoadProcessQualityTypeOptionsAsync()
+        {
+            try
+            {
+                var dict = await _api.GetQualityDictsAsync(_cts.Token);
+                var options = (dict?.ProcessQualityTypes ?? new List<DictItem>())
+                    .Where(x => !string.IsNullOrWhiteSpace(x.dictItemName) || !string.IsNullOrWhiteSpace(x.dictItemValue))
+                    .Select(x => new StatusOption
+                    {
+                        Text = x.dictItemName ?? x.dictItemValue ?? string.Empty,
+                        Value = x.dictItemValue ?? x.dictItemName ?? string.Empty
+                    })
+                    .ToList();
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    ProcessQualityTypeOptions.Clear();
+                    foreach (var option in options)
+                    {
+                        ProcessQualityTypeOptions.Add(option);
+                    }
+
+                    SelectProcessQualityType();
+                });
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"加载过程类型失败：{ex.Message}");
+            }
+        }
+
+        private void SelectProcessQualityType()
+        {
+            if (Detail is null || !IsProcessQualityTypeVisible)
+            {
+                SelectedProcessQualityType = null;
+                return;
+            }
+
+            var currentValue = string.IsNullOrWhiteSpace(Detail.processQualityType)
+                ? GetNextProcessQualityType(Detail.executedProcessQualityTypes)
+                : Detail.processQualityType;
+
+            SelectedProcessQualityType = ProcessQualityTypeOptions.FirstOrDefault(o =>
+                string.Equals(o.Value, currentValue, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(o.Text, currentValue, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string GetNextProcessQualityType(string? executedProcessQualityTypes)
+        {
+            var executed = (executedProcessQualityTypes ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (!executed.Contains("first")) return "first";
+            if (!executed.Contains("middle")) return "middle";
+            return "last";
+        }
+
         /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
@@ -556,6 +634,11 @@ namespace IndustrialControlMAUI.ViewModels
             }
 
             if (!ValidateExceptionPhotoRequirement())
+            {
+                return;
+            }
+
+            if (!ValidateProcessQualityTypeRequirement())
             {
                 return;
             }
@@ -657,6 +740,11 @@ namespace IndustrialControlMAUI.ViewModels
             if (Detail is null)
             {
                 await ShowTip("没有可提交的数据。");
+                return;
+            }
+
+            if (!ValidateProcessQualityTypeRequirement())
+            {
                 return;
             }
 
@@ -934,12 +1022,56 @@ namespace IndustrialControlMAUI.ViewModels
             return !shouldBlockSave;
         }
 
+        private bool ValidateProcessQualityTypeRequirement()
+        {
+            if (!IsProcessQualityTypeVisible) return true;
+
+            if (SelectedProcessQualityType is not null) return true;
+
+            _ = ShowTip("请选择过程类型。");
+            return false;
+        }
+
+        private static string? MergeExecutedProcessQualityTypes(string? existingTypes, string? selectedType)
+        {
+            if (string.IsNullOrWhiteSpace(selectedType)) return existingTypes;
+
+            var values = (existingTypes ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            if (!values.Any(x => string.Equals(x, selectedType, StringComparison.OrdinalIgnoreCase)))
+            {
+                values.Add(selectedType.Trim());
+            }
+
+            return values.Count == 0 ? null : string.Join(",", values);
+        }
+
         /// <summary>
         /// 将前端的 Attachments/Items 回填到 Detail，用于提交
         /// </summary>
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;
+
+            if (IsProcessQualityTypeVisible)
+            {
+                var selectedProcessQualityType = SelectedProcessQualityType?.Value ?? SelectedProcessQualityType?.Text;
+                Detail.processQualityType = selectedProcessQualityType;
+                Detail.processQualityTypeName = SelectedProcessQualityType?.Text ?? SelectedProcessQualityType?.Value;
+                Detail.executedProcessQualityTypes = MergeExecutedProcessQualityTypes(
+                    Detail.executedProcessQualityTypes,
+                    selectedProcessQualityType);
+            }
+            else
+            {
+                Detail.processQualityType = null;
+                Detail.processQualityTypeName = null;
+                Detail.executedProcessQualityTypes = null;
+            }
+
             // 合并两个集合并去重（按 Id 或 Url 去重都可以）
             var allAttachments = Attachments
                 .Concat(ImageAttachments)
