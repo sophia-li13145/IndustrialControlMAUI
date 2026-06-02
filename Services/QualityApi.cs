@@ -158,13 +158,17 @@ public class QualityApi : IQualityApi
             var inspectResults = all.FirstOrDefault(f =>
        string.Equals(f.field, "orderInspectResult", StringComparison.OrdinalIgnoreCase))
        ?.dictItems ?? new List<DictItem>();
+            var processQualityTypes = all.FirstOrDefault(f =>
+       string.Equals(f.field, "processQualityType", StringComparison.OrdinalIgnoreCase))
+       ?.dictItems ?? new List<DictItem>();
 
             return new DictQuality
             {
                 InspectStatus = inspectStatus,
                 QualityTypes = qualityTypes,
                 DataSources = dataSources,
-                InspectResults = inspectResults
+                InspectResults = inspectResults,
+                ProcessQualityTypes = processQualityTypes
             };
         }
 
