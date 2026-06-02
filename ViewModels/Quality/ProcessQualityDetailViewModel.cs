@@ -1032,6 +1032,23 @@ namespace IndustrialControlMAUI.ViewModels
             return false;
         }
 
+        private static string? MergeExecutedProcessQualityTypes(string? existingTypes, string? selectedType)
+        {
+            if (string.IsNullOrWhiteSpace(selectedType)) return existingTypes;
+
+            var values = (existingTypes ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            if (!values.Any(x => string.Equals(x, selectedType, StringComparison.OrdinalIgnoreCase)))
+            {
+                values.Add(selectedType.Trim());
+            }
+
+            return values.Count == 0 ? null : string.Join(",", values);
+        }
+
         /// <summary>
         /// 将前端的 Attachments/Items 回填到 Detail，用于提交
         /// </summary>
@@ -1041,13 +1058,18 @@ namespace IndustrialControlMAUI.ViewModels
 
             if (IsProcessQualityTypeVisible)
             {
-                Detail.processQualityType = SelectedProcessQualityType?.Value ?? SelectedProcessQualityType?.Text;
+                var selectedProcessQualityType = SelectedProcessQualityType?.Value ?? SelectedProcessQualityType?.Text;
+                Detail.processQualityType = selectedProcessQualityType;
                 Detail.processQualityTypeName = SelectedProcessQualityType?.Text ?? SelectedProcessQualityType?.Value;
+                Detail.executedProcessQualityTypes = MergeExecutedProcessQualityTypes(
+                    Detail.executedProcessQualityTypes,
+                    selectedProcessQualityType);
             }
             else
             {
                 Detail.processQualityType = null;
                 Detail.processQualityTypeName = null;
+                Detail.executedProcessQualityTypes = null;
             }
 
             // 合并两个集合并去重（按 Id 或 Url 去重都可以）
