@@ -1020,22 +1020,35 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     }
 
 
-    // 删除（仅前端）
     /// <summary>执行 DeleteMaterialInput 逻辑。</summary>
     [RelayCommand]
-    private async void DeleteMaterialInput(MaterialAuRecord row)
+    private async Task DeleteMaterialInputAsync(MaterialAuRecord? row)
     {
         if (row == null) return;
-        MaterialInputRecords.Remove(row);
-        // 如需后端删除，在此调用删除接口
-        var resp = await _api.DeleteWorkProcessTaskMaterialInputAsync(row.Id);
-        if (!resp.success)
+
+        if (string.IsNullOrWhiteSpace(row.Id))
         {
-            await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
+            await Shell.Current.DisplayAlert("失败", "删除失败：id 不能为空", "OK");
             return;
         }
 
-        ActiveTab = DetailTab.Input;
+        try
+        {
+            var resp = await _api.DeleteWorkProcessTaskMaterialInputAsync(row.Id);
+            if (!resp.success)
+            {
+                await Shell.Current.DisplayAlert("失败", resp.message ?? "删除失败", "OK");
+                return;
+            }
+
+            MaterialInputRecords.Remove(row);
+            ActiveTab = DetailTab.Input;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"删除投料失败：{ex}");
+            await Shell.Current.DisplayAlert("失败", $"删除投料异常：{ex.Message}", "OK");
+        }
     }
 
     // 新增产出：只用选中行 + 弹窗返回的数量/备注
@@ -1066,22 +1079,35 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         SelectedOutputItem = null;
     }
 
-    // 删除（前端移除；如需后端删除在此补接口）
     /// <summary>执行 DeleteOutput 逻辑。</summary>
     [RelayCommand]
-    private async void DeleteOutput(OutputAuRecord row)
+    private async Task DeleteOutputAsync(OutputAuRecord? row)
     {
         if (row == null) return;
-        OutputRecords.Remove(row);
-        //调用删除接口
-        var resp = await _api.DeleteWorkProcessTaskOutputAsync(row.Id);
-        if (!resp.success)
+
+        if (string.IsNullOrWhiteSpace(row.Id))
         {
-            await Shell.Current.DisplayAlert("失败", resp.message ?? "提交失败", "OK");
+            await Shell.Current.DisplayAlert("失败", "删除失败：id 不能为空", "OK");
             return;
         }
 
-        ActiveTab = DetailTab.Output;
+        try
+        {
+            var resp = await _api.DeleteWorkProcessTaskOutputAsync(row.Id);
+            if (!resp.success)
+            {
+                await Shell.Current.DisplayAlert("失败", resp.message ?? "删除失败", "OK");
+                return;
+            }
+
+            OutputRecords.Remove(row);
+            ActiveTab = DetailTab.Output;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"删除产出失败：{ex}");
+            await Shell.Current.DisplayAlert("失败", $"删除产出异常：{ex.Message}", "OK");
+        }
     }
 
     /// <summary>执行 MaterialItemSelected 逻辑。</summary>
