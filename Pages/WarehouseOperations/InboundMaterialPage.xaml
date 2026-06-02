@@ -236,7 +236,8 @@
             </Grid>
 
             <!-- 确认入库 -->
-            <Grid Grid.Column="2"
+            <Grid x:Name="ConfirmButtonContainer"
+                  Grid.Column="2"
                   BackgroundColor="#2196F3"
                   HorizontalOptions="Fill"
                   VerticalOptions="Fill"

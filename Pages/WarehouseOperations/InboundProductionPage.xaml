@@ -214,11 +214,12 @@
             </Grid>
 
             <!-- 确认入库 -->
-            <Grid Grid.Column="2"
-           BackgroundColor="#2196F3"
-           HorizontalOptions="Fill"
-           VerticalOptions="Fill"
-           HeightRequest="50">
+            <Grid x:Name="ConfirmButtonContainer"
+                  Grid.Column="2"
+                  BackgroundColor="#2196F3"
+                  HorizontalOptions="Fill"
+                  VerticalOptions="Fill"
+                  HeightRequest="50">
                 <Grid.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnConfirmClicked" />
                 </Grid.GestureRecognizers>
