@@ -506,6 +506,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string spec = "";
         [ObservableProperty] private string location = "请选择";
         [ObservableProperty] private int qty;
+        [ObservableProperty] private string quantityText = "0";
         [ObservableProperty] private int outstockQty;
         [ObservableProperty] private string detailId;
         [ObservableProperty] private string id;

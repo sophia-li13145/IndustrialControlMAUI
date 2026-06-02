@@ -323,7 +323,8 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
             OutstockQty: ToInt(x.outstockQty),
             Spec: (x.spec ?? string.Empty).Trim(),
             ScanStatus: x.scanStatus ?? false,
-            WarehouseCode: x.warehouseCode?.Trim()
+            WarehouseCode: x.warehouseCode?.Trim(),
+            QtyDecimal: ToDecimal(x.qty)
         )).ToList();
     }
 
@@ -381,7 +382,7 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
     }
 
     public async Task<SimpleOk> UpdateQuantityAsync(
-        string barcode, string detailId, string id, int quantity, CancellationToken ct = default)
+        string barcode, string detailId, string id, decimal quantity, CancellationToken ct = default)
     {
         var payload = new { barcode, detailId, id, quantity };
 
@@ -396,16 +397,22 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
     // -------- 工具 --------
     private static int ToInt(object? v)
     {
-        if (v is null) return 0;
+        var d = ToDecimal(v);
+        return (int)Math.Round(d, MidpointRounding.AwayFromZero);
+    }
+
+    private static decimal ToDecimal(object? v)
+    {
+        if (v is null) return 0m;
         return v switch
         {
             int i => i,
-            long l => (int)l,
-            decimal d => (int)Math.Round(d, MidpointRounding.AwayFromZero),
-            double db => (int)Math.Round(db, MidpointRounding.AwayFromZero),
-            string s when int.TryParse(s.Trim(), out var i2) => i2,
-            string s2 when decimal.TryParse(s2.Trim(), out var d2) => (int)Math.Round(d2, MidpointRounding.AwayFromZero),
-            _ => 0
+            long l => l,
+            decimal d => d,
+            double db => (decimal)db,
+            float f => (decimal)f,
+            string s when decimal.TryParse(s.Trim(), out var d2) => d2,
+            _ => 0m
         };
 
     }

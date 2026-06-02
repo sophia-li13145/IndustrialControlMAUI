@@ -192,7 +192,7 @@
                                    HorizontalTextAlignment="Center"
                                    WidthRequest="64"
                                    Completed="OnQtyCompleted"
-                                   Text="{Binding Qty, Mode=TwoWay, Converter={StaticResource IntConverter}}" />
+                                   Text="{Binding QuantityText, Mode=TwoWay}" />
 
                         </Grid>
                     </DataTemplate>
