@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -165,7 +166,7 @@ namespace IndustrialControlMAUI.ViewModels
                 .Select(g =>
                 {
                     var first = g.First();
-                    var qty = g.Sum(x => x.Qty);
+                    var qty = g.Sum(x => x.QtyDecimal);
                     var loc = g.Select(x => (x.Location ?? "").Trim()).LastOrDefault(s => !string.IsNullOrEmpty(s)) ?? "请选择";
                     var wh = g.Select(x => (x.WarehouseCode ?? "").Trim()).LastOrDefault(s => !string.IsNullOrEmpty(s)) ?? "";
                     var pass = g.Any(x => x.ScanStatus);
@@ -175,7 +176,8 @@ namespace IndustrialControlMAUI.ViewModels
                         Barcode = (first.Barcode ?? "").Trim(),
                         Name = first.MaterialName ?? "",
                         Spec = first.Spec ?? "",
-                        Qty = qty,
+                        Qty = ToDisplayInt(qty),
+                        QuantityText = FormatQuantity(qty),
                         Location = string.IsNullOrWhiteSpace(loc) ? "请选择" : loc,
                         WarehouseCode = wh,
                         ScanStatus = pass,
@@ -210,7 +212,7 @@ namespace IndustrialControlMAUI.ViewModels
                 .Select(g =>
                 {
                     var first = g.First();
-                    var qty = g.Sum(x => x.Qty);
+                    var qty = g.Sum(x => x.QtyDecimal);
                     var loc = g.Select(x => (x.Location ?? "").Trim()).LastOrDefault(s => !string.IsNullOrEmpty(s)) ?? "请选择";
                     var wh = g.Select(x => (x.WarehouseCode ?? "").Trim()).LastOrDefault(s => !string.IsNullOrEmpty(s)) ?? "";
                     var pass = g.Any(x => x.ScanStatus);
@@ -220,7 +222,8 @@ namespace IndustrialControlMAUI.ViewModels
                         Barcode = (first.Barcode ?? "").Trim(),
                         Name = first.MaterialName ?? "",
                         Spec = first.Spec ?? "",
-                        Qty = qty,
+                        Qty = ToDisplayInt(qty),
+                        QuantityText = FormatQuantity(qty),
                         Location = string.IsNullOrWhiteSpace(loc) ? "请选择" : loc,
                         WarehouseCode = wh,
                         ScanStatus = pass,
@@ -264,6 +267,7 @@ namespace IndustrialControlMAUI.ViewModels
                     Spec = "",
                     Location = "请选择",
                     Qty = 0,
+                    QuantityText = "0",
                     ScanStatus = true,    // 预期态，待服务端校正
                     WarehouseCode = "",
                     DetailId = "",
@@ -291,6 +295,7 @@ namespace IndustrialControlMAUI.ViewModels
                     if (!string.Equals(exist.Name, it.Name, StringComparison.Ordinal)) exist.Name = it.Name;
                     if (!string.Equals(exist.Spec, it.Spec, StringComparison.Ordinal)) exist.Spec = it.Spec;
                     if (exist.Qty != it.Qty) exist.Qty = it.Qty;
+                    if (!string.Equals(exist.QuantityText, it.QuantityText, StringComparison.Ordinal)) exist.QuantityText = it.QuantityText;
                     if (!string.Equals(exist.Location, it.Location, StringComparison.Ordinal)) exist.Location = it.Location;
                     if (!string.Equals(exist.WarehouseCode, it.WarehouseCode, StringComparison.Ordinal)) exist.WarehouseCode = it.WarehouseCode;
                     if (exist.ScanStatus != it.ScanStatus) exist.ScanStatus = it.ScanStatus;
@@ -394,32 +399,16 @@ namespace IndustrialControlMAUI.ViewModels
 
             try
             {
-                // ③ 线程安全占位
+                // ③ 先记录是否已有该条码；接口失败时不能新增占位行
+                var hadExistingRow = false;
                 lock (_listLock)
                 {
                     var exist = ScannedList.FirstOrDefault(x =>
                         string.Equals(x.Barcode, barcode, StringComparison.OrdinalIgnoreCase));
 
-                    if (exist is null)
+                    if (exist is not null)
                     {
-                        var placeholder = new OutScannedItem
-                        {
-                            Barcode = barcode,
-                            Name = "",
-                            Spec = "",
-                            Qty = 0,
-                            Location = "请选择",
-                            WarehouseCode = "",
-                            ScanStatus = true,
-                            DetailId = "",
-                            Id = OutstockId ?? "",
-                            IsSelected = true
-                        };
-                        ScannedList.Add(placeholder);
-                        SelectedScanItem = placeholder;
-                    }
-                    else
-                    {
+                        hadExistingRow = true;
                         exist.IsSelected = true;
                         SelectedScanItem = exist;
                     }
@@ -437,6 +426,35 @@ namespace IndustrialControlMAUI.ViewModels
                             ? "出库失败，请重试或检查条码。"
                             : resp.Message!);
                         return;
+                    }
+
+                    if (!hadExistingRow)
+                    {
+                        lock (_listLock)
+                        {
+                            var exist = ScannedList.FirstOrDefault(x =>
+                                string.Equals(x.Barcode, barcode, StringComparison.OrdinalIgnoreCase));
+
+                            if (exist is null)
+                            {
+                                var placeholder = new OutScannedItem
+                                {
+                                    Barcode = barcode,
+                                    Name = "",
+                                    Spec = "",
+                                    Qty = 0,
+                                    QuantityText = "0",
+                                    Location = "请选择",
+                                    WarehouseCode = "",
+                                    ScanStatus = true,
+                                    DetailId = "",
+                                    Id = OutstockId ?? "",
+                                    IsSelected = true
+                                };
+                                ScannedList.Add(placeholder);
+                                SelectedScanItem = placeholder;
+                            }
+                        }
                     }
 
                     var ver = Interlocked.Increment(ref _scannedVersion);
@@ -470,6 +488,21 @@ namespace IndustrialControlMAUI.ViewModels
         private Task ShowTip(string message) =>
             Shell.Current?.DisplayAlert("提示", message, "确定") ?? Task.CompletedTask;
 
+
+        private static int ToDisplayInt(decimal quantity) =>
+            (int)Math.Round(quantity, MidpointRounding.AwayFromZero);
+
+        private static string FormatQuantity(decimal quantity) =>
+            quantity.ToString("G29", CultureInfo.InvariantCulture);
+
+        private static bool TryParseQuantity(string? text, out decimal quantity)
+        {
+            quantity = 0m;
+            if (string.IsNullOrWhiteSpace(text)) return false;
+
+            return decimal.TryParse(text.Trim(), NumberStyles.Number, CultureInfo.CurrentCulture, out quantity)
+                || decimal.TryParse(text.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out quantity);
+        }
 
         /// <summary>执行 ClearScan 逻辑。</summary>
         public void ClearScan() => ScannedList.Clear();
@@ -580,13 +613,18 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip("该行尚未扫描通过，不能修改数量。");
                 return false;
             }
-            if (row.Qty < 0)
+            if (!TryParseQuantity(row.QuantityText, out var quantity))
+            {
+                await ShowTip("请输入有效的数量。");
+                return false;
+            }
+            if (quantity < 0)
             {
                 await ShowTip("数量不能为负数。");
                 return false;
             }
 
-            var resp = await _api.UpdateQuantityAsync(row.Barcode, row.DetailId, row.Id, row.Qty, ct);
+            var resp = await _api.UpdateQuantityAsync(row.Barcode, row.DetailId, row.Id, quantity, ct);
             if (!resp.Succeeded)
             {
                 await ShowTip(string.IsNullOrWhiteSpace(resp.Message) ? "更新数量失败" : resp.Message!);

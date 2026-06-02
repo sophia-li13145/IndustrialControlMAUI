@@ -39,7 +39,7 @@ public interface IOutboundMaterialService
         CancellationToken ct = default);
 
     Task<SimpleOk> UpdateQuantityAsync(
-    string barcode, string detailId, string id, int quantity, CancellationToken ct = default);
+    string barcode, string detailId, string id, decimal quantity, CancellationToken ct = default);
 
 }
 

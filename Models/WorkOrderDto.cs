@@ -85,7 +85,8 @@ public record OutboundScannedRow(
     int OutstockQty,
     string Spec,
     bool ScanStatus,
-    string? WarehouseCode
+    string? WarehouseCode,
+    decimal QtyDecimal
     );
 
 public class ApiResp<T>
