@@ -28,6 +28,7 @@ public partial class InboundMaterialPage : ContentPage
     private readonly IDialogService _dialogs;
     private bool _loadedOnce = false;
     private readonly IServiceProvider _sp;
+    private bool _isConfirming;
 
     /// <summary>执行 InboundMaterialPage 初始化逻辑。</summary>
     public InboundMaterialPage(IServiceProvider sp, InboundMaterialViewModel vm,IDialogService dialogs)
@@ -111,22 +112,39 @@ public partial class InboundMaterialPage : ContentPage
 
 
     /// <summary>
-    /// 确认入库按钮点击
+    /// 确认按钮点击，防止连续点击导致重复提交。
     /// </summary>
     async void OnConfirmClicked(object sender, EventArgs e)
     {
-        var ok = await _vm.ConfirmInboundAsync();
-        if (ok)
+        if (_isConfirming)
         {
-            await DisplayAlert("提示", "入库成功", "确定");
-            _vm.ClearAll();
-
-            // ✅ 返回到工单查询页面（InboundMaterialSearchPage）
-            await Shell.Current.GoToAsync(nameof(InboundMaterialSearchPage));
+            return;
         }
-        else
+
+        _isConfirming = true;
+        ConfirmButtonContainer.IsEnabled = false;
+        ConfirmButtonContainer.Opacity = 0.6;
+
+        try
         {
-            await DisplayAlert("提示", "入库失败，请检查数据", "确定");
+            var ok = await _vm.ConfirmInboundAsync();
+            if (ok)
+            {
+                await DisplayAlert("提示", "入库成功", "确定");
+                _vm.ClearAll();
+
+                await Shell.Current.GoToAsync(nameof(InboundMaterialSearchPage));
+            }
+            else
+            {
+                await DisplayAlert("提示", "入库失败，请检查数据", "确定");
+            }
+        }
+        finally
+        {
+            _isConfirming = false;
+            ConfirmButtonContainer.IsEnabled = true;
+            ConfirmButtonContainer.Opacity = 1;
         }
     }
 
