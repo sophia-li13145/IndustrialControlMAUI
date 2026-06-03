@@ -1108,7 +1108,18 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
             }
 
             OutputRecords.Remove(row);
-            ActiveTab = DetailTab.Output;
+
+            var detailId = Detail?.id;
+            if (!string.IsNullOrWhiteSpace(detailId))
+            {
+                await RefreshTabRecordsAsync(DetailTab.Output, () => LoadDetailAsync(detailId));
+            }
+            else
+            {
+                ActiveTab = DetailTab.Output;
+            }
+
+            SelectedOutputItem = null;
         }
         catch (Exception ex)
         {
