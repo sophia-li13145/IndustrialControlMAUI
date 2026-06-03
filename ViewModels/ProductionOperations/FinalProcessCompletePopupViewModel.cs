@@ -13,6 +13,12 @@ public partial class FinalProcessCompletePopupViewModel : ObservableObject
 
     public void SetResultTcs(TaskCompletionSource<FinalProcessCompletePopupResult?> tcs) => _tcs = tcs;
 
+    public void Initialize(decimal? initialActQty)
+    {
+        if (initialActQty.HasValue)
+            ActQtyText = initialActQty.Value.ToString("G29");
+    }
+
     [RelayCommand]
     private async Task Confirm()
     {
