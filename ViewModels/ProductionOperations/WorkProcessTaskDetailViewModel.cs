@@ -1,4 +1,4 @@
-﻿using Android.Text;
+using Android.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
@@ -502,8 +502,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         Debug.WriteLine("切换到料框");
         ActiveTab = DetailTab.Frame;
 
-        if (OutputFrameCount == 0 && !_isLoadingOutputFrameRecords)
-            _ = LoadOutputFrameRecordsAsync();
+        _ = LoadOutputFrameRecordsAsync();
     }
 
     /// <summary>执行 InitAsync 逻辑。</summary>
