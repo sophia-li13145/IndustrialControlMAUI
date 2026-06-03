@@ -103,7 +103,7 @@ namespace IndustrialControlMAUI.Services
     string id,
     CancellationToken ct = default);
 
-        Task<ApiResp<bool>> DeleteWorkProcessTaskOutputAsync(
+        Task<ApiResp<bool?>> DeleteWorkProcessTaskOutputAsync(
    string id,
    CancellationToken ct = default);
         Task<ApiResp<bool>> EditWorkProcessTaskMaterialInputAsync(

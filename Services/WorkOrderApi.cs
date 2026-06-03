@@ -1078,12 +1078,12 @@ namespace IndustrialControlMAUI.Services
             return data ?? new ApiResp<bool> { success = false, message = "empty response" };
         }
         //单条删除产出
-        public async Task<ApiResp<bool>> DeleteWorkProcessTaskOutputAsync(
+        public async Task<ApiResp<bool?>> DeleteWorkProcessTaskOutputAsync(
    string id,
    CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(id))
-                return new ApiResp<bool> { success = false, message = "id 不能为空" };
+                return new ApiResp<bool?> { success = false, message = "id 不能为空" };
 
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _deleteWorkProcessTaskOutputEndpoint);
 
@@ -1099,9 +1099,9 @@ namespace IndustrialControlMAUI.Services
             resp.EnsureSuccessStatusCode();
 
             await using var stream = await resp.Content.ReadAsStreamAsync(ct);
-            var data = await JsonSerializer.DeserializeAsync<ApiResp<bool>>(stream, _json, ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<bool?>>(stream, _json, ct);
 
-            return data ?? new ApiResp<bool> { success = false, message = "empty response" };
+            return data ?? new ApiResp<bool?> { success = false, message = "empty response" };
         }
 
         // 编辑投料记录
