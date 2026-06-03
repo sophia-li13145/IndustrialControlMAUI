@@ -27,7 +27,23 @@
                             </Label>
                         </Grid>
                     </CollectionView.Header>
-                    <CollectionView.ItemTemplate><DataTemplate><Frame Margin="0,4" Padding="10" BorderColor="#E5E7EB" BackgroundColor="#F9FAFB" HasShadow="False" CornerRadius="10"><Grid ColumnDefinitions="*,Auto,Auto"><Label Text="{Binding frameNo}" FontAttributes="Bold"/><Label Grid.Column="1" Text="空闲" TextColor="#16A34A" BackgroundColor="#DCFCE7" Padding="8,2"/><Label Grid.Column="2" Text="✕" TextColor="#9CA3AF"><Label.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveSelectedCommand}" CommandParameter="{Binding .}"/></Label.GestureRecognizers></Label></Grid></Frame></DataTemplate></CollectionView.ItemTemplate>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,4" Padding="10" BorderColor="#E5E7EB" BackgroundColor="#F9FAFB" HasShadow="False" CornerRadius="10">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding frameNo}" FontAttributes="Bold"/>
+                                    <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="#FEE2E2" Padding="8,2">
+                                        <Label Text="{Binding FrameStatusDisplayText}" TextColor="#DC2626"/>
+                                    </Border>
+                                    <Label Grid.Column="2" Text="✕" TextColor="#9CA3AF">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveSelectedCommand}" CommandParameter="{Binding .}"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
                 </CollectionView>
             </VerticalStackLayout>
         </Frame>
