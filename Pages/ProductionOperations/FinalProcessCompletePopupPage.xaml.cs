@@ -11,7 +11,7 @@ public partial class FinalProcessCompletePopupPage : ContentPage
         BindingContext = vm;
     }
 
-    public static async Task<FinalProcessCompletePopupResult?> ShowAsync(IServiceProvider? sp)
+    public static async Task<FinalProcessCompletePopupResult?> ShowAsync(IServiceProvider? sp, decimal? initialActQty = null)
     {
         var tcs = new TaskCompletionSource<FinalProcessCompletePopupResult?>();
         var provider = sp ?? Application.Current?.Handler?.MauiContext?.Services;
@@ -19,6 +19,7 @@ public partial class FinalProcessCompletePopupPage : ContentPage
             ? ActivatorUtilities.CreateInstance<FinalProcessCompletePopupViewModel>(provider)
             : new FinalProcessCompletePopupViewModel();
         vm.SetResultTcs(tcs);
+        vm.Initialize(initialActQty);
 
         var page = new FinalProcessCompletePopupPage(vm);
         if (Application.Current?.MainPage?.Navigation is not null)

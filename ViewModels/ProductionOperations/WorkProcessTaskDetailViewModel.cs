@@ -419,7 +419,15 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
             if (Detail?.finalProcess == true)
             {
-                var popupResult = await FinalProcessCompletePopupPage.ShowAsync(null);
+                decimal? initialActQty = null;
+                if (!string.IsNullOrWhiteSpace(Detail.id))
+                {
+                    var qtyResp = await _api.GetWorkProcessTaskFrameOutputQtyAsync(Detail.id);
+                    if (qtyResp?.success == true)
+                        initialActQty = qtyResp.result;
+                }
+
+                var popupResult = await FinalProcessCompletePopupPage.ShowAsync(null, initialActQty);
                 if (popupResult is null) return;
                 memo = popupResult.Memo;
                 actQty = popupResult.ActQty;
