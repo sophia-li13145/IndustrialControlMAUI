@@ -1082,7 +1082,22 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         var picked = await OutputPopupPage.ShowAsync(_sp, list, preset, Detail);
         ActiveTab = DetailTab.Output;
         if (picked is null) return;
-        await RefreshTabRecordsAsync(DetailTab.Output, LoadOutputInputsAsync);
+        var detailId = Detail?.id;
+        if (!string.IsNullOrWhiteSpace(detailId))
+        {
+            // 新增产出后，后端会同步影响投料页的应投明细/投料记录统计；
+            // 重新加载详情可刷新 Detail.materialInputList，并同步刷新投料、产出记录列表。
+            await RefreshTabRecordsAsync(DetailTab.Output, () => LoadDetailAsync(detailId));
+        }
+        else
+        {
+            await RefreshTabRecordsAsync(DetailTab.Output, async () =>
+            {
+                await LoadOutputInputsAsync();
+                await LoadMaterialInputsAsync();
+            });
+        }
+
         SelectedOutputItem = null;
     }
 
