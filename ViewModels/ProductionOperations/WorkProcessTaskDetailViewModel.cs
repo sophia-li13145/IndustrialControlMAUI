@@ -268,6 +268,25 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         await MainThread.InvokeOnMainThreadAsync(() => ActiveTab = tab);
     }
 
+    private async Task RefreshAfterOutputChangedAsync()
+    {
+        var detailId = Detail?.id;
+        if (!string.IsNullOrWhiteSpace(detailId))
+        {
+            // 产出新增/删除后，后端会同步影响投料页两个列表：
+            // 1. Detail.materialInputList（应投明细）；2. MaterialInputRecords（投料记录）。
+            // 重新加载详情可一次性刷新这些数据，并保持当前页面停留在产出 Tab。
+            await RefreshTabRecordsAsync(DetailTab.Output, () => LoadDetailAsync(detailId));
+            return;
+        }
+
+        await RefreshTabRecordsAsync(DetailTab.Output, async () =>
+        {
+            await LoadOutputInputsAsync();
+            await LoadMaterialInputsAsync();
+        });
+    }
+
 
     /// <summary>执行 ApplyQueryAttributes 逻辑。</summary>
     public async void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -1082,7 +1101,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         var picked = await OutputPopupPage.ShowAsync(_sp, list, preset, Detail);
         ActiveTab = DetailTab.Output;
         if (picked is null) return;
-        await RefreshTabRecordsAsync(DetailTab.Output, LoadOutputInputsAsync);
+        await RefreshAfterOutputChangedAsync();
         SelectedOutputItem = null;
     }
 
@@ -1109,16 +1128,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
             OutputRecords.Remove(row);
 
-            var detailId = Detail?.id;
-            if (!string.IsNullOrWhiteSpace(detailId))
-            {
-                await RefreshTabRecordsAsync(DetailTab.Output, () => LoadDetailAsync(detailId));
-            }
-            else
-            {
-                ActiveTab = DetailTab.Output;
-            }
-
+            await RefreshAfterOutputChangedAsync();
             SelectedOutputItem = null;
         }
         catch (Exception ex)
