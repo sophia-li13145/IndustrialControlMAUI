@@ -20,6 +20,8 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IAttachmentApi _attachmentApi;
         private readonly IWorkOrderApi _workOrderApi;
         private readonly CancellationTokenSource _cts = new();
+        private bool _suppressRealtimeSave;
+        private int _realtimeSaveVersion;
         private const string Folder = "quality";
         private const string LocationFile = "table";
         private const string LocationImage = "main";
@@ -64,6 +66,7 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     Detail.unqualifiedMaterialCode = value?.materialCode;
                     Detail.unqualifiedMaterialName = value?.materialName;
+                    QueueRealtimeSaveFromUi();
                 }
             }
         }
@@ -78,6 +81,7 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     Detail.processQualityType = value?.Value ?? value?.Text;
                     Detail.processQualityTypeName = value?.Text ?? value?.Value;
+                    QueueRealtimeSaveFromUi();
                 }
             }
         }
@@ -92,7 +96,10 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     // 选中后回写到 Detail.inspectResult（不去改 total*，避免触发连锁）
                     if (Detail != null)
+                    {
                         Detail.inspectResult = value?.Value ?? value?.Text;
+                        QueueRealtimeSaveFromUi();
+                    }
                     RefreshExceptionPhotoTip();
                 }
             }
@@ -242,6 +249,7 @@ namespace IndustrialControlMAUI.ViewModels
             if (Detail != null) Detail.inspecter = user.realname;
             // 输入框显示
             InspectorText = user.realname;
+            QueueRealtimeSaveFromUi();
 
             IsInspectorDropdownOpen = false;
             InspectorSuggestions.Clear();
@@ -300,6 +308,8 @@ namespace IndustrialControlMAUI.ViewModels
         private void ClearInspector()
         {
             InspectorText = string.Empty;
+            if (Detail != null) Detail.inspecter = string.Empty;
+            QueueRealtimeSaveFromUi();
             IsInspectorDropdownOpen = false;
         }
 
@@ -340,6 +350,7 @@ namespace IndustrialControlMAUI.ViewModels
         {
             if (IsBusy || string.IsNullOrWhiteSpace(_id)) return;
             IsBusy = true;
+            _suppressRealtimeSave = true;
             try
             {
                 var resp = await _api.GetDetailAsync(_id!);
@@ -462,6 +473,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
             finally
             {
+                _suppressRealtimeSave = false;
                 IsBusy = false;
             }
         }
@@ -499,6 +511,13 @@ namespace IndustrialControlMAUI.ViewModels
             if (e.PropertyName == nameof(QualityItem.selectedInspectDevice))
             {
                 await LoadInspectParamsAsync(item);
+            }
+
+            if (e.PropertyName is not nameof(QualityItem.IsAutoInspectEnabled)
+                and not nameof(QualityItem.IsEditing)
+                and not nameof(QualityItem.badRate))
+            {
+                QueueRealtimeSaveFromUi();
             }
         }
 
@@ -548,21 +567,22 @@ namespace IndustrialControlMAUI.ViewModels
             var existingMaterialCode = Detail?.unqualifiedMaterialCode;
             var existingMaterialName = Detail?.unqualifiedMaterialName;
 
-            await MainThread.InvokeOnMainThreadAsync(() =>
-            {
-                UnqualifiedMaterialOptions.Clear();
-                _selectedUnqualifiedMaterial = null;
-                OnPropertyChanged(nameof(SelectedUnqualifiedMaterial));
-            });
-
-            var workOrderNo = Detail?.orderNumber;
-            if (string.IsNullOrWhiteSpace(workOrderNo))
-            {
-                return;
-            }
-
+            _suppressRealtimeSave = true;
             try
             {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    UnqualifiedMaterialOptions.Clear();
+                    _selectedUnqualifiedMaterial = null;
+                    OnPropertyChanged(nameof(SelectedUnqualifiedMaterial));
+                });
+
+                var workOrderNo = Detail?.orderNumber;
+                if (string.IsNullOrWhiteSpace(workOrderNo))
+                {
+                    return;
+                }
+
                 var resp = await _workOrderApi.GetReworkBomFlattenDetailsAsync(workOrderNo, _cts.Token);
                 if (resp?.success != true)
                 {
@@ -589,6 +609,48 @@ namespace IndustrialControlMAUI.ViewModels
             catch (Exception ex)
             {
                 await ShowTip($"加载不合格物料失败：{ex.Message}");
+            }
+            finally
+            {
+                _suppressRealtimeSave = false;
+            }
+        }
+
+        public void QueueRealtimeSaveFromUi()
+        {
+            if (_suppressRealtimeSave || Detail is null || !IsEditing || IsBusy)
+            {
+                return;
+            }
+
+            var version = System.Threading.Interlocked.Increment(ref _realtimeSaveVersion);
+            _ = SaveRealtimeAsync(version);
+        }
+
+        private async Task SaveRealtimeAsync(int version)
+        {
+            try
+            {
+                await Task.Delay(500, _cts.Token);
+                if (version != _realtimeSaveVersion || Detail is null || _suppressRealtimeSave)
+                {
+                    return;
+                }
+
+                PreparePayloadFromUi();
+                var resp = await _api.ExecuteSaveAsync(Detail, _cts.Token);
+                if (resp?.success != true || resp.result != true)
+                {
+                    await ShowTip($"实时保存失败：{resp?.message ?? "接口返回失败"}");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // 页面销毁时取消请求，无需提示。
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"实时保存异常：{ex.Message}");
             }
         }
 
@@ -922,6 +984,7 @@ namespace IndustrialControlMAUI.ViewModels
                 });
                 if (pick == null) return;
 
+                var hasChanged = false;
                 foreach (var f in pick)
                 {
                     var ext = Path.GetExtension(f.FileName)?.TrimStart('.').ToLowerInvariant();
@@ -976,6 +1039,7 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         localItem.AttachmentLocation = LocationFile;
                         Attachments.Insert(0, localItem);
+                        hasChanged = true;
                     }
 
                     // 仅图片列表
@@ -983,6 +1047,7 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         localItem.AttachmentLocation = LocationImage;
                         ImageAttachments.Insert(0, localItem);
+                        hasChanged = true;
                     }
 
                     // 6) 真正上传文件（关键：multipart/form-data + file）
@@ -1027,6 +1092,11 @@ namespace IndustrialControlMAUI.ViewModels
                     {
                         await ShowTip($"上传失败：{resp?.message ?? "未知错误"}\n（已仅本地显示）");
                     }
+                }
+
+                if (hasChanged)
+                {
+                    QueueRealtimeSaveFromUi();
                 }
             }
             catch (Exception ex)
@@ -1232,6 +1302,7 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 if (item.AttachmentLocation == LocationFile) Attachments.Remove(item);
                 if (item.AttachmentLocation == LocationImage) ImageAttachments.Remove(item);
+                QueueRealtimeSaveFromUi();
                 await ShowTip("已从本地移除（未上传到服务器）");
                 return;
             }
@@ -1249,6 +1320,7 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     Attachments.Remove(item);
                     if (item.IsImage) ImageAttachments.Remove(item);
+                    QueueRealtimeSaveFromUi();
                     await ShowTip("删除成功");
                 }
                 else
@@ -1297,6 +1369,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             // 如果后端需要回填文本字段：
             row.defect = string.Join(",", row.SelectedDefects.Select(x => x.Name));
+            QueueRealtimeSaveFromUi();
         }
 
 
