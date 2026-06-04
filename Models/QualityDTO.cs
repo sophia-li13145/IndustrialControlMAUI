@@ -127,6 +127,8 @@ public class QualityDetailDto : ObservableObject
     public string? executedProcessQualityTypes { get; set; }
     public string? processQualityType { get; set; }
     public string? processQualityTypeName { get; set; }
+    public string? unqualifiedMaterialCode { get; set; }
+    public string? unqualifiedMaterialName { get; set; }
 
     public string? createdTime { get; set; }
     public string? modifiedTime { get; set; }
@@ -278,8 +280,19 @@ public partial class QualityItem : ObservableObject
     public string? standardValue { get; set; }
     public string? upperLimit { get; set; }
     public string? lowerLimit { get; set; }
-    public string? badCause { get; set; }
-    public string? defect { get; set; }
+    private string? _badCause;
+    public string? badCause
+    {
+        get => _badCause;
+        set => SetProperty(ref _badCause, value);
+    }
+
+    private string? _defect;
+    public string? defect
+    {
+        get => _defect;
+        set => SetProperty(ref _defect, value);
+    }
 
     private string? _inspectResult;
     public string? inspectResult
