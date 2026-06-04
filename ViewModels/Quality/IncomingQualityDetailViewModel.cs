@@ -14,7 +14,7 @@ namespace IndustrialControlMAUI.ViewModels
     /// <summary>
     /// 质检单详情页 VM
     /// </summary>
-    public partial class IncomingQualityDetailViewModel : ObservableObject, IQueryAttributable
+    public partial class IncomingQualityDetailViewModel : ObservableObject, IQueryAttributable, IQualityDetailExitGuard
     {
         private readonly IQualityApi _api;
         private readonly IAuthApi _authApi;
@@ -23,6 +23,8 @@ namespace IndustrialControlMAUI.ViewModels
         private const string Folder = "quality";
         private const string LocationFile = "table";
         private const string LocationImage = "main";
+        private string? _cleanSnapshot;
+        private bool _lastSaveSucceeded;
         // ===== 上传限制 =====
         private const int MaxImageCount = 9;
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
@@ -90,6 +92,58 @@ namespace IndustrialControlMAUI.ViewModels
             ImageAttachments.CollectionChanged += (_, _) => RefreshExceptionPhotoTip();
            
         }
+
+        public bool HasUnsavedChanges => Detail is not null && IsEditing && !string.Equals(_cleanSnapshot, BuildChangeSnapshot(), StringComparison.Ordinal);
+
+        public async Task<bool> SaveForExitAsync()
+        {
+            _lastSaveSucceeded = false;
+            await Save();
+            return _lastSaveSucceeded;
+        }
+
+        private void MarkClean()
+        {
+            _cleanSnapshot = BuildChangeSnapshot();
+        }
+
+        private string BuildChangeSnapshot()
+        {
+            if (Detail is null)
+            {
+                return string.Empty;
+            }
+
+            PreparePayloadFromUi();
+            var snapshot = new
+            {
+                Detail,
+                InspectorText,
+                Attachments = Attachments.Select(CreateAttachmentSnapshot).ToList(),
+                ImageAttachments = ImageAttachments.Select(CreateAttachmentSnapshot).ToList()
+            };
+
+            return System.Text.Json.JsonSerializer.Serialize(snapshot);
+        }
+
+        private static object CreateAttachmentSnapshot(OrderQualityAttachmentItem attachment)
+            => new
+            {
+                attachment.Id,
+                attachment.AttachmentExt,
+                attachment.AttachmentFolder,
+                attachment.AttachmentLocation,
+                attachment.AttachmentName,
+                attachment.AttachmentRealName,
+                attachment.AttachmentSize,
+                attachment.AttachmentUrl,
+                attachment.CreatedTime,
+                attachment.Name,
+                attachment.QualityNo,
+                attachment.Status,
+                attachment.Uid,
+                attachment.Url
+            };
 
         public List<UserInfoDto> AllUsers { get; private set; }
         public ObservableCollection<UserInfoDto> InspectorSuggestions { get; }
@@ -410,6 +464,7 @@ namespace IndustrialControlMAUI.ViewModels
                         string.Equals(o.Text, Detail.inspectResult, StringComparison.OrdinalIgnoreCase));
                 ShowConcessionAcceptQtyInput = IsConcessionAcceptResult(SelectedInspectResult?.Value ?? SelectedInspectResult?.Text);
                
+                MarkClean();
                 IsInspectorDropdownOpen = false;
             }
             catch (Exception ex)
@@ -566,6 +621,8 @@ namespace IndustrialControlMAUI.ViewModels
                 var resp = await _api.ExecuteSaveAsync(Detail);
                 if (resp?.success == true && resp.result == true)
                 {
+                    _lastSaveSucceeded = true;
+                    MarkClean();
                     await ShowTip("已保存。");
                 }
                 else

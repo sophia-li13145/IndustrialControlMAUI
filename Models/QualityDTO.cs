@@ -391,8 +391,10 @@ public partial class QualityItem : ObservableObject
         && !string.IsNullOrWhiteSpace(inspectStartTime)
         && !string.IsNullOrWhiteSpace(inspectEndTime);
 
+    [JsonIgnore]
     public ObservableCollection<DefectChip> SelectedDefects { get; set; } = new();
 
+    [JsonIgnore]
     public string SelectedDefectNames => string.Join(",", SelectedDefects.Select(x => x.Name));
 
     private decimal? _sampleQty;

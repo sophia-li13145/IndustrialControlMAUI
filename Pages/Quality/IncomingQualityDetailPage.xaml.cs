@@ -5,6 +5,7 @@ namespace IndustrialControlMAUI.Pages;
 public partial class IncomingQualityDetailPage : ContentPage
 {
     private readonly IncomingQualityDetailViewModel _vm;
+    private readonly QualityExitPrompt _exitPrompt;
     /// <summary>执行 IncomingQualityDetailPage 初始化逻辑。</summary>
     public IncomingQualityDetailPage() : this(ServiceHelper.GetService<IncomingQualityDetailViewModel>()) { }
 
@@ -14,6 +15,7 @@ public partial class IncomingQualityDetailPage : ContentPage
         InitializeComponent();
         _vm = vm ?? throw new ArgumentNullException(nameof(vm));
         BindingContext = _vm;
+        _exitPrompt = new QualityExitPrompt(this, _vm);
     }
 
     /// <summary>执行 OnPickImagesClicked 逻辑。</summary>
@@ -32,8 +34,18 @@ public partial class IncomingQualityDetailPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        _exitPrompt.Attach();
+    }
 
+    protected override void OnDisappearing()
+    {
+        _exitPrompt.Detach();
+        base.OnDisappearing();
+    }
 
+    protected override bool OnBackButtonPressed()
+    {
+        return _exitPrompt.HandleBackButtonPressed();
     }
 
     /// <summary>执行 OnInspectorEntryCompleted 逻辑。</summary>
