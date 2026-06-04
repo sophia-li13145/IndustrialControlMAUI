@@ -18,6 +18,7 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IQualityApi _api;
         private readonly IAuthApi _authApi;
         private readonly IAttachmentApi _attachmentApi;
+        private readonly IWorkOrderApi _workOrderApi;
         private readonly CancellationTokenSource _cts = new();
         private const string Folder = "quality";
         private const string LocationFile = "table";
@@ -51,6 +52,21 @@ namespace IndustrialControlMAUI.ViewModels
         public ObservableCollection<StatusOption> ProcessQualityTypeOptions { get; } = new();
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<InspectDeviceOption> InspectDeviceList { get; } = new();
+        public ObservableCollection<ReworkBomDetailFlattenItem> UnqualifiedMaterialOptions { get; } = new();
+
+        private ReworkBomDetailFlattenItem? _selectedUnqualifiedMaterial;
+        public ReworkBomDetailFlattenItem? SelectedUnqualifiedMaterial
+        {
+            get => _selectedUnqualifiedMaterial;
+            set
+            {
+                if (SetProperty(ref _selectedUnqualifiedMaterial, value) && Detail != null)
+                {
+                    Detail.unqualifiedMaterialCode = value?.materialCode;
+                    Detail.unqualifiedMaterialName = value?.materialName;
+                }
+            }
+        }
 
         private StatusOption? _selectedProcessQualityType;
         public StatusOption? SelectedProcessQualityType
@@ -96,11 +112,12 @@ namespace IndustrialControlMAUI.ViewModels
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
         /// <summary>执行 ProcessQualityDetailViewModel 初始化逻辑。</summary>
-        public ProcessQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi)
+        public ProcessQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi, IWorkOrderApi workOrderApi)
         {
             _api = api;
             _authApi = authApi;
             _attachmentApi = attachmentApi;
+            _workOrderApi = workOrderApi;
 
             // 默认选项（也可以从字典接口加载）
             InspectResultOptions.Add(new StatusOption { Text = "合格", Value = "合格" });
@@ -348,6 +365,7 @@ namespace IndustrialControlMAUI.ViewModels
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();
                 await LoadProcessQualityTypeOptionsAsync();
+                await LoadUnqualifiedMaterialsAsync();
 
                 // ===== 明细 =====
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -524,6 +542,56 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip($"加载设备参数失败：{ex.Message}");
             }
         }
+
+        private async Task LoadUnqualifiedMaterialsAsync()
+        {
+            var existingMaterialCode = Detail?.unqualifiedMaterialCode;
+            var existingMaterialName = Detail?.unqualifiedMaterialName;
+
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                UnqualifiedMaterialOptions.Clear();
+                _selectedUnqualifiedMaterial = null;
+                OnPropertyChanged(nameof(SelectedUnqualifiedMaterial));
+            });
+
+            var workOrderNo = Detail?.orderNumber;
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+            {
+                return;
+            }
+
+            try
+            {
+                var resp = await _workOrderApi.GetReworkBomFlattenDetailsAsync(workOrderNo, _cts.Token);
+                if (resp?.success != true)
+                {
+                    await ShowTip($"加载不合格物料失败：{resp?.message ?? "接口返回失败"}");
+                    return;
+                }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var item in resp.result ?? new List<ReworkBomDetailFlattenItem>())
+                    {
+                        UnqualifiedMaterialOptions.Add(item);
+                    }
+
+                    SelectedUnqualifiedMaterial = UnqualifiedMaterialOptions.FirstOrDefault(item =>
+                        string.Equals(item.materialCode, existingMaterialCode, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.materialName, existingMaterialName, StringComparison.OrdinalIgnoreCase));
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                // 页面销毁时取消请求，无需提示。
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"加载不合格物料失败：{ex.Message}");
+            }
+        }
+
         private async Task LoadProcessQualityTypeOptionsAsync()
         {
             try
@@ -1071,6 +1139,9 @@ namespace IndustrialControlMAUI.ViewModels
                 Detail.processQualityTypeName = null;
                 Detail.executedProcessQualityTypes = null;
             }
+
+            Detail.unqualifiedMaterialCode = SelectedUnqualifiedMaterial?.materialCode;
+            Detail.unqualifiedMaterialName = SelectedUnqualifiedMaterial?.materialName;
 
             // 合并两个集合并去重（按 Id 或 Url 去重都可以）
             var allAttachments = Attachments
