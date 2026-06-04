@@ -490,6 +490,20 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         });
     }
 
+    /// <summary>跳转到设备点检执行查询页。</summary>
+    [RelayCommand]
+    private async Task GoDeviceInspectionAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(Pages.InspectionRunSearchPage));
+    }
+
+    /// <summary>跳转到过程质检查询页。</summary>
+    [RelayCommand]
+    private async Task GoMaterialQualityAsync()
+    {
+        await Shell.Current.GoToAsync(nameof(Pages.ProcessQualitySearchPage));
+    }
+
 
     [RelayCommand]
     public void ShowReport()

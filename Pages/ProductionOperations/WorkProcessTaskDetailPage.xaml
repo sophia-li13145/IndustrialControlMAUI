@@ -18,7 +18,8 @@
                 <Setter Property="CornerRadius" Value="8" />
                 <Setter Property="TextColor" Value="White" />
                 <Setter Property="FontAttributes" Value="Bold" />
-                <Setter Property="Padding" Value="18,6" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Padding" Value="8,5" />
                 <!-- 增加禁用态 -->
                 <Setter Property="VisualStateManager.VisualStateGroups">
                     <VisualStateGroupList>
@@ -117,7 +118,7 @@
 
     <Grid x:Name="RootGrid" RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="10">
         <Label Grid.Row="0" Text="工单基础信息" FontAttributes="Bold" Margin="0,8,0,4"/>
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="10">
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="6">
             <Button Text="开工"
             Style="{StaticResource BtnGreen}"
             Command="{Binding StartWorkCommand}"
@@ -141,6 +142,16 @@
             Command="{Binding ReworkCommand}"
             IsVisible="{Binding IsReworkVisible}"
             IsEnabled="{Binding CanRework}" />
+
+            <Button Grid.Column="4"
+            Text="设备点检"
+            Style="{StaticResource BtnGreen}"
+            Command="{Binding GoDeviceInspectionCommand}" />
+
+            <Button Grid.Column="5"
+            Text="物料质检"
+            Style="{StaticResource BtnOrange}"
+            Command="{Binding GoMaterialQualityCommand}" />
         </Grid>
         <!-- 基础信息卡片 -->
         <!-- 可编辑区（开工后启用） -->
