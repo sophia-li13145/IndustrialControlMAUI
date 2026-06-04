@@ -32,89 +32,8 @@ public partial class IncomingQualityDetailPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        AttachRealtimeSaveHandlers(this);
-    }
 
-    private void AttachRealtimeSaveHandlers(Element root)
-    {
-        if (root is Entry entry)
-        {
-            entry.TextChanged -= OnRealtimeSaveControlChanged;
-            entry.TextChanged += OnRealtimeSaveControlChanged;
-        }
-        else if (root is Editor editor)
-        {
-            editor.TextChanged -= OnRealtimeSaveControlChanged;
-            editor.TextChanged += OnRealtimeSaveControlChanged;
-        }
-        else if (root is Picker picker)
-        {
-            picker.SelectedIndexChanged -= OnRealtimeSaveControlChanged;
-            picker.SelectedIndexChanged += OnRealtimeSaveControlChanged;
-        }
-        else if (root is DatePicker datePicker)
-        {
-            datePicker.DateSelected -= OnRealtimeSaveControlChanged;
-            datePicker.DateSelected += OnRealtimeSaveControlChanged;
-        }
-        else if (root is Switch switchControl)
-        {
-            switchControl.Toggled -= OnRealtimeSaveControlChanged;
-            switchControl.Toggled += OnRealtimeSaveControlChanged;
-        }
-        else if (root is CheckBox checkBox)
-        {
-            checkBox.CheckedChanged -= OnRealtimeSaveControlChanged;
-            checkBox.CheckedChanged += OnRealtimeSaveControlChanged;
-        }
-        else if (root is Slider slider)
-        {
-            slider.ValueChanged -= OnRealtimeSaveControlChanged;
-            slider.ValueChanged += OnRealtimeSaveControlChanged;
-        }
-        else if (root is Stepper stepper)
-        {
-            stepper.ValueChanged -= OnRealtimeSaveControlChanged;
-            stepper.ValueChanged += OnRealtimeSaveControlChanged;
-        }
 
-        foreach (var child in GetChildElements(root))
-        {
-            AttachRealtimeSaveHandlers(child);
-        }
-    }
-
-    private static IEnumerable<Element> GetChildElements(Element element)
-    {
-        switch (element)
-        {
-            case ContentPage page when page.Content is Element pageContent:
-                yield return pageContent;
-                break;
-            case ScrollView scrollView when scrollView.Content is Element scrollContent:
-                yield return scrollContent;
-                break;
-            case ContentView contentView when contentView.Content is Element content:
-                yield return content;
-                break;
-            case Border border when border.Content is Element borderContent:
-                yield return borderContent;
-                break;
-            case Layout layout:
-                foreach (var child in layout.Children.OfType<Element>())
-                {
-                    yield return child;
-                }
-                break;
-        }
-    }
-
-    private void OnRealtimeSaveControlChanged(object? sender, EventArgs e)
-    {
-        if (BindingContext is IncomingQualityDetailViewModel vm)
-        {
-            vm.QueueRealtimeSaveFromUi();
-        }
     }
 
     /// <summary>执行 OnInspectorEntryCompleted 逻辑。</summary>
