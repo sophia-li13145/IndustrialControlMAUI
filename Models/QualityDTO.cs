@@ -127,6 +127,8 @@ public class QualityDetailDto : ObservableObject
     public string? executedProcessQualityTypes { get; set; }
     public string? processQualityType { get; set; }
     public string? processQualityTypeName { get; set; }
+    public string? unqualifiedMaterialCode { get; set; }
+    public string? unqualifiedMaterialName { get; set; }
 
     public string? createdTime { get; set; }
     public string? modifiedTime { get; set; }
