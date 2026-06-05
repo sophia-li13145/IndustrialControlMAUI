@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace IndustrialControlMAUI.ViewModels;
 
@@ -32,17 +33,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
     public bool IsNotBusy => !IsBusy;
 
-    public string UnqualifiedMaterialLabel => RequiresUnqualifiedMaterial ? "*不合格物料：" : "不合格物料：";
+    public string UnqualifiedMaterialLabel => "不合格物料：";
 
-    private bool RequiresUnqualifiedMaterial
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(UnqualifiedQtyText))
-                return false;
-            return decimal.TryParse(UnqualifiedQtyText, out var qty) && qty > 0;
-        }
-    }
+    public bool IsUnqualifiedMaterialRequired => TryGetUnqualifiedQty(out var qty) && qty > 0;
 
     partial void OnIsBusyChanged(bool value)
     {
@@ -51,7 +44,13 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
     partial void OnUnqualifiedQtyTextChanged(string? value)
     {
+        OnPropertyChanged(nameof(IsUnqualifiedMaterialRequired));
         OnPropertyChanged(nameof(UnqualifiedMaterialLabel));
+
+        if (!IsUnqualifiedMaterialRequired)
+        {
+            SelectedUnqualifiedMaterial = null;
+        }
     }
 
     public ReportAddPopupViewModel(IWorkOrderApi api, IAuthApi authApi)
@@ -183,8 +182,13 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(UnqualifiedQtyText)
-                && (!decimal.TryParse(UnqualifiedQtyText, out var tempUnqualifiedQty) || tempUnqualifiedQty < 0))
+            if (!TryGetUnqualifiedQty(out var unqualifiedQty))
+            {
+                await AlertAsync("不合格数量格式不正确");
+                return;
+            }
+
+            if (unqualifiedQty < 0)
             {
                 await AlertAsync("不合格数量不能小于0");
                 return;
@@ -197,10 +201,14 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 return;
             }
 
-            decimal.TryParse(UnqualifiedQtyText, out var unqualifiedQty);
             decimal.TryParse(WorkHoursText, out var hours);
 
-            if (unqualifiedQty > 0 && (SelectedUnqualifiedMaterial is null
+            if (!IsUnqualifiedMaterialRequired)
+            {
+                SelectedUnqualifiedMaterial = null;
+            }
+
+            if (IsUnqualifiedMaterialRequired && (SelectedUnqualifiedMaterial is null
                 || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialCode)
                 || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialName)))
             {
@@ -255,6 +263,19 @@ public partial class ReportAddPopupViewModel : ObservableObject
         }
     }
 
+
+    private bool TryGetUnqualifiedQty(out decimal qty)
+    {
+        qty = 0m;
+
+        if (string.IsNullOrWhiteSpace(UnqualifiedQtyText))
+        {
+            return true;
+        }
+
+        return decimal.TryParse(UnqualifiedQtyText, NumberStyles.Number, CultureInfo.CurrentCulture, out qty)
+            || decimal.TryParse(UnqualifiedQtyText, NumberStyles.Number, CultureInfo.InvariantCulture, out qty);
+    }
 
     private static bool IsUnqualifiedMaterialCandidate(ReworkBomDetailFlattenItem item)
     {
