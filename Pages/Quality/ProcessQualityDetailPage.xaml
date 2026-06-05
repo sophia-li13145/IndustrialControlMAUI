@@ -209,7 +209,7 @@
 
                 <!-- 检验结果（严格按行列） -->
                 <Frame Style="{StaticResource Card}">
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                           ColumnDefinitions="50,*,60,*,60,*"
                           RowSpacing="5" ColumnSpacing="0"> 
 
@@ -282,27 +282,39 @@
                                IsEnabled="False" /> 
                         <!-- 只读 -->
 
-                        <!-- 第3行：质检损耗、留样数量、留样编号 -->
-                        <Label Grid.Row="4" Grid.Column="0" Text="质检损耗：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="4" Grid.Column="1"
+                        <!-- 第3行：不合格物料 -->
+                        <HorizontalStackLayout Grid.Row="4" Grid.Column="0" Spacing="0">
+                            <Label Text="*" TextColor="Red" FontAttributes="Bold" IsVisible="{Binding IsUnqualifiedMaterialRequired}" />
+                            <Label Text="不合格物料：" Style="{StaticResource FieldLabel}" />
+                        </HorizontalStackLayout>
+                        <Picker Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="5"
+                                Title="请选择不合格物料"
+                                ItemsSource="{Binding UnqualifiedMaterialOptions}"
+                                ItemDisplayBinding="{Binding materialName}"
+                                SelectedItem="{Binding SelectedUnqualifiedMaterial, Mode=TwoWay}"
+                                IsEnabled="{Binding IsEditing}" />
+
+                        <!-- 第4行：质检损耗、留样数量、留样编号 -->
+                        <Label Grid.Row="5" Grid.Column="0" Text="质检损耗：" Style="{StaticResource FieldLabel}" />
+                        <Entry Grid.Row="5" Grid.Column="1"
                                Text="{Binding Detail.inspectionLossQty, Mode=TwoWay, Converter={StaticResource DecConv}}"
                                Keyboard="Numeric"
                                IsEnabled="{Binding IsEditing}" /> 
 
-                        <Label Grid.Row="4" Grid.Column="2" Text="留样数量：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="4" Grid.Column="3"
+                        <Label Grid.Row="5" Grid.Column="2" Text="留样数量：" Style="{StaticResource FieldLabel}" />
+                        <Entry Grid.Row="5" Grid.Column="3"
                                Text="{Binding Detail.retainedSampleQty, Mode=TwoWay, Converter={StaticResource DecConv}}"
                                Keyboard="Numeric"
                                IsEnabled="{Binding IsEditing}" />
 
-                        <Label Grid.Row="4" Grid.Column="4" Text="留样编号：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="4" Grid.Column="5"
+                        <Label Grid.Row="5" Grid.Column="4" Text="留样编号：" Style="{StaticResource FieldLabel}" />
+                        <Entry Grid.Row="5" Grid.Column="5"
                                Text="{Binding Detail.retainedSampleNumber, Mode=TwoWay}"
                                IsEnabled="{Binding IsEditing}" />   
 
-                        <!-- 第4行：检验备注（整行） -->
-                        <Label Grid.Row="5" Grid.Column="0" Text="检验备注：" Style="{StaticResource FieldLabel}" />
-                        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="5"
+                        <!-- 第5行：检验备注（整行） -->
+                        <Label Grid.Row="6" Grid.Column="0" Text="检验备注：" Style="{StaticResource FieldLabel}" />
+                        <Entry Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5"
                                Text="{Binding Detail.inspectRemark, Mode=TwoWay}"
                                IsEnabled="{Binding IsEditing}" /> 
                     </Grid>
