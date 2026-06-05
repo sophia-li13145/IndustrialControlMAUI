@@ -24,10 +24,7 @@
         <Label Grid.Row="5" Text="不合格数量：" VerticalTextAlignment="Center" />
         <Entry Grid.Row="5" Grid.Column="1" Text="{Binding UnqualifiedQtyText}" Placeholder="请输入" Keyboard="Numeric" />
 
-        <HorizontalStackLayout Grid.Row="6" VerticalOptions="Center" Spacing="0">
-            <Label Text="*" TextColor="Red" IsVisible="{Binding IsUnqualifiedMaterialRequired}" VerticalTextAlignment="Center" />
-            <Label Text="{Binding UnqualifiedMaterialLabel}" VerticalTextAlignment="Center" />
-        </HorizontalStackLayout>
+        <Label Grid.Row="6" Text="{Binding UnqualifiedMaterialLabel}" VerticalTextAlignment="Center" />
         <Picker Grid.Row="6" Grid.Column="1" ItemsSource="{Binding UnqualifiedMaterialOptions}" ItemDisplayBinding="{Binding materialName}" SelectedItem="{Binding SelectedUnqualifiedMaterial}" Title="请选择" />
 
         <Label Grid.Row="7" Text="操作时间：" VerticalTextAlignment="Center" />
