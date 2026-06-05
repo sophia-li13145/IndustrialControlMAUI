@@ -283,11 +283,11 @@
                         <!-- 只读 -->
 
                         <!-- 第3行：不合格物料 -->
-                        <HorizontalStackLayout Grid.Row="4" Grid.Column="0" Spacing="0">
+                        <HorizontalStackLayout Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Spacing="0" VerticalOptions="Center">
                             <Label Text="*" TextColor="Red" FontAttributes="Bold" IsVisible="{Binding IsUnqualifiedMaterialRequired}" />
                             <Label Text="不合格物料：" Style="{StaticResource FieldLabel}" />
                         </HorizontalStackLayout>
-                        <Picker Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="5"
+                        <Picker Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="4"
                                 Title="请选择不合格物料"
                                 ItemsSource="{Binding UnqualifiedMaterialOptions}"
                                 ItemDisplayBinding="{Binding materialName}"
