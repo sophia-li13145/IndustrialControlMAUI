@@ -18,12 +18,14 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IQualityApi _api;
         private readonly IAuthApi _authApi;
         private readonly IAttachmentApi _attachmentApi;
+        private readonly IWorkOrderApi _workOrderApi;
         private readonly CancellationTokenSource _cts = new();
         private const string Folder = "quality";
         private const string LocationFile = "table";
         private const string LocationImage = "main";
         private string? _cleanSnapshot;
         private bool _lastSaveSucceeded;
+        private QualityDetailDto? _observedDetail;
         // ===== 上传限制 =====
         private const int MaxImageCount = 9;
         private const long MaxImageBytes = 2L * 1024 * 1024;   // 2MB
@@ -53,6 +55,7 @@ namespace IndustrialControlMAUI.ViewModels
         public ObservableCollection<StatusOption> ProcessQualityTypeOptions { get; } = new();
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<InspectDeviceOption> InspectDeviceList { get; } = new();
+        public ObservableCollection<ReworkBomDetailFlattenItem> UnqualifiedMaterialOptions { get; } = new();
 
         private StatusOption? _selectedProcessQualityType;
         public StatusOption? SelectedProcessQualityType
@@ -64,6 +67,20 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     Detail.processQualityType = value?.Value ?? value?.Text;
                     Detail.processQualityTypeName = value?.Text ?? value?.Value;
+                }
+            }
+        }
+
+        private ReworkBomDetailFlattenItem? _selectedUnqualifiedMaterial;
+        public ReworkBomDetailFlattenItem? SelectedUnqualifiedMaterial
+        {
+            get => _selectedUnqualifiedMaterial;
+            set
+            {
+                if (SetProperty(ref _selectedUnqualifiedMaterial, value) && Detail != null)
+                {
+                    Detail.unqualifiedMaterialCode = value?.materialCode;
+                    Detail.unqualifiedMaterialName = value?.materialName;
                 }
             }
         }
@@ -87,6 +104,7 @@ namespace IndustrialControlMAUI.ViewModels
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
         [ObservableProperty] private bool isEditing = true;
         public bool IsProcessQualityTypeVisible => Detail?.enableProcessQuality == true;
+        public bool IsUnqualifiedMaterialRequired => (Detail?.totalUnqualified ?? 0m) > 0m;
         public bool IsReworkVisible =>
             !string.IsNullOrWhiteSpace(Detail?.orderNumber)
             && (Detail?.workOrderStatus is "1" or "2" or "4");
@@ -98,11 +116,12 @@ namespace IndustrialControlMAUI.ViewModels
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
         /// <summary>执行 ProcessQualityDetailViewModel 初始化逻辑。</summary>
-        public ProcessQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi)
+        public ProcessQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi, IWorkOrderApi workOrderApi)
         {
             _api = api;
             _authApi = authApi;
             _attachmentApi = attachmentApi;
+            _workOrderApi = workOrderApi;
 
             // 默认选项（也可以从字典接口加载）
             InspectResultOptions.Add(new StatusOption { Text = "合格", Value = "合格" });
@@ -190,11 +209,31 @@ namespace IndustrialControlMAUI.ViewModels
 
         partial void OnDetailChanged(QualityDetailDto? value)
         {
+            if (_observedDetail is not null)
+            {
+                _observedDetail.PropertyChanged -= HandleDetailPropertyChanged;
+            }
+
+            _observedDetail = value;
+            if (_observedDetail is not null)
+            {
+                _observedDetail.PropertyChanged += HandleDetailPropertyChanged;
+            }
+
             RefreshExceptionPhotoTip();
             OnPropertyChanged(nameof(IsProcessQualityTypeVisible));
+            OnPropertyChanged(nameof(IsUnqualifiedMaterialRequired));
             OnPropertyChanged(nameof(IsReworkVisible));
             OnPropertyChanged(nameof(CanRework));
             (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        }
+
+        private void HandleDetailPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(QualityDetailDto.totalUnqualified))
+            {
+                OnPropertyChanged(nameof(IsUnqualifiedMaterialRequired));
+            }
         }
 
         private string? inspectorText;
@@ -402,6 +441,7 @@ namespace IndustrialControlMAUI.ViewModels
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();
                 await LoadProcessQualityTypeOptionsAsync();
+                await LoadUnqualifiedMaterialOptionsAsync();
 
                 // ===== 明细 =====
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -483,6 +523,8 @@ namespace IndustrialControlMAUI.ViewModels
                     }
                 });
                 await LoadPreviewThumbnailsAsync();
+
+                SelectUnqualifiedMaterial();
 
                 // ===== 下拉选中项：检验结果 =====
                 SelectedInspectResult = InspectResultOptions
@@ -579,6 +621,73 @@ namespace IndustrialControlMAUI.ViewModels
                 await ShowTip($"加载设备参数失败：{ex.Message}");
             }
         }
+
+        private async Task LoadUnqualifiedMaterialOptionsAsync()
+        {
+            UnqualifiedMaterialOptions.Clear();
+            _selectedUnqualifiedMaterial = null;
+            OnPropertyChanged(nameof(SelectedUnqualifiedMaterial));
+
+            var workOrderNo = Detail?.orderNumber;
+            if (string.IsNullOrWhiteSpace(workOrderNo))
+            {
+                return;
+            }
+
+            try
+            {
+                var resp = await _workOrderApi.GetReworkBomFlattenDetailsAsync(workOrderNo, _cts.Token);
+                if (!IsApiSuccess(resp))
+                {
+                    await ShowTip($"加载不合格物料失败：{resp?.message ?? "接口返回失败"}");
+                    return;
+                }
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var item in resp?.result ?? new List<ReworkBomDetailFlattenItem>())
+                    {
+                        UnqualifiedMaterialOptions.Add(item);
+                    }
+
+                    SelectUnqualifiedMaterial();
+                });
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"加载不合格物料失败：{ex.Message}");
+            }
+        }
+
+        private void SelectUnqualifiedMaterial()
+        {
+            if (Detail is null)
+            {
+                SelectedUnqualifiedMaterial = null;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Detail.unqualifiedMaterialCode)
+                && string.IsNullOrWhiteSpace(Detail.unqualifiedMaterialName))
+            {
+                SelectedUnqualifiedMaterial = null;
+                return;
+            }
+
+            var selected = UnqualifiedMaterialOptions.FirstOrDefault(item =>
+                string.Equals(item.materialCode, Detail.unqualifiedMaterialCode, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(item.materialName, Detail.unqualifiedMaterialName, StringComparison.OrdinalIgnoreCase));
+
+            if (selected is null)
+            {
+                _selectedUnqualifiedMaterial = null;
+                OnPropertyChanged(nameof(SelectedUnqualifiedMaterial));
+                return;
+            }
+
+            SelectedUnqualifiedMaterial = selected;
+        }
+
         private async Task LoadProcessQualityTypeOptionsAsync()
         {
             try
@@ -698,6 +807,11 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
+            if (!ValidateUnqualifiedMaterialRequirement())
+            {
+                return;
+            }
+
             try
             {
                 IsBusy = true;
@@ -801,6 +915,11 @@ namespace IndustrialControlMAUI.ViewModels
             }
 
             if (!ValidateProcessQualityTypeRequirement())
+            {
+                return;
+            }
+
+            if (!ValidateUnqualifiedMaterialRequirement())
             {
                 return;
             }
@@ -1089,6 +1208,16 @@ namespace IndustrialControlMAUI.ViewModels
             return false;
         }
 
+        private bool ValidateUnqualifiedMaterialRequirement()
+        {
+            if (!IsUnqualifiedMaterialRequired) return true;
+
+            if (SelectedUnqualifiedMaterial is not null) return true;
+
+            _ = ShowTip("不合格总数大于0时，请选择不合格物料。");
+            return false;
+        }
+
         private static string? MergeExecutedProcessQualityTypes(string? existingTypes, string? selectedType)
         {
             if (string.IsNullOrWhiteSpace(selectedType)) return existingTypes;
@@ -1127,6 +1256,12 @@ namespace IndustrialControlMAUI.ViewModels
                 Detail.processQualityType = null;
                 Detail.processQualityTypeName = null;
                 Detail.executedProcessQualityTypes = null;
+            }
+
+            if (SelectedUnqualifiedMaterial is not null)
+            {
+                Detail.unqualifiedMaterialCode = SelectedUnqualifiedMaterial.materialCode;
+                Detail.unqualifiedMaterialName = SelectedUnqualifiedMaterial.materialName;
             }
 
             // 合并两个集合并去重（按 Id 或 Url 去重都可以）
