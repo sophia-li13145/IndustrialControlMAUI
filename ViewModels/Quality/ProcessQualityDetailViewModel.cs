@@ -1247,9 +1247,10 @@ namespace IndustrialControlMAUI.ViewModels
                 var selectedProcessQualityType = SelectedProcessQualityType?.Value ?? SelectedProcessQualityType?.Text;
                 Detail.processQualityType = selectedProcessQualityType;
                 Detail.processQualityTypeName = SelectedProcessQualityType?.Text ?? SelectedProcessQualityType?.Value;
-                Detail.executedProcessQualityTypes = MergeExecutedProcessQualityTypes(
-                    Detail.executedProcessQualityTypes,
-                    selectedProcessQualityType);
+                //Detail.executedProcessQualityTypes = MergeExecutedProcessQualityTypes(
+                //    Detail.executedProcessQualityTypes,
+                //    selectedProcessQualityType);
+                Detail.executedProcessQualityTypes = null;
             }
             else
             {
