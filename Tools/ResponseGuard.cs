@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace IndustrialControlMAUI.Tools
     {
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
         private static readonly HashSet<string> _expiredCodes = new(StringComparer.OrdinalIgnoreCase)
-    { "401", "40101", "40301", "TOKEN_EXPIRED", "NO_AUTH" };
+    { "4001", "401", "40101", "40301", "TOKEN_EXPIRED", "NO_AUTH" };
 
         public static async Task<string> ReadAsStringAndCheckAsync(HttpResponseMessage res, AuthState auth, CancellationToken ct)
         {
