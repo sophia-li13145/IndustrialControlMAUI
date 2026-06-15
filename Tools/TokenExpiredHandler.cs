@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 
 namespace IndustrialControlMAUI.Tools
@@ -44,7 +44,7 @@ namespace IndustrialControlMAUI.Tools
                         if (api is not null)
                         {
                             var code = api.code?.ToString()?.ToUpperInvariant();
-                            if (code is "401" or "40101" or "40301" or "TOKEN_EXPIRED" or "NO_AUTH"
+                            if (code is "4001" or "401" or "40101" or "40301" or "TOKEN_EXPIRED" or "NO_AUTH"
                                 || (code?.StartsWith("401") ?? false) || (code?.Contains("EXPIRE") ?? false))
                             {
                                 _ = _auth.LogoutAsync(api?.message ?? "登录状态已过期");
