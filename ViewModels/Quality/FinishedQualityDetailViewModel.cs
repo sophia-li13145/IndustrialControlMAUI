@@ -209,6 +209,15 @@ namespace IndustrialControlMAUI.ViewModels
                     // 直接显示已有检验员名称
                     InspectorText = Detail.inspecter;
                 }
+                else if (Detail != null)
+                {
+                    var defaultInspector = QualityInspectorDefaultResolver.Resolve(AllUsers);
+                    if (!string.IsNullOrWhiteSpace(defaultInspector))
+                    {
+                        Detail.inspecter = defaultInspector;
+                        InspectorText = defaultInspector;
+                    }
+                }
             }
             catch (Exception ex)
             {
