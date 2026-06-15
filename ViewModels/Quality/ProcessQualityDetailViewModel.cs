@@ -485,6 +485,7 @@ namespace IndustrialControlMAUI.ViewModels
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Attachments.Clear();
+                    ImageAttachments.Clear();
 
                     foreach (var at in (Detail.orderQualityAttachmentList ?? new List<QualityAttachment>()))
                     {
@@ -811,6 +812,11 @@ namespace IndustrialControlMAUI.ViewModels
                 return;
             }
 
+            if (!ValidateAttachmentRequiredRequirement())
+            {
+                return;
+            }
+
             if (!ValidateProcessQualityTypeRequirement())
             {
                 return;
@@ -920,6 +926,11 @@ namespace IndustrialControlMAUI.ViewModels
             if (Detail is null)
             {
                 await ShowTip("没有可提交的数据。");
+                return;
+            }
+
+            if (!ValidateAttachmentRequiredRequirement())
+            {
                 return;
             }
 
@@ -1189,6 +1200,10 @@ namespace IndustrialControlMAUI.ViewModels
         private bool HasUploadedImageAttachment()
             => ImageAttachments.Any(a => a.IsUploaded && !string.IsNullOrWhiteSpace(a.AttachmentUrl));
 
+        private bool HasUploadedAttachment()
+            => Attachments.Concat(ImageAttachments)
+                .Any(a => a.IsUploaded && !string.IsNullOrWhiteSpace(a.AttachmentUrl));
+
         private bool ShouldShowExceptionPhotoTip()
             => Detail?.enableExceptionPhoto == true && IsUnqualifiedResult && !HasUploadedImageAttachment();
 
@@ -1205,6 +1220,16 @@ namespace IndustrialControlMAUI.ViewModels
             var shouldBlockSave = ShouldShowExceptionPhotoTip();
             IsExceptionPhotoTipVisible = shouldBlockSave;
             return !shouldBlockSave;
+        }
+
+        private bool ValidateAttachmentRequiredRequirement()
+        {
+            if (Detail?.attachmentRequired != true) return true;
+
+            if (HasUploadedAttachment()) return true;
+
+            _ = ShowTip("当前质检单至少需要上传一个附件。");
+            return false;
         }
 
         private bool ValidateProcessQualityTypeRequirement()

@@ -123,6 +123,7 @@ public class QualityDetailDto : ObservableObject
     public string? qualityNo { get; set; }
     public string? inspectStatus { get; set; }     // 0/1/2/3
     public bool enableExceptionPhoto { get; set; }
+    public bool attachmentRequired { get; set; }
     public bool enableProcessQuality { get; set; }
     public string? executedProcessQualityTypes { get; set; }
     public string? processQualityType { get; set; }
