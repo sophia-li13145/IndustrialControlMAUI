@@ -96,7 +96,7 @@ namespace IndustrialControlMAUI.Services
                 string? instockStatus = null,
                 string? materialCode = null,
                 CancellationToken ct = default);
-        Task<ApiResp<bool>> BatchApplyOutputFrameInstockAsync(
+        Task<ApiResp<bool?>> BatchApplyOutputFrameInstockAsync(
                 IEnumerable<string> idList,
                 CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteWorkProcessTaskMaterialInputAsync(

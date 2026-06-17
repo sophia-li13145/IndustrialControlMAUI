@@ -988,7 +988,7 @@ namespace IndustrialControlMAUI.Services
                 ?? new ApiResp<List<OutputFrameRecord>> { success = false, message = "empty response" };
         }
 
-        public async Task<ApiResp<bool>> BatchApplyOutputFrameInstockAsync(
+        public async Task<ApiResp<bool?>> BatchApplyOutputFrameInstockAsync(
             IEnumerable<string> idList,
             CancellationToken ct = default)
         {
@@ -999,7 +999,7 @@ namespace IndustrialControlMAUI.Services
                 .ToList();
 
             if (ids.Count == 0)
-                return new ApiResp<bool> { success = false, message = "请选择需要申请入库的料框" };
+                return new ApiResp<bool?> { success = false, message = "请选择需要申请入库的料框", result = false };
 
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _batchApplyOutputFrameInstockEndpoint);
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
@@ -1014,10 +1014,10 @@ namespace IndustrialControlMAUI.Services
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
 
             if (!res.IsSuccessStatusCode)
-                return new ApiResp<bool> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}", result = false };
 
-            return JsonSerializer.Deserialize<ApiResp<bool>>(json, _json)
-                ?? new ApiResp<bool> { success = false, message = "empty response" };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                ?? new ApiResp<bool?> { success = false, message = "empty response", result = false };
         }
 
         public async Task<PageResp<WorkProcessTaskReportRecord>?> PageWorkProcessTaskReports(
