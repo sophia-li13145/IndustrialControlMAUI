@@ -408,6 +408,29 @@
                     </Frame.GestureRecognizers>
                 </Frame>
 
+                <!-- 产线停机记录 -->
+                <Frame Grid.Row="2" Grid.Column="0" Style="{StaticResource Card}" BorderColor="#FFD6D6">
+                    <Grid>
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Border HeightRequest="64" WidthRequest="64"
+                         BackgroundColor="#F2384A"
+                         StrokeShape="RoundRectangle 32">
+                                <Image Source="except_submit.svg"
+                            HeightRequest="28" WidthRequest="28"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                            </Border>
+                            <Label Text="产线停机记录" FontSize="12" Margin="0,6,0,0"
+                        HorizontalTextAlignment="Center" TextColor="#F2384A" FontAttributes="Bold"/>
+                        </VerticalStackLayout>
+                        <Border BackgroundColor="#FF3B45" Padding="6,1" StrokeThickness="0" StrokeShape="RoundRectangle 4" HorizontalOptions="End" VerticalOptions="Start" Margin="0,-10,-10,0">
+                            <Label Text="NEW" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                        </Border>
+                    </Grid>
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLineDowntime"/>
+                    </Frame.GestureRecognizers>
+                </Frame>
 
             </Grid>
             <!-- 质检作业" -->
