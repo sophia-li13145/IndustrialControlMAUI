@@ -13,6 +13,7 @@ public partial class LineDowntimeFormViewModel : ObservableObject
     private readonly IAuthApi _authApi;
     private string? _id;
     private List<UserInfoDto> _allUsers = new();
+    private readonly Dictionary<string, string> _categoryMap = new();
 
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string mode = "add";
@@ -65,7 +66,10 @@ public partial class LineDowntimeFormViewModel : ObservableObject
             if (IsAddMode)
                 await LoadAddOptionsAsync();
             else if (!string.IsNullOrWhiteSpace(_id))
+            {
+                await LoadCategoryDictAsync();
                 await LoadDetailAsync(_id);
+            }
 
             if (IsEditMode)
                 await LoadUsersAsync(showSuggestions: false);
@@ -93,18 +97,37 @@ public partial class LineDowntimeFormViewModel : ObservableObject
             ProductionLines.Add(line);
         SelectedLine ??= ProductionLines.FirstOrDefault();
 
+        await LoadCategoryDictAsync(fillOptions: true);
+        SelectedCategory ??= CategoryOptions.FirstOrDefault();
+    }
+
+
+
+    private async Task LoadCategoryDictAsync(bool fillOptions = false)
+    {
+        if (_categoryMap.Count > 0 && (!fillOptions || CategoryOptions.Count > 0)) return;
+
         var dictResp = await _workOrderApi.GetLineDowntimeDictAsync();
         var categoryDict = dictResp.result?.FirstOrDefault(x => string.Equals(x.field, "categoryName", StringComparison.OrdinalIgnoreCase))
                            ?? dictResp.result?.FirstOrDefault();
-        CategoryOptions.Clear();
+        _categoryMap.Clear();
+        if (fillOptions) CategoryOptions.Clear();
+
+        var addedValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in categoryDict?.dictItems ?? new List<DictItem>())
         {
-            var text = item.dictItemName ?? item.dictItemValue;
-            if (!string.IsNullOrWhiteSpace(text))
-                CategoryOptions.Add(new StatusOption { Text = text!, Value = item.dictItemValue });
+            if (string.IsNullOrWhiteSpace(item.dictItemValue)) continue;
+            if (!addedValues.Add(item.dictItemValue!)) continue;
+
+            var text = item.dictItemName ?? item.dictItemValue!;
+            _categoryMap[item.dictItemValue!] = text;
+            if (fillOptions)
+                CategoryOptions.Add(new StatusOption { Text = text, Value = item.dictItemValue });
         }
-        SelectedCategory ??= CategoryOptions.FirstOrDefault();
     }
+
+    private string MapCategory(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : (_categoryMap.TryGetValue(value!, out var name) ? name : value!);
 
     private async Task LoadDetailAsync(string id)
     {
@@ -116,7 +139,7 @@ public partial class LineDowntimeFormViewModel : ObservableObject
         }
 
         var record = detailResp.result;
-        Card = new LineDowntimeCardItem(record, IsDetailMode ? "已复工" : "待处理");
+        Card = new LineDowntimeCardItem(record, IsDetailMode ? "已复工" : "待处理", MapCategory(record.categoryName));
         Reason = record.reason;
         Solution = record.solution;
         ResponsibleText = record.realname;
