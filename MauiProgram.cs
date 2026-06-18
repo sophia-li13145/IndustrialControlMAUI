@@ -70,6 +70,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.ProcessTaskSearchViewModel>();
             builder.Services.AddTransient<ViewModels.DeviceScanBindViewModel>();
             builder.Services.AddTransient<ViewModels.DeviceMoldRelationViewModel>();
+            builder.Services.AddTransient<ViewModels.LineDowntimeSearchViewModel>();
+            builder.Services.AddTransient<ViewModels.LineDowntimeFormViewModel>();
             builder.Services.AddTransient<ViewModels.WarehouseLocationPickerViewModel>();
             builder.Services.AddTransient<ViewModels.WorkProcessTaskDetailViewModel>();
             builder.Services.AddTransient<ViewModels.ReworkOrderViewModel>();
@@ -144,6 +146,8 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.ProcessTaskSearchPage>();
             builder.Services.AddTransient<Pages.DeviceScanBindPage>();
             builder.Services.AddTransient<Pages.DeviceMoldRelationPage>();
+            builder.Services.AddTransient<Pages.LineDowntimeSearchPage>();
+            builder.Services.AddTransient<Pages.LineDowntimeFormPage>();
             builder.Services.AddTransient<Pages.WorkProcessTaskDetailPage>();
             builder.Services.AddTransient<Pages.ReworkOrderPage>();
             builder.Services.AddTransient<Pages.QualitySearchPage>();
