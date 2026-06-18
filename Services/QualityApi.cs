@@ -91,6 +91,7 @@ public class QualityApi : IQualityApi
      string? inspectStatus,
      string? qualityType,
      bool searchCount,
+     string? processCode = null,
      CancellationToken ct = default)
         {
             // 1) 组装查询参数（仅在有值时加入）
@@ -104,6 +105,7 @@ public class QualityApi : IQualityApi
             if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["createdTimeBegin"] = createdTimeBegin!;
             if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["createdTimeEnd"] = createdTimeEnd!;
             if (!string.IsNullOrWhiteSpace(inspectStatus)) p["inspectStatus"] = inspectStatus!;
+            if (!string.IsNullOrWhiteSpace(processCode)) p["processCode"] = processCode!.Trim();
             if (!string.IsNullOrWhiteSpace(qualityType)) p["qualityType"] = qualityType!;
 
             // 2) 拼接 URL（与现有工具方法保持一致）

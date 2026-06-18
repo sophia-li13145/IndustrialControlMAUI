@@ -21,7 +21,7 @@
             <!-- 第一行：工单号 + 查询 + 扫码图标按钮 -->
             <Grid ColumnDefinitions="*,40,Auto" ColumnSpacing="8">
                 <Entry x:Name="QualityNoEntry"
-                       Placeholder="请输入扫描质检单号"
+                       Placeholder="请输入质检单号或工单号"
                        Text="{Binding Keyword}"
                        HeightRequest="40" />
                 <ImageButton  Grid.Column="1"
@@ -39,16 +39,22 @@
 
             </Grid>
 
-            <!-- 第二行：时间 + 状态 -->
-            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+            <!-- 第二行：时间 + 状态 + 工序 -->
+            <Grid ColumnDefinitions="*,*,Auto,Auto" ColumnSpacing="8">
                 <DatePicker Date="{Binding StartDate}" />
                 <DatePicker Grid.Column="1" Date="{Binding EndDate}" />
                 <Picker Grid.Column="2"
                         Title="状态"
-                        WidthRequest="120"
+                        WidthRequest="100"
                         ItemsSource="{Binding StatusOptions}"
                         ItemDisplayBinding="{Binding Text}"
                         SelectedItem="{Binding SelectedStatusOption}" />
+                <Picker Grid.Column="3"
+                        Title="工序"
+                        WidthRequest="100"
+                        ItemsSource="{Binding ProcessOptions}"
+                        ItemDisplayBinding="{Binding Text}"
+                        SelectedItem="{Binding SelectedProcessOption}" />
             </Grid>
         </VerticalStackLayout>
 
