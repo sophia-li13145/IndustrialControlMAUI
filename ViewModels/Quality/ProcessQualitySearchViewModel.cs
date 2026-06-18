@@ -78,7 +78,6 @@ namespace IndustrialControlMAUI.ViewModels
             if (ProcessOptions.Count > 0) return;
 
             ProcessOptions.Clear();
-            ProcessOptions.Add(new StatusOption { Text = "全部", Value = null });
 
             try
             {
@@ -97,10 +96,8 @@ namespace IndustrialControlMAUI.ViewModels
             }
             catch (Exception)
             {
-                // 工序列表加载失败时保留“全部”，避免阻塞过程质检查询。
+                // 工序列表加载失败时保持未选中，让 Picker 显示 Title“工序”。
             }
-
-            SelectedProcessOption ??= ProcessOptions.FirstOrDefault();
         }
 
 
@@ -227,7 +224,7 @@ namespace IndustrialControlMAUI.ViewModels
             PageIndex = 1;
             HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
-            SelectedProcessOption = ProcessOptions.FirstOrDefault();
+            SelectedProcessOption = null;
             Orders.Clear();
         }
 
