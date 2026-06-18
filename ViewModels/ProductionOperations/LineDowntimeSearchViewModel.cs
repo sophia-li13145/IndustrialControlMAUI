@@ -85,9 +85,9 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
             await EnsureDictAsync();
             PageIndex = 1;
             Records.Clear();
-            var rows = await LoadPageAsync(PageIndex);
+            var (rows, total) = await LoadPageAsync(PageIndex);
             foreach (var row in rows) Records.Add(row);
-            HasMore = rows.Count >= PageSize;
+            HasMore = Records.Count < total;
         }
         finally { IsBusy = false; }
     }
@@ -100,9 +100,9 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         {
             IsLoadingMore = true;
             PageIndex++;
-            var rows = await LoadPageAsync(PageIndex);
+            var (rows, total) = await LoadPageAsync(PageIndex);
             foreach (var row in rows) Records.Add(row);
-            HasMore = rows.Count >= PageSize;
+            HasMore = Records.Count < total;
         }
         finally { IsLoadingMore = false; }
     }
@@ -122,13 +122,14 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         await Shell.Current.GoToAsync($"{nameof(Pages.LineDowntimeFormPage)}?mode=detail&id={Uri.EscapeDataString(item.Source.id!)}");
     }
 
-    private async Task<List<LineDowntimeCardItem>> LoadPageAsync(int pageNo)
+    private async Task<(List<LineDowntimeCardItem> Rows, int Total)> LoadPageAsync(int pageNo)
     {
         var start = OccurStartDate.Date;
         var end = OccurEndDate.Date.AddDays(1).AddTicks(-1);
         var page = await _api.PageLineDowntimeAsync(start, end, SelectedStatusOption?.Value, pageNo, PageSize, true);
         var records = page?.result?.records ?? new List<LineDowntimeRecord>();
-        return records.Select(x => new LineDowntimeCardItem(x, MapStatus(x.recordStatus), MapCategory(x.categoryName))).ToList();
+        var rows = records.Select(x => new LineDowntimeCardItem(x, MapStatus(x.recordStatus), MapCategory(x.categoryName))).ToList();
+        return (rows, page?.result?.total ?? rows.Count);
     }
 
     private static void AddDictItems(IEnumerable<DictItem>? items, Dictionary<string, string> map, ObservableCollection<StatusOption>? options)
