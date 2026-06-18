@@ -23,6 +23,8 @@ namespace IndustrialControlMAUI.Pages
             => await Shell.Current.GoToAsync(nameof(WorkOrderSearchPage));
         private async void OnDeviceMoldRelation(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(DeviceMoldRelationPage));
+        private async void OnLineDowntime(object? s, TappedEventArgs e)
+            => await Shell.Current.GoToAsync(nameof(LineDowntimeSearchPage));
         
 
         // —— 仓储作业（与你发来的函数一一对应）——
