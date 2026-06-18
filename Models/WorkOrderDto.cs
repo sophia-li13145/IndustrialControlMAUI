@@ -1111,3 +1111,65 @@ public class StockCheckFrameLoadByBatchItem
     public string? batchNo { get; set; }
     public decimal? qty { get; set; }
 }
+
+public sealed class LineDowntimeRecord
+{
+    public string? id { get; set; }
+    public string? categoryName { get; set; }
+    public string? createdTime { get; set; }
+    public string? creator { get; set; }
+    public string? dataSource { get; set; }
+    public decimal? duration { get; set; }
+    public string? durationProcessed { get; set; }
+    public string? exceptionNo { get; set; }
+    public string? factoryCode { get; set; }
+    public string? factoryName { get; set; }
+    public string? memo { get; set; }
+    public string? occurTime { get; set; }
+    public string? realname { get; set; }
+    public string? reason { get; set; }
+    public string? recordStatus { get; set; }
+    public string? resumeTime { get; set; }
+    public string? solution { get; set; }
+    public string? userId { get; set; }
+    public string? workshopsCode { get; set; }
+    public string? workshopsName { get; set; }
+
+    public string DisplayLineName => string.IsNullOrWhiteSpace(workshopsName) ? "-" : workshopsName!;
+    public string DisplayExceptionNo => string.IsNullOrWhiteSpace(exceptionNo) ? "-" : exceptionNo!;
+    public string DisplayReason => string.IsNullOrWhiteSpace(reason) ? "-" : reason!;
+    public string DisplayOccurTime => string.IsNullOrWhiteSpace(occurTime) ? "-" : occurTime!;
+    public string DisplayUserName => string.IsNullOrWhiteSpace(realname) ? (string.IsNullOrWhiteSpace(creator) ? "-" : creator!) : realname!;
+}
+
+
+public sealed class LineDowntimeProductionLine
+{
+    public string? id { get; set; }
+    public string? memo { get; set; }
+    public string? workshopsCode { get; set; }
+    public string? workshopsName { get; set; }
+    public string? workshopsType { get; set; }
+    public string? workshopsTypeName { get; set; }
+    public string DisplayName => string.IsNullOrWhiteSpace(workshopsName) ? (workshopsCode ?? "-") : workshopsName!;
+}
+
+public sealed class LineDowntimeAddReq
+{
+    public string? categoryName { get; set; }
+    public string? memo { get; set; }
+    public string? occurTime { get; set; }
+    public string? reason { get; set; }
+    public string? workshopsCode { get; set; }
+    public string? workshopsName { get; set; }
+}
+
+
+public sealed class LineDowntimeEditReq
+{
+    public string? id { get; set; }
+    public string? realname { get; set; }
+    public string? resumeTime { get; set; }
+    public string? solution { get; set; }
+    public string? userId { get; set; }
+}
