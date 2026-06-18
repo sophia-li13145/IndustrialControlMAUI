@@ -18,15 +18,15 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
     [ObservableProperty] private bool isLoadingMore;
     [ObservableProperty] private bool hasMore = true;
     [ObservableProperty] private DateTime occurStartDate = DateTime.Today.AddDays(-7);
-    [ObservableProperty] private TimeSpan occurStartTime = TimeSpan.Zero;
     [ObservableProperty] private DateTime occurEndDate = DateTime.Today;
-    [ObservableProperty] private TimeSpan occurEndTime = new(23, 59, 59);
     [ObservableProperty] private StatusOption? selectedStatusOption;
     [ObservableProperty] private int pageIndex = 1;
     [ObservableProperty] private int pageSize = 10;
 
     public ObservableCollection<StatusOption> StatusOptions { get; } = new();
     public ObservableCollection<LineDowntimeCardItem> Records { get; } = new();
+
+    public int RemainingItemsThreshold => HasMore ? 2 : -1;
 
     public IAsyncRelayCommand SearchCommand { get; }
     public IAsyncRelayCommand AddCommand { get; }
@@ -85,9 +85,9 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
             await EnsureDictAsync();
             PageIndex = 1;
             Records.Clear();
-            var rows = await LoadPageAsync(PageIndex);
+            var (rows, total) = await LoadPageAsync(PageIndex);
             foreach (var row in rows) Records.Add(row);
-            HasMore = rows.Count >= PageSize;
+            HasMore = Records.Count < total;
         }
         finally { IsBusy = false; }
     }
@@ -100,9 +100,9 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         {
             IsLoadingMore = true;
             PageIndex++;
-            var rows = await LoadPageAsync(PageIndex);
+            var (rows, total) = await LoadPageAsync(PageIndex);
             foreach (var row in rows) Records.Add(row);
-            HasMore = rows.Count >= PageSize;
+            HasMore = Records.Count < total;
         }
         finally { IsLoadingMore = false; }
     }
@@ -122,13 +122,14 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         await Shell.Current.GoToAsync($"{nameof(Pages.LineDowntimeFormPage)}?mode=detail&id={Uri.EscapeDataString(item.Source.id!)}");
     }
 
-    private async Task<List<LineDowntimeCardItem>> LoadPageAsync(int pageNo)
+    private async Task<(List<LineDowntimeCardItem> Rows, int Total)> LoadPageAsync(int pageNo)
     {
-        var start = OccurStartDate.Date.Add(OccurStartTime);
-        var end = OccurEndDate.Date.Add(OccurEndTime);
+        var start = OccurStartDate.Date;
+        var end = OccurEndDate.Date.AddDays(1).AddTicks(-1);
         var page = await _api.PageLineDowntimeAsync(start, end, SelectedStatusOption?.Value, pageNo, PageSize, true);
         var records = page?.result?.records ?? new List<LineDowntimeRecord>();
-        return records.Select(x => new LineDowntimeCardItem(x, MapStatus(x.recordStatus), MapCategory(x.categoryName))).ToList();
+        var rows = records.Select(x => new LineDowntimeCardItem(x, MapStatus(x.recordStatus), MapCategory(x.categoryName))).ToList();
+        return (rows, page?.result?.total ?? rows.Count);
     }
 
     private static void AddDictItems(IEnumerable<DictItem>? items, Dictionary<string, string> map, ObservableCollection<StatusOption>? options)
@@ -147,6 +148,11 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
 
     private string MapStatus(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : (_statusMap.TryGetValue(value!, out var name) ? name : value!);
     private string MapCategory(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : (_categoryMap.TryGetValue(value!, out var name) ? name : value!);
+
+    partial void OnHasMoreChanged(bool value)
+    {
+        OnPropertyChanged(nameof(RemainingItemsThreshold));
+    }
 }
 
 public sealed class LineDowntimeCardItem

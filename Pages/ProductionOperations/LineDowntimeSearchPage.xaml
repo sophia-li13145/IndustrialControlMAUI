@@ -8,15 +8,15 @@
     <Grid RowDefinitions="Auto,*,Auto">
         <Frame Grid.Row="0" Margin="12,10" Padding="12" CornerRadius="12" HasShadow="False" BorderColor="#EEF0F4" BackgroundColor="White">
             <VerticalStackLayout Spacing="8">
-                <Label Text="异常发生时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                    <DatePicker Date="{Binding OccurStartDate}" Format="yyyy/MM/dd" />
-                    <TimePicker Grid.Column="1" Time="{Binding OccurStartTime}" Format="HH:mm" />
-                </Grid>
-                <Label Text="异常结束时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                    <DatePicker Date="{Binding OccurEndDate}" Format="yyyy/MM/dd" />
-                    <TimePicker Grid.Column="1" Time="{Binding OccurEndTime}" Format="HH:mm" />
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="异常发生时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
+                        <DatePicker Date="{Binding OccurStartDate}" Format="yyyy/MM/dd" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                        <Label Text="异常结束时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
+                        <DatePicker Date="{Binding OccurEndDate}" Format="yyyy/MM/dd" />
+                    </VerticalStackLayout>
                 </Grid>
                 <Grid ColumnDefinitions="*,96" ColumnSpacing="10">
                     <Picker Title="状态"
@@ -31,7 +31,7 @@
         <RefreshView Grid.Row="1" Command="{Binding SearchCommand}" IsRefreshing="{Binding IsBusy}">
             <CollectionView ItemsSource="{Binding Records}"
                             SelectionMode="None"
-                            RemainingItemsThreshold="2"
+                            RemainingItemsThreshold="{Binding RemainingItemsThreshold}"
                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
                 <CollectionView.EmptyView>
                     <Grid Padding="20"><Label Text="-- 没有更多记录了 --" TextColor="#9AA6B2" HorizontalOptions="Center" /></Grid>
