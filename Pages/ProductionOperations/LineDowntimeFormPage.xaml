@@ -20,7 +20,7 @@
                         <Label Text="分类:" FontSize="12" TextColor="#7A8797" />
                         <Label Text="{Binding Card.CategoryText}" FontSize="12" TextColor="#F25555" />
                     </HorizontalStackLayout>
-                    <Grid ColumnDefinitions="48,*" RowDefinitions="Auto,Auto" RowSpacing="4">
+                    <Grid ColumnDefinitions="36,*" RowDefinitions="Auto,Auto" RowSpacing="4">
                         <Label Text="单号:" FontSize="12" TextColor="#7A8797" />
                         <Label Grid.Column="1" Text="{Binding Card.Source.DisplayExceptionNo}" FontSize="12" TextColor="#536173" />
                         <Label Grid.Row="1" Text="原因:" FontSize="12" TextColor="#7A8797" />
