@@ -10,7 +10,9 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
 {
     private readonly IWorkOrderApi _api;
     private readonly Dictionary<string, string> _statusMap = new();
+    private readonly Dictionary<string, string> _categoryMap = new();
     private bool _dictLoaded;
+    private readonly SemaphoreSlim _dictLock = new(1, 1);
 
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private bool isLoadingMore;
@@ -36,29 +38,29 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         SearchCommand = new AsyncRelayCommand(SearchAsync);
         AddCommand = new AsyncRelayCommand(async () => await Shell.Current.GoToAsync($"{nameof(Pages.LineDowntimeFormPage)}?mode=add"));
         ShowDetailCommand = new AsyncRelayCommand<LineDowntimeCardItem?>(ShowDetailAsync);
-        _ = EnsureDictAsync();
     }
 
     private async Task EnsureDictAsync()
     {
         if (_dictLoaded) return;
+
+        await _dictLock.WaitAsync();
         try
         {
+            if (_dictLoaded) return;
+
             StatusOptions.Clear();
+            _statusMap.Clear();
+            _categoryMap.Clear();
             StatusOptions.Add(new StatusOption { Text = "全部", Value = null });
+
             var resp = await _api.GetLineDowntimeDictAsync();
             var statusDict = resp.result?.FirstOrDefault(x => string.Equals(x.field, "recordStatus", StringComparison.OrdinalIgnoreCase))
                              ?? resp.result?.FirstOrDefault();
-            if (statusDict?.dictItems is not null)
-            {
-                foreach (var item in statusDict.dictItems)
-                {
-                    if (string.IsNullOrWhiteSpace(item.dictItemValue)) continue;
-                    var text = item.dictItemName ?? item.dictItemValue!;
-                    StatusOptions.Add(new StatusOption { Text = text, Value = item.dictItemValue });
-                    _statusMap[item.dictItemValue!] = text;
-                }
-            }
+            var categoryDict = resp.result?.FirstOrDefault(x => string.Equals(x.field, "categoryName", StringComparison.OrdinalIgnoreCase));
+
+            AddDictItems(statusDict?.dictItems, _statusMap, StatusOptions);
+            AddDictItems(categoryDict?.dictItems, _categoryMap, null);
         }
         catch (Exception ex)
         {
@@ -67,8 +69,10 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         }
         finally
         {
-            SelectedStatusOption ??= StatusOptions.FirstOrDefault();
+            SelectedStatusOption = StatusOptions.FirstOrDefault(x => x.Value == SelectedStatusOption?.Value)
+                                   ?? StatusOptions.FirstOrDefault();
             _dictLoaded = true;
+            _dictLock.Release();
         }
     }
 
@@ -124,10 +128,25 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         var end = OccurEndDate.Date.Add(OccurEndTime);
         var page = await _api.PageLineDowntimeAsync(start, end, SelectedStatusOption?.Value, pageNo, PageSize, true);
         var records = page?.result?.records ?? new List<LineDowntimeRecord>();
-        return records.Select(x => new LineDowntimeCardItem(x, MapStatus(x.recordStatus))).ToList();
+        return records.Select(x => new LineDowntimeCardItem(x, MapStatus(x.recordStatus), MapCategory(x.categoryName))).ToList();
+    }
+
+    private static void AddDictItems(IEnumerable<DictItem>? items, Dictionary<string, string> map, ObservableCollection<StatusOption>? options)
+    {
+        var addedValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in items ?? Enumerable.Empty<DictItem>())
+        {
+            if (string.IsNullOrWhiteSpace(item.dictItemValue)) continue;
+            if (!addedValues.Add(item.dictItemValue!)) continue;
+
+            var text = item.dictItemName ?? item.dictItemValue!;
+            map[item.dictItemValue!] = text;
+            options?.Add(new StatusOption { Text = text, Value = item.dictItemValue });
+        }
     }
 
     private string MapStatus(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : (_statusMap.TryGetValue(value!, out var name) ? name : value!);
+    private string MapCategory(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : (_categoryMap.TryGetValue(value!, out var name) ? name : value!);
 }
 
 public sealed class LineDowntimeCardItem
@@ -136,12 +155,14 @@ public sealed class LineDowntimeCardItem
     public string StatusText { get; }
     public string StatusColor { get; }
     public string BorderColor { get; }
+    public string CategoryText { get; }
     public bool IsClosed { get; }
 
-    public LineDowntimeCardItem(LineDowntimeRecord source, string statusText)
+    public LineDowntimeCardItem(LineDowntimeRecord source, string statusText, string? categoryText = null)
     {
         Source = source;
         StatusText = statusText;
+        CategoryText = string.IsNullOrWhiteSpace(categoryText) ? (source.categoryName ?? "-") : categoryText!;
         IsClosed = statusText.Contains("复工") || statusText.Contains("完成") || string.Equals(source.recordStatus, "1", StringComparison.OrdinalIgnoreCase);
         StatusColor = IsClosed ? "#35C87A" : "#FF8A22";
         BorderColor = IsClosed ? "#4BD889" : "#FF7A1A";

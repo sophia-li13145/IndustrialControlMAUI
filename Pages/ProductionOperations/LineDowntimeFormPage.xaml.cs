@@ -18,4 +18,10 @@ public partial class LineDowntimeFormPage : ContentPage, IQueryAttributable
         var id = query.TryGetValue("id", out var i) ? Uri.UnescapeDataString(i?.ToString() ?? string.Empty) : null;
         _ = _vm.InitializeAsync(mode, id);
     }
+
+    private async void OnResponsibleFocused(object sender, FocusEventArgs e)
+    {
+        await _vm.ShowUserSuggestionsAsync();
+    }
+
 }

@@ -10,13 +10,13 @@
             <VerticalStackLayout Spacing="8">
                 <Label Text="异常发生时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                    <DatePicker Date="{Binding OccurStartDate}" />
-                    <TimePicker Grid.Column="1" Time="{Binding OccurStartTime}" />
+                    <DatePicker Date="{Binding OccurStartDate}" Format="yyyy/MM/dd" />
+                    <TimePicker Grid.Column="1" Time="{Binding OccurStartTime}" Format="HH:mm" />
                 </Grid>
                 <Label Text="异常结束时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                    <DatePicker Date="{Binding OccurEndDate}" />
-                    <TimePicker Grid.Column="1" Time="{Binding OccurEndTime}" />
+                    <DatePicker Date="{Binding OccurEndDate}" Format="yyyy/MM/dd" />
+                    <TimePicker Grid.Column="1" Time="{Binding OccurEndTime}" Format="HH:mm" />
                 </Grid>
                 <Grid ColumnDefinitions="*,96" ColumnSpacing="10">
                     <Picker Title="状态"
@@ -53,7 +53,7 @@
                                             <Label Text="{Binding StatusText}" FontSize="11" TextColor="White" />
                                         </Border>
                                         <Border BackgroundColor="#FFECEC" Padding="6,2" StrokeThickness="0" StrokeShape="RoundRectangle 4">
-                                            <Label Text="{Binding Source.categoryName, TargetNullValue='设备故障'}" FontSize="11" TextColor="#F25555" />
+                                            <Label Text="{Binding CategoryText, TargetNullValue='设备故障'}" FontSize="11" TextColor="#F25555" />
                                         </Border>
                                     </HorizontalStackLayout>
                                     <Grid ColumnDefinitions="52,*" RowDefinitions="Auto,Auto" RowSpacing="6">

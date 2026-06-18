@@ -18,7 +18,7 @@
                     </Grid>
                     <HorizontalStackLayout Spacing="8">
                         <Label Text="分类:" FontSize="12" TextColor="#7A8797" />
-                        <Label Text="{Binding Card.Source.categoryName}" FontSize="12" TextColor="#F25555" />
+                        <Label Text="{Binding Card.CategoryText}" FontSize="12" TextColor="#F25555" />
                     </HorizontalStackLayout>
                     <Grid ColumnDefinitions="48,*" RowDefinitions="Auto,Auto" RowSpacing="4">
                         <Label Text="单号:" FontSize="12" TextColor="#7A8797" />
@@ -46,10 +46,10 @@
             <Label IsVisible="{Binding IsAddMode}" Text="异常发生时间 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
             <Grid IsVisible="{Binding IsAddMode}" ColumnDefinitions="*,120" ColumnSpacing="8">
                 <Border BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
-                    <DatePicker Date="{Binding OccurDate}" HeightRequest="44" />
+                    <DatePicker Date="{Binding OccurDate}" Format="yyyy/MM/dd" HeightRequest="44" />
                 </Border>
                 <Border Grid.Column="1" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
-                    <TimePicker Time="{Binding OccurTime}" HeightRequest="44" />
+                    <TimePicker Time="{Binding OccurTime}" Format="HH:mm" HeightRequest="44" />
                 </Border>
             </Grid>
 
@@ -67,10 +67,10 @@
             <Label IsVisible="{Binding IsNotAddMode}" Text="实际复工时间 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
             <Grid IsVisible="{Binding IsEditMode}" ColumnDefinitions="*,120" ColumnSpacing="8">
                 <Border BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
-                    <DatePicker Date="{Binding ResumeDate}" HeightRequest="44" />
+                    <DatePicker Date="{Binding ResumeDate}" Format="yyyy/MM/dd" HeightRequest="44" />
                 </Border>
                 <Border Grid.Column="1" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
-                    <TimePicker Time="{Binding ResumeTime}" HeightRequest="44" />
+                    <TimePicker Time="{Binding ResumeTime}" Format="HH:mm" HeightRequest="44" />
                 </Border>
             </Grid>
             <Border IsVisible="{Binding IsDetailMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="12,0" HeightRequest="44">
@@ -79,7 +79,7 @@
 
             <Label IsVisible="{Binding IsNotAddMode}" Text="责任/维修人员 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
             <Border IsVisible="{Binding IsEditMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="10,0">
-                <Entry Text="{Binding ResponsibleText}" Placeholder="输入姓名或工号搜索" HeightRequest="44" />
+                <Entry Text="{Binding ResponsibleText}" Placeholder="输入姓名或工号搜索" HeightRequest="44" Focused="OnResponsibleFocused" />
             </Border>
             <Border IsVisible="{Binding IsDetailMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="12,0" HeightRequest="44">
                 <Label Text="{Binding ResponsibleText}" VerticalOptions="Center" TextColor="#536173" />

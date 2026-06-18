@@ -68,7 +68,7 @@ public partial class LineDowntimeFormViewModel : ObservableObject
                 await LoadDetailAsync(_id);
 
             if (IsEditMode)
-                await LoadUsersAsync();
+                await LoadUsersAsync(showSuggestions: false);
         }
         finally { IsBusy = false; }
     }
@@ -132,10 +132,21 @@ public partial class LineDowntimeFormViewModel : ObservableObject
         }
     }
 
-    private async Task LoadUsersAsync()
+    private async Task LoadUsersAsync(bool showSuggestions)
     {
-        _allUsers = await _authApi.GetAllUsersAsync();
-        FilterUsers();
+        if (_allUsers.Count == 0)
+            _allUsers = await _authApi.GetAllUsersAsync();
+
+        if (showSuggestions)
+            FilterUsers();
+        else
+            IsUserSuggestionsVisible = false;
+    }
+
+    public async Task ShowUserSuggestionsAsync()
+    {
+        if (!IsEditMode || IsDetailMode) return;
+        await LoadUsersAsync(showSuggestions: true);
     }
 
     partial void OnResponsibleTextChanged(string? value)
@@ -143,7 +154,8 @@ public partial class LineDowntimeFormViewModel : ObservableObject
         if (!IsEditMode) return;
         if (SelectedUser is not null && string.Equals(value, SelectedUser.realname, StringComparison.Ordinal)) return;
         SelectedUser = null;
-        FilterUsers(value);
+        if (_allUsers.Count > 0)
+            FilterUsers(value);
     }
 
     private void FilterUsers(string? keyword = null)
