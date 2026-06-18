@@ -15,7 +15,6 @@ public partial class LineDowntimeSearchPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        if (_vm.Records.Count == 0)
-            await _vm.SearchAsync();
+        await _vm.SearchAsync();
     }
 }
