@@ -21,6 +21,7 @@ namespace IndustrialControlMAUI.Services
          string? inspectStatus,
          string? qualityType,
          bool searchCount,
+         string? processCode = null,
          CancellationToken ct = default);
         Task<DictQuality> GetQualityDictsAsync(CancellationToken ct = default);
         Task<ApiResp<QualityDetailDto>?> GetDetailAsync(string id, CancellationToken ct = default);
