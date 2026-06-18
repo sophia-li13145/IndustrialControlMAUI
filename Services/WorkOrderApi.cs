@@ -70,6 +70,12 @@ namespace IndustrialControlMAUI.Services
         private readonly string _preStartInspectionResourceEndpoint;
         private readonly string _preStartInspectionMaterialEndpoint;
         private readonly string _preStartInspectionConfirmScansEndpoint;
+        private readonly string _lineDowntimePageEndpoint;
+        private readonly string _lineDowntimeDictEndpoint;
+        private readonly string _lineDowntimeLinesEndpoint;
+        private readonly string _lineDowntimeAddEndpoint;
+        private readonly string _lineDowntimeDetailEndpoint;
+        private readonly string _lineDowntimeEditEndpoint;
 
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
@@ -218,10 +224,111 @@ namespace IndustrialControlMAUI.Services
             _preStartInspectionConfirmScansEndpoint = ServiceUrlHelper.NormalizeRelative(
     configLoader.GetApiPath("workOrder.preStartInspectionConfirmScans", "/pda/pmsPreStartInspection/confirmScans"),
     servicePath);
+            _lineDowntimePageEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("lineDowntime.page", "/pda/pdaLineDowntime/page"),
+    servicePath);
+            _lineDowntimeDictEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("lineDowntime.dict", "/pda/pdaLineDowntime/getLineDowntimeDict"),
+    servicePath);
+            _lineDowntimeLinesEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("lineDowntime.lines", "/pda/pdaLineDowntime/listProductionLines"),
+    servicePath);
+            _lineDowntimeAddEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("lineDowntime.add", "/pda/pdaLineDowntime/add"),
+    servicePath);
+            _lineDowntimeDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("lineDowntime.detail", "/pda/pdaLineDowntime/detail"),
+    servicePath);
+            _lineDowntimeEditEndpoint = ServiceUrlHelper.NormalizeRelative(
+    configLoader.GetApiPath("lineDowntime.edit", "/pda/pdaLineDowntime/edit"),
+    servicePath);
 
 
         }
         // ===== 方法实现 =====
+
+        public async Task<PageResp<LineDowntimeRecord>?> PageLineDowntimeAsync(DateTime? occurTimeStart, DateTime? occurTimeEnd, string? recordStatus, int pageNo = 1, int pageSize = 20, bool? searchCount = null, CancellationToken ct = default)
+        {
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["pageNo"] = pageNo.ToString(),
+                ["pageSize"] = pageSize.ToString(),
+                ["occurTimeStart"] = occurTimeStart?.ToString("yyyy-MM-dd HH:mm:ss"),
+                ["occurTimeEnd"] = occurTimeEnd?.ToString("yyyy-MM-dd HH:mm:ss"),
+                ["recordStatus"] = recordStatus,
+                ["searchCount"] = searchCount?.ToString().ToLowerInvariant()
+            });
+            var url = string.IsNullOrWhiteSpace(query) ? _lineDowntimePageEndpoint : $"{_lineDowntimePageEndpoint}?{query}";
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode) return new PageResp<LineDowntimeRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<PageResp<LineDowntimeRecord>>(json, _json);
+        }
+
+        public async Task<ApiResp<List<FieldDict>>> GetLineDowntimeDictAsync(CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _lineDowntimeDictEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode) return new ApiResp<List<FieldDict>> { success = false, message = $"HTTP {(int)res.StatusCode}", result = new() };
+            return JsonSerializer.Deserialize<ApiResp<List<FieldDict>>>(json, _json) ?? new ApiResp<List<FieldDict>> { result = new() };
+        }
+
+
+        public async Task<ApiResp<List<LineDowntimeProductionLine>>> ListLineDowntimeProductionLinesAsync(CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _lineDowntimeLinesEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode) return new ApiResp<List<LineDowntimeProductionLine>> { success = false, message = $"HTTP {(int)res.StatusCode}", result = new() };
+            return JsonSerializer.Deserialize<ApiResp<List<LineDowntimeProductionLine>>>(json, _json) ?? new ApiResp<List<LineDowntimeProductionLine>> { result = new() };
+        }
+
+        public async Task<ApiResp<bool?>> AddLineDowntimeAsync(LineDowntimeAddReq data, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _lineDowntimeAddEndpoint);
+            var body = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode) return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json) ?? new ApiResp<bool?> { success = false, message = "响应为空" };
+        }
+
+
+        public async Task<ApiResp<LineDowntimeRecord>> GetLineDowntimeDetailAsync(string id, CancellationToken ct = default)
+        {
+            var query = BuildQuery(new Dictionary<string, string?> { ["id"] = id });
+            var url = string.IsNullOrWhiteSpace(query) ? _lineDowntimeDetailEndpoint : $"{_lineDowntimeDetailEndpoint}?{query}";
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode) return new ApiResp<LineDowntimeRecord> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<LineDowntimeRecord>>(json, _json) ?? new ApiResp<LineDowntimeRecord> { success = false, message = "响应为空" };
+        }
+
+
+        public async Task<ApiResp<bool?>> EditLineDowntimeAsync(LineDowntimeEditReq data, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _lineDowntimeEditEndpoint);
+            var body = JsonSerializer.Serialize(data, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode) return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json) ?? new ApiResp<bool?> { success = false, message = "响应为空" };
+        }
         public async Task<WorkOrderPageResult> GetWorkOrdersAsync(WorkOrderQuery q, CancellationToken ct = default)
         {
             var p = new Dictionary<string, string>

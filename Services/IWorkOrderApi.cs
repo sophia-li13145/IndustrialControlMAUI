@@ -17,6 +17,12 @@ namespace IndustrialControlMAUI.Services
     public interface IWorkOrderApi
     {
         Task<WorkOrderPageResult> GetWorkOrdersAsync(WorkOrderQuery q, CancellationToken ct = default);
+        Task<PageResp<LineDowntimeRecord>?> PageLineDowntimeAsync(DateTime? occurTimeStart, DateTime? occurTimeEnd, string? recordStatus, int pageNo = 1, int pageSize = 20, bool? searchCount = null, CancellationToken ct = default);
+        Task<ApiResp<List<FieldDict>>> GetLineDowntimeDictAsync(CancellationToken ct = default);
+        Task<ApiResp<List<LineDowntimeProductionLine>>> ListLineDowntimeProductionLinesAsync(CancellationToken ct = default);
+        Task<ApiResp<bool?>> AddLineDowntimeAsync(LineDowntimeAddReq req, CancellationToken ct = default);
+        Task<ApiResp<LineDowntimeRecord>> GetLineDowntimeDetailAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<bool?>> EditLineDowntimeAsync(LineDowntimeEditReq req, CancellationToken ct = default);
         Task<DictBundle> GetWorkOrderDictsAsync(CancellationToken ct = default);
         Task<WorkflowResp?> GetWorkOrderWorkflowAsync(string id, CancellationToken ct = default);
         Task<PageResp<ProcessTask>?> PageWorkProcessTasksAsync(

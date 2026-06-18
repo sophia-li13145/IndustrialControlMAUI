@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.LineDowntimeFormPage"
+             BackgroundColor="#F6F7FB"
+             Shell.NavBarIsVisible="True"
+             Title="{Binding Title}">
+    <ScrollView>
+        <VerticalStackLayout Padding="12" Spacing="12">
+            <Frame IsVisible="{Binding IsNotAddMode}" Padding="10" CornerRadius="8" HasShadow="False" BorderColor="#FFE8D6" BackgroundColor="#FFF8F0">
+                <VerticalStackLayout Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Text="●" TextColor="#FF8A22" FontSize="15" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding Card.Source.DisplayLineName}" FontSize="17" FontAttributes="Bold" TextColor="#263445" Margin="6,0,0,0" />
+                        <Border Grid.Column="2" BackgroundColor="#FFE7C7" StrokeThickness="0" StrokeShape="RoundRectangle 4" Padding="6,2">
+                            <Label Text="{Binding Card.StatusText}" FontSize="11" TextColor="#FF8A22" FontAttributes="Bold" />
+                        </Border>
+                    </Grid>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="分类:" FontSize="12" TextColor="#7A8797" />
+                        <Label Text="{Binding Card.CategoryText}" FontSize="12" TextColor="#F25555" />
+                    </HorizontalStackLayout>
+                    <Grid ColumnDefinitions="48,*" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Text="单号:" FontSize="12" TextColor="#7A8797" />
+                        <Label Grid.Column="1" Text="{Binding Card.Source.DisplayExceptionNo}" FontSize="12" TextColor="#536173" />
+                        <Label Grid.Row="1" Text="原因:" FontSize="12" TextColor="#7A8797" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Card.Source.DisplayReason}" FontSize="12" TextColor="#B45309" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                        <Label Text="{Binding Card.Source.DisplayOccurTime, StringFormat='异常发生时间: {0}'}" FontSize="11" TextColor="#B45309" />
+                        <Label Grid.Column="1" Text="{Binding Card.Source.DisplayUserName, StringFormat='发起人: {0}'}" FontSize="11" TextColor="#B45309" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label IsVisible="{Binding IsAddMode}" Text="当前产线/设备 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Border IsVisible="{Binding IsAddMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
+                <Picker ItemsSource="{Binding ProductionLines}" ItemDisplayBinding="{Binding DisplayName}" SelectedItem="{Binding SelectedLine}" HeightRequest="44" />
+            </Border>
+
+            <Label IsVisible="{Binding IsAddMode}" Text="异常类别分类 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Border IsVisible="{Binding IsAddMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
+                <Picker Title="请选择异常分类" ItemsSource="{Binding CategoryOptions}" ItemDisplayBinding="{Binding Text}" SelectedItem="{Binding SelectedCategory}" HeightRequest="44" />
+            </Border>
+
+            <Label IsVisible="{Binding IsAddMode}" Text="异常发生时间 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Grid IsVisible="{Binding IsAddMode}" ColumnDefinitions="*,120" ColumnSpacing="8">
+                <Border BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
+                    <DatePicker Date="{Binding OccurDate}" Format="yyyy/MM/dd" HeightRequest="44" />
+                </Border>
+                <Border Grid.Column="1" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
+                    <TimePicker Time="{Binding OccurTime}" Format="HH:mm" HeightRequest="44" />
+                </Border>
+            </Grid>
+
+            <Label Text="{Binding IsAddMode, StringFormat='{0}'}" IsVisible="False" />
+            <Label Text="停机原因和说明 *" IsVisible="{Binding IsAddMode}" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Border IsVisible="{Binding IsAddMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8">
+                <Editor Text="{Binding Reason}" Placeholder="请详细描述设备故障、制料或质量异常等情况..." AutoSize="TextChanges" MinimumHeightRequest="120" MaxLength="500" />
+            </Border>
+
+            <Label IsVisible="{Binding IsNotAddMode}" Text="故障处理方案 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Border IsVisible="{Binding IsNotAddMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8">
+                <Editor Text="{Binding Solution}" IsReadOnly="{Binding IsDetailMode}" Placeholder="请记录实际的维修方法或解决方案..." AutoSize="TextChanges" MinimumHeightRequest="105" MaxLength="500" />
+            </Border>
+
+            <Label IsVisible="{Binding IsNotAddMode}" Text="实际复工时间 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Grid IsVisible="{Binding IsEditMode}" ColumnDefinitions="*,120" ColumnSpacing="8">
+                <Border BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
+                    <DatePicker Date="{Binding ResumeDate}" Format="yyyy/MM/dd" HeightRequest="44" />
+                </Border>
+                <Border Grid.Column="1" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="8,0">
+                    <TimePicker Time="{Binding ResumeTime}" Format="HH:mm" HeightRequest="44" />
+                </Border>
+            </Grid>
+            <Border IsVisible="{Binding IsDetailMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="12,0" HeightRequest="44">
+                <Label Text="{Binding Card.Source.resumeTime}" VerticalOptions="Center" TextColor="#536173" />
+            </Border>
+
+            <Label IsVisible="{Binding IsNotAddMode}" Text="责任/维修人员 *" FontSize="13" FontAttributes="Bold" TextColor="#263445" />
+            <Border IsVisible="{Binding IsEditMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="10,0">
+                <Entry Text="{Binding ResponsibleText}" Placeholder="输入姓名或工号搜索" HeightRequest="44" Focused="OnResponsibleFocused" />
+            </Border>
+            <Border IsVisible="{Binding IsDetailMode}" BackgroundColor="White" Stroke="#E4E8F0" StrokeShape="RoundRectangle 8" Padding="12,0" HeightRequest="44">
+                <Label Text="{Binding ResponsibleText}" VerticalOptions="Center" TextColor="#536173" />
+            </Border>
+            <CollectionView ItemsSource="{Binding UserSuggestions}" IsVisible="{Binding IsUserSuggestionsVisible}" HeightRequest="140" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border BackgroundColor="White" Stroke="#EEF0F4" Padding="10" StrokeShape="RoundRectangle 6">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectUserCommand}" CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding realname}" FontSize="14" TextColor="#263445" />
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button IsVisible="{Binding CanSubmit}" Text="{Binding SubmitText}" Command="{Binding SubmitCommand}" BackgroundColor="{Binding SubmitColor}" TextColor="White" FontAttributes="Bold" CornerRadius="8" HeightRequest="48" Margin="0,12,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

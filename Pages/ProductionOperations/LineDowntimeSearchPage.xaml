@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.LineDowntimeSearchPage"
+             BackgroundColor="#F5F6FA"
+             Shell.NavBarIsVisible="True"
+             Title="停机记录">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Frame Grid.Row="0" Margin="12,10" Padding="12" CornerRadius="12" HasShadow="False" BorderColor="#EEF0F4" BackgroundColor="White">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="异常发生时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <DatePicker Date="{Binding OccurStartDate}" Format="yyyy/MM/dd" />
+                    <TimePicker Grid.Column="1" Time="{Binding OccurStartTime}" Format="HH:mm" />
+                </Grid>
+                <Label Text="异常结束时间" FontSize="13" TextColor="#536173" FontAttributes="Bold" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <DatePicker Date="{Binding OccurEndDate}" Format="yyyy/MM/dd" />
+                    <TimePicker Grid.Column="1" Time="{Binding OccurEndTime}" Format="HH:mm" />
+                </Grid>
+                <Grid ColumnDefinitions="*,96" ColumnSpacing="10">
+                    <Picker Title="状态"
+                            ItemsSource="{Binding StatusOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedStatusOption}" />
+                    <Button Grid.Column="1" Text="查询" Command="{Binding SearchCommand}" BackgroundColor="#1677FF" TextColor="White" CornerRadius="8" />
+                </Grid>
+            </VerticalStackLayout>
+        </Frame>
+
+        <RefreshView Grid.Row="1" Command="{Binding SearchCommand}" IsRefreshing="{Binding IsBusy}">
+            <CollectionView ItemsSource="{Binding Records}"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="2"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                <CollectionView.EmptyView>
+                    <Grid Padding="20"><Label Text="-- 没有更多记录了 --" TextColor="#9AA6B2" HorizontalOptions="Center" /></Grid>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="12,6" Padding="0" CornerRadius="12" HasShadow="False" BorderColor="#EEF0F4" BackgroundColor="White">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ShowDetailCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="4,*">
+                                <BoxView Color="{Binding BorderColor}" />
+                                <VerticalStackLayout Grid.Column="1" Padding="12" Spacing="8">
+                                    <Label Text="{Binding Source.DisplayLineName}" FontAttributes="Bold" FontSize="17" TextColor="#1F2D3D" />
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{Binding StatusColor}" Padding="6,2" StrokeThickness="0" StrokeShape="RoundRectangle 4">
+                                            <Label Text="{Binding StatusText}" FontSize="11" TextColor="White" />
+                                        </Border>
+                                        <Border BackgroundColor="#FFECEC" Padding="6,2" StrokeThickness="0" StrokeShape="RoundRectangle 4">
+                                            <Label Text="{Binding CategoryText, TargetNullValue='设备故障'}" FontSize="11" TextColor="#F25555" />
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    <Grid ColumnDefinitions="52,*" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                        <Label Text="单号：" TextColor="#8792A2" FontSize="13" />
+                                        <Label Grid.Column="1" Text="{Binding Source.DisplayExceptionNo}" TextColor="#536173" FontSize="13" />
+                                        <Label Grid.Row="1" Text="原因：" TextColor="#8792A2" FontSize="13" />
+                                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Source.DisplayReason}" TextColor="#536173" FontSize="13" LineBreakMode="TailTruncation" />
+                                    </Grid>
+                                    <Grid BackgroundColor="#FAFBFD" Padding="6" ColumnDefinitions="*,Auto">
+                                        <Label Text="{Binding Source.DisplayOccurTime, StringFormat='◷ 异常发生时间: {0}'}" FontSize="12" TextColor="#6B7788" />
+                                        <Label Grid.Column="1" Text="{Binding Source.DisplayUserName, StringFormat='♙ 提报人: {0}'}" FontSize="12" TextColor="#6B7788" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Footer>
+                    <Label Text="-- 没有更多记录了 --" Margin="0,16" TextColor="#9AA6B2" HorizontalOptions="Center" />
+                </CollectionView.Footer>
+            </CollectionView>
+        </RefreshView>
+
+        <Button Grid.Row="2"
+                Text="⊕  新增停机记录"
+                Command="{Binding AddCommand}"
+                BackgroundColor="#F2384A"
+                TextColor="White"
+                FontAttributes="Bold"
+                CornerRadius="8"
+                HeightRequest="46"
+                Margin="12,8,12,12" />
+    </Grid>
+</ContentPage>
