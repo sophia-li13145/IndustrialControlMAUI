@@ -28,7 +28,7 @@
             </VerticalStackLayout>
         </Frame>
 
-        <RefreshView Grid.Row="1" Command="{Binding SearchCommand}" IsRefreshing="{Binding IsBusy}">
+        <RefreshView Grid.Row="1" Command="{Binding SearchCommand}" IsRefreshing="{Binding IsBusy, Mode=OneWay}">
             <CollectionView ItemsSource="{Binding Records}"
                             SelectionMode="None"
                             RemainingItemsThreshold="{Binding RemainingItemsThreshold}"
@@ -72,7 +72,17 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
                 <CollectionView.Footer>
-                    <Label Text="-- 没有更多记录了 --" Margin="0,16" TextColor="#9AA6B2" HorizontalOptions="Center" />
+                    <Grid Padding="0,16" RowDefinitions="Auto,Auto">
+                        <ActivityIndicator IsRunning="{Binding IsLoadMoreFooterVisible}"
+                                           IsVisible="{Binding IsLoadMoreFooterVisible}"
+                                           Color="#1677FF"
+                                           HorizontalOptions="Center" />
+                        <Label Grid.Row="1"
+                               Text="-- 没有更多记录了 --"
+                               TextColor="#9AA6B2"
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding IsNoMoreFooterVisible}" />
+                    </Grid>
                 </CollectionView.Footer>
             </CollectionView>
         </RefreshView>

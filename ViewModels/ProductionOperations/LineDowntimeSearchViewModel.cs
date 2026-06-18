@@ -27,6 +27,8 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
     public ObservableCollection<LineDowntimeCardItem> Records { get; } = new();
 
     public int RemainingItemsThreshold => HasMore ? 2 : -1;
+    public bool IsLoadMoreFooterVisible => IsLoadingMore;
+    public bool IsNoMoreFooterVisible => !IsLoadingMore && !HasMore && Records.Count > 0;
 
     public IAsyncRelayCommand SearchCommand { get; }
     public IAsyncRelayCommand AddCommand { get; }
@@ -88,6 +90,7 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
             var (rows, total) = await LoadPageAsync(PageIndex);
             foreach (var row in rows) Records.Add(row);
             HasMore = Records.Count < total;
+            NotifyPagingStateChanged();
         }
         finally { IsBusy = false; }
     }
@@ -99,10 +102,12 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
         try
         {
             IsLoadingMore = true;
-            PageIndex++;
-            var (rows, total) = await LoadPageAsync(PageIndex);
+            var nextPage = PageIndex + 1;
+            var (rows, total) = await LoadPageAsync(nextPage);
+            PageIndex = nextPage;
             foreach (var row in rows) Records.Add(row);
             HasMore = Records.Count < total;
+            NotifyPagingStateChanged();
         }
         finally { IsLoadingMore = false; }
     }
@@ -151,7 +156,19 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
 
     partial void OnHasMoreChanged(bool value)
     {
+        NotifyPagingStateChanged();
+    }
+
+    partial void OnIsLoadingMoreChanged(bool value)
+    {
+        NotifyPagingStateChanged();
+    }
+
+    private void NotifyPagingStateChanged()
+    {
         OnPropertyChanged(nameof(RemainingItemsThreshold));
+        OnPropertyChanged(nameof(IsLoadMoreFooterVisible));
+        OnPropertyChanged(nameof(IsNoMoreFooterVisible));
     }
 }
 
