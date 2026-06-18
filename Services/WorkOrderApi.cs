@@ -225,22 +225,22 @@ namespace IndustrialControlMAUI.Services
     configLoader.GetApiPath("workOrder.preStartInspectionConfirmScans", "/pda/pmsPreStartInspection/confirmScans"),
     servicePath);
             _lineDowntimePageEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("lineDowntime.page", "/pdaLineDowntime/page"),
+    configLoader.GetApiPath("lineDowntime.page", "/pda/pdaLineDowntime/page"),
     servicePath);
             _lineDowntimeDictEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("lineDowntime.dict", "/pdaLineDowntime/getLineDowntimeDict"),
+    configLoader.GetApiPath("lineDowntime.dict", "/pda/pdaLineDowntime/getLineDowntimeDict"),
     servicePath);
             _lineDowntimeLinesEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("lineDowntime.lines", "/pdaLineDowntime/listProductionLines"),
+    configLoader.GetApiPath("lineDowntime.lines", "/pda/pdaLineDowntime/listProductionLines"),
     servicePath);
             _lineDowntimeAddEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("lineDowntime.add", "/pdaLineDowntime/add"),
+    configLoader.GetApiPath("lineDowntime.add", "/pda/pdaLineDowntime/add"),
     servicePath);
             _lineDowntimeDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("lineDowntime.detail", "/pdaLineDowntime/detail"),
+    configLoader.GetApiPath("lineDowntime.detail", "/pda/pdaLineDowntime/detail"),
     servicePath);
             _lineDowntimeEditEndpoint = ServiceUrlHelper.NormalizeRelative(
-    configLoader.GetApiPath("lineDowntime.edit", "/pdaLineDowntime/edit"),
+    configLoader.GetApiPath("lineDowntime.edit", "/pda/pdaLineDowntime/edit"),
     servicePath);
 
 
