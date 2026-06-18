@@ -11,6 +11,7 @@ namespace IndustrialControlMAUI.ViewModels
     public partial class ProcessQualitySearchViewModel : ObservableObject
     {
         private readonly IQualityApi _qualityapi;
+        private readonly IWorkOrderApi _workapi;
         /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? keyword;
@@ -24,6 +25,8 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> inspectStatusDict = new();
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedStatusOption;
+        public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
+        [ObservableProperty] private StatusOption? selectedProcessOption;
 
         private bool _dictsLoaded = false;
 
@@ -34,9 +37,10 @@ namespace IndustrialControlMAUI.ViewModels
         public IRelayCommand ClearCommand { get; }
 
         /// <summary>执行 ProcessQualitySearchViewModel 初始化逻辑。</summary>
-        public ProcessQualitySearchViewModel(IQualityApi qualityapi)
+        public ProcessQualitySearchViewModel(IQualityApi qualityapi, IWorkOrderApi workapi)
         {
             _qualityapi = qualityapi;
+            _workapi = workapi;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
            
@@ -48,21 +52,51 @@ namespace IndustrialControlMAUI.ViewModels
 
             try
             {
-                if (InspectStatusDict.Count > 0) return; // 已加载则跳过
+                if (InspectStatusDict.Count == 0)
+                {
+                    var dicts = await _qualityapi.GetQualityDictsAsync();
+                    InspectStatusDict = dicts.InspectStatus;
 
-                var dicts = await _qualityapi.GetQualityDictsAsync();
-                InspectStatusDict = dicts.InspectStatus;
-
-                // 如果你需要将字典转为下拉选项绑定到 Picker：
-                StatusOptions.Clear();
-                foreach (var d in InspectStatusDict)
-                    if (d.dictItemName != "新建")
-                        StatusOptions.Add(new StatusOption { Text = d.dictItemName ?? "", Value = d.dictItemValue });
+                    // 如果你需要将字典转为下拉选项绑定到 Picker：
+                    StatusOptions.Clear();
+                    foreach (var d in InspectStatusDict)
+                        if (d.dictItemName != "新建")
+                            StatusOptions.Add(new StatusOption { Text = d.dictItemName ?? "", Value = d.dictItemValue });
+                }
+                await LoadProcessOptionsAsync();
                 _dictsLoaded = true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                await LoadProcessOptionsAsync();
                 _dictsLoaded = true;
+            }
+        }
+
+        private async Task LoadProcessOptionsAsync()
+        {
+            if (ProcessOptions.Count > 0) return;
+
+            ProcessOptions.Clear();
+
+            try
+            {
+                var resp = await _workapi.GetProcessInfoListAsync();
+                foreach (var p in resp?.result ?? new List<ProcessInfo>())
+                {
+                    var code = p.processCode?.Trim();
+                    if (string.IsNullOrWhiteSpace(code)) continue;
+
+                    ProcessOptions.Add(new StatusOption
+                    {
+                        Text = string.IsNullOrWhiteSpace(p.processName) ? code : p.processName,
+                        Value = code
+                    });
+                }
+            }
+            catch (Exception)
+            {
+                // 工序列表加载失败时保持未选中，让 Picker 显示 Title“工序”。
             }
         }
 
@@ -135,6 +169,7 @@ namespace IndustrialControlMAUI.ViewModels
             var createdTimeBegin = StartDate != default ? StartDate.ToString("yyyy-MM-dd 00:00:00") : null;
             var createdTimeEnd = EndDate != default ? EndDate.ToString("yyyy-MM-dd 23:59:59") : null;
             var inspectStatus = SelectedStatusOption?.Value;
+            var processCode = SelectedProcessOption?.Value;
             var qualityType = "IPQC";
             var searchCount = false;
 
@@ -145,6 +180,7 @@ namespace IndustrialControlMAUI.ViewModels
                 createdTimeBegin: createdTimeBegin,
                 createdTimeEnd: createdTimeEnd,
                 inspectStatus: inspectStatus,
+                processCode: processCode,
                 qualityType: qualityType,
                 searchCount: searchCount);
 
@@ -188,6 +224,7 @@ namespace IndustrialControlMAUI.ViewModels
             PageIndex = 1;
             HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
+            SelectedProcessOption = null;
             Orders.Clear();
         }
 
