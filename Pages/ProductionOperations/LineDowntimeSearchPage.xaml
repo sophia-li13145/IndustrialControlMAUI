@@ -31,7 +31,7 @@
         <RefreshView Grid.Row="1" Command="{Binding SearchCommand}" IsRefreshing="{Binding IsBusy}">
             <CollectionView ItemsSource="{Binding Records}"
                             SelectionMode="None"
-                            RemainingItemsThreshold="2"
+                            RemainingItemsThreshold="{Binding RemainingItemsThreshold}"
                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
                 <CollectionView.EmptyView>
                     <Grid Padding="20"><Label Text="-- 没有更多记录了 --" TextColor="#9AA6B2" HorizontalOptions="Center" /></Grid>

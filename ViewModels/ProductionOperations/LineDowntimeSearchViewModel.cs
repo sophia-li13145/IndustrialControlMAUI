@@ -26,6 +26,8 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
     public ObservableCollection<StatusOption> StatusOptions { get; } = new();
     public ObservableCollection<LineDowntimeCardItem> Records { get; } = new();
 
+    public int RemainingItemsThreshold => HasMore ? 2 : -1;
+
     public IAsyncRelayCommand SearchCommand { get; }
     public IAsyncRelayCommand AddCommand { get; }
     public IAsyncRelayCommand<LineDowntimeCardItem?> ShowDetailCommand { get; }
@@ -145,6 +147,11 @@ public partial class LineDowntimeSearchViewModel : ObservableObject
 
     private string MapStatus(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : (_statusMap.TryGetValue(value!, out var name) ? name : value!);
     private string MapCategory(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : (_categoryMap.TryGetValue(value!, out var name) ? name : value!);
+
+    partial void OnHasMoreChanged(bool value)
+    {
+        OnPropertyChanged(nameof(RemainingItemsThreshold));
+    }
 }
 
 public sealed class LineDowntimeCardItem
