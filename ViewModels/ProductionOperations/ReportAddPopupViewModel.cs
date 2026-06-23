@@ -247,6 +247,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
             decimal.TryParse(UnqualifiedQtyText, out var unqualifiedQty);
             decimal.TryParse(WorkHoursText, out var hours);
+            decimal.TryParse(SpotWeldingRatioText, out var spotWeldingRatio);
 
             if (unqualifiedQty > 0 && (SelectedUnqualifiedMaterial is null
                 || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialCode)
