@@ -758,7 +758,7 @@ public class AddWorkProcessTaskReportReq
     public string? productionMachine { get; set; }
     public string? productionMachineName { get; set; }
     public decimal reportQty { get; set; }
-    public decimal? spotWeldingRatio { get; set; }
+    public int spotWeldRatio { get; set; }
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? unqualifiedQty { get; set; }
@@ -766,6 +766,20 @@ public class AddWorkProcessTaskReportReq
     public string? unqualifiedMaterialName { get; set; }
     public decimal? workHours { get; set; }
     public string workOrderNo { get; set; } = "";
+}
+
+
+public class ComputeReportQuantityBySpotWeldRatioReq
+{
+    public string deviceCode { get; set; } = "";
+    public string workOrderNo { get; set; } = "";
+    public string processCode { get; set; } = "";
+    public int spotWeldRatio { get; set; }
+}
+
+public class ComputeReportQuantityBySpotWeldRatioResult
+{
+    public decimal? reportQty { get; set; }
 }
 
 public class DeleteWorkProcessTaskReportReq
