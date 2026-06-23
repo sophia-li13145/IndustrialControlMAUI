@@ -34,6 +34,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
     private const string SpotWeldRatioSwitchKey = "pms_spot_weld_ratio_switch";
     private int _computeReportQtyVersion;
+    private CancellationTokenSource? _spotWeldRatioDebounceCts;
 
     public bool IsNotBusy => !IsBusy;
     public bool IsReportQtyEditable => !IsSpotWeldingRatioVisible;
@@ -62,12 +63,13 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
     partial void OnSpotWeldingRatioTextChanged(string? value)
     {
-        _ = ComputeReportQtyBySpotWeldRatioAsync();
+        _ = DebounceComputeReportQtyBySpotWeldRatioAsync();
     }
 
     partial void OnSelectedDeviceChanged(StatusOption? value)
     {
-        _ = ComputeReportQtyBySpotWeldRatioAsync();
+        CancelSpotWeldRatioDebounce();
+        _ = ComputeReportQtyBySpotWeldRatioAsync(allowZeroRatio: true);
     }
 
     partial void OnUnqualifiedQtyTextChanged(string? value)
@@ -96,6 +98,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
             SpotWeldingRatioText = null;
             IsSpotWeldingRatioVisible = false;
             _computeReportQtyVersion++;
+            CancelSpotWeldRatioDebounce();
 
             if (detail is null)
             {
@@ -303,7 +306,35 @@ public partial class ReportAddPopupViewModel : ObservableObject
     }
 
 
-    private async Task<bool> ComputeReportQtyBySpotWeldRatioAsync(bool showError = false)
+
+    private async Task DebounceComputeReportQtyBySpotWeldRatioAsync()
+    {
+        CancelSpotWeldRatioDebounce();
+        var cts = new CancellationTokenSource();
+        _spotWeldRatioDebounceCts = cts;
+
+        try
+        {
+            await Task.Delay(500, cts.Token);
+            await ComputeReportQtyBySpotWeldRatioAsync();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            if (ReferenceEquals(_spotWeldRatioDebounceCts, cts))
+                _spotWeldRatioDebounceCts = null;
+            cts.Dispose();
+        }
+    }
+
+    private void CancelSpotWeldRatioDebounce()
+    {
+        _spotWeldRatioDebounceCts?.Cancel();
+    }
+
+    private async Task<bool> ComputeReportQtyBySpotWeldRatioAsync(bool showError = false, bool allowZeroRatio = false)
     {
         var version = ++_computeReportQtyVersion;
 
@@ -331,14 +362,16 @@ public partial class ReportAddPopupViewModel : ObservableObject
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(SpotWeldingRatioText))
+        var hasSpotWeldRatio = !string.IsNullOrWhiteSpace(SpotWeldingRatioText);
+        if (!hasSpotWeldRatio && !allowZeroRatio)
         {
             if (showError)
                 await AlertAsync("请输入点焊比例");
             return false;
         }
 
-        if (!int.TryParse(SpotWeldingRatioText, out var spotWeldRatio) || spotWeldRatio < 1)
+        var spotWeldRatio = 0;
+        if (hasSpotWeldRatio && (!int.TryParse(SpotWeldingRatioText, out spotWeldRatio) || spotWeldRatio < 1))
         {
             if (showError)
                 await AlertAsync("点焊比例必须为大于等于1的整数");
