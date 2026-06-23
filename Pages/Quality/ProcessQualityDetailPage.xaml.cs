@@ -84,19 +84,29 @@ public partial class ProcessQualityDetailPage : ContentPage
         vm.IsInspectorDropdownOpen = vm.InspectorSuggestions.Count > 0;
     }
 
-    private async void OnInspectDevicePickerClicked(object? sender, EventArgs e)
+    private bool _isInspectDevicePickerOpen;
+
+    private async void OnInspectDevicePickerTapped(object? sender, TappedEventArgs e)
     {
-        if (BindingContext is not ProcessQualityDetailViewModel vm ||
-            sender is not Button button ||
-            button.CommandParameter is not QualityItem item)
+        if (_isInspectDevicePickerOpen ||
+            BindingContext is not ProcessQualityDetailViewModel vm ||
+            e.Parameter is not QualityItem item)
         {
             return;
         }
 
-        var picked = await InspectDevicePickerPopup.ShowAsync(vm.InspectDeviceList, item.selectedInspectDevice);
-        if (picked is not null)
+        _isInspectDevicePickerOpen = true;
+        try
         {
-            item.selectedInspectDevice = picked;
+            var picked = await InspectDevicePickerPopup.ShowAsync(vm.InspectDeviceList, item.selectedInspectDevice);
+            if (picked is not null)
+            {
+                item.selectedInspectDevice = picked;
+            }
+        }
+        finally
+        {
+            _isInspectDevicePickerOpen = false;
         }
     }
 
