@@ -1,4 +1,5 @@
 using IndustrialControlMAUI.ViewModels;
+using IndustrialControlMAUI.Models;
 
 namespace IndustrialControlMAUI.Pages;
 
@@ -81,6 +82,33 @@ public partial class IncomingQualityDetailPage : ContentPage
 
         // 3) 展开候选列表
         vm.IsInspectorDropdownOpen = vm.InspectorSuggestions.Count > 0;
+    }
+
+
+    private bool _isInspectDevicePickerOpen;
+
+    private async void OnInspectDevicePickerTapped(object? sender, TappedEventArgs e)
+    {
+        if (_isInspectDevicePickerOpen ||
+            BindingContext is not IncomingQualityDetailViewModel vm ||
+            e.Parameter is not QualityItem item)
+        {
+            return;
+        }
+
+        _isInspectDevicePickerOpen = true;
+        try
+        {
+            var picked = await InspectDevicePickerPopup.ShowAsync(vm.InspectDeviceList, item.selectedInspectDevice);
+            if (picked is not null)
+            {
+                item.selectedInspectDevice = picked;
+            }
+        }
+        finally
+        {
+            _isInspectDevicePickerOpen = false;
+        }
     }
 
 }
