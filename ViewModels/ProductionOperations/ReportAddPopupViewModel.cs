@@ -23,14 +23,19 @@ public partial class ReportAddPopupViewModel : ObservableObject
     [ObservableProperty] private StatusOption? selectedShift;
     [ObservableProperty] private UserInfoDto? selectedUser;
     [ObservableProperty] private string? workHoursText;
+    [ObservableProperty] private string? spotWeldingRatioText;
     [ObservableProperty] private string? reportQtyText;
     [ObservableProperty] private string? unqualifiedQtyText;
     [ObservableProperty] private ReworkBomDetailFlattenItem? selectedUnqualifiedMaterial;
     [ObservableProperty] private string? operateTimeText = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     [ObservableProperty] private string? memo;
+    [ObservableProperty] private bool isSpotWeldingRatioVisible;
     [ObservableProperty] private bool isBusy;
 
+    private decimal? _frameOutputQty;
+
     public bool IsNotBusy => !IsBusy;
+    public bool IsReportQtyEditable => !IsSpotWeldingRatioVisible;
 
     public string UnqualifiedMaterialLabel => RequiresUnqualifiedMaterial ? "*不合格物料：" : "不合格物料：";
 
@@ -47,6 +52,16 @@ public partial class ReportAddPopupViewModel : ObservableObject
     partial void OnIsBusyChanged(bool value)
     {
         OnPropertyChanged(nameof(IsNotBusy));
+    }
+
+    partial void OnIsSpotWeldingRatioVisibleChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsReportQtyEditable));
+    }
+
+    partial void OnSpotWeldingRatioTextChanged(string? value)
+    {
+        CalculateReportQtyBySpotWeldingRatio();
     }
 
     partial void OnUnqualifiedQtyTextChanged(string? value)
@@ -72,6 +87,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
             SelectedDevice = null;
             SelectedShift = null;
             SelectedUnqualifiedMaterial = null;
+            SpotWeldingRatioText = null;
+            IsSpotWeldingRatioVisible = false;
+            _frameOutputQty = null;
 
             if (detail is null)
             {
@@ -114,6 +132,11 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 string.Equals(x.username, currentUserName, StringComparison.OrdinalIgnoreCase));
             SelectedUser = current ?? UserOptions.FirstOrDefault();
 
+            var spotWeldingRatio = detail.spotWeldingRatio ?? detail.electricWeldingRatio;
+            IsSpotWeldingRatioVisible = (detail.spotWeldingRatioEnabled ?? detail.electricWeldingRatioEnabled ?? false)
+                                        || spotWeldingRatio.HasValue;
+            if (spotWeldingRatio.HasValue)
+                SpotWeldingRatioText = spotWeldingRatio.Value.ToString("G29");
 
             if (!string.IsNullOrWhiteSpace(detail.workOrderNo))
             {
@@ -134,7 +157,11 @@ public partial class ReportAddPopupViewModel : ObservableObject
             {
                 var qtyResp = await _api.GetWorkProcessTaskFrameOutputQtyAsync(detail.id);
                 if (qtyResp?.success == true && qtyResp.result.HasValue)
+                {
+                    _frameOutputQty = qtyResp.result.Value;
                     ReportQtyText = qtyResp.result.Value.ToString("G29");
+                    CalculateReportQtyBySpotWeldingRatio();
+                }
             }
         }
         catch (Exception ex)
@@ -197,8 +224,16 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 return;
             }
 
+            if (IsSpotWeldingRatioVisible && !string.IsNullOrWhiteSpace(SpotWeldingRatioText)
+                && (!decimal.TryParse(SpotWeldingRatioText, out var tempRatio) || tempRatio <= 0))
+            {
+                await AlertAsync("点焊比例必须大于0");
+                return;
+            }
+
             decimal.TryParse(UnqualifiedQtyText, out var unqualifiedQty);
             decimal.TryParse(WorkHoursText, out var hours);
+            decimal.TryParse(SpotWeldingRatioText, out var spotWeldingRatio);
 
             if (unqualifiedQty > 0 && (SelectedUnqualifiedMaterial is null
                 || string.IsNullOrWhiteSpace(SelectedUnqualifiedMaterial.materialCode)
@@ -220,6 +255,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 productionMachine = SelectedDevice?.Value,
                 productionMachineName = SelectedDevice?.Text,
                 reportQty = qty,
+                spotWeldingRatio = IsSpotWeldingRatioVisible && !string.IsNullOrWhiteSpace(SpotWeldingRatioText) ? spotWeldingRatio : null,
                 teamCode = SelectedShift?.Value,
                 teamName = SelectedShift?.Text,
                 unqualifiedQty = unqualifiedQty,
@@ -255,6 +291,17 @@ public partial class ReportAddPopupViewModel : ObservableObject
         }
     }
 
+
+    private void CalculateReportQtyBySpotWeldingRatio()
+    {
+        if (!IsSpotWeldingRatioVisible || !_frameOutputQty.HasValue || string.IsNullOrWhiteSpace(SpotWeldingRatioText))
+            return;
+
+        if (!decimal.TryParse(SpotWeldingRatioText, out var ratio) || ratio <= 0)
+            return;
+
+        ReportQtyText = (_frameOutputQty.Value * ratio).ToString("G29");
+    }
 
     private static bool IsUnqualifiedMaterialCandidate(ReworkBomDetailFlattenItem item)
     {
