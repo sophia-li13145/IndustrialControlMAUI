@@ -38,6 +38,8 @@ namespace IndustrialControlMAUI.Services
         private readonly string _batchApplyOutputFrameInstockEndpoint;
         private readonly string _reportListEndpoint;
         private readonly string _addReportEndpoint;
+        private readonly string _specialSwitchEndpoint;
+        private readonly string _computeReportQuantityBySpotWeldRatioEndpoint;
         private readonly string _deleteReportEndpoint;
         private readonly string _frameOutputQtyEndpoint;
         private readonly string _scanOutputFrameEndpoint;
@@ -138,6 +140,10 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.reportList", "/pda/pmsWorkProcessTaskReport/listWorkProcessTaskReports"), servicePath);
             _addReportEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.addReport", "/pda/pmsWorkProcessTaskReport/addWorkProcessTaskReport"), servicePath);
+            _specialSwitchEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.specialSwitch", "/pda/pmsWorkProcessTaskReport/getSpecialSwitch"), servicePath);
+            _computeReportQuantityBySpotWeldRatioEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.computeReportQuantityBySpotWeldRatio", "/pda/pmsWorkProcessTaskReport/computeReportQuantityBySpotWeldRatio"), servicePath);
             _deleteReportEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.deleteReport", "/pda/pmsWorkProcessTaskReport/deleteWorkProcessTaskReport"), servicePath);
             _frameOutputQtyEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -850,6 +856,40 @@ namespace IndustrialControlMAUI.Services
             var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
             var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
             return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
+        }
+
+
+        public async Task<ApiResp<bool?>> GetSpecialSwitchAsync(string configKey, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _specialSwitchEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?> { ["configKey"] = configKey });
+            var url = string.IsNullOrEmpty(query) ? full : $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json, _json)
+                ?? new ApiResp<bool?> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<ComputeReportQuantityBySpotWeldRatioResult>> ComputeReportQuantityBySpotWeldRatioAsync(ComputeReportQuantityBySpotWeldRatioReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _computeReportQuantityBySpotWeldRatioEndpoint);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                PropertyNameCaseInsensitive = true
+            };
+
+            using var resp = await _http.PostAsJsonAsync(full, req, options, ct);
+            if (!resp.IsSuccessStatusCode)
+                return new ApiResp<ComputeReportQuantityBySpotWeldRatioResult> { success = false, message = $"HTTP错误 {resp.StatusCode}" };
+
+            var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
+            return JsonSerializer.Deserialize<ApiResp<ComputeReportQuantityBySpotWeldRatioResult>>(json, options)
+                ?? new ApiResp<ComputeReportQuantityBySpotWeldRatioResult> { success = false, message = "解析响应失败" };
         }
 
         public async Task<ApiResp<bool>> DeleteWorkProcessTaskReportAsync(DeleteWorkProcessTaskReportReq req, CancellationToken ct = default)
