@@ -432,8 +432,7 @@
                                     TextColor="#111827"
                                     BorderColor="#E5E7EB"
                                     BorderWidth="1"
-                                    HorizontalOptions="Fill"
-                                    HorizontalContentAlignment="Start" />
+                                    HorizontalOptions="Fill"  />
 
                                             <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="3"
