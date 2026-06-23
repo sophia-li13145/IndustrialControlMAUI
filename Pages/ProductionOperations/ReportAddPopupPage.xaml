@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     BackgroundColor="#DDE3EC"
     Padding="14">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
         <Label Text="设备：" VerticalTextAlignment="Center" />
         <Picker Grid.Column="1" ItemsSource="{Binding DeviceOptions}" ItemDisplayBinding="{Binding Text}" SelectedItem="{Binding SelectedDevice}" />
 
@@ -18,21 +18,24 @@
         <Label Grid.Row="3" Text="工时：" VerticalTextAlignment="Center" />
         <Entry Grid.Row="3" Grid.Column="1" Text="{Binding WorkHoursText}" Placeholder="请输入" Keyboard="Numeric" />
 
-        <Label Grid.Row="4" Text="报工数量：" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding ReportQtyText}" Placeholder="请输入" Keyboard="Numeric" />
+        <Label Grid.Row="4" Text="点焊比例：" VerticalTextAlignment="Center" IsVisible="{Binding IsSpotWeldingRatioVisible}" />
+        <Entry Grid.Row="4" Grid.Column="1" Text="{Binding SpotWeldingRatioText}" Placeholder="请输入" Keyboard="Numeric" IsVisible="{Binding IsSpotWeldingRatioVisible}" />
 
-        <Label Grid.Row="5" Text="不合格数量：" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding UnqualifiedQtyText}" Placeholder="请输入" Keyboard="Numeric" />
+        <Label Grid.Row="5" Text="报工数量：" VerticalTextAlignment="Center" />
+        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding ReportQtyText}" Placeholder="请输入" Keyboard="Numeric" IsEnabled="{Binding IsReportQtyEditable}" />
 
-        <Label Grid.Row="6" Text="{Binding UnqualifiedMaterialLabel}" VerticalTextAlignment="Center" />
-        <Picker Grid.Row="6" Grid.Column="1" ItemsSource="{Binding UnqualifiedMaterialOptions}" ItemDisplayBinding="{Binding materialName}" SelectedItem="{Binding SelectedUnqualifiedMaterial}" Title="请选择" />
+        <Label Grid.Row="6" Text="不合格数量：" VerticalTextAlignment="Center" />
+        <Entry Grid.Row="6" Grid.Column="1" Text="{Binding UnqualifiedQtyText}" Placeholder="请输入" Keyboard="Numeric" />
 
-        <Label Grid.Row="7" Text="操作时间：" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="7" Grid.Column="1" Text="{Binding OperateTimeText}" Placeholder="默认当前时间，可编辑" />
+        <Label Grid.Row="7" Text="{Binding UnqualifiedMaterialLabel}" VerticalTextAlignment="Center" />
+        <Picker Grid.Row="7" Grid.Column="1" ItemsSource="{Binding UnqualifiedMaterialOptions}" ItemDisplayBinding="{Binding materialName}" SelectedItem="{Binding SelectedUnqualifiedMaterial}" Title="请选择" />
 
-        <Label Grid.Row="8" Text="备注：" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="8" Grid.Column="1" Text="{Binding Memo}" Placeholder="请输入" />
+        <Label Grid.Row="8" Text="操作时间：" VerticalTextAlignment="Center" />
+        <Entry Grid.Row="8" Grid.Column="1" Text="{Binding OperateTimeText}" Placeholder="默认当前时间，可编辑" />
 
-        <Button Grid.Row="9" Grid.ColumnSpan="2" Text="确认添加" Command="{Binding ConfirmCommand}" HorizontalOptions="Center" />
+        <Label Grid.Row="9" Text="备注：" VerticalTextAlignment="Center" />
+        <Entry Grid.Row="9" Grid.Column="1" Text="{Binding Memo}" Placeholder="请输入" />
+
+        <Button Grid.Row="10" Grid.ColumnSpan="2" Text="确认添加" Command="{Binding ConfirmCommand}" HorizontalOptions="Center" />
     </Grid>
 </ContentPage>

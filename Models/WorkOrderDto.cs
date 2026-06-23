@@ -340,6 +340,10 @@ public class WorkProcessTaskDetail
     public string? processCode { get; set; }
     public string? processName { get; set; }
     public bool? preStartInspectionEnabled { get; set; }
+    public bool? spotWeldingRatioEnabled { get; set; }
+    public bool? electricWeldingRatioEnabled { get; set; }
+    public decimal? spotWeldingRatio { get; set; }
+    public decimal? electricWeldingRatio { get; set; }
     public decimal? scheQty { get; set; }
     public decimal? completedQty { get; set; }
     public string? auditStatus { get; set; }
@@ -754,6 +758,7 @@ public class AddWorkProcessTaskReportReq
     public string? productionMachine { get; set; }
     public string? productionMachineName { get; set; }
     public decimal reportQty { get; set; }
+    public decimal? spotWeldingRatio { get; set; }
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? unqualifiedQty { get; set; }
