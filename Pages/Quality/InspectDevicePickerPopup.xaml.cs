@@ -19,6 +19,7 @@ public partial class InspectDevicePickerPopup : Popup
         _allDevices = devices.ToList();
         SelectedDevice = selectedDevice;
         BindingContext = this;
+        Closed += (_, e) => _tcs.TrySetResult(e.Result as InspectDeviceOption);
         ApplyFilter(string.Empty);
     }
 
@@ -49,17 +50,6 @@ public partial class InspectDevicePickerPopup : Popup
         }
     }
 
-    private void OnCancelClicked(object? sender, EventArgs e)
-    {
-        _tcs.TrySetResult(null);
-        Close();
-    }
-
-    private void OnConfirmClicked(object? sender, EventArgs e)
-    {
-        _tcs.TrySetResult(SelectedDevice);
-        Close(SelectedDevice);
-    }
 
     private void ApplyFilter(string? keyword)
     {

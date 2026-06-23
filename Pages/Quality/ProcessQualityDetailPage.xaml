@@ -423,16 +423,22 @@
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
-                                            <Button Grid.Column="1"
-                                    Text="{Binding SelectedInspectDeviceName}"
-                                    Clicked="OnInspectDevicePickerClicked"
-                                    CommandParameter="{Binding .}"
-                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
-                                    BackgroundColor="#F3F4F6"
-                                    TextColor="#111827"
-                                    BorderColor="#E5E7EB"
-                                    BorderWidth="1"
-                                    HorizontalOptions="Fill"  />
+                                            <Frame Grid.Column="1"
+                                                   Padding="12,0"
+                                                   HeightRequest="44"
+                                                   CornerRadius="6"
+                                                   HasShadow="False"
+                                                   BackgroundColor="#F3F4F6"
+                                                   BorderColor="#E5E7EB"
+                                                   HorizontalOptions="Fill"
+                                                   IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnInspectDevicePickerTapped" CommandParameter="{Binding .}" />
+                                                </Frame.GestureRecognizers>
+                                                <Label Text="{Binding SelectedInspectDeviceName}"
+                                                       TextColor="#111827"
+                                                       VerticalTextAlignment="Center" />
+                                            </Frame>
 
                                             <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="3"
