@@ -423,13 +423,17 @@
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
-                                            <Picker Grid.Column="1"
-                                    Title="请选择"
-                                    ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.InspectDeviceList}"
-                                    ItemDisplayBinding="{Binding Name}"
-                                    SelectedItem="{Binding selectedInspectDevice, Mode=TwoWay}"
+                                            <Button Grid.Column="1"
+                                    Text="{Binding SelectedInspectDeviceName}"
+                                    Clicked="OnInspectDevicePickerClicked"
+                                    CommandParameter="{Binding .}"
                                     IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"
-                                    BackgroundColor="#F3F4F6" />
+                                    BackgroundColor="#F3F4F6"
+                                    TextColor="#111827"
+                                    BorderColor="#E5E7EB"
+                                    BorderWidth="1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalContentAlignment="Start" />
 
                                             <Label Grid.Column="2" Text="检验参数：" Style="{StaticResource FieldLabel}" />
                                             <Picker Grid.Column="3"

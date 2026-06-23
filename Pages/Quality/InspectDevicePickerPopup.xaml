@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="IndustrialControlMAUI.Pages.InspectDevicePickerPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:IndustrialControlMAUI.Models"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Size="720,560">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16" RowSpacing="12" BackgroundColor="White">
+        <Label Text="选择检验设备" FontSize="18" FontAttributes="Bold" TextColor="#263445" />
+
+        <SearchBar Grid.Row="1"
+                   Placeholder="请输入设备名称进行模糊搜索"
+                   TextChanged="OnSearchTextChanged"
+                   SearchButtonPressed="OnSearchButtonPressed" />
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding FilteredDevices}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedDevice, Mode=TwoWay}">
+            <CollectionView.EmptyView>
+                <Grid Padding="24">
+                    <Label Text="未找到匹配的检验设备" HorizontalOptions="Center" TextColor="#6B7280" />
+                </Grid>
+            </CollectionView.EmptyView>
+            <CollectionView.Header>
+                <Grid Padding="12,8" BackgroundColor="#F5F7FA">
+                    <Label Text="设备名称" FontAttributes="Bold" />
+                </Grid>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:InspectDeviceOption">
+                    <Grid Padding="12,10">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDeviceTapped" CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <Label Text="{Binding devName}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <HorizontalStackLayout Grid.Row="3" Spacing="12" HorizontalOptions="End">
+            <Button Text="取消" Clicked="OnCancelClicked" BackgroundColor="#F3F4F6" TextColor="#374151" />
+            <Button Text="确定" Clicked="OnConfirmClicked" BackgroundColor="#2F66E8" TextColor="White" />
+        </HorizontalStackLayout>
+    </Grid>
+</toolkit:Popup>

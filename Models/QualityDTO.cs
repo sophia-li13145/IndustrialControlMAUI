@@ -350,10 +350,16 @@ public partial class QualityItem : ObservableObject
                     devCode = value.devCode;
                     devName = value.devName;
                 }
+                OnPropertyChanged(nameof(SelectedInspectDeviceName));
                 OnPropertyChanged(nameof(IsAutoInspectEnabled));
             }
         }
     }
+
+    [JsonIgnore]
+    public string SelectedInspectDeviceName => string.IsNullOrWhiteSpace(selectedInspectDevice?.devName)
+        ? "请选择"
+        : selectedInspectDevice.devName;
 
     private InspectParamOption? _selectedInspectParam;
     [JsonIgnore]
