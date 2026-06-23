@@ -236,9 +236,6 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 return;
             }
 
-            if (IsSpotWeldingRatioVisible && !await ComputeReportQtyBySpotWeldRatioAsync(showError: true))
-                return;
-
             if (!decimal.TryParse(ReportQtyText, out var qty) || qty <= 0)
             {
                 await AlertAsync("请输入大于0的报工数量");
