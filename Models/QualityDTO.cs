@@ -122,9 +122,9 @@ public class QualityDetailDto : ObservableObject
     public string supplierName { get; set; } = "";
     public string? qualityNo { get; set; }
     public string? inspectStatus { get; set; }     // 0/1/2/3
-    public bool enableExceptionPhoto { get; set; }
-    public bool attachmentRequired { get; set; }
-    public bool enableProcessQuality { get; set; }
+    public bool? enableExceptionPhoto { get; set; }
+    public bool? attachmentRequired { get; set; }
+    public bool? enableProcessQuality { get; set; }
     public string? executedProcessQualityTypes { get; set; }
     public string? processQualityType { get; set; }
     public string? processQualityTypeName { get; set; }
@@ -233,7 +233,7 @@ public class QualityMaterial
 
     public string? createdTime { get; set; }
     public string? creator { get; set; }
-    public bool delStatus { get; set; }
+    public bool? delStatus { get; set; }
 
     public string? factoryCode { get; set; }
     public string? id { get; set; }
