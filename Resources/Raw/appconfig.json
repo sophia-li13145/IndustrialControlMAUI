@@ -52,6 +52,8 @@
       "pausework": "/pda/pmsWorkOrder/workProcessTaskWorkChange",
       "addMaterial": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialInput",
       "addOutput": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput",
+      "specialSwitch": "/pda/pmsWorkProcessTaskReport/getSpecialSwitch",
+      "computeReportQuantityBySpotWeldRatio": "/pda/pmsWorkProcessTaskReport/computeReportQuantityBySpotWeldRatio",
       "autMaterialList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs",
       "autOutputList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialOutputs",
       "outputFrameRecordList": "/pda/outputFrameRecord/listOutputFrameRecords",

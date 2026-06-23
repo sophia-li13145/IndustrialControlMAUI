@@ -23,14 +23,20 @@ public partial class ReportAddPopupViewModel : ObservableObject
     [ObservableProperty] private StatusOption? selectedShift;
     [ObservableProperty] private UserInfoDto? selectedUser;
     [ObservableProperty] private string? workHoursText;
+    [ObservableProperty] private string? spotWeldingRatioText;
     [ObservableProperty] private string? reportQtyText;
     [ObservableProperty] private string? unqualifiedQtyText;
     [ObservableProperty] private ReworkBomDetailFlattenItem? selectedUnqualifiedMaterial;
     [ObservableProperty] private string? operateTimeText = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     [ObservableProperty] private string? memo;
+    [ObservableProperty] private bool isSpotWeldingRatioVisible;
     [ObservableProperty] private bool isBusy;
 
+    private const string SpotWeldRatioSwitchKey = "pms_spot_weld_ratio_switch";
+    private int _computeReportQtyVersion;
+
     public bool IsNotBusy => !IsBusy;
+    public bool IsReportQtyEditable => !IsSpotWeldingRatioVisible;
 
     public string UnqualifiedMaterialLabel => RequiresUnqualifiedMaterial ? "*不合格物料：" : "不合格物料：";
 
@@ -47,6 +53,21 @@ public partial class ReportAddPopupViewModel : ObservableObject
     partial void OnIsBusyChanged(bool value)
     {
         OnPropertyChanged(nameof(IsNotBusy));
+    }
+
+    partial void OnIsSpotWeldingRatioVisibleChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsReportQtyEditable));
+    }
+
+    partial void OnSpotWeldingRatioTextChanged(string? value)
+    {
+        _ = ComputeReportQtyBySpotWeldRatioAsync();
+    }
+
+    partial void OnSelectedDeviceChanged(StatusOption? value)
+    {
+        _ = ComputeReportQtyBySpotWeldRatioAsync();
     }
 
     partial void OnUnqualifiedQtyTextChanged(string? value)
@@ -72,6 +93,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
             SelectedDevice = null;
             SelectedShift = null;
             SelectedUnqualifiedMaterial = null;
+            SpotWeldingRatioText = null;
+            IsSpotWeldingRatioVisible = false;
+            _computeReportQtyVersion++;
 
             if (detail is null)
             {
@@ -114,6 +138,8 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 string.Equals(x.username, currentUserName, StringComparison.OrdinalIgnoreCase));
             SelectedUser = current ?? UserOptions.FirstOrDefault();
 
+            var switchResp = await _api.GetSpecialSwitchAsync(SpotWeldRatioSwitchKey);
+            IsSpotWeldingRatioVisible = switchResp?.success == true && switchResp.result == true;
 
             if (!string.IsNullOrWhiteSpace(detail.workOrderNo))
             {
@@ -134,7 +160,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
             {
                 var qtyResp = await _api.GetWorkProcessTaskFrameOutputQtyAsync(detail.id);
                 if (qtyResp?.success == true && qtyResp.result.HasValue)
+                {
                     ReportQtyText = qtyResp.result.Value.ToString("G29");
+                }
             }
         }
         catch (Exception ex)
@@ -177,9 +205,9 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 return;
             }
 
-            if (!decimal.TryParse(ReportQtyText, out var qty) || qty <= 0)
+            if (IsSpotWeldingRatioVisible && string.IsNullOrWhiteSpace(SpotWeldingRatioText))
             {
-                await AlertAsync("请输入大于0的报工数量");
+                await AlertAsync("请输入点焊比例");
                 return;
             }
 
@@ -194,6 +222,23 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 && (!decimal.TryParse(WorkHoursText, out var tempHours) || tempHours < 0))
             {
                 await AlertAsync("工时不能小于0");
+                return;
+            }
+
+            var spotWeldRatio = 0;
+            if (IsSpotWeldingRatioVisible && !string.IsNullOrWhiteSpace(SpotWeldingRatioText)
+                && (!int.TryParse(SpotWeldingRatioText, out spotWeldRatio) || spotWeldRatio < 1))
+            {
+                await AlertAsync("点焊比例必须为大于等于1的整数");
+                return;
+            }
+
+            if (IsSpotWeldingRatioVisible && !await ComputeReportQtyBySpotWeldRatioAsync(showError: true))
+                return;
+
+            if (!decimal.TryParse(ReportQtyText, out var qty) || qty <= 0)
+            {
+                await AlertAsync("请输入大于0的报工数量");
                 return;
             }
 
@@ -220,6 +265,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 productionMachine = SelectedDevice?.Value,
                 productionMachineName = SelectedDevice?.Text,
                 reportQty = qty,
+                spotWeldRatio = spotWeldRatio,
                 teamCode = SelectedShift?.Value,
                 teamName = SelectedShift?.Text,
                 unqualifiedQty = unqualifiedQty,
@@ -255,6 +301,70 @@ public partial class ReportAddPopupViewModel : ObservableObject
         }
     }
 
+
+    private async Task<bool> ComputeReportQtyBySpotWeldRatioAsync(bool showError = false)
+    {
+        var version = ++_computeReportQtyVersion;
+
+        if (!IsSpotWeldingRatioVisible)
+            return true;
+
+        if (_detail is null)
+        {
+            if (showError)
+                await AlertAsync("工单信息为空，无法计算报工数量");
+            return false;
+        }
+
+        if (SelectedDevice is null || string.IsNullOrWhiteSpace(SelectedDevice.Value))
+        {
+            if (showError)
+                await AlertAsync("请选择设备后再计算报工数量");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_detail.workOrderNo) || string.IsNullOrWhiteSpace(_detail.processCode))
+        {
+            if (showError)
+                await AlertAsync("工单信息缺失，无法计算报工数量");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(SpotWeldingRatioText))
+        {
+            if (showError)
+                await AlertAsync("请输入点焊比例");
+            return false;
+        }
+
+        if (!int.TryParse(SpotWeldingRatioText, out var spotWeldRatio) || spotWeldRatio < 1)
+        {
+            if (showError)
+                await AlertAsync("点焊比例必须为大于等于1的整数");
+            return false;
+        }
+
+        var resp = await _api.ComputeReportQuantityBySpotWeldRatioAsync(new ComputeReportQuantityBySpotWeldRatioReq
+        {
+            deviceCode = SelectedDevice.Value!,
+            workOrderNo = _detail.workOrderNo!,
+            processCode = _detail.processCode!,
+            spotWeldRatio = spotWeldRatio
+        });
+
+        if (version != _computeReportQtyVersion)
+            return false;
+
+        if (resp?.success == true && resp.result?.reportQty.HasValue == true)
+        {
+            ReportQtyText = resp.result.reportQty.Value.ToString("0.##");
+            return true;
+        }
+
+        if (showError)
+            await AlertAsync(resp?.message ?? "计算报工数量失败");
+        return false;
+    }
 
     private static bool IsUnqualifiedMaterialCandidate(ReworkBomDetailFlattenItem item)
     {
