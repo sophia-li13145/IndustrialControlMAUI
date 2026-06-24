@@ -21,6 +21,7 @@ public partial class OutboundMaterialPage : ContentPage
     private readonly IDialogService _dialogs;
     private readonly IServiceProvider _sp;
     private bool _isConfirming;
+    private CancellationTokenSource? _qtyUpdateCts;
     private bool _loadedOnce = false;
 
     /// <summary>执行 OutboundMaterialPage 初始化逻辑。</summary>
@@ -219,20 +220,47 @@ public partial class OutboundMaterialPage : ContentPage
     }
 
 
-    /// <summary>执行 OnQtyCompleted 逻辑。</summary>
-    private async void OnQtyCompleted(object sender, EventArgs e)
+    /// <summary>数量输入框获得焦点时清掉占位 0，方便直接输入目标数量。</summary>
+    private void OnQtyFocused(object sender, FocusEventArgs e)
     {
-        if (sender is not Entry entry) return;
+        if (sender is Entry entry && string.Equals(entry.Text?.Trim(), "0", StringComparison.Ordinal))
+        {
+            entry.Text = string.Empty;
+        }
+    }
+
+    /// <summary>数量输入变化后立即提交，不再等待键盘回车。</summary>
+    private async void OnQtyTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not Entry entry || !entry.IsFocused) return;
         if (entry.BindingContext is not IndustrialControlMAUI.ViewModels.OutScannedItem row) return;
 
-        // 只看 ScanStatus：未通过则不提交
-        if (!row.ScanStatus)
-        {
-            await DisplayAlert("提示", "该行尚未扫描通过，不能修改数量。", "确定");
-            return;
-        }
+        _qtyUpdateCts?.Cancel();
+        _qtyUpdateCts?.Dispose();
+        _qtyUpdateCts = null;
+        if (string.IsNullOrWhiteSpace(e.NewTextValue)) return;
 
-        await _vm.UpdateQuantityForRowAsync(row);
+        var cts = _qtyUpdateCts = new CancellationTokenSource();
+
+        try
+        {
+            // 等待短暂输入间隔，避免连续按键时重复提交中间值。
+            await Task.Delay(300, cts.Token);
+            if (cts.IsCancellationRequested || !entry.IsFocused) return;
+
+            // 只看 ScanStatus：未通过则不提交
+            if (!row.ScanStatus)
+            {
+                await DisplayAlert("提示", "该行尚未扫描通过，不能修改数量。", "确定");
+                return;
+            }
+
+            await _vm.UpdateQuantityForRowAsync(row, showSuccessTip: false, ct: cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            // 用户继续输入时取消上一次待提交。
+        }
     }
 
 }
