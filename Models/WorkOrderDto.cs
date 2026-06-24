@@ -1146,6 +1146,7 @@ public sealed class LineDowntimeRecord
     public string? memo { get; set; }
     public string? occurTime { get; set; }
     public string? realname { get; set; }
+    public string? reporterName { get; set; }
     public string? reason { get; set; }
     public string? recordStatus { get; set; }
     public string? resumeTime { get; set; }
@@ -1158,7 +1159,7 @@ public sealed class LineDowntimeRecord
     public string DisplayExceptionNo => string.IsNullOrWhiteSpace(exceptionNo) ? "-" : exceptionNo!;
     public string DisplayReason => string.IsNullOrWhiteSpace(reason) ? "-" : reason!;
     public string DisplayOccurTime => string.IsNullOrWhiteSpace(occurTime) ? "-" : occurTime!;
-    public string DisplayUserName => string.IsNullOrWhiteSpace(realname) ? (string.IsNullOrWhiteSpace(creator) ? "-" : creator!) : realname!;
+    public string DisplayUserName => !string.IsNullOrWhiteSpace(reporterName) ? reporterName! : (!string.IsNullOrWhiteSpace(realname) ? realname! : (string.IsNullOrWhiteSpace(creator) ? "-" : creator!));
 }
 
 
