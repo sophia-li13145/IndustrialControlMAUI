@@ -18,6 +18,8 @@ public partial class AppShell : Shell
     }
     private void RegisterRoutes()
     {
+        Routing.RegisterRoute(nameof(Pages.DutyRosterPage), typeof(Pages.DutyRosterPage));
+        Routing.RegisterRoute(nameof(Pages.ShiftHandoverPage), typeof(Pages.ShiftHandoverPage));
         Routing.RegisterRoute(nameof(Pages.InboundMaterialSearchPage), typeof(Pages.InboundMaterialSearchPage));
         Routing.RegisterRoute(nameof(Pages.InboundMaterialPage), typeof(Pages.InboundMaterialPage));
         Routing.RegisterRoute(nameof(Pages.InboundProductionSearchPage), typeof(Pages.InboundProductionSearchPage));
