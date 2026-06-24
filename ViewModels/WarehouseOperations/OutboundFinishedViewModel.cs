@@ -605,7 +605,7 @@ namespace IndustrialControlMAUI.ViewModels
             return true;
         }
         /// <summary>执行 UpdateQuantityForRowAsync 逻辑。</summary>
-        public async Task<bool> UpdateQuantityForRowAsync(OutScannedItem row, CancellationToken ct = default)
+        public async Task<bool> UpdateQuantityForRowAsync(OutScannedItem row, bool showSuccessTip = true, CancellationToken ct = default)
         {
             if (row is null) return false;
             if (!row.ScanStatus)
@@ -632,7 +632,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
 
             // ✅ 成功：先提示，再刷新两张表
-            await ShowTip("数量修改成功");
+            if (showSuccessTip) await ShowTip("数量修改成功");
 
             // 记录一下当前行用于刷新后恢复选中
             var keepBarcode = row.Barcode;

@@ -174,7 +174,7 @@
                                    Keyboard="Numeric"
                                    HorizontalTextAlignment="Center"
                                    WidthRequest="64"
-                                   Completed="OnQtyCompleted"
+                                   TextChanged="OnQtyTextChanged"
                                    Text="{Binding Qty, Mode=TwoWay, Converter={StaticResource IntConverter}}" />
 
                         </Grid>
