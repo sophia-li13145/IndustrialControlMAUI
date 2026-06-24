@@ -339,7 +339,7 @@
                             IsEnabled="{Binding CanAddReport}"
                             Command="{Binding AddReportCommand}" />
                 </Grid>
-                <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,26"
+                <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,42,26"
                       BackgroundColor="#E8F0FE"
                       Padding="4"
                       RowSpacing="1"
@@ -353,12 +353,13 @@
                     <Label Text="报工数量" Grid.Column="5" FontAttributes="Bold" />
                     <Label Text="操作时间" Grid.Column="6" FontAttributes="Bold" />
                     <Label Text="备注" Grid.Column="7" FontAttributes="Bold" />
-                    <Label Text="操作" Grid.Column="8" FontAttributes="Bold" />
+                    <Label Text="点焊比例" Grid.Column="8" FontAttributes="Bold" />
+                    <Label Text="操作" Grid.Column="9" FontAttributes="Bold" />
                 </Grid>
                 <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}" IsVisible="{Binding IsReportVisible}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,26"
+                            <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,42,26"
                                   Padding="4"
                                   RowSpacing="1"
                                   ColumnSpacing="1"
@@ -371,7 +372,8 @@
                                 <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
                                 <Label Grid.Column="6" Text="{Binding operateTime}" />
                                 <Label Grid.Column="7" Text="{Binding memo}" />
-                                <Label Grid.Column="8" Text="删除" TextColor="Red">
+                                <Label Grid.Column="8" Text="{Binding spotWeldRatio, StringFormat='{0:G29}'}" />
+                                <Label Grid.Column="9" Text="删除" TextColor="Red">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteReportCommand}"
