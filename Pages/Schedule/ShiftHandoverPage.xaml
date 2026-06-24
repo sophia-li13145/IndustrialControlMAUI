@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.ShiftHandoverPage"
+             Title="交接班"
+             BackgroundColor="#F6F7FB">
+    <Grid Padding="24">
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="12">
+            <Border HeightRequest="56" WidthRequest="56"
+                    BackgroundColor="#EAFBEF"
+                    StrokeShape="RoundRectangle 28">
+                <Image Source="action_key.svg"
+                       HeightRequest="28" WidthRequest="28"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+            <Label Text="交接班" FontSize="20" FontAttributes="Bold" TextColor="#2B2F36"
+                   HorizontalTextAlignment="Center" />
+            <Label Text="交接班页面入口已创建，后续可在此接入发起与确认流程。" FontSize="14" TextColor="#8A94A6"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
