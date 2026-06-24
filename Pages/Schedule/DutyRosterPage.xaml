@@ -25,11 +25,11 @@
                         Margin="6,10,6,8"
                         HeightRequest="78">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="4" />
+                <GridItemsLayout Orientation="Vertical" Span="7" HorizontalItemSpacing="4" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border WidthRequest="40" HeightRequest="64" BackgroundColor="#FFFFFF" Stroke="#E8EDF5" StrokeShape="RoundRectangle 8" Padding="0,6">
+                    <Border HeightRequest="64" BackgroundColor="#FFFFFF" Stroke="#E8EDF5" StrokeShape="RoundRectangle 8" Padding="0,6" Margin="0">
                         <Border.Triggers>
                             <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
                                 <Setter Property="BackgroundColor" Value="#2F6DEA" />
@@ -51,7 +51,6 @@
                                     </DataTrigger>
                                 </Label.Triggers>
                             </Label>
-                            <Label Text="今天" FontSize="9" TextColor="White" HorizontalTextAlignment="Center" IsVisible="{Binding IsSelected}" />
                         </VerticalStackLayout>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding BindingContext.SelectDateCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
