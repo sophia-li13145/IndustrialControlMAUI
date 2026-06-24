@@ -59,19 +59,16 @@
                 <!-- 值班表 -->
                 <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
-                        <Border HeightRequest="36" WidthRequest="36"
-                                BackgroundColor="#EEF3FF"
-                                StrokeShape="RoundRectangle 18">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#4F7CFF"
+                                StrokeShape="RoundRectangle 32">
                             <Image Source="document_24_filled.svg"
-                                   HeightRequest="18" WidthRequest="18"
+                                   HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
                         </Border>
                         <Label Text="值班表" FontSize="12" Margin="0,6,0,0"
-                               FontAttributes="Bold"
                                HorizontalTextAlignment="Center" TextColor="#333"/>
-                        <Label Text="查看人员排班明细" FontSize="9" Margin="0,2,0,0"
-                               HorizontalTextAlignment="Center" TextColor="#9AA3B2"/>
                     </VerticalStackLayout>
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnDutyRoster"/>
@@ -81,19 +78,16 @@
                 <!-- 交接班 -->
                 <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
                     <VerticalStackLayout HorizontalOptions="Center">
-                        <Border HeightRequest="36" WidthRequest="36"
-                                BackgroundColor="#EAFBEF"
-                                StrokeShape="RoundRectangle 18">
+                        <Border HeightRequest="64" WidthRequest="64"
+                                BackgroundColor="#4CAF50"
+                                StrokeShape="RoundRectangle 32">
                             <Image Source="action_key.svg"
-                                   HeightRequest="18" WidthRequest="18"
+                                   HeightRequest="28" WidthRequest="28"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
                         </Border>
                         <Label Text="交接班" FontSize="12" Margin="0,6,0,0"
-                               FontAttributes="Bold"
                                HorizontalTextAlignment="Center" TextColor="#333"/>
-                        <Label Text="发起与确认交接班" FontSize="9" Margin="0,2,0,0"
-                               HorizontalTextAlignment="Center" TextColor="#9AA3B2"/>
                     </VerticalStackLayout>
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnShiftHandover"/>
