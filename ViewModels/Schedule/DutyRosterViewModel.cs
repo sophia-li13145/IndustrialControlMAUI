@@ -14,6 +14,8 @@ public partial class DutyRosterViewModel : ObservableObject
     [ObservableProperty] private string? errorMessage;
     [ObservableProperty] private DateTime selectedDate = DateTime.Today;
     [ObservableProperty] private string todayText = DateTime.Today.ToString("yyyy-MM-dd");
+    [ObservableProperty] private bool hasShifts;
+    [ObservableProperty] private bool hasNoShifts;
 
     public ObservableCollection<DutyDateItem> Dates { get; } = new();
     public ObservableCollection<ScheduleShiftItem> Shifts { get; } = new();
@@ -43,6 +45,8 @@ public partial class DutyRosterViewModel : ObservableObject
             {
                 ErrorMessage = string.IsNullOrWhiteSpace(resp.message) ? "排班数据加载失败" : resp.message;
                 Shifts.Clear();
+                HasShifts = false;
+                HasNoShifts = true;
                 EnsureFallbackDates();
                 return;
             }
@@ -53,6 +57,8 @@ public partial class DutyRosterViewModel : ObservableObject
         {
             ErrorMessage = $"排班数据加载异常：{ex.Message}";
             Shifts.Clear();
+            HasShifts = false;
+            HasNoShifts = true;
             EnsureFallbackDates();
         }
         finally
@@ -69,9 +75,9 @@ public partial class DutyRosterViewModel : ObservableObject
 
     private void ApplyResult(SchedulePlanDetailResult result)
     {
-        TodayText = ToDisplayDate(result.Today) ?? DateTime.Today.ToString("yyyy-MM-dd");
         var selected = ParseDate(result.SelectedDate) ?? SelectedDate;
         SelectedDate = selected.Date;
+        TodayText = SelectedDate.ToString("yyyy-MM-dd");
 
         Dates.Clear();
         var sourceDates = result.DateList.Count > 0
@@ -101,6 +107,9 @@ public partial class DutyRosterViewModel : ObservableObject
         Shifts.Clear();
         foreach (var shift in result.ShiftList)
             Shifts.Add(shift);
+
+        HasShifts = Shifts.Count > 0;
+        HasNoShifts = !HasShifts;
     }
 
     private void EnsureFallbackDates()
@@ -123,8 +132,6 @@ public partial class DutyRosterViewModel : ObservableObject
     private static DateTime? ParseDate(string? value)
         => DateTime.TryParse(value, out var date) ? date : null;
 
-    private static string? ToDisplayDate(string? value)
-        => ParseDate(value)?.ToString("yyyy-MM-dd");
 
     private static string GetWeekName(DateTime date) => date.DayOfWeek switch
     {

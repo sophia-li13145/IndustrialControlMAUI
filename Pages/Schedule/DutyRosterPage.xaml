@@ -22,14 +22,14 @@
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Dates}"
                         SelectionMode="None"
-                        Margin="12,10,0,8"
+                        Margin="6,10,6,8"
                         HeightRequest="78">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="4" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border WidthRequest="56" HeightRequest="64" BackgroundColor="#FFFFFF" Stroke="#E8EDF5" StrokeShape="RoundRectangle 8" Padding="0,6">
+                    <Border WidthRequest="40" HeightRequest="64" BackgroundColor="#FFFFFF" Stroke="#E8EDF5" StrokeShape="RoundRectangle 8" Padding="0,6">
                         <Border.Triggers>
                             <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
                                 <Setter Property="BackgroundColor" Value="#2F6DEA" />
@@ -44,7 +44,7 @@
                                     </DataTrigger>
                                 </Label.Triggers>
                             </Label>
-                            <Label Text="{Binding Day}" FontSize="20" FontAttributes="Bold" TextColor="#465266" HorizontalTextAlignment="Center">
+                            <Label Text="{Binding Day}" FontSize="18" FontAttributes="Bold" TextColor="#465266" HorizontalTextAlignment="Center">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                         <Setter Property="TextColor" Value="White" />
@@ -74,12 +74,14 @@
 
                     <Label Text="{Binding ErrorMessage}" TextColor="#E5484D" FontSize="12" HorizontalTextAlignment="Center" />
 
-                    <CollectionView ItemsSource="{Binding Shifts}" SelectionMode="None">
-                        <CollectionView.EmptyView>
-                            <Border BackgroundColor="White" Stroke="#EEF2F7" StrokeShape="RoundRectangle 10" Padding="16">
-                                <Label Text="该日期暂无排班数据" TextColor="#98A2B3" HorizontalTextAlignment="Center" />
-                            </Border>
-                        </CollectionView.EmptyView>
+                    <Border BackgroundColor="White" Stroke="#EEF2F7" StrokeShape="RoundRectangle 12" Padding="18" IsVisible="{Binding HasNoShifts}">
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="暂无排班" FontSize="15" FontAttributes="Bold" TextColor="#172033" HorizontalTextAlignment="Center" />
+                            <Label Text="该日期暂无排班数据" FontSize="12" TextColor="#98A2B3" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <CollectionView ItemsSource="{Binding Shifts}" SelectionMode="None" IsVisible="{Binding HasShifts}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Border BackgroundColor="White" Stroke="#EEF2F7" StrokeShape="RoundRectangle 12" Padding="12" Margin="0,0,0,12">
@@ -124,7 +126,7 @@
                                                                 </DataTemplate>
                                                             </BindableLayout.ItemTemplate>
                                                         </HorizontalStackLayout>
-                                                        <Border BackgroundColor="#F8FAFD" Stroke="#F8FAFD" StrokeShape="RoundRectangle 4" Padding="8,5">
+                                                        <Border BackgroundColor="#F8FAFD" Stroke="#F8FAFD" StrokeShape="RoundRectangle 4" Padding="8,5" IsVisible="{Binding EmptyText, Converter={StaticResource NullToBoolConverter}}">
                                                             <Label Text="{Binding EmptyText}" FontSize="11" TextColor="#98A2B3" HorizontalTextAlignment="Center" />
                                                         </Border>
                                                     </VerticalStackLayout>

@@ -38,7 +38,7 @@ public class ScheduleApi : IScheduleApi
     public async Task<ApiResp<SchedulePlanDetailResult>> QuerySchedulePlanDetailAsync(DateTime selectedDate, CancellationToken ct = default)
     {
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _detailEndpoint);
-        var payload = new { selectedDate = selectedDate.Date.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz") };
+        var payload = new { selectedDate = selectedDate.Date.ToString("yyyy-MM-dd") };
 
         using var res = await _http.PostAsJsonAsync(new Uri(full, UriKind.Absolute), payload, JsonOptions, ct);
         var body = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
