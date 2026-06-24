@@ -191,7 +191,7 @@
                                    Keyboard="Numeric"
                                    HorizontalTextAlignment="Center"
                                    WidthRequest="64"
-                                   Completed="OnQtyCompleted"
+                                   TextChanged="OnQtyTextChanged"
                                    Text="{Binding QuantityText, Mode=TwoWay}" />
 
                         </Grid>
