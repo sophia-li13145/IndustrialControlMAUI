@@ -208,6 +208,15 @@ public partial class InboundMaterialPage : ContentPage
 
 
 
+    /// <summary>数量输入框获得焦点时清掉占位 0，方便直接输入目标数量。</summary>
+    private void OnQtyFocused(object sender, FocusEventArgs e)
+    {
+        if (sender is Entry entry && string.Equals(entry.Text?.Trim(), "0", StringComparison.Ordinal))
+        {
+            entry.Text = string.Empty;
+        }
+    }
+
     /// <summary>数量输入变化后立即提交，不再等待键盘回车。</summary>
     private async void OnQtyTextChanged(object sender, TextChangedEventArgs e)
     {
@@ -216,6 +225,9 @@ public partial class InboundMaterialPage : ContentPage
 
         _qtyUpdateCts?.Cancel();
         _qtyUpdateCts?.Dispose();
+        _qtyUpdateCts = null;
+        if (string.IsNullOrWhiteSpace(e.NewTextValue)) return;
+
         var cts = _qtyUpdateCts = new CancellationTokenSource();
 
         try

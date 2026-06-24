@@ -183,6 +183,7 @@
                                    Keyboard="Numeric"
                                    HorizontalTextAlignment="Center"
                                    WidthRequest="64"
+                                   Focused="OnQtyFocused"
                                    TextChanged="OnQtyTextChanged"
                                    Text="{Binding Qty, Mode=TwoWay, Converter={StaticResource IntConverter}}" />
 

@@ -153,6 +153,7 @@
                        HorizontalTextAlignment="Center"
                        VerticalOptions="Center"
                        WidthRequest="80"
+                       Focused="OnQtyFocused"
                        TextChanged="OnQtyTextChanged"
                        Text="{Binding Qty, Mode=TwoWay, Converter={StaticResource IntConverter}}">
                                 <Entry.Triggers>
