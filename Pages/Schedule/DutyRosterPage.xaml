@@ -60,9 +60,8 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <RefreshView Grid.Row="2" Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
-            <ScrollView>
-                <VerticalStackLayout Padding="12,4,12,16" Spacing="10">
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout Padding="12,4,12,16" Spacing="10">
                     <Grid ColumnDefinitions="Auto,*,Auto" Margin="2,0,2,4">
                         <Label Text="▣" TextColor="#2F6DEA" FontSize="14" VerticalOptions="Center" />
                         <Label Grid.Column="1" Text="今日排班" FontSize="16" FontAttributes="Bold" TextColor="#172033" Margin="6,0,0,0" />
@@ -137,8 +136,7 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
-            </ScrollView>
-        </RefreshView>
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>
