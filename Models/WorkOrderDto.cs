@@ -501,6 +501,7 @@ public class WorkProcessTaskReportRecord
     public decimal? reportQty { get; set; }            // 报工数量
     public string? operateTime { get; set; }           // 操作时间
     public string? memo { get; set; }                  // 备注
+    public decimal? spotWeldRatio { get; set; }        // 点焊比例
 }
 public class WorkProcessTaskTeamUpdateReq
 {
