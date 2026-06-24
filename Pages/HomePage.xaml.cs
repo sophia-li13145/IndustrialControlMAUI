@@ -27,6 +27,12 @@ namespace IndustrialControlMAUI.Pages
             => await Shell.Current.GoToAsync(nameof(LineDowntimeSearchPage));
         
 
+        private async void OnDutyRoster(object? s, TappedEventArgs e)
+            => await Shell.Current.GoToAsync(nameof(DutyRosterPage));
+
+        private async void OnShiftHandover(object? s, TappedEventArgs e)
+            => await Shell.Current.GoToAsync(nameof(ShiftHandoverPage));
+
         // —— 仓储作业（与你发来的函数一一对应）——
         private async void OnInMat(object? s, TappedEventArgs e)
             => await Shell.Current.GoToAsync(nameof(InboundMaterialSearchPage));   // 物料入库
