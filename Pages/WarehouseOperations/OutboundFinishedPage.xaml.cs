@@ -17,6 +17,7 @@ public partial class OutboundFinishedPage : ContentPage
     private readonly OutboundFinishedViewModel _vm;
     private readonly IServiceProvider _sp;
     private bool _isConfirming;
+    private CancellationTokenSource? _qtyUpdateCts;
     public string? OutstockId { get; set; }
     public string? OutstockNo { get; set; }
     public string? Customer { get; set; }
@@ -199,20 +200,55 @@ public partial class OutboundFinishedPage : ContentPage
     }
 
 
-    /// <summary>执行 OnQtyCompleted 逻辑。</summary>
-    private async void OnQtyCompleted(object sender, EventArgs e)
+    /// <summary>数量输入框获得焦点时清掉占位 0，方便直接输入目标数量。</summary>
+    private void OnQtyFocused(object sender, FocusEventArgs e)
     {
-        if (sender is not Entry entry) return;
+        if (sender is Entry entry && string.Equals(entry.Text?.Trim(), "0", StringComparison.Ordinal))
+        {
+            entry.Text = string.Empty;
+        }
+    }
+
+    /// <summary>数量输入变化后立即提交，不再等待键盘回车。</summary>
+    private async void OnQtyTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is not Entry entry || !entry.IsFocused) return;
         if (entry.BindingContext is not IndustrialControlMAUI.ViewModels.OutScannedItem row) return;
 
-        // 只看 ScanStatus：未通过则不提交
-        if (!row.ScanStatus)
-        {
-            await DisplayAlert("提示", "该行尚未扫描通过，不能修改数量。", "确定");
-            return;
-        }
+        _qtyUpdateCts?.Cancel();
+        _qtyUpdateCts?.Dispose();
+        _qtyUpdateCts = null;
+        if (string.IsNullOrWhiteSpace(e.NewTextValue)) return;
 
-        await _vm.UpdateQuantityForRowAsync(row);
+        var cts = _qtyUpdateCts = new CancellationTokenSource();
+
+        try
+        {
+            // 等待 0.5 秒输入间隔，避免连续按键时重复提交中间值。
+            await Task.Delay(500, cts.Token);
+            if (cts.IsCancellationRequested || !entry.IsFocused) return;
+
+            // 只看 ScanStatus：未通过则不提交
+            if (!row.ScanStatus)
+            {
+                await DisplayAlert("提示", "该行尚未扫描通过，不能修改数量。", "确定");
+                return;
+            }
+
+            var ok = await _vm.UpdateQuantityForRowAsync(row, showSuccessTip: false);
+            if (ok && !cts.IsCancellationRequested)
+            {
+                await DisplayAlert("提示", "数量修改成功", "确定");
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // 用户继续输入时取消上一次待提交。
+        }
+        catch (Exception ex) when (ex is System.Net.WebException || ex.Message.Contains("Socket closed", StringComparison.OrdinalIgnoreCase))
+        {
+            // 自动提交过程中如果用户继续输入/页面网络连接被关闭，不要让 async void 事件处理器抛出未处理异常。
+        }
     }
 
 

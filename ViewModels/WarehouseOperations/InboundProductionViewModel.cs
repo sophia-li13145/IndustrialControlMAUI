@@ -318,7 +318,7 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         /// <summary>执行 UpdateQuantityForRowAsync 逻辑。</summary>
-        public async Task<bool> UpdateQuantityForRowAsync(OutScannedItem row, CancellationToken ct = default)
+        public async Task<bool> UpdateQuantityForRowAsync(OutScannedItem row, bool showSuccessTip = true, CancellationToken ct = default)
         {
             if (row is null) return false;
             if (!row.ScanStatus)
@@ -339,7 +339,7 @@ namespace IndustrialControlMAUI.ViewModels
                 return false;
             }
 
-            await ShowTip("数量修改成功");
+            if (showSuccessTip) await ShowTip("数量修改成功");
 
             var keepBarcode = row.Barcode;
             var ver = Interlocked.Increment(ref _scannedVersion);
