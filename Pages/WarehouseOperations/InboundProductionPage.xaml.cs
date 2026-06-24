@@ -244,11 +244,15 @@ public partial class InboundProductionPage : ContentPage
                 return;
             }
 
-            await _vm.UpdateQuantityForRowAsync(row, showSuccessTip: false, ct: cts.Token);
+            await _vm.UpdateQuantityForRowAsync(row, showSuccessTip: false);
         }
         catch (TaskCanceledException)
         {
             // 用户继续输入时取消上一次待提交。
+        }
+        catch (Exception ex) when (ex is System.Net.WebException || ex.Message.Contains("Socket closed", StringComparison.OrdinalIgnoreCase))
+        {
+            // 自动提交过程中如果用户继续输入/页面网络连接被关闭，不要让 async void 事件处理器抛出未处理异常。
         }
     }
 

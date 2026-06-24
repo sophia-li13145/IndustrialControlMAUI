@@ -9,6 +9,8 @@ public class IntConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var s = value?.ToString();
+        if (string.IsNullOrWhiteSpace(s)) return Binding.DoNothing;
+
         return int.TryParse(s, out var n) && n >= 0 ? n : 0; // 非法输入归零；需要可负数就去掉判断
     }
 }
