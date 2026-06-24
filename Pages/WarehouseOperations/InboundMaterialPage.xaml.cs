@@ -232,8 +232,8 @@ public partial class InboundMaterialPage : ContentPage
 
         try
         {
-            // 等待短暂输入间隔，避免连续按键时重复提交中间值。
-            await Task.Delay(300, cts.Token);
+            // 等待 0.5 秒输入间隔，避免连续按键时重复提交中间值。
+            await Task.Delay(500, cts.Token);
             if (cts.IsCancellationRequested || !entry.IsFocused) return;
 
             // 只看 ScanStatus：未通过则不提交
@@ -243,7 +243,11 @@ public partial class InboundMaterialPage : ContentPage
                 return;
             }
 
-            await _vm.UpdateQuantityForRowAsync(row, showSuccessTip: false);
+            var ok = await _vm.UpdateQuantityForRowAsync(row, showSuccessTip: false);
+            if (ok && !cts.IsCancellationRequested)
+            {
+                await DisplayAlert("提示", "数量修改成功", "确定");
+            }
         }
         catch (TaskCanceledException)
         {
