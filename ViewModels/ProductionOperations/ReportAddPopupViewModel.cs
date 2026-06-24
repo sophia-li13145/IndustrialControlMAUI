@@ -37,7 +37,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
     private CancellationTokenSource? _spotWeldRatioDebounceCts;
 
     public bool IsNotBusy => !IsBusy;
-    public bool IsReportQtyEditable => !IsSpotWeldingRatioVisible;
+    public bool IsReportQtyEditable => true;
 
     public string UnqualifiedMaterialLabel => RequiresUnqualifiedMaterial ? "*不合格物料：" : "不合格物料：";
 
