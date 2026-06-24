@@ -52,6 +52,7 @@ namespace IndustrialControlMAUI
             // ===== 注册 ViewModels =====
             builder.Services.AddTransient<ViewModels.LoginViewModel>();
             builder.Services.AddTransient<ViewModels.HomeViewModel>();
+            builder.Services.AddTransient<DutyRosterViewModel>();
             builder.Services.AddTransient<ViewModels.AdminViewModel>();
             builder.Services.AddTransient<ViewModels.LogsViewModel>();
             builder.Services.AddTransient<ViewModels.InboundMaterialSearchViewModel>();
@@ -125,6 +126,8 @@ namespace IndustrialControlMAUI
 
             // ===== 注册 Pages（DI 创建）=====
             builder.Services.AddTransient<Pages.LoginPage>();
+            builder.Services.AddTransient<Pages.DutyRosterPage>();
+            builder.Services.AddTransient<Pages.ShiftHandoverPage>();
             builder.Services.AddTransient<Pages.HomePage>();
             builder.Services.AddTransient<Pages.AdminPage>();
             builder.Services.AddTransient<Pages.LogsPage>();
@@ -245,6 +248,9 @@ namespace IndustrialControlMAUI
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
             builder.Services.AddHttpClient<IEnergyApi, EnergyApi>(ConfigureBaseAddress)
+          .AddHttpMessageHandler<AuthHeaderHandler>()
+          .AddHttpMessageHandler<TokenExpiredHandler>();
+            builder.Services.AddHttpClient<IScheduleApi, ScheduleApi>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
 

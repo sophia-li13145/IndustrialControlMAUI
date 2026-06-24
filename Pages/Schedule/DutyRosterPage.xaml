@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.DutyRosterPage"
+             Title="人员值班表"
+             BackgroundColor="#F6F7FB"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="44,Auto,*">
+        <Grid Grid.Row="0" BackgroundColor="#2F6DEA" Padding="12,0" ColumnDefinitions="32,*">
+            <Border HeightRequest="28" WidthRequest="28"
+                    BackgroundColor="#FFFFFF33"
+                    StrokeShape="RoundRectangle 14"
+                    VerticalOptions="Center">
+                <Label Text="‹" TextColor="White" FontSize="26" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackTapped" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Label Grid.Column="1" Text="人员值班表" TextColor="White" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+        </Grid>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Dates}"
+                        SelectionMode="None"
+                        Margin="12,10,0,8"
+                        HeightRequest="78">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border WidthRequest="56" HeightRequest="64" BackgroundColor="#FFFFFF" Stroke="#E8EDF5" StrokeShape="RoundRectangle 8" Padding="0,6">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#2F6DEA" />
+                                <Setter Property="Stroke" Value="#2F6DEA" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <VerticalStackLayout Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="{Binding WeekName}" FontSize="11" TextColor="#7A8699" HorizontalTextAlignment="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="TextColor" Value="White" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Label Text="{Binding Day}" FontSize="20" FontAttributes="Bold" TextColor="#465266" HorizontalTextAlignment="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="TextColor" Value="White" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Label Text="今天" FontSize="9" TextColor="White" HorizontalTextAlignment="Center" IsVisible="{Binding IsSelected}" />
+                        </VerticalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding BindingContext.SelectDateCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <RefreshView Grid.Row="2" Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+            <ScrollView>
+                <VerticalStackLayout Padding="12,4,12,16" Spacing="10">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="2,0,2,4">
+                        <Label Text="▣" TextColor="#2F6DEA" FontSize="14" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="今日排班" FontSize="16" FontAttributes="Bold" TextColor="#172033" Margin="6,0,0,0" />
+                        <Border Grid.Column="2" BackgroundColor="#DDEBFF" Stroke="#DDEBFF" StrokeShape="RoundRectangle 3" Padding="6,2">
+                            <Label Text="{Binding TodayText}" FontSize="11" TextColor="#1262E3" FontAttributes="Bold" />
+                        </Border>
+                    </Grid>
+
+                    <Label Text="{Binding ErrorMessage}" TextColor="#E5484D" FontSize="12" HorizontalTextAlignment="Center" />
+
+                    <CollectionView ItemsSource="{Binding Shifts}" SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Border BackgroundColor="White" Stroke="#EEF2F7" StrokeShape="RoundRectangle 10" Padding="16">
+                                <Label Text="该日期暂无排班数据" TextColor="#98A2B3" HorizontalTextAlignment="Center" />
+                            </Border>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border BackgroundColor="White" Stroke="#EEF2F7" StrokeShape="RoundRectangle 12" Padding="12" Margin="0,0,0,12">
+                                    <VerticalStackLayout Spacing="12">
+                                        <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                                            <BoxView WidthRequest="4" HeightRequest="16" Color="#2F6DEA" CornerRadius="2" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding ShiftName}" FontSize="15" FontAttributes="Bold" TextColor="#172033" Margin="6,0,6,0" />
+                                            <Border Grid.Column="2" BackgroundColor="#F4F7FC" Stroke="#E8EDF5" StrokeShape="RoundRectangle 3" Padding="4,1" HorizontalOptions="Start">
+                                                <Label Text="{Binding TimeRange}" FontSize="11" TextColor="#344054" />
+                                            </Border>
+                                            <HorizontalStackLayout Grid.Column="3" BindableLayout.ItemsSource="{Binding TeamTags}" Spacing="4">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BackgroundColor="#E8F1FF" Stroke="#BBD6FF" StrokeShape="RoundRectangle 3" Padding="6,2">
+                                                            <Label Text="{Binding TeamName}" FontSize="10" TextColor="#1262E3" FontAttributes="Bold" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding TeamList}" Spacing="10">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate>
+                                                    <VerticalStackLayout Spacing="6">
+                                                        <Label Text="{Binding TeamName, StringFormat='▥ {0}'}" FontSize="12" TextColor="#7A8699" />
+                                                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding MemberList}" Spacing="14">
+                                                            <BindableLayout.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Grid WidthRequest="46">
+                                                                        <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
+                                                                            <Border HeightRequest="34" WidthRequest="34" BackgroundColor="#EEF5FF" Stroke="#BBD6FF" StrokeShape="RoundRectangle 17">
+                                                                                <Label Text="{Binding DisplayName}" FontSize="16" FontAttributes="Bold" TextColor="#1262E3" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                                                            </Border>
+                                                                            <Label Text="{Binding RealName}" FontSize="10" FontAttributes="Bold" TextColor="#172033" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                                            <Label Text="{Binding PostTag}" FontSize="9" TextColor="#7A8699" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                                                                        </VerticalStackLayout>
+                                                                        <Border BackgroundColor="#F7C900" Stroke="#F7C900" StrokeShape="RoundRectangle 8" Padding="2,0" HorizontalOptions="End" VerticalOptions="Start" IsVisible="{Binding HasWarning}">
+                                                                            <Label Text="!" TextColor="White" FontSize="10" FontAttributes="Bold" />
+                                                                        </Border>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </BindableLayout.ItemTemplate>
+                                                        </HorizontalStackLayout>
+                                                        <Border BackgroundColor="#F8FAFD" Stroke="#F8FAFD" StrokeShape="RoundRectangle 4" Padding="8,5">
+                                                            <Label Text="{Binding EmptyText}" FontSize="11" TextColor="#98A2B3" HorizontalTextAlignment="Center" />
+                                                        </Border>
+                                                    </VerticalStackLayout>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>
