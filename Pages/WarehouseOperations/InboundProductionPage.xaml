@@ -147,13 +147,14 @@
                                 </Label.GestureRecognizers>
                             </Label>
 
-                            <!-- 3：数量（固定列宽 80，回车提交；ScanStatus=false 禁用） -->
+                            <!-- 3：数量（固定列宽 80，输入后自动提交；ScanStatus=false 禁用） -->
                             <Entry Grid.Column="3"
                        Keyboard="Numeric"
                        HorizontalTextAlignment="Center"
                        VerticalOptions="Center"
                        WidthRequest="80"
-                       Completed="OnQtyCompleted"
+                       Focused="OnQtyFocused"
+                       TextChanged="OnQtyTextChanged"
                        Text="{Binding Qty, Mode=TwoWay, Converter={StaticResource IntConverter}}">
                                 <Entry.Triggers>
                                     <DataTrigger TargetType="Entry" Binding="{Binding ScanStatus}" Value="False">
