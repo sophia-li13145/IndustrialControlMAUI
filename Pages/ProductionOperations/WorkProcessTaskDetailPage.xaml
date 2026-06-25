@@ -343,8 +343,8 @@
                             HorizontalScrollBarVisibility="Always"
                             VerticalScrollBarVisibility="Never"
                             IsVisible="{Binding IsReportVisible}">
-                    <VerticalStackLayout WidthRequest="820">
-                        <Grid ColumnDefinitions="44,110,80,90,70,90,150,90,90,60"
+                    <VerticalStackLayout WidthRequest="650">
+                        <Grid ColumnDefinitions="30,70,50,60,50,60,60,60,60,50"
                               BackgroundColor="#E8F0FE"
                               Padding="4"
                               RowSpacing="1"
@@ -363,7 +363,7 @@
                         <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="44,110,80,90,70,90,150,90,90,60"
+                                    <Grid ColumnDefinitions="30,70,50,60,50,60,60,60,60,50"
                                           Padding="4"
                                           RowSpacing="1"
                                           ColumnSpacing="1"
