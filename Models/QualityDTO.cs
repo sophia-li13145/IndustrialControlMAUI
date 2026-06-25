@@ -251,7 +251,7 @@ public class QualityMaterial
 
     public string? productionDate { get; set; }
 
-    public decimal qty { get; set; }
+    public decimal? qty { get; set; }
 
     public string? qualityNo { get; set; }
 
