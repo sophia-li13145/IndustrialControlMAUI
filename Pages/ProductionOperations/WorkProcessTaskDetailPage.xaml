@@ -339,51 +339,57 @@
                             IsEnabled="{Binding CanAddReport}"
                             Command="{Binding AddReportCommand}" />
                 </Grid>
-                <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,42,26"
-                      BackgroundColor="#E8F0FE"
-                      Padding="4"
-                      RowSpacing="1"
-                      ColumnSpacing="1"
-                      IsVisible="{Binding IsReportVisible}">
-                    <Label Text="序号" FontAttributes="Bold" />
-                    <Label Text="设备" Grid.Column="1" FontAttributes="Bold" />
-                    <Label Text="班组" Grid.Column="2" FontAttributes="Bold" />
-                    <Label Text="操作人" Grid.Column="3" FontAttributes="Bold" />
-                    <Label Text="工时" Grid.Column="4" FontAttributes="Bold" />
-                    <Label Text="报工数量" Grid.Column="5" FontAttributes="Bold" />
-                    <Label Text="操作时间" Grid.Column="6" FontAttributes="Bold" />
-                    <Label Text="备注" Grid.Column="7" FontAttributes="Bold" />
-                    <Label Text="点焊比例" Grid.Column="8" FontAttributes="Bold" />
-                    <Label Text="操作" Grid.Column="9" FontAttributes="Bold" />
-                </Grid>
-                <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}" IsVisible="{Binding IsReportVisible}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid ColumnDefinitions="22,36,36,36,30,42,48,36,42,26"
-                                  Padding="4"
-                                  RowSpacing="1"
-                                  ColumnSpacing="1"
-                                  BackgroundColor="White">
-                                <Label Text="{Binding ., Converter={StaticResource IndexConverter}, ConverterParameter={x:Reference ReportListView}}" />
-                                <Label Grid.Column="1" Text="{Binding productionMachineName}" />
-                                <Label Grid.Column="2" Text="{Binding teamName}" />
-                                <Label Grid.Column="3" Text="{Binding operatorDisplay}" />
-                                <Label Grid.Column="4" Text="{Binding workHours}" />
-                                <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
-                                <Label Grid.Column="6" Text="{Binding operateTime}" />
-                                <Label Grid.Column="7" Text="{Binding memo}" />
-                                <Label Grid.Column="8" Text="{Binding spotWeldRatio, StringFormat='{0:G29}'}" />
-                                <Label Grid.Column="9" Text="删除" TextColor="Red">
-                                    <Label.GestureRecognizers>
-                                        <TapGestureRecognizer
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteReportCommand}"
-                                            CommandParameter="{Binding .}" />
-                                    </Label.GestureRecognizers>
-                                </Label>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Always"
+                            VerticalScrollBarVisibility="Never"
+                            IsVisible="{Binding IsReportVisible}">
+                    <VerticalStackLayout WidthRequest="820">
+                        <Grid ColumnDefinitions="44,110,80,90,70,90,150,90,90,60"
+                              BackgroundColor="#E8F0FE"
+                              Padding="4"
+                              RowSpacing="1"
+                              ColumnSpacing="1">
+                            <Label Text="序号" FontAttributes="Bold" />
+                            <Label Text="设备" Grid.Column="1" FontAttributes="Bold" />
+                            <Label Text="班组" Grid.Column="2" FontAttributes="Bold" />
+                            <Label Text="操作人" Grid.Column="3" FontAttributes="Bold" />
+                            <Label Text="工时" Grid.Column="4" FontAttributes="Bold" />
+                            <Label Text="报工数量" Grid.Column="5" FontAttributes="Bold" />
+                            <Label Text="操作时间" Grid.Column="6" FontAttributes="Bold" />
+                            <Label Text="备注" Grid.Column="7" FontAttributes="Bold" />
+                            <Label Text="点焊比例" Grid.Column="8" FontAttributes="Bold" />
+                            <Label Text="操作" Grid.Column="9" FontAttributes="Bold" />
+                        </Grid>
+                        <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="44,110,80,90,70,90,150,90,90,60"
+                                          Padding="4"
+                                          RowSpacing="1"
+                                          ColumnSpacing="1"
+                                          BackgroundColor="White">
+                                        <Label Text="{Binding ., Converter={StaticResource IndexConverter}, ConverterParameter={x:Reference ReportListView}}" />
+                                        <Label Grid.Column="1" Text="{Binding productionMachineName}" />
+                                        <Label Grid.Column="2" Text="{Binding teamName}" />
+                                        <Label Grid.Column="3" Text="{Binding operatorDisplay}" />
+                                        <Label Grid.Column="4" Text="{Binding workHours}" />
+                                        <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
+                                        <Label Grid.Column="6" Text="{Binding operateTime}" />
+                                        <Label Grid.Column="7" Text="{Binding memo}" />
+                                        <Label Grid.Column="8" Text="{Binding spotWeldRatio, StringFormat='{0:G29}'}" />
+                                        <Label Grid.Column="9" Text="删除" TextColor="Red">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteReportCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </ScrollView>
 
                 <!-- 标题 -->
                 <Label Text="配料明细" FontAttributes="Bold" Margin="0,8,0,4"
