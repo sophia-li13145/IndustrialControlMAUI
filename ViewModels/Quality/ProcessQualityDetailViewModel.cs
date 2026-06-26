@@ -38,6 +38,7 @@ namespace IndustrialControlMAUI.ViewModels
         public ObservableCollection<OrderQualityAttachmentItem> ReferenceImageAttachments { get; } = new();
 
         public bool HasReferenceImages => ReferenceImageAttachments.Count > 0;
+        private bool _isReferenceImagePopupOpen;
 
         [ObservableProperty] private bool isExceptionPhotoTipVisible;
         [ObservableProperty] private bool isBusy;
@@ -798,20 +799,31 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand]
         private async Task ShowReferenceImages()
         {
+            if (_isReferenceImagePopupOpen) return;
+
             if (ReferenceImageAttachments.Count == 0)
             {
                 await ShowTip("暂无参考图。");
                 return;
             }
 
-            await LoadReferencePreviewUrlsAsync();
-            await ReferenceImagePreviewPopup.ShowAsync(ReferenceImageAttachments);
+            _isReferenceImagePopupOpen = true;
+            try
+            {
+                await LoadReferencePreviewUrlsAsync(forceRefresh: true);
+                await ReferenceImagePreviewPopup.ShowAsync(ReferenceImageAttachments);
+            }
+            finally
+            {
+                _isReferenceImagePopupOpen = false;
+            }
         }
 
-        private async Task LoadReferencePreviewUrlsAsync()
+        private async Task LoadReferencePreviewUrlsAsync(bool forceRefresh = false)
         {
             var list = ReferenceImageAttachments
-                .Where(a => string.IsNullOrWhiteSpace(a.PreviewUrl) && !string.IsNullOrWhiteSpace(a.AttachmentUrl))
+                .Where(a => !string.IsNullOrWhiteSpace(a.AttachmentUrl)
+                            && (forceRefresh || string.IsNullOrWhiteSpace(a.PreviewUrl)))
                 .ToList();
             if (list.Count == 0) return;
 

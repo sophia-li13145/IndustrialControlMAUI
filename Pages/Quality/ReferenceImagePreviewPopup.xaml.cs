@@ -6,8 +6,6 @@ namespace IndustrialControlMAUI.Pages;
 
 public partial class ReferenceImagePreviewPopup : Popup
 {
-    private readonly TaskCompletionSource _tcs = new();
-
     public ObservableCollection<OrderQualityAttachmentItem> Images { get; }
 
     public ReferenceImagePreviewPopup(IEnumerable<OrderQualityAttachmentItem> images)
@@ -15,19 +13,19 @@ public partial class ReferenceImagePreviewPopup : Popup
         InitializeComponent();
         Images = new ObservableCollection<OrderQualityAttachmentItem>(images);
         BindingContext = this;
-        Closed += (_, _) => _tcs.TrySetResult();
     }
 
-    public static Task ShowAsync(IEnumerable<OrderQualityAttachmentItem> images)
+    public static async Task ShowAsync(IEnumerable<OrderQualityAttachmentItem> images)
     {
         var popup = new ReferenceImagePreviewPopup(images);
-        Application.Current?.MainPage?.ShowPopup(popup);
-        return popup._tcs.Task;
+        var page = Application.Current?.Windows.FirstOrDefault()?.Page ?? Application.Current?.MainPage;
+        if (page is null) return;
+
+        await page.ShowPopupAsync(popup);
     }
 
     private void OnCloseClicked(object? sender, EventArgs e)
     {
-        _tcs.TrySetResult();
         Close();
     }
 }
