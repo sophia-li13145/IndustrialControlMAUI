@@ -200,6 +200,9 @@
 		<Compile Update="Pages\Quality\ProcessQualityDetailPage.xaml.cs">
 		  <DependentUpon>ProcessQualityDetailPage.xaml</DependentUpon>
 		</Compile>
+		<Compile Update="Pages\Quality\ReferenceImagePreviewPopup.xaml.cs">
+		  <DependentUpon>ReferenceImagePreviewPopup.xaml</DependentUpon>
+		</Compile>
 		<Compile Update="Pages\WarehouseOperations\InventorySearchPage.xaml.cs">
 		  <DependentUpon>InventorySearchPage.xaml</DependentUpon>
 		</Compile>
@@ -336,6 +339,9 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Quality\ProcessQualityDetailPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Pages\Quality\ReferenceImagePreviewPopup.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Pages\Shared\DateTimePickerPage.xaml">

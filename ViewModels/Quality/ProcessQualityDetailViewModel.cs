@@ -35,6 +35,9 @@ namespace IndustrialControlMAUI.ViewModels
         public ObservableCollection<OrderQualityAttachmentItem> Attachments { get; } = new();
         /// <summary>执行 new 逻辑。</summary>
         public ObservableCollection<OrderQualityAttachmentItem> ImageAttachments { get; } = new(); // 仅图片
+        public ObservableCollection<OrderQualityAttachmentItem> ReferenceImageAttachments { get; } = new();
+
+        public bool HasReferenceImages => ReferenceImageAttachments.Count > 0;
 
         [ObservableProperty] private bool isExceptionPhotoTipVisible;
         [ObservableProperty] private bool isBusy;
@@ -456,12 +459,15 @@ namespace IndustrialControlMAUI.ViewModels
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Items.Clear();
+                    ReferenceImageAttachments.Clear();
                     int i = 1;
                     foreach (var it in Detail.orderQualityDetailList ?? new())
                     {
                         it.index = i++;
                         Items.Add(it);
+                        AddReferenceAttachments(it);
                     }
+                    OnPropertyChanged(nameof(HasReferenceImages));
 
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
@@ -755,6 +761,83 @@ namespace IndustrialControlMAUI.ViewModels
             if (!executed.Contains("first")) return "first";
             if (!executed.Contains("middle")) return "middle";
             return "last";
+        }
+
+
+        private void AddReferenceAttachments(QualityItem item)
+        {
+            foreach (var at in item.qualityItemAttachmentList ?? new List<QualityAttachment>())
+            {
+                if (string.IsNullOrWhiteSpace(at.attachmentUrl) || !IsImageExt(at.attachmentExt)) continue;
+
+                ReferenceImageAttachments.Add(new OrderQualityAttachmentItem
+                {
+                    AttachmentExt = at.attachmentExt ?? string.Empty,
+                    AttachmentFolder = at.attachmentFolder ?? string.Empty,
+                    AttachmentLocation = at.attachmentLocation ?? string.Empty,
+                    AttachmentName = at.attachmentName ?? string.Empty,
+                    AttachmentRealName = at.attachmentRealName ?? string.Empty,
+                    AttachmentSize = at.attachmentSize.HasValue ? (long)at.attachmentSize.Value : 0L,
+                    AttachmentUrl = at.attachmentUrl ?? string.Empty,
+                    CreatedTime = at.createdTime ?? string.Empty,
+                    Id = at.id ?? string.Empty,
+                    IsImage = true,
+                    IsUploaded = true,
+                    Name = string.IsNullOrWhiteSpace(item.inspectionName)
+                        ? at.attachmentName ?? at.attachmentRealName
+                        : $"{item.inspectionName} - {at.attachmentName ?? at.attachmentRealName}",
+                    Percent = at.percent ?? 100,
+                    Status = string.IsNullOrWhiteSpace(at.status) ? "done" : at.status!,
+                    Uid = at.uid,
+                    Url = at.url ?? at.attachmentUrl,
+                    QualityNo = Detail?.qualityNo
+                });
+            }
+        }
+
+        [RelayCommand]
+        private async Task ShowReferenceImages()
+        {
+            if (ReferenceImageAttachments.Count == 0)
+            {
+                await ShowTip("暂无参考图。");
+                return;
+            }
+
+            await LoadReferencePreviewUrlsAsync();
+            await ReferenceImagePreviewPopup.ShowAsync(ReferenceImageAttachments);
+        }
+
+        private async Task LoadReferencePreviewUrlsAsync()
+        {
+            var list = ReferenceImageAttachments
+                .Where(a => string.IsNullOrWhiteSpace(a.PreviewUrl) && !string.IsNullOrWhiteSpace(a.AttachmentUrl))
+                .ToList();
+            if (list.Count == 0) return;
+
+            var options = new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = _cts.Token };
+
+            await Task.Run(() =>
+                Parallel.ForEach(list, options, item =>
+                {
+                    try
+                    {
+                        var resp = _attachmentApi.GetPreviewUrlAsync(item.AttachmentUrl!, 600, options.CancellationToken).GetAwaiter().GetResult();
+                        if (resp?.success == true && !string.IsNullOrWhiteSpace(resp.result))
+                        {
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                item.PreviewUrl = resp.result;
+                                item.LocalPath = null;
+                                item.RefreshDisplay();
+                            });
+                        }
+                    }
+                    catch
+                    {
+                    }
+                })
+            );
         }
 
         /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
