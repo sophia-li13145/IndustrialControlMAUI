@@ -321,7 +321,23 @@
                 </Frame>
 
                 <!-- 质检详情列表 -->
-                <Label Text="质检详情" Style="{StaticResource SectionTitle}" HorizontalOptions="Start" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0,10,0,6">
+                    <Label Text="质检详情"
+                           Style="{StaticResource SectionTitle}"
+                           Margin="0"
+                           VerticalTextAlignment="Center"
+                           HorizontalOptions="Start" />
+                    <Button Grid.Column="1"
+                            Text="查看参考图"
+                            HeightRequest="36"
+                            Padding="14,6"
+                            CornerRadius="6"
+                            BackgroundColor="#1F4E79"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            IsVisible="{Binding HasReferenceImages}"
+                            Command="{Binding ShowReferenceImagesCommand}" />
+                </Grid>
 
                 <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
                     <CollectionView.ItemTemplate>
