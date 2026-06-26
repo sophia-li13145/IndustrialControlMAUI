@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="IndustrialControlMAUI.Pages.ReferenceImagePreviewPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:IndustrialControlMAUI.Models"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Size="720,620">
+
+    <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12" BackgroundColor="White">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Label Text="参考图预览"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="#263445"
+                   VerticalTextAlignment="Center" />
+            <Button Grid.Column="1"
+                    Text="关闭"
+                    Padding="14,6"
+                    BackgroundColor="#1F4E79"
+                    TextColor="White"
+                    Clicked="OnCloseClicked" />
+        </Grid>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Images}"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Grid Padding="24">
+                    <Label Text="暂无参考图" HorizontalOptions="Center" TextColor="#6B7280" />
+                </Grid>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:OrderQualityAttachmentItem">
+                    <Grid RowDefinitions="Auto,Auto" Padding="0,0,0,16" RowSpacing="8">
+                        <Label Text="{Binding Name}"
+                               TextColor="#374151"
+                               FontAttributes="Bold" />
+                        <Border Grid.Row="1"
+                                Stroke="#E5E7EB"
+                                StrokeShape="RoundRectangle 8"
+                                BackgroundColor="#F9FAFB"
+                                Padding="8">
+                            <Image Source="{Binding DisplaySource}"
+                                   Aspect="AspectFit"
+                                   HeightRequest="420" />
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</toolkit:Popup>
