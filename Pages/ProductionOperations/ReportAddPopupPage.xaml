@@ -18,7 +18,7 @@
         <Label Grid.Row="3" Text="工时：" VerticalTextAlignment="Center" />
         <Entry Grid.Row="3" Grid.Column="1" Text="{Binding WorkHoursText}" Placeholder="请输入" Keyboard="Numeric" />
 
-        <Label Grid.Row="4" Text="点焊比例：" VerticalTextAlignment="Center" IsVisible="{Binding IsSpotWeldingRatioVisible}" />
+        <Label Grid.Row="4" Text="{Binding SpotWeldingRatioLabel}" VerticalTextAlignment="Center" IsVisible="{Binding IsSpotWeldingRatioVisible}" />
         <Entry Grid.Row="4" Grid.Column="1" Text="{Binding SpotWeldingRatioText}" Placeholder="请输入" Keyboard="Numeric" IsVisible="{Binding IsSpotWeldingRatioVisible}" />
 
         <Label Grid.Row="5" Text="报工数量：" VerticalTextAlignment="Center" />
