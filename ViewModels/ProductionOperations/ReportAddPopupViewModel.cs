@@ -418,8 +418,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(processName))
             processName = detail?.processCode?.Trim();
 
-        return string.Equals(processName, "下料", StringComparison.OrdinalIgnoreCase)
-               || (processName?.Contains("焊接", StringComparison.OrdinalIgnoreCase) == true);
+        return processName?.Contains("焊接", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     private static bool IsUnqualifiedMaterialCandidate(ReworkBomDetailFlattenItem item)
