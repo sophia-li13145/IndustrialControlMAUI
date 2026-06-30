@@ -517,7 +517,9 @@
                                                         </Trigger>
                                                     </Button.Triggers>
                                                 </Button>
-                                                <Button Text="查看检验详细数据"
+                                                <Button Text="查看检验&#10;详细数据"
+                                                LineBreakMode="WordWrap"
+                                                WidthRequest="72"
                                         BackgroundColor="Transparent"
                                         TextColor="#2563EB"
                                         Padding="6,6"
