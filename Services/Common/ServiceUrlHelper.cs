@@ -39,10 +39,15 @@ internal static class ServiceUrlHelper
             url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             return url;
 
-        if (baseAddress is null)
-            throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
+        var baseUrl = ConfigLoaderStatic.GetBaseUrl();
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            if (baseAddress is null)
+                throw new InvalidOperationException("HttpClient.BaseAddress 未配置");
 
-        var baseUrl = baseAddress.AbsoluteUri;
+            baseUrl = baseAddress.AbsoluteUri;
+        }
+
         if (!baseUrl.EndsWith("/")) baseUrl += "/";
 
         return baseUrl + url.TrimStart('/');

@@ -158,28 +158,7 @@ public sealed class InboundMaterialService : IInboundMaterialService
 
     private async Task<T?> GetJsonAsync<T>(string url, CancellationToken ct)
     {
-        string requestUrl;
-
-        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            // 已经是绝对地址
-            requestUrl = url;
-        }
-        else
-        {
-            // 手动拼接
-            var baseUrl = _http.BaseAddress?.AbsoluteUri ?? throw new InvalidOperationException("BaseAddress 未配置");
-
-            // 确保 baseUrl 以 "/" 结尾
-            if (!baseUrl.EndsWith("/"))
-                baseUrl += "/";
-
-            // 去掉 url 前导 "/"
-            var relative = url.TrimStart('/');
-
-            requestUrl = baseUrl + relative;
-        }
+        var requestUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(requestUrl, UriKind.Absolute));
         using var res = await SendAsyncCore(req, ct).ConfigureAwait(false);

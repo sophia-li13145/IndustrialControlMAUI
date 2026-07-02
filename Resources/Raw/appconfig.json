@@ -2,7 +2,7 @@
   "schemaVersion": "V1.4_202604.8",
   "server": {
     "scheme": "http",
-    "ipAddress": "114.250.17.252:9128/"
+    "ipAddress": "221.216.53.191:9128"
   },
   "services": {
     "normalService": "/normalService",

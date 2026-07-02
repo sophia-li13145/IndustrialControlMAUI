@@ -47,17 +47,7 @@ public sealed class WarehouseService : IWarehouseService
 
     public async Task<T?> GetJsonAsync<T>(string url, CancellationToken ct)
     {
-        string requestUrl;
-        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            requestUrl = url;
-        else
-        {
-            var baseUrl = _http.BaseAddress?.AbsoluteUri
-                          ?? throw new InvalidOperationException("BaseAddress 未配置");
-            if (!baseUrl.EndsWith("/")) baseUrl += "/";
-            requestUrl = baseUrl + url.TrimStart('/');
-        }
+        var requestUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
 
         for (int attempt = 0; attempt < 2; attempt++)
         {

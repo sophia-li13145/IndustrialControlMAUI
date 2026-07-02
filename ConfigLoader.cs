@@ -155,7 +155,11 @@ public static class ConfigLoaderStatic
     {
         var cfg = Load();
         var scheme = cfg?["server"]?["scheme"]?.GetValue<string>() ?? "http";
-        var host = cfg?["server"]?["ipAddress"]?.GetValue<string>() ?? "127.0.0.1";
+        var host = (cfg?["server"]?["ipAddress"]?.GetValue<string>() ?? "127.0.0.1").Trim().TrimEnd('/');
+        if (host.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            host = host["http://".Length..].TrimEnd('/');
+        else if (host.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            host = host["https://".Length..].TrimEnd('/');
         var services = cfg?["services"] as JsonObject;
 
         var current = services?["current"]?.GetValue<string>() ?? "normalService";
