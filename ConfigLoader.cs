@@ -46,7 +46,8 @@ public static class ConfigLoaderStatic
     };
 
     /// <summary>
-    /// 用包内更高版本覆盖本地（不做任何字段保留/合并）。
+    /// 本地配置存在时始终保留本地已配置的服务器 IP 地址；
+    /// 包内版本更高时，只更新除本地 IP 外的配置结构和接口配置。
     /// 首次运行：直接复制包内文件到 AppData。
     /// </summary>
     public static async Task EnsureConfigIsLatestAsync()
@@ -78,7 +79,11 @@ public static class ConfigLoaderStatic
         var pkgVer = pkgNode?["schemaVersion"]?.GetValue<string>() ?? "0";
         var localVer = localNode?["schemaVersion"]?.GetValue<string>() ?? "0";
 
-        // 包内版本更高 → 直接覆盖（整文件替换）
+        // 只要本地配置存在，就先把本地 IP 写入待落地的包内配置副本。
+        // 这样无论版本号高低，后续只要发生配置写入，都不会把现场 IP 恢复成包内默认值。
+        PreserveLocalServerIpAddress(pkgNode, localNode);
+
+        // 包内版本更高 → 用包内配置刷新结构和接口；IP 已在上面强制保留为本地值。
         if (CompareSchemaVersion(localVer, pkgVer) < 0)
         {
             await File.WriteAllTextAsync(appDataPath, pkgNode.ToJsonString(JsonOpts));
@@ -224,6 +229,24 @@ public static class ConfigLoaderStatic
         }
 
         return 0;
+    }
+
+    private static void PreserveLocalServerIpAddress(JsonNode packageNode, JsonNode localNode)
+    {
+        var localIpAddress = localNode?["server"]?["ipAddress"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(localIpAddress))
+        {
+            return;
+        }
+
+        var packageServer = packageNode["server"] as JsonObject;
+        if (packageServer is null)
+        {
+            packageServer = new JsonObject();
+            packageNode["server"] = packageServer;
+        }
+
+        packageServer["ipAddress"] = localIpAddress;
     }
 
     private static List<string> SplitVersionParts(string? version)
