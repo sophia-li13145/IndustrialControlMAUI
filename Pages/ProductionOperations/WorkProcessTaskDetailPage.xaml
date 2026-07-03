@@ -343,8 +343,8 @@
                             HorizontalScrollBarVisibility="Always"
                             VerticalScrollBarVisibility="Never"
                             IsVisible="{Binding IsReportVisible}">
-                    <VerticalStackLayout WidthRequest="650">
-                        <Grid ColumnDefinitions="30,70,50,60,50,60,60,60,60,50"
+                    <VerticalStackLayout WidthRequest="710">
+                        <Grid ColumnDefinitions="30,70,50,60,50,60,50,60,60,60,50"
                               BackgroundColor="#E8F0FE"
                               Padding="4"
                               RowSpacing="1"
@@ -355,15 +355,16 @@
                             <Label Text="操作人" Grid.Column="3" FontAttributes="Bold" />
                             <Label Text="工时" Grid.Column="4" FontAttributes="Bold" />
                             <Label Text="报工数量" Grid.Column="5" FontAttributes="Bold" />
-                            <Label Text="操作时间" Grid.Column="6" FontAttributes="Bold" />
-                            <Label Text="备注" Grid.Column="7" FontAttributes="Bold" />
-                            <Label Text="点焊比例" Grid.Column="8" FontAttributes="Bold" />
-                            <Label Text="操作" Grid.Column="9" FontAttributes="Bold" />
+                            <Label Text="单位" Grid.Column="6" FontAttributes="Bold" />
+                            <Label Text="操作时间" Grid.Column="7" FontAttributes="Bold" />
+                            <Label Text="备注" Grid.Column="8" FontAttributes="Bold" />
+                            <Label Text="点焊比例" Grid.Column="9" FontAttributes="Bold" />
+                            <Label Text="操作" Grid.Column="10" FontAttributes="Bold" />
                         </Grid>
                         <CollectionView x:Name="ReportListView" ItemsSource="{Binding ReportRecords}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid ColumnDefinitions="30,70,50,60,50,60,60,60,60,50"
+                                    <Grid ColumnDefinitions="30,70,50,60,50,60,50,60,60,60,50"
                                           Padding="4"
                                           RowSpacing="1"
                                           ColumnSpacing="1"
@@ -374,10 +375,11 @@
                                         <Label Grid.Column="3" Text="{Binding operatorDisplay}" />
                                         <Label Grid.Column="4" Text="{Binding workHours}" />
                                         <Label Grid.Column="5" Text="{Binding reportQty, StringFormat='{0:G29}'}" />
-                                        <Label Grid.Column="6" Text="{Binding operateTime}" />
-                                        <Label Grid.Column="7" Text="{Binding memo}" />
-                                        <Label Grid.Column="8" Text="{Binding spotWeldRatio, StringFormat='{0:G29}'}" />
-                                        <Label Grid.Column="9" Text="删除" TextColor="Red">
+                                        <Label Grid.Column="6" Text="{Binding unit}" />
+                                        <Label Grid.Column="7" Text="{Binding operateTime}" />
+                                        <Label Grid.Column="8" Text="{Binding memo}" />
+                                        <Label Grid.Column="9" Text="{Binding spotWeldRatio, StringFormat='{0:G29}'}" />
+                                        <Label Grid.Column="10" Text="删除" TextColor="Red">
                                             <Label.GestureRecognizers>
                                                 <TapGestureRecognizer
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteReportCommand}"

@@ -24,6 +24,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
     [ObservableProperty] private UserInfoDto? selectedUser;
     [ObservableProperty] private string? workHoursText;
     [ObservableProperty] private string? spotWeldingRatioText;
+    [ObservableProperty] private string? unitText;
     [ObservableProperty] private string? reportQtyText;
     [ObservableProperty] private string? unqualifiedQtyText;
     [ObservableProperty] private ReworkBomDetailFlattenItem? selectedUnqualifiedMaterial;
@@ -282,6 +283,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
                 productionMachineName = SelectedDevice?.Text,
                 reportQty = qty,
                 spotWeldRatio = spotWeldRatio,
+                unit = UnitText,
                 teamCode = SelectedShift?.Value,
                 teamName = SelectedShift?.Text,
                 unqualifiedQty = unqualifiedQty,
