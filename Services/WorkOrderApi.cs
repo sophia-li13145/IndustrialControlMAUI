@@ -840,7 +840,7 @@ namespace IndustrialControlMAUI.Services
             return result ?? new ApiResp<bool?> { success = false, message = "解析响应失败" };
         }
 
-        public async Task<ApiResp<bool>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default)
+        public async Task<ApiResp<bool?>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default)
         {
             var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addReportEndpoint);
             var options = new JsonSerializerOptions
@@ -851,11 +851,11 @@ namespace IndustrialControlMAUI.Services
 
             using var resp = await _http.PostAsJsonAsync(full, req, options, ct);
             if (!resp.IsSuccessStatusCode)
-                return new ApiResp<bool> { success = false, message = $"HTTP错误 {resp.StatusCode}" };
+                return new ApiResp<bool?> { success = false, message = $"HTTP错误 {resp.StatusCode}" };
 
             var json = await ResponseGuard.ReadAsStringSafeAsync(resp.Content, ct);
-            var result = JsonSerializer.Deserialize<ApiResp<bool>>(json, options);
-            return result ?? new ApiResp<bool> { success = false, message = "解析响应失败" };
+            var result = JsonSerializer.Deserialize<ApiResp<bool?>>(json, options);
+            return result ?? new ApiResp<bool?> { success = false, message = "解析响应失败" };
         }
 
 

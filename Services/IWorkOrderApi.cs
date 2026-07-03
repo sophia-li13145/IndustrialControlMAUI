@@ -64,7 +64,7 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<bool>> AddWorkProcessTaskMaterialInputAsync(AddWorkProcessTaskMaterialInputReq req);
 
         Task<ApiResp<bool?>> AddWorkProcessTaskProductOutputAsync(AddWorkProcessTaskProductOutputReq req);
-        Task<ApiResp<bool>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default);
+        Task<ApiResp<bool?>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default);
         Task<ApiResp<bool?>> GetSpecialSwitchAsync(string configKey, CancellationToken ct = default);
         Task<ApiResp<ComputeReportQuantityBySpotWeldRatioResult>> ComputeReportQuantityBySpotWeldRatioAsync(ComputeReportQuantityBySpotWeldRatioReq req, CancellationToken ct = default);
         Task<ApiResp<bool>> DeleteWorkProcessTaskReportAsync(DeleteWorkProcessTaskReportReq req, CancellationToken ct = default);
