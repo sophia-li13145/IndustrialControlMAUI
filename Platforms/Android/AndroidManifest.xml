@@ -12,6 +12,9 @@
 	<uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 	<uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
-	<application android:usesCleartextTraffic="true" />
+	<application
+		android:usesCleartextTraffic="true"
+		android:icon="@mipmap/appicon"
+		android:roundIcon="@mipmap/appicon_round" />
 
 </manifest>

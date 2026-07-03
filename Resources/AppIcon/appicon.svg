@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1024" height="1024" rx="220" fill="#0F7BCE"/>
-  <rect x="80" y="80" width="864" height="864" rx="180" fill="url(#paint0_linear)"/>
-  <defs>
-    <linearGradient id="paint0_linear" x1="112" y1="112" x2="912" y2="912" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#22C7F2"/>
-      <stop offset="1" stop-color="#165DCC"/>
-    </linearGradient>
-  </defs>
+  <rect width="1024" height="1024" rx="190" fill="#202227"/>
 </svg>
