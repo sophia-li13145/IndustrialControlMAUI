@@ -499,6 +499,7 @@ public class WorkProcessTaskReportRecord
     public string? operatorDisplay => string.IsNullOrWhiteSpace(operatorName) ? @operator : operatorName;
     public decimal? workHours { get; set; }            // 工时
     public decimal? reportQty { get; set; }            // 报工数量
+    public string? unit { get; set; }                   // 单位
     public string? operateTime { get; set; }           // 操作时间
     public string? memo { get; set; }                  // 备注
     public decimal? spotWeldRatio { get; set; }        // 点焊比例
@@ -760,6 +761,7 @@ public class AddWorkProcessTaskReportReq
     public string? productionMachineName { get; set; }
     public decimal reportQty { get; set; }
     public int spotWeldRatio { get; set; }
+    public string? unit { get; set; }
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? unqualifiedQty { get; set; }
