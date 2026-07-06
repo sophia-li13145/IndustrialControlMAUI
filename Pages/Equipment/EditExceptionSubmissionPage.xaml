@@ -126,7 +126,7 @@
                 <!-- 基础信息卡片 -->
                 <Frame Style="{StaticResource Card}">
                     <Grid ColumnDefinitions="85,*,85,*"
-      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
       RowSpacing="8" ColumnSpacing="3">
 
                         <!-- 异常单号（自动生成，可不加星） -->
@@ -207,20 +207,28 @@
             Title="请选择"
             IsEnabled="{Binding IsEditing}" />
 
-                        <!-- * 期望修复日期 -->
-                        <Label Grid.Row="3" Grid.Column="2">
+                        <!-- * 期望修复时间 -->
+                        <Label Grid.Row="4" Grid.Column="0">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="*" TextColor="Red"/>
-                                    <Span Text=" 期望修复日期：" />
+                                    <Span Text=" 期望修复时间：" />
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <DatePicker Grid.Row="3" Grid.Column="3"
-                Date="{Binding Detail.expectedRepairDate}" />
+                        <Grid Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" ColumnDefinitions="*,120" ColumnSpacing="8">
+                            <DatePicker Grid.Column="0"
+                                        Date="{Binding ExpectedRepairDate, Mode=TwoWay}"
+                                        Format="yyyy-MM-dd"
+                                        IsEnabled="{Binding IsEditing}" />
+                            <TimePicker Grid.Column="1"
+                                        Time="{Binding ExpectedRepairTime, Mode=TwoWay}"
+                                        Format="HH:mm"
+                                        IsEnabled="{Binding IsEditing}" />
+                        </Grid>
 
                         <!-- * 异常现象 -->
-                        <Label Grid.Row="4" Grid.Column="0">
+                        <Label Grid.Row="5" Grid.Column="0">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="*" TextColor="Red"/>
@@ -228,11 +236,11 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <Entry Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
+                        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"
            Text="{Binding Detail.phenomena}" />
 
                         <!-- * 异常描述 -->
-                        <Label Grid.Row="5" Grid.Column="0">
+                        <Label Grid.Row="6" Grid.Column="0">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="*" TextColor="Red"/>
@@ -240,12 +248,16 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <Entry Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"
-           Text="{Binding Detail.description}" />
+                        <Picker Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3"
+                                ItemsSource="{Binding DescriptionDict}"
+                                ItemDisplayBinding="{Binding dictItemName}"
+                                SelectedItem="{Binding SelectedDescription, Mode=TwoWay}"
+                                Title="请选择"
+                                IsEnabled="{Binding IsEditing}" />
 
                         <!-- 备注（非必填） -->
-                        <Label Grid.Row="6" Grid.Column="0" Text="备注：" />
-                        <Entry Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" />
+                        <Label Grid.Row="7" Grid.Column="0" Text="备注：" />
+                        <Entry Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.memo}" />
                     </Grid>
 
                 </Frame>

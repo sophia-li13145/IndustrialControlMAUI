@@ -1278,6 +1278,8 @@ public class DictExcept
     public List<DictItem> Urgent { get; set; } = new();
 
     public List<DictItem> DevStatus { get; set; } = new();
+
+    public List<DictItem> Description { get; set; } = new();
 }
 public partial class OrderExceptAttachmentItem : ObservableObject
 {
