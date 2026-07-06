@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.Services;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace IndustrialControlMAUI.ViewModels
 {
@@ -28,6 +29,8 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private MaintenanceReportDto? detail;
+        [ObservableProperty] private DateTime expectedRepairDate = DateTime.Today;
+        [ObservableProperty] private TimeSpan expectedRepairTime = DateTime.Now.TimeOfDay;
         [ObservableProperty] private bool isNew;       // 新建 = true
         [ObservableProperty] private bool isEditMode;  // 编辑 = true
 
@@ -58,6 +61,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> auditStatusDict = new();
         [ObservableProperty] private List<DictItem> urgentDict = new();
         [ObservableProperty] private List<DictItem> devStatusDict = new();
+        [ObservableProperty] private List<DictItem> descriptionDict = new();
 
         // 设备状态下拉选中项
         [ObservableProperty]
@@ -67,7 +71,59 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty]
         private DictItem? selectedUrgent;
 
+        // 异常描述下拉选中项
+        [ObservableProperty]
+        private DictItem? selectedDescription;
+
         public DictExcept dicts = new();
+
+        /// <summary>执行 OnDetailChanged 逻辑。</summary>
+        partial void OnDetailChanged(MaintenanceReportDto? value)
+        {
+            ApplyExpectedRepairDateTime(value?.expectedRepairDate);
+        }
+
+        /// <summary>执行 OnExpectedRepairDateChanged 逻辑。</summary>
+        partial void OnExpectedRepairDateChanged(DateTime value) => SyncExpectedRepairDateTimeToDetail();
+
+        /// <summary>执行 OnExpectedRepairTimeChanged 逻辑。</summary>
+        partial void OnExpectedRepairTimeChanged(TimeSpan value) => SyncExpectedRepairDateTimeToDetail();
+
+        /// <summary>执行 ApplyExpectedRepairDateTime 逻辑。</summary>
+        private void ApplyExpectedRepairDateTime(string? value)
+        {
+            var expected = DateTime.Now;
+            var formats = new[]
+            {
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd HH:mm",
+                "yyyy/MM/dd HH:mm:ss",
+                "yyyy/MM/dd HH:mm",
+                "yyyy-MM-dd",
+                "yyyy/MM/dd"
+            };
+
+            if (!string.IsNullOrWhiteSpace(value) &&
+                (DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) ||
+                 DateTime.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out parsed)))
+            {
+                expected = parsed;
+            }
+
+            ExpectedRepairDate = expected.Date;
+            ExpectedRepairTime = expected.TimeOfDay;
+            SyncExpectedRepairDateTimeToDetail();
+        }
+
+        /// <summary>执行 SyncExpectedRepairDateTimeToDetail 逻辑。</summary>
+        private void SyncExpectedRepairDateTimeToDetail()
+        {
+            if (Detail is null) return;
+
+            Detail.expectedRepairDate = ExpectedRepairDate.Date
+                .Add(ExpectedRepairTime)
+                .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        }
 
         private const string Folder = "devUpkeepTask";
         private const string LocationImage = "image";
@@ -103,6 +159,7 @@ namespace IndustrialControlMAUI.ViewModels
                 AuditStatusDict = dicts.AuditStatus;
                 UrgentDict = dicts.Urgent;
                 DevStatusDict = dicts.DevStatus;
+                DescriptionDict = dicts.Description;
 
                 // ===== 设备列表 =====
                 _devList = await _energyApi.GetDevListAsync(_cts.Token);
@@ -160,6 +217,15 @@ namespace IndustrialControlMAUI.ViewModels
             Detail.urgentText = string.IsNullOrWhiteSpace(value.dictItemName)
                 ? value.dictItemValue
                 : value.dictItemName;
+        }
+
+        // 选异常描述
+        /// <summary>执行 OnSelectedDescriptionChanged 逻辑。</summary>
+        partial void OnSelectedDescriptionChanged(DictItem? value)
+        {
+            if (Detail is null || value is null) return;
+
+            Detail.description = value.dictItemValue;
         }
 
         #endregion
@@ -253,6 +319,15 @@ namespace IndustrialControlMAUI.ViewModels
                         SelectedDevStatus = DevStatusDict
                             .FirstOrDefault(d => string.Equals(
                                 d.dictItemValue, Detail.devStatus, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    // ===== 根据详情值反选“异常描述”下拉 =====
+                    if (!string.IsNullOrWhiteSpace(Detail.description) && DescriptionDict != null)
+                    {
+                        SelectedDescription = DescriptionDict
+                            .FirstOrDefault(d =>
+                                string.Equals(d.dictItemValue, Detail.description, StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(d.dictItemName, Detail.description, StringComparison.OrdinalIgnoreCase));
                     }
                 });
 
@@ -569,6 +644,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             // 先把 UI 的附件集合同步回 Detail
             PreparePayloadFromUi();
+            SyncExpectedRepairDateTimeToDetail();
 
             var expected = Detail.expectedRepairDate;
             if (ensureExpectedRepairDateNow && string.IsNullOrWhiteSpace(expected))
