@@ -94,9 +94,10 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <!-- 三行两列：行0图形，行1标题，行2时间 -->
-                        <Grid ColumnDefinitions="18,15,30,20"
+                        <Grid ColumnDefinitions="24,Auto,12"
           RowDefinitions="Auto,Auto,Auto"
-          Padding="12,0"
+          ColumnSpacing="0"
+          Padding="2,0"
           HorizontalOptions="Center" VerticalOptions="Center">
 
                             <!-- 圆点：默认白底；激活(已完成/当前)描边蓝，未到达描边灰 -->
@@ -139,15 +140,15 @@
                                 </Frame.Triggers>
                             </Frame>
                             <!-- 标题：激活(已完成/当前)为深色，未到达为灰 -->
-                            <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+                            <Label Grid.Row="0" Grid.Column="1"
            Text="{Binding Title}"
-           FontSize="13"
+           FontSize="12"
            TextColor="{Binding IsActive, Converter={StaticResource ActiveToTitleColor}}"
            HorizontalTextAlignment="Center" VerticalOptions="Center"/>
 
                             <!-- 连线：当前或已完成为蓝，否则灰；最后一个隐藏 -->
-                            <BoxView Grid.Row="0" Grid.Column="3"
-                 WidthRequest="20" HeightRequest="2"
+                            <BoxView Grid.Row="0" Grid.Column="2"
+                 WidthRequest="12" HeightRequest="2"
                  VerticalOptions="Center" HorizontalOptions="Center"
                  BackgroundColor="{Binding IsActive, Converter={StaticResource BoolToPrimaryOrGray}}">
                                 <BoxView.Triggers>
@@ -160,7 +161,7 @@
                             
 
                             <!-- 时间：只有有值才显示（当前与已完成都有时间）；未到达不显示 -->
-                            <Label Grid.Row="2"  Grid.Column="1" Grid.ColumnSpan="3"
+                            <Label Grid.Row="2"  Grid.Column="0" Grid.ColumnSpan="3"
                                    Text="{Binding Time}"
                                    FontSize="11"
                                    TextColor="#888888"
