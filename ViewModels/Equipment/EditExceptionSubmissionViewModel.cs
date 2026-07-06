@@ -71,9 +71,14 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty]
         private DictItem? selectedUrgent;
 
-        // 异常描述下拉选中项
+        /// <summary>异常描述多选项。</summary>
+        public ObservableCollection<ExceptionDescriptionOption> DescriptionOptions { get; } = new();
+
         [ObservableProperty]
-        private DictItem? selectedDescription;
+        private bool isDescriptionDropdownOpen;
+
+        [ObservableProperty]
+        private string selectedDescriptionText = "请选择";
 
         public DictExcept dicts = new();
 
@@ -160,6 +165,7 @@ namespace IndustrialControlMAUI.ViewModels
                 UrgentDict = dicts.Urgent;
                 DevStatusDict = dicts.DevStatus;
                 DescriptionDict = dicts.Description;
+                RefreshDescriptionOptions();
 
                 // ===== 设备列表 =====
                 _devList = await _energyApi.GetDevListAsync(_cts.Token);
@@ -219,14 +225,86 @@ namespace IndustrialControlMAUI.ViewModels
                 : value.dictItemName;
         }
 
-        // 选异常描述
-        /// <summary>执行 OnSelectedDescriptionChanged 逻辑。</summary>
-        partial void OnSelectedDescriptionChanged(DictItem? value)
-        {
-            if (Detail is null || value is null) return;
 
-            Detail.description = value.dictItemValue;
+
+        /// <summary>刷新异常描述多选项。</summary>
+        private void RefreshDescriptionOptions()
+        {
+            DescriptionOptions.Clear();
+            foreach (var d in DescriptionDict ?? new List<DictItem>())
+            {
+                DescriptionOptions.Add(new ExceptionDescriptionOption(d));
+            }
+
+            ApplySelectedDescriptions(Detail?.description);
+            RefreshSelectedDescriptionText();
         }
+
+        /// <summary>根据逗号分隔的值或名称反选异常描述。</summary>
+        private void ApplySelectedDescriptions(string? description)
+        {
+            var tokens = SplitDescription(description);
+            foreach (var option in DescriptionOptions)
+            {
+                option.IsSelected = tokens.Contains(option.Value ?? string.Empty)
+                    || tokens.Contains(option.Name ?? string.Empty);
+            }
+
+            RefreshSelectedDescriptionText();
+        }
+
+        /// <summary>切换异常描述下拉列表展开状态。</summary>
+        [RelayCommand]
+        private void ToggleDescriptionDropdown()
+        {
+            if (!IsEditing) return;
+
+            IsDescriptionDropdownOpen = !IsDescriptionDropdownOpen;
+        }
+
+        /// <summary>切换异常描述多选项。</summary>
+        [RelayCommand]
+        private void ToggleDescriptionOption(ExceptionDescriptionOption? option)
+        {
+            if (!IsEditing || option is null) return;
+
+            option.IsSelected = !option.IsSelected;
+            RefreshSelectedDescriptionText();
+        }
+
+        /// <summary>关闭异常描述下拉列表。</summary>
+        [RelayCommand]
+        private void CloseDescriptionDropdown() => IsDescriptionDropdownOpen = false;
+
+        /// <summary>刷新异常描述下拉框显示文本。</summary>
+        private void RefreshSelectedDescriptionText()
+        {
+            var names = DescriptionOptions
+                .Where(x => x.IsSelected)
+                .Select(x => x.DisplayName)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            SelectedDescriptionText = names.Count == 0 ? "请选择" : string.Join("，", names);
+        }
+
+        /// <summary>将异常描述多选结果用英文逗号拼接回详情，供保存接口提交。</summary>
+        private void SyncSelectedDescriptionsToDetail()
+        {
+            if (Detail is null) return;
+
+            Detail.description = string.Join(",", DescriptionOptions
+                .Where(x => x.IsSelected)
+                .Select(x => string.IsNullOrWhiteSpace(x.Value) ? x.Name : x.Value)
+                .Where(x => !string.IsNullOrWhiteSpace(x)));
+            RefreshSelectedDescriptionText();
+        }
+
+        private static HashSet<string> SplitDescription(string? description)
+            => string.IsNullOrWhiteSpace(description)
+                ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                : description.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         #endregion
 
@@ -321,14 +399,8 @@ namespace IndustrialControlMAUI.ViewModels
                                 d.dictItemValue, Detail.devStatus, StringComparison.OrdinalIgnoreCase));
                     }
 
-                    // ===== 根据详情值反选“异常描述”下拉 =====
-                    if (!string.IsNullOrWhiteSpace(Detail.description) && DescriptionDict != null)
-                    {
-                        SelectedDescription = DescriptionDict
-                            .FirstOrDefault(d =>
-                                string.Equals(d.dictItemValue, Detail.description, StringComparison.OrdinalIgnoreCase) ||
-                                string.Equals(d.dictItemName, Detail.description, StringComparison.OrdinalIgnoreCase));
-                    }
+                    // ===== 根据详情值反选“异常描述”多选 =====
+                    ApplySelectedDescriptions(Detail.description);
                 });
 
                 // ===== 根据详情反选设备 =====
@@ -642,7 +714,8 @@ namespace IndustrialControlMAUI.ViewModels
             if (Detail is null)
                 throw new InvalidOperationException("Detail 为空，无法构造请求体。");
 
-            // 先把 UI 的附件集合同步回 Detail
+            // 先把 UI 的多选异常描述与附件集合同步回 Detail
+            SyncSelectedDescriptionsToDetail();
             PreparePayloadFromUi();
             SyncExpectedRepairDateTimeToDetail();
 
@@ -840,5 +913,21 @@ namespace IndustrialControlMAUI.ViewModels
             => string.Equals(s, "1", StringComparison.OrdinalIgnoreCase);
 
         #endregion
+    }
+
+    public partial class ExceptionDescriptionOption : ObservableObject
+    {
+        public ExceptionDescriptionOption(DictItem source)
+        {
+            Value = source.dictItemValue;
+            Name = source.dictItemName;
+        }
+
+        public string? Value { get; }
+        public string? Name { get; }
+        public string DisplayName => string.IsNullOrWhiteSpace(Name) ? Value ?? string.Empty : Name!;
+
+        [ObservableProperty]
+        private bool isSelected;
     }
 }

@@ -47,6 +47,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> auditStatusDict = new();
         [ObservableProperty] private List<DictItem> urgentDict = new();
         [ObservableProperty] private List<DictItem> devStatusDict = new();
+        [ObservableProperty] private List<DictItem> descriptionDict = new();
 
         /// <summary>执行 ExceptionSubmissionViewModel 初始化逻辑。</summary>
         public ExceptionSubmissionViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IAuthApi authapi)
@@ -69,7 +70,8 @@ namespace IndustrialControlMAUI.ViewModels
                 AuditStatusDict = dicts.AuditStatus;
                 UrgentDict = dicts.Urgent;
                 DevStatusDict = dicts.DevStatus;
-                 _dictsLoaded = true;
+                DescriptionDict = dicts.Description;
+                _dictsLoaded = true;
             }
             catch (Exception ex)
             {
@@ -126,6 +128,15 @@ namespace IndustrialControlMAUI.ViewModels
            v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
            StringComparer.OrdinalIgnoreCase
        ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var descriptionMap = DescriptionDict?
+           .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
+           .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+           .Select(g => g.First())
+           .ToDictionary(
+           k => k.dictItemValue!,
+           v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
+           StringComparer.OrdinalIgnoreCase
+       ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             if (IsBusy || string.IsNullOrWhiteSpace(_id)) return;
             IsBusy = true;
             try
@@ -146,6 +157,7 @@ namespace IndustrialControlMAUI.ViewModels
                     Detail.devStatusText = typeMap.TryGetValue(Detail.devStatus ?? "", out var sName)
                             ? sName
                             : Detail.devStatus;
+                    Detail.description = FormatDescription(Detail.description, descriptionMap);
                 });
 
                 await LoadWorkflowAsync(_id!);
@@ -192,6 +204,19 @@ namespace IndustrialControlMAUI.ViewModels
                 IsBusy = false;
             }
         }
+
+        /// <summary>将后端逗号分隔的异常描述编码解析为字典名称。</summary>
+        private static string? FormatDescription(string? description, Dictionary<string, string> descriptionMap)
+        {
+            if (string.IsNullOrWhiteSpace(description)) return description;
+
+            var names = description.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(x => descriptionMap.TryGetValue(x, out var name) ? name : x)
+                .Where(x => !string.IsNullOrWhiteSpace(x));
+
+            return string.Join("，", names);
+        }
+
         /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
         {
