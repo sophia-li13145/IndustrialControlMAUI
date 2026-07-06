@@ -47,7 +47,8 @@ public class EquipmentApi : IEquipmentApi
 
         private static readonly JsonSerializerOptions _json = new()
         {
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            Converters = { new NullableDateTimeJsonConverter() }
         };
 
         public EquipmentApi(HttpClient http, IConfigLoader configLoader, AuthState auth, IAttachmentApi attachmentApi)
