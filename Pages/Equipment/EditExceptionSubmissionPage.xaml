@@ -248,24 +248,71 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <CollectionView Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3"
-                                        ItemsSource="{Binding DescriptionOptions}"
-                                        SelectionMode="None"
-                                        HeightRequest="120">
-                            <CollectionView.ItemsLayout>
-                                <GridItemsLayout Orientation="Vertical" Span="2" />
-                            </CollectionView.ItemsLayout>
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <HorizontalStackLayout Spacing="6" Padding="0,2">
-                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                  IsEnabled="{Binding BindingContext.IsEditing, Source={x:Reference ThisPage}}" />
-                                        <Label Text="{Binding DisplayName}"
-                                               VerticalTextAlignment="Center" />
-                                    </HorizontalStackLayout>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                        <VerticalStackLayout Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Spacing="4">
+                            <Border Stroke="#D1D5DB"
+                                    StrokeThickness="1"
+                                    BackgroundColor="White"
+                                    Padding="10,0"
+                                    HeightRequest="42">
+                                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding SelectedDescriptionText}"
+                                           TextColor="Black"
+                                           LineBreakMode="TailTruncation"
+                                           VerticalTextAlignment="Center" />
+                                    <Label Grid.Column="1"
+                                           Text="▼"
+                                           TextColor="#6B7280"
+                                           VerticalTextAlignment="Center" />
+                                </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ToggleDescriptionDropdownCommand}" />
+                                </Border.GestureRecognizers>
+                            </Border>
+
+                            <Border Stroke="#D1D5DB"
+                                    StrokeThickness="1"
+                                    BackgroundColor="White"
+                                    Padding="0"
+                                    IsVisible="{Binding IsDescriptionDropdownOpen}">
+                                <VerticalStackLayout Spacing="0">
+                                    <CollectionView ItemsSource="{Binding DescriptionOptions}"
+                                                    SelectionMode="None"
+                                                    HeightRequest="160">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnDefinitions="32,*" Padding="10,8">
+                                                    <Label Grid.Column="0"
+                                                           Text="☐"
+                                                           FontSize="18"
+                                                           TextColor="#2563EB"
+                                                           HorizontalTextAlignment="Center"
+                                                           VerticalTextAlignment="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="Text" Value="☑" />
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                    <Label Grid.Column="1"
+                                                           Text="{Binding DisplayName}"
+                                                           TextColor="Black"
+                                                           VerticalTextAlignment="Center" />
+                                                    <Grid.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding BindingContext.ToggleDescriptionOptionCommand, Source={x:Reference ThisPage}}"
+                                                                              CommandParameter="{Binding .}" />
+                                                    </Grid.GestureRecognizers>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                    <Button Text="确定"
+                                            HeightRequest="36"
+                                            Margin="10,6,10,10"
+                                            Command="{Binding CloseDescriptionDropdownCommand}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </VerticalStackLayout>
 
                         <!-- 备注（非必填） -->
                         <Label Grid.Row="7" Grid.Column="0" Text="备注：" />

@@ -74,6 +74,12 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>异常描述多选项。</summary>
         public ObservableCollection<ExceptionDescriptionOption> DescriptionOptions { get; } = new();
 
+        [ObservableProperty]
+        private bool isDescriptionDropdownOpen;
+
+        [ObservableProperty]
+        private string selectedDescriptionText = "请选择";
+
         public DictExcept dicts = new();
 
         /// <summary>执行 OnDetailChanged 逻辑。</summary>
@@ -231,6 +237,7 @@ namespace IndustrialControlMAUI.ViewModels
             }
 
             ApplySelectedDescriptions(Detail?.description);
+            RefreshSelectedDescriptionText();
         }
 
         /// <summary>根据逗号分隔的值或名称反选异常描述。</summary>
@@ -242,6 +249,43 @@ namespace IndustrialControlMAUI.ViewModels
                 option.IsSelected = tokens.Contains(option.Value ?? string.Empty)
                     || tokens.Contains(option.Name ?? string.Empty);
             }
+
+            RefreshSelectedDescriptionText();
+        }
+
+        /// <summary>切换异常描述下拉列表展开状态。</summary>
+        [RelayCommand]
+        private void ToggleDescriptionDropdown()
+        {
+            if (!IsEditing) return;
+
+            IsDescriptionDropdownOpen = !IsDescriptionDropdownOpen;
+        }
+
+        /// <summary>切换异常描述多选项。</summary>
+        [RelayCommand]
+        private void ToggleDescriptionOption(ExceptionDescriptionOption? option)
+        {
+            if (!IsEditing || option is null) return;
+
+            option.IsSelected = !option.IsSelected;
+            RefreshSelectedDescriptionText();
+        }
+
+        /// <summary>关闭异常描述下拉列表。</summary>
+        [RelayCommand]
+        private void CloseDescriptionDropdown() => IsDescriptionDropdownOpen = false;
+
+        /// <summary>刷新异常描述下拉框显示文本。</summary>
+        private void RefreshSelectedDescriptionText()
+        {
+            var names = DescriptionOptions
+                .Where(x => x.IsSelected)
+                .Select(x => x.DisplayName)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            SelectedDescriptionText = names.Count == 0 ? "请选择" : string.Join("，", names);
         }
 
         /// <summary>将异常描述多选结果用英文逗号拼接回详情，供保存接口提交。</summary>
@@ -253,6 +297,7 @@ namespace IndustrialControlMAUI.ViewModels
                 .Where(x => x.IsSelected)
                 .Select(x => string.IsNullOrWhiteSpace(x.Value) ? x.Name : x.Value)
                 .Where(x => !string.IsNullOrWhiteSpace(x)));
+            RefreshSelectedDescriptionText();
         }
 
         private static HashSet<string> SplitDescription(string? description)
