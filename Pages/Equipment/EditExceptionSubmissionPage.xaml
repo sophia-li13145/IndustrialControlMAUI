@@ -248,12 +248,24 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <Picker Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3"
-                                ItemsSource="{Binding DescriptionDict}"
-                                ItemDisplayBinding="{Binding dictItemName}"
-                                SelectedItem="{Binding SelectedDescription, Mode=TwoWay}"
-                                Title="请选择"
-                                IsEnabled="{Binding IsEditing}" />
+                        <CollectionView Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3"
+                                        ItemsSource="{Binding DescriptionOptions}"
+                                        SelectionMode="None"
+                                        HeightRequest="120">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical" Span="2" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <HorizontalStackLayout Spacing="6" Padding="0,2">
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  IsEnabled="{Binding BindingContext.IsEditing, Source={x:Reference ThisPage}}" />
+                                        <Label Text="{Binding DisplayName}"
+                                               VerticalTextAlignment="Center" />
+                                    </HorizontalStackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
 
                         <!-- 备注（非必填） -->
                         <Label Grid.Row="7" Grid.Column="0" Text="备注：" />
