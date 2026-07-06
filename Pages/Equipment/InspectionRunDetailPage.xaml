@@ -169,38 +169,42 @@
                         <Label Grid.Row="2" Grid.Column="5"
          Text="{Binding Detail.unqualifiedNum}"
          />
-                        <Label Grid.Row="3" Grid.Column="0" Text="实际点检日期：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="1" 
-       Text="{Binding Detail.inspectTime}"
-       />
+                        <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="6"
+                              ColumnDefinitions="90,90,60,90"
+                              ColumnSpacing="5">
+                            <Label Grid.Column="0" Text="实际点检日期：" Style="{StaticResource FieldLabel}" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Detail.inspectTime}"
+                                   LineBreakMode="WordWrap" />
 
-                        <Label Grid.Row="3" Grid.Column="2"  Text="操作人：" Style="{StaticResource FieldLabel}" />
-                        <Grid Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="2">
-                            <Entry x:Name="InspectorEntry"
-           Text="{Binding InspectorText, Mode=TwoWay}"
-           Placeholder="请输入"
-           Completed="OnInspectorEntryCompleted"/>
-                            <!-- 下拉浮层 -->
-                            <Frame HasShadow="True" Padding="0" Margin="0,40,0,0"
-           IsVisible="{Binding IsInspectorDropdownOpen}"
-           ZIndex="9999" CornerRadius="8"
-           BackgroundColor="White" BorderColor="#E5E7EB">
-                                <CollectionView ItemsSource="{Binding InspectorSuggestions}" HeightRequest="220">
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Padding="10" ColumnDefinitions="Auto,*">
-                                                <Label Grid.Column="0" Text="👤"/>
-                                                <Label Grid.Column="1" Text="{Binding realname}"/>
-                                                <Grid.GestureRecognizers>
-                                                    <TapGestureRecognizer
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickInspectorCommand}"
-                                CommandParameter="{Binding .}"/>
-                                                </Grid.GestureRecognizers>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
-                            </Frame>
+                            <Label Grid.Column="2" Text="操作人：" Style="{StaticResource FieldLabel}" />
+                            <Grid Grid.Column="3">
+                                <Entry x:Name="InspectorEntry"
+                                       Text="{Binding InspectorText, Mode=TwoWay}"
+                                       Placeholder="请输入"
+                                       Completed="OnInspectorEntryCompleted"/>
+                                <!-- 下拉浮层 -->
+                                <Frame HasShadow="True" Padding="0" Margin="0,40,0,0"
+                                       IsVisible="{Binding IsInspectorDropdownOpen}"
+                                       ZIndex="9999" CornerRadius="8"
+                                       BackgroundColor="White" BorderColor="#E5E7EB">
+                                    <CollectionView ItemsSource="{Binding InspectorSuggestions}" HeightRequest="220">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Padding="10" ColumnDefinitions="Auto,*">
+                                                    <Label Grid.Column="0" Text="👤"/>
+                                                    <Label Grid.Column="1" Text="{Binding realname}"/>
+                                                    <Grid.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.PickInspectorCommand}"
+                                                            CommandParameter="{Binding .}"/>
+                                                    </Grid.GestureRecognizers>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </Frame>
+                            </Grid>
                         </Grid>
 
                         <!-- 第4行：检验备注（整行） -->
