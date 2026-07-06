@@ -17,6 +17,7 @@ public partial class ReportAddPopupViewModel : ObservableObject
     public ObservableCollection<StatusOption> ShiftOptions { get; } = new();
     public ObservableCollection<UserInfoDto> UserOptions { get; } = new();
     public ObservableCollection<ReworkBomDetailFlattenItem> UnqualifiedMaterialOptions { get; } = new();
+    public ObservableCollection<string> UnitOptions { get; } = new();
 
 
     [ObservableProperty] private StatusOption? selectedDevice;
@@ -107,10 +108,12 @@ public partial class ReportAddPopupViewModel : ObservableObject
             ShiftOptions.Clear();
             UserOptions.Clear();
             UnqualifiedMaterialOptions.Clear();
+            UnitOptions.Clear();
             SelectedDevice = null;
             SelectedShift = null;
             SelectedUnqualifiedMaterial = null;
             SpotWeldingRatioText = null;
+            UnitText = null;
             IsSpotWeldingRatioVisible = false;
             IsSpotWeldingRatioRequired = IsSpotWeldingRatioRequiredForProcess(detail);
             _computeReportQtyVersion++;
@@ -146,6 +149,20 @@ public partial class ReportAddPopupViewModel : ObservableObject
                         Value = s.workshopsCode
                     });
                 }
+            }
+
+
+            var unitResp = await _api.GetBasMeasurementUnitListAsync();
+            if (unitResp?.success == true)
+            {
+                foreach (var unitName in (unitResp.result ?? new List<BasMeasurementUnitDto>())
+                    .Select(x => x.unitName?.Trim())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct(StringComparer.OrdinalIgnoreCase))
+                {
+                    UnitOptions.Add(unitName!);
+                }
+
             }
 
             var users = await _authApi.GetAllUsersAsync();
