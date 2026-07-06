@@ -124,6 +124,8 @@ namespace IndustrialControlMAUI.ViewModels
         /// <summary>执行 LoadPageAsync 逻辑。</summary>
         private async Task<List<RepairOrderItem>> LoadPageAsync(int pageNo)
         {
+            await EnsureDictsLoadedAsync();
+
             var statusMap = RepairStatusDict?
             .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
             .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
