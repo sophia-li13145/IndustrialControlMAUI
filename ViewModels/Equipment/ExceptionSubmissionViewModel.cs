@@ -64,7 +64,11 @@ namespace IndustrialControlMAUI.ViewModels
 
             try
             {
-                if (AuditStatusDict.Count > 0) return; // 已加载则跳过
+                if (AuditStatusDict.Count > 0 && DescriptionDict.Count > 0)
+                {
+                    _dictsLoaded = true;
+                    return; // 已加载则跳过
+                }
 
                 var dicts = await _api.GetExceptDictsAsync();
                 AuditStatusDict = dicts.AuditStatus;
@@ -148,16 +152,18 @@ namespace IndustrialControlMAUI.ViewModels
                     return;
                 }
 
-                Detail = resp.result;
+                var detail = resp.result;
+                detail.urgentText = urgentMap.TryGetValue(detail.urgent ?? "", out var uName)
+                    ? uName
+                    : detail.urgent;
+                detail.devStatusText = typeMap.TryGetValue(detail.devStatus ?? "", out var sName)
+                    ? sName
+                    : detail.devStatus;
+                detail.description = FormatDescription(detail.description, descriptionMap);
+
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    Detail.urgentText = urgentMap.TryGetValue(Detail?.urgent ?? "", out var uName)
-                        ? uName
-                        : Detail.urgent;
-                    Detail.devStatusText = typeMap.TryGetValue(Detail.devStatus ?? "", out var sName)
-                            ? sName
-                            : Detail.devStatus;
-                    Detail.description = FormatDescription(Detail.description, descriptionMap);
+                    Detail = detail;
                 });
 
                 await LoadWorkflowAsync(_id!);
@@ -210,7 +216,7 @@ namespace IndustrialControlMAUI.ViewModels
         {
             if (string.IsNullOrWhiteSpace(description)) return description;
 
-            var names = description.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            var names = description.Split(new[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(x => descriptionMap.TryGetValue(x, out var name) ? name : x)
                 .Where(x => !string.IsNullOrWhiteSpace(x));
 
