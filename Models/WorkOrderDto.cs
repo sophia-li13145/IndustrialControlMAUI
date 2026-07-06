@@ -750,6 +750,11 @@ public class FinalProcessCompletePopupResult
     public string? Memo { get; set; }
 }
 
+public class BasMeasurementUnitDto
+{
+    public string? unitName { get; set; }
+}
+
 public class AddWorkProcessTaskReportReq
 {
     public string? memo { get; set; }

@@ -22,7 +22,7 @@
         <Entry Grid.Row="4" Grid.Column="1" Text="{Binding SpotWeldingRatioText}" Placeholder="请输入" Keyboard="Numeric" IsVisible="{Binding IsSpotWeldingRatioVisible}" />
 
         <Label Grid.Row="5" Text="单位：" VerticalTextAlignment="Center" />
-        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding UnitText}" Placeholder="请输入" />
+        <Picker Grid.Row="5" Grid.Column="1" ItemsSource="{Binding UnitOptions}" SelectedItem="{Binding UnitText}" Title="请选择" />
 
         <Label Grid.Row="6" Text="报工数量：" VerticalTextAlignment="Center" />
         <Entry Grid.Row="6" Grid.Column="1" Text="{Binding ReportQtyText}" Placeholder="请输入" Keyboard="Numeric" IsEnabled="{Binding IsReportQtyEditable}" />

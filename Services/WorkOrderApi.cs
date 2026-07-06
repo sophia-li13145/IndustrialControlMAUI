@@ -39,6 +39,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _reportListEndpoint;
         private readonly string _addReportEndpoint;
         private readonly string _specialSwitchEndpoint;
+        private readonly string _basMeasurementUnitListEndpoint;
         private readonly string _computeReportQuantityBySpotWeldRatioEndpoint;
         private readonly string _deleteReportEndpoint;
         private readonly string _frameOutputQtyEndpoint;
@@ -142,6 +143,8 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.addReport", "/pda/pmsWorkProcessTaskReport/addWorkProcessTaskReport"), servicePath);
             _specialSwitchEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.specialSwitch", "/pda/pmsWorkProcessTaskReport/getSpecialSwitch"), servicePath);
+            _basMeasurementUnitListEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.basMeasurementUnitList", "/pda/pmsWorkOrder/getBasMeasurementUnitList"), servicePath);
             _computeReportQuantityBySpotWeldRatioEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.computeReportQuantityBySpotWeldRatio", "/pda/pmsWorkProcessTaskReport/computeReportQuantityBySpotWeldRatio"), servicePath);
             _deleteReportEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -858,6 +861,20 @@ namespace IndustrialControlMAUI.Services
             return result ?? new ApiResp<bool?> { success = false, message = "解析响应失败" };
         }
 
+
+        public async Task<ApiResp<List<BasMeasurementUnitDto>>> GetBasMeasurementUnitListAsync(CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _basMeasurementUnitListEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<List<BasMeasurementUnitDto>> { success = false, message = $"HTTP {(int)res.StatusCode}", result = new List<BasMeasurementUnitDto>() };
+
+            return JsonSerializer.Deserialize<ApiResp<List<BasMeasurementUnitDto>>>(json, _json)
+                ?? new ApiResp<List<BasMeasurementUnitDto>> { success = false, message = "empty response", result = new List<BasMeasurementUnitDto>() };
+        }
 
         public async Task<ApiResp<bool?>> GetSpecialSwitchAsync(string configKey, CancellationToken ct = default)
         {
