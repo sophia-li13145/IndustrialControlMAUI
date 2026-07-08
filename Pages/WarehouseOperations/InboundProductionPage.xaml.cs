@@ -222,6 +222,7 @@ public partial class InboundProductionPage : ContentPage
     private async void OnQtyTextChanged(object sender, TextChangedEventArgs e)
     {
         if (sender is not Entry entry || !entry.IsFocused) return;
+        if (WarehouseQuantityInputHelper.RejectIfTooManyDecimalPlaces(entry, e)) return;
         if (entry.BindingContext is not IndustrialControlMAUI.ViewModels.OutScannedItem row) return;
 
         _qtyUpdateCts?.Cancel();

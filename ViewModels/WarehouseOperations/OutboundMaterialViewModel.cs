@@ -637,8 +637,8 @@ namespace IndustrialControlMAUI.ViewModels
         public string ProductionBatch { get; set; } = "";//生产批号
 
         public string StockBatch { get; set; } = "";//批次号
-        public int OutstockQty { get; set; } //出库数量
-        public int Qty { get; set; } //已扫描数
+        public decimal OutstockQty { get; set; } //出库数量
+        public decimal Qty { get; set; } //已扫描数
         public string Bin { get; set; } = "请选择";
 
     }

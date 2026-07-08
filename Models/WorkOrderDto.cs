@@ -39,14 +39,14 @@ public class WorkOrderSummary
     public DateTime CreateDate { get; set; }
 }
 
-// 服务层 DTO（已把数量转成 int，便于前端直接用）
+// 服务层 DTO（数量保留 decimal，支持仓储作业录入小数）
 public record InboundPendingRow(
     string? Barcode,
     string? DetailId,
     string? Location,
     string? MaterialName,
-    int PendingQty,   // instockQty
-    int ScannedQty,   // qty
+    decimal PendingQty,   // instockQty
+    decimal ScannedQty,   // qty
     string? Spec);
 
 public record InboundScannedRow(
@@ -54,7 +54,7 @@ public record InboundScannedRow(
     string DetailId,
     string Location,
     string MaterialName,
-    int Qty,
+    decimal Qty,
     string Spec,
     bool ScanStatus,
     string? WarehouseCode
@@ -70,8 +70,8 @@ public record OutboundPendingRow(
     string? Location,
     string? ProductionBatch,
     string? StockBatch,
-    int OutstockQty,
-    int Qty
+    decimal OutstockQty,
+    decimal Qty
 );
 
 
@@ -81,8 +81,8 @@ public record OutboundScannedRow(
     string DetailId,
     string Location,
     string MaterialName,
-    int Qty,
-    int OutstockQty,
+    decimal Qty,
+    decimal OutstockQty,
     string Spec,
     bool ScanStatus,
     string? WarehouseCode,

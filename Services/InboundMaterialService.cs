@@ -268,8 +268,8 @@ public sealed class InboundMaterialService : IInboundMaterialService
             DetailId: x.id ?? string.Empty,
             Location: x.location ?? string.Empty,
             MaterialName: x.materialName ?? string.Empty,
-            PendingQty: ToInt(x.instockQty),
-            ScannedQty: ToInt(x.qty),
+            PendingQty: ToDecimal(x.instockQty),
+            ScannedQty: ToDecimal(x.qty),
             Spec: x.spec ?? string.Empty
         )).ToList();
     }
@@ -288,7 +288,7 @@ public sealed class InboundMaterialService : IInboundMaterialService
             DetailId: (x.id ?? string.Empty).Trim(),
             Location: (x.location ?? string.Empty).Trim(),
             MaterialName: (x.materialName ?? string.Empty).Trim(),
-            Qty: ToInt(x.qty),
+            Qty: ToDecimal(x.qty),
             Spec: (x.spec ?? string.Empty).Trim(),
             ScanStatus: x.scanStatus ?? false,
             WarehouseCode: x.warehouseCode?.Trim()
@@ -388,7 +388,7 @@ public sealed class InboundMaterialService : IInboundMaterialService
     }
 
     public async Task<SimpleOk> UpdateQuantityAsync(
-        string barcode, string detailId, string id, int quantity, CancellationToken ct = default)
+        string barcode, string detailId, string id, decimal quantity, CancellationToken ct = default)
     {
         var payload = new { barcode, detailId, id, quantity };
         var dto = await PostJsonAsync<object, ConfirmResp>(_updateQuantityEndpoint, payload, ct)
@@ -398,7 +398,21 @@ public sealed class InboundMaterialService : IInboundMaterialService
         return new SimpleOk(ok, dto?.message);
     }
 
-    // ===== 工具：多形态转 int =====
+    // ===== 工具：多形态转数值 =====
+    private static decimal ToDecimal(object? v)
+    {
+        if (v is null) return 0m;
+        return v switch
+        {
+            decimal d => d,
+            double d => (decimal)d,
+            float f => (decimal)f,
+            int i => i,
+            long l => l,
+            string s when decimal.TryParse(s, out var n) => n,
+            _ => decimal.TryParse(v.ToString(), out var n) ? n : 0m
+        };
+    }
     private static int ToInt(object? v)
     {
         if (v is null) return 0;
