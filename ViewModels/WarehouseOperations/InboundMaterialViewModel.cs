@@ -493,9 +493,9 @@ namespace IndustrialControlMAUI.ViewModels
         public string Spec { get; set; } = "";//规格
         public string Location { get; set; } = "";//出库库位
         public string ProductionBatch { get; set; } = "";//生产批号
-        public int PendingQty { get; set; }
+        public decimal PendingQty { get; set; }
         public string Bin { get; set; } = "请选择";
-        public int ScannedQty { get; set; }
+        public decimal ScannedQty { get; set; }
     }
 
     public partial class OutScannedItem : ObservableObject
@@ -505,9 +505,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private string name = "";
         [ObservableProperty] private string spec = "";
         [ObservableProperty] private string location = "请选择";
-        [ObservableProperty] private int qty;
+        [ObservableProperty] private decimal qty;
         [ObservableProperty] private string quantityText = "0";
-        [ObservableProperty] private int outstockQty;
+        [ObservableProperty] private decimal outstockQty;
         [ObservableProperty] private string detailId;
         [ObservableProperty] private string id;
         [ObservableProperty] private bool scanStatus;

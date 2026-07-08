@@ -276,8 +276,8 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
             Location: x.location ?? string.Empty,
             ProductionBatch: x.productionBatch ?? string.Empty,
             StockBatch: x.stockBatch ?? string.Empty,
-            OutstockQty: ToInt(x.outstockQty),
-            Qty: ToInt(x.qty)
+            OutstockQty: ToDecimal(x.outstockQty),
+            Qty: ToDecimal(x.qty)
         )).ToList();
     }
 
@@ -298,8 +298,8 @@ public sealed class OutboundMaterialService : IOutboundMaterialService
             DetailId: (x.id ?? string.Empty).Trim(),
             Location: (x.location ?? string.Empty).Trim(),
             MaterialName: (x.materialName ?? string.Empty).Trim(),
-            Qty: ToInt(x.qty),
-            OutstockQty: ToInt(x.outstockQty),
+            Qty: ToDecimal(x.qty),
+            OutstockQty: ToDecimal(x.outstockQty),
             Spec: (x.spec ?? string.Empty).Trim(),
             ScanStatus: x.scanStatus ?? false,
             WarehouseCode: x.warehouseCode?.Trim(),

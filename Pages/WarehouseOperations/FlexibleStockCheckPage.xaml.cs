@@ -125,6 +125,16 @@ namespace IndustrialControlMAUI.Pages
         /// <summary>执行 OnFrameCheckQtyTextChanged 逻辑。</summary>
         private void OnFrameCheckQtyTextChanged(object sender, TextChangedEventArgs e)
         {
+            if (sender is Entry entry && WarehouseQuantityInputHelper.RejectIfTooManyDecimalPlaces(entry, e)) return;
+
+            _vm.OnEditingFrameQtyTextChanged();
+        }
+
+        /// <summary>总盘点数量输入变化时限制小数位数。</summary>
+        private void OnCheckQtyTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is Entry entry && WarehouseQuantityInputHelper.RejectIfTooManyDecimalPlaces(entry, e)) return;
+
             _vm.OnEditingFrameQtyTextChanged();
         }
 

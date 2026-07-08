@@ -48,14 +48,14 @@ CancellationToken ct = default);
         CancellationToken ct = default);
 
     Task<SimpleOk> UpdateQuantityAsync(
-    string barcode, string detailId, string id, int quantity, CancellationToken ct = default);
+    string barcode, string detailId, string id, decimal quantity, CancellationToken ct = default);
 
 }
 
 public record InboundOrder(string OrderNo, string Supplier, string LinkedNo, int ExpectedQty);
 
 public record OutboundOrder(string OrderNo, string Supplier, string LinkedNo, int ExpectedQty);
-public record ScanItem(int Index, string Barcode, string? Bin, int Qty);
+public record ScanItem(int Index, string Barcode, string? Bin, decimal Qty);
 public record SimpleOk(bool Succeeded, string? Message = null);
 
 
