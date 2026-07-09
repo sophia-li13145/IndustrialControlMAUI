@@ -294,12 +294,15 @@ namespace IndustrialControlMAUI.ViewModels
                 .Select(x => x.Value!)
                 .ToArray();
 
+            var assignTo = await ResolveAssignToAsync();
+
             var page = await _workapi.PageWorkProcessTasksAsync(
                 workOrderNo: byOrderNo ? Keyword?.Trim() : null,
                 auditStatusList: statusList.Length == 0 ? null : statusList,
                 processCode: SelectedProcessOption?.Value,
                 createdTimeStart: byOrderNo ? null : StartDate.Date,
                 createdTimeEnd: byOrderNo ? null : EndDate.Date.AddDays(1).AddSeconds(-1),
+                assignTo: assignTo,
                 pageNo: pageNo,
                 pageSize: PageSize,
                 ct: CancellationToken.None);
@@ -318,6 +321,17 @@ namespace IndustrialControlMAUI.ViewModels
             }
 
             return records;
+        }
+
+
+        private async Task<string?> ResolveAssignToAsync()
+        {
+            var permissionResp = await _workapi.HasMenuPermissionAsync("QR030701", CancellationToken.None);
+            if (permissionResp.result == true)
+                return null;
+
+            var currentUserName = Preferences.Get("UserName", string.Empty);
+            return string.IsNullOrWhiteSpace(currentUserName) ? null : currentUserName.Trim();
         }
 
         private string? GetWorkOrderAuditStatusName(string? statusCode)
