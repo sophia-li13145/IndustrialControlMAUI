@@ -25,6 +25,7 @@ namespace IndustrialControlMAUI.Services
         Task<ApiResp<bool?>> EditLineDowntimeAsync(LineDowntimeEditReq req, CancellationToken ct = default);
         Task<DictBundle> GetWorkOrderDictsAsync(CancellationToken ct = default);
         Task<WorkflowResp?> GetWorkOrderWorkflowAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<bool?>> HasMenuPermissionAsync(string menuCode, CancellationToken ct = default);
         Task<PageResp<ProcessTask>?> PageWorkProcessTasksAsync(
          string? workOrderNo,
          IEnumerable<string>? auditStatusList,   // ★ 改为数组
@@ -34,6 +35,7 @@ namespace IndustrialControlMAUI.Services
          string? materialName = null,
          string? platPlanNo = null,
          string? schemeNo = null,
+         string? assignTo = null,
          bool? searchCount = null,      // 是否计算总记录数（可选）
          int pageNo = 1,
          int pageSize = 50,

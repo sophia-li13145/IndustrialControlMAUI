@@ -10,6 +10,9 @@
   },
   "apiEndpoints": {
     "login": "/pda/auth/login",
+    "common": {
+      "hasMenuPermission": "/pda/common/hasMenuPermission"
+    },
     "inbound": {
       "list": "/pda/wmsMaterialInstock/getInStock",
       "detail": "/pda/wmsMaterialInstock/getInStockDetail",

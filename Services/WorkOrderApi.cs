@@ -20,6 +20,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _pageEndpoint;
         private readonly string _workflowEndpoint;
         private readonly string _processTasksEndpoint;
+        private readonly string _hasMenuPermissionEndpoint;
         private readonly string _dictEndpoint;
         private readonly string _workProcessTaskDictEndpoint;
         private readonly string _processInfoListEndpoint;
@@ -105,6 +106,8 @@ namespace IndustrialControlMAUI.Services
                 configLoader.GetApiPath("workOrder.workflow", "/pda/pmsWorkOrder/getWorkOrderWorkflow"), servicePath);
             _processTasksEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.processTasks", "/pda/pmsWorkOrder/pageWorkProcessTasks"), servicePath);
+            _hasMenuPermissionEndpoint = ServiceUrlHelper.NormalizeRelative(
+                configLoader.GetApiPath("common.hasMenuPermission", "/pda/common/hasMenuPermission"), servicePath);
             _dictEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.dictList", "/pda/pmsWorkOrder/getWorkOrderDictList"), servicePath);
             _workProcessTaskDictEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -380,6 +383,23 @@ namespace IndustrialControlMAUI.Services
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new WorkflowResp();
         }
 
+        public async Task<ApiResp<bool?>> HasMenuPermissionAsync(string menuCode, CancellationToken ct = default)
+        {
+            var url = _hasMenuPermissionEndpoint + "?menuCode=" + Uri.EscapeDataString(menuCode ?? string.Empty);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, url);
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?? new ApiResp<bool?>();
+        }
+
         public async Task<PageResp<ProcessTask>?> PageWorkProcessTasksAsync(
     string? workOrderNo,
     IEnumerable<string>? auditStatusList,   // ★ 改为数组
@@ -389,6 +409,7 @@ namespace IndustrialControlMAUI.Services
     string? materialName = null,
     string? platPlanNo = null,
     string? schemeNo = null,
+    string? assignTo = null,
     bool? searchCount = null,      // 是否计算总记录数（可选）
     int pageNo = 1,
     int pageSize = 50,
@@ -413,6 +434,7 @@ namespace IndustrialControlMAUI.Services
             AddIf("materialName", materialName);
             AddIf("platPlanNo", platPlanNo);
             AddIf("schemeNo", schemeNo);
+            AddIf("assignTo", assignTo);
 
             if (createdTimeStart.HasValue)
                 pairs.Add(new("createdTimeStart", createdTimeStart.Value.ToString("yyyy-MM-dd HH:mm:ss")));
