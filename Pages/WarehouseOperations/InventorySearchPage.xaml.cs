@@ -79,8 +79,7 @@ namespace IndustrialControlMAUI.Pages
                     await vm.QueryInventoryAsync(result.Trim());
                 }
 
-                // 清空并聚焦
-                ScanEntry.Text = string.Empty;
+                // 扫码后保留结果并重新聚焦，方便连续扫码时输入框状态不丢失
                 ScanEntry.Focus();
             }
             finally

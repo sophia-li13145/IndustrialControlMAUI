@@ -46,6 +46,7 @@ public partial class ExceptionSubmissionSearchPage : ContentPage
 
         // 回填扫码结果
         QualityNoEntry.Text = result.Trim();
+        QualityNoEntry?.Focus();
 
         // 同步 ViewModel
         if (BindingContext is ExceptionSubmissionSearchViewModel vm)

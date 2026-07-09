@@ -50,6 +50,7 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
             return;
 
         OrderEntry.Text = result.Trim();
+        OrderEntry?.Focus();
 
         if (BindingContext is ProcessTaskSearchViewModel vm)
         {

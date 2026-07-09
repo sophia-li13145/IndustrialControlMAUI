@@ -43,6 +43,7 @@ public partial class MaintenanceRunSearchPage : ContentPage
 
         // 回填扫码结果
         QualityNoEntry.Text = result.Trim();
+        QualityNoEntry?.Focus();
 
         // 同步 ViewModel
         if (BindingContext is MaintenanceRunSearchViewModel vm)

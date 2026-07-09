@@ -9,6 +9,7 @@ public partial class QrScanPage : ContentPage
     private readonly TaskCompletionSource<string> _tcs;
     private bool _returned;
     private bool _isPickingImage;
+    private bool _isBarcodeHandlerAttached;
     /// <summary>执行 QrScanPage 初始化逻辑。</summary>
     public QrScanPage(TaskCompletionSource<string> tcs)
     {
@@ -39,13 +40,15 @@ public partial class QrScanPage : ContentPage
             return;
 
         _returned = true;
+        MainThread.BeginInvokeOnMainThread(() => CompleteScanAsync(first.Value.Trim()));
+    }
 
-        MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            try { barcodeView.IsDetecting = false; } catch { }
-            _tcs.TrySetResult(first.Value.Trim());
-            await Navigation.PopAsync();
-        });
+    private async void CompleteScanAsync(string result)
+    {
+        _returned = true;
+        StopDetectingAndUnsubscribe();
+        _tcs.TrySetResult(result);
+        await Navigation.PopAsync();
     }
 
     // 新增：从相册选择图片并识别
@@ -92,6 +95,7 @@ public partial class QrScanPage : ContentPage
             if (_returned) return;
             _returned = true;
 
+            StopDetectingAndUnsubscribe();
             _tcs.TrySetResult(result.Text.Trim());
             await Navigation.PopAsync();
         }
@@ -404,6 +408,7 @@ public partial class QrScanPage : ContentPage
         ResultLabel.Text = barcodeView.CameraLocation == CameraLocation.Rear
             ? "请对准二维码..."
             : "当前为前置/虚拟摄像头，请对准二维码...";
+        SubscribeBarcodeHandler();
         barcodeView.IsDetecting = true;
     }
 
@@ -412,11 +417,7 @@ public partial class QrScanPage : ContentPage
     {
         base.OnDisappearing();
 
-        // ✅ 防御性判断，防止闪退
-        if (barcodeView != null)
-        {
-            barcodeView.IsDetecting = false;
-        }
+        StopDetectingAndUnsubscribe();
 
         // Android 打开系统相册/文件选择器时页面可能触发 OnDisappearing；此时不能提前返回空扫码结果。
         if (_isPickingImage) return;
@@ -426,6 +427,26 @@ public partial class QrScanPage : ContentPage
             _returned = true;
             _tcs.TrySetResult(string.Empty);
         }
+    }
+
+    private void SubscribeBarcodeHandler()
+    {
+        if (_isBarcodeHandlerAttached || barcodeView == null) return;
+
+        barcodeView.BarcodesDetected += BarcodesDetected;
+        _isBarcodeHandlerAttached = true;
+    }
+
+    private void StopDetectingAndUnsubscribe()
+    {
+        if (barcodeView == null) return;
+
+        try { barcodeView.IsDetecting = false; } catch { }
+
+        if (!_isBarcodeHandlerAttached) return;
+
+        barcodeView.BarcodesDetected -= BarcodesDetected;
+        _isBarcodeHandlerAttached = false;
     }
 
 }

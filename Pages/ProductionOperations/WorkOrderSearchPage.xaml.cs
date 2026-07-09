@@ -45,6 +45,7 @@ public partial class WorkOrderSearchPage : ContentPage
 
         // 回填扫码结果
         OrderEntry.Text = result.Trim();
+        OrderEntry?.Focus();
 
         // 同步 ViewModel
         if (BindingContext is WorkOrderSearchViewModel vm)

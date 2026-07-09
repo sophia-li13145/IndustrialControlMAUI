@@ -20,6 +20,7 @@ public partial class MaterialFrameQueryPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        ScanEntry?.Focus();
         await _vm.InitializeAsync();
     }
 
@@ -49,6 +50,8 @@ public partial class MaterialFrameQueryPage : ContentPage
             var result = await tcs.Task;
             if (string.IsNullOrWhiteSpace(result)) return;
             _vm.FrameNo = result.Trim();
+            ScanEntry.Text = result.Trim();
+            ScanEntry?.Focus();
             await _vm.SearchAsync();
         }
         finally { _isScanning = false; }
