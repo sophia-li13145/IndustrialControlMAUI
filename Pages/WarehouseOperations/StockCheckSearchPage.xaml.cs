@@ -24,13 +24,14 @@ public partial class StockCheckSearchPage : ContentPage
             return;
 
         // 扫码查询
+        OrderEntry.Text = result.Trim();
+        OrderEntry?.Focus();
         _vm.SearchCheckNo = result.Trim();
 
         // 重新加载第一页 
         await _vm.SearchAsync();
 
-        // 清空并聚焦
-        OrderEntry.Text = string.Empty;
+        // 扫码后保留结果并重新聚焦，方便连续扫码时输入框状态不丢失
         OrderEntry.Focus();
     }
 

@@ -54,6 +54,7 @@ public partial class InboundMaterialSearchPage : ContentPage
 
         // 回填到输入框
         OrderEntry.Text = result.Trim();
+        OrderEntry?.Focus();
 
         // 同步到 ViewModel
         if (BindingContext is InboundMaterialSearchViewModel vm)
