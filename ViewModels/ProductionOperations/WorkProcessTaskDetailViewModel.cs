@@ -111,7 +111,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         private set => SetProperty(ref _outputFrameCount, value);
     }
 
-    public bool CanBatchApplyOutputFrameInstock => !IsBusy && SelectedOutputFrameCount > 0;
+    public bool IsBatchApplyOutputFrameInstockVisible => IsFrameVisible && Detail?.finalProcess == true;
+
+    public bool CanBatchApplyOutputFrameInstock => IsBatchApplyOutputFrameInstockVisible && !IsBusy && SelectedOutputFrameCount > 0;
 
     public bool IsAllOutputFramesSelected
     {
@@ -224,6 +226,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsBatchApplyOutputFrameInstockVisible));
         OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
     }
     partial void OnQueryWorkOrderAuditStatusChanged(string? value)
@@ -244,6 +247,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (AddReportCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsBatchApplyOutputFrameInstockVisible));
         OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
     }
     /// <summary>执行 OnActiveTabChanged 逻辑。</summary>
@@ -258,6 +262,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         OnPropertyChanged(nameof(IsInputTab));
         OnPropertyChanged(nameof(IsOutputTab));
         OnPropertyChanged(nameof(IsFrameTab));
+        OnPropertyChanged(nameof(IsBatchApplyOutputFrameInstockVisible));
+        OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
+        (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
         TabChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -816,6 +823,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     private void NotifyOutputFrameSelectionChanged()
     {
         OnPropertyChanged(nameof(IsAllOutputFramesSelected));
+        OnPropertyChanged(nameof(IsBatchApplyOutputFrameInstockVisible));
         OnPropertyChanged(nameof(CanBatchApplyOutputFrameInstock));
         (BatchApplyOutputFrameInstockCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
