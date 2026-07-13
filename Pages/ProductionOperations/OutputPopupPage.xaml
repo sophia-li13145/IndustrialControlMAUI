@@ -10,73 +10,120 @@
     Padding="12"
     BackgroundColor="White">
 
-    <ScrollView>
-        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
-            <Label Text="*产出物料：" TextColor="#D0021B" VerticalTextAlignment="Center" />
-            <Picker Grid.Column="1" ItemsSource="{Binding MaterialOptions}" ItemDisplayBinding="{Binding materialName}" SelectedItem="{Binding SelectedMaterial}" IsEnabled="{Binding IsPickerEnabled}" />
+    <CollectionView ItemsSource="{Binding RecentScannedBarcodes}">
+        <CollectionView.Header>
+            <VerticalStackLayout Spacing="10">
+                <Button Text="条码批量扫码"
+                        IsVisible="{Binding ShowBatchBarcodeScanButton}"
+                        Command="{Binding BatchBarcodeScanCommand}"
+                        HorizontalOptions="Start" />
 
-            <Label Grid.Row="1" Text="*产出数量：" TextColor="#D0021B" VerticalTextAlignment="Center" />
-            <Entry Grid.Row="1" Grid.Column="1" Placeholder="自动带出可修改" Keyboard="Numeric" Text="{Binding QuantityText}" />
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="8" RowSpacing="10">
+                    <Label Text="*产出物料：" TextColor="#D0021B" VerticalTextAlignment="Center" />
+                    <Picker Grid.Column="1" ItemsSource="{Binding MaterialOptions}" ItemDisplayBinding="{Binding materialName}" SelectedItem="{Binding SelectedMaterial}" IsEnabled="{Binding IsPickerEnabled}" />
 
-            <Label Grid.Row="2" Text="料框：" VerticalTextAlignment="Start" />
-            <Grid Grid.Row="2" Grid.Column="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
-                <Border Grid.Row="0"
-                        Grid.Column="0"
-                        Stroke="#2D6AE3"
-                        StrokeThickness="1"
-                        StrokeShape="RoundRectangle 4"
-                        Padding="6"
-                        MinimumHeightRequest="48">
-                    <FlexLayout BindableLayout.ItemsSource="{Binding SelectedFrames}"
-                                AlignItems="Start"
-                                AlignContent="Start"
-                                Direction="Row"
-                                Wrap="Wrap">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="vm:FrameOptionItem">
-                                <Border Stroke="#D1D5DB"
-                                        BackgroundColor="#EEF2F7"
-                                        StrokeShape="RoundRectangle 4"
-                                        Padding="6,2"
-                                        Margin="0,0,6,6">
-                                    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="4">
-                                        <Label Text="{Binding FrameNo}" TextColor="#1D4ED8" VerticalTextAlignment="Center" />
-                                        <Label Grid.Column="1" Text="×" TextColor="#374151" VerticalTextAlignment="Center" Padding="4,0">
-                                            <Label.GestureRecognizers>
-                                                <TapGestureRecognizer
-                                                    Command="{Binding Source={x:Reference Root}, Path=BindingContext.RemoveFrameCommand}"
-                                                    CommandParameter="{Binding .}" />
-                                            </Label.GestureRecognizers>
-                                        </Label>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </FlexLayout>
-                </Border>
+                    <Label Grid.Row="1" Text="*产出数量：" TextColor="#D0021B" VerticalTextAlignment="Center" />
+                    <Entry Grid.Row="1" Grid.Column="1" Placeholder="自动带出可修改" Keyboard="Numeric" Text="{Binding QuantityText}" IsEnabled="{Binding IsQuantityEnabled}" />
 
-                <Button Grid.Row="0"
-                        Grid.Column="1"
-                        Text="扫码"
-                        Command="{Binding ScanFrameCommand}"
-                        VerticalOptions="Start" />
+                    <Label Grid.Row="2" Text="料框：" VerticalTextAlignment="Start" />
+                    <Grid Grid.Row="2" Grid.Column="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
+                        <Border Grid.Row="0"
+                                Grid.Column="0"
+                                Stroke="#2D6AE3"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 4"
+                                Padding="6"
+                                MinimumHeightRequest="48">
+                            <FlexLayout BindableLayout.ItemsSource="{Binding SelectedFrames}"
+                                        AlignItems="Start"
+                                        AlignContent="Start"
+                                        Direction="Row"
+                                        Wrap="Wrap">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:FrameOptionItem">
+                                        <Border Stroke="#D1D5DB"
+                                                BackgroundColor="#EEF2F7"
+                                                StrokeShape="RoundRectangle 4"
+                                                Padding="6,2"
+                                                Margin="0,0,6,6">
+                                            <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="4">
+                                                <Label Text="{Binding FrameNo}" TextColor="#1D4ED8" VerticalTextAlignment="Center" />
+                                                <Label Grid.Column="1" Text="×" TextColor="#374151" VerticalTextAlignment="Center" Padding="4,0">
+                                                    <Label.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={x:Reference Root}, Path=BindingContext.RemoveFrameCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                    </Label.GestureRecognizers>
+                                                </Label>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                        </Border>
 
-                <Label Grid.Row="1"
-                       Grid.Column="0"
-                       Grid.ColumnSpan="2"
-                       Text="{Binding FrameHint}"
-                       TextColor="#6B7280"
-                       FontSize="12"
-                       VerticalTextAlignment="Center" />
-            </Grid>
+                        <Button Grid.Row="0"
+                                Grid.Column="1"
+                                Text="扫码"
+                                Command="{Binding ScanFrameCommand}"
+                                VerticalOptions="Start" />
 
-            <Label Grid.Row="3" Text="备注：" VerticalTextAlignment="Center" />
-            <Editor Grid.Row="3" Grid.Column="1" Placeholder="请输入备注（最多200字）" AutoSize="TextChanges" MaxLength="200" Text="{Binding Memo}" HeightRequest="80" />
+                        <Label Grid.Row="1"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               Text="{Binding FrameHint}"
+                               TextColor="#6B7280"
+                               FontSize="12"
+                               VerticalTextAlignment="Center" />
+                    </Grid>
 
-            <Grid Grid.Row="5" Grid.ColumnSpan="2" ColumnDefinitions="*,*" Margin="0,16,0,0">
-                <Button Text="确认产出" Command="{Binding ConfirmCommand}" Margin="0,0,6,0" />
-                <Button Grid.Column="1" Text="取消" Command="{Binding CancelCommand}" />
-            </Grid>
-        </Grid>
-    </ScrollView>
+                    <Label Grid.Row="3" Text="备注：" VerticalTextAlignment="Center" />
+                    <Editor Grid.Row="3" Grid.Column="1" Placeholder="请输入备注（最多200字）" AutoSize="TextChanges" MaxLength="200" Text="{Binding Memo}" HeightRequest="80" />
+
+                    <Grid Grid.Row="4" Grid.ColumnSpan="2" ColumnDefinitions="*,*" Margin="0,16,0,0">
+                        <Button Text="确认产出" Command="{Binding ConfirmCommand}" Margin="0,0,6,0" />
+                        <Button Grid.Column="1" Text="取消" Command="{Binding CancelCommand}" />
+                    </Grid>
+
+                    <Label Grid.Row="5"
+                           Grid.ColumnSpan="2"
+                           Text="只显示最近10条数据"
+                           TextColor="#6B7280"
+                           FontSize="12"
+                           IsVisible="{Binding ShowBatchBarcodeScanButton}" />
+
+                    <Grid Grid.Row="6"
+                          Grid.ColumnSpan="2"
+                          ColumnDefinitions="50,*,150"
+                          BackgroundColor="#E8F0FE"
+                          Padding="6"
+                          IsVisible="{Binding ShowBatchBarcodeScanButton}">
+                        <Label Text="序号" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="条码" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="扫描时间" FontAttributes="Bold" />
+                    </Grid>
+                </Grid>
+            </VerticalStackLayout>
+        </CollectionView.Header>
+
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="vm:BarcodeScanDisplayItem">
+                <SwipeView IsVisible="{Binding Source={x:Reference Root}, Path=BindingContext.ShowBatchBarcodeScanButton}">
+                    <SwipeView.RightItems>
+                        <SwipeItems Mode="Reveal">
+                            <SwipeItem Text="删除"
+                                       BackgroundColor="#D0021B"
+                                       Command="{Binding Source={x:Reference Root}, Path=BindingContext.DeleteScannedBarcodeCommand}"
+                                       CommandParameter="{Binding .}" />
+                        </SwipeItems>
+                    </SwipeView.RightItems>
+                    <Grid ColumnDefinitions="50,*,150" Padding="6" BackgroundColor="White">
+                        <Label Text="{Binding Index}" />
+                        <Label Grid.Column="1" Text="{Binding Barcode}" />
+                        <Label Grid.Column="2" Text="{Binding ScanTime}" />
+                    </Grid>
+                </SwipeView>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
 </ContentPage>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+    x:Class="IndustrialControlMAUI.Pages.ContinuousBarcodeScanPage"
+    Title="条码批量扫码">
+
+    <Grid RowDefinitions="*,Auto,Auto">
+        <zxing:CameraBarcodeReaderView
+            x:Name="barcodeView"
+            Grid.Row="0"
+            IsDetecting="False" />
+
+        <VerticalStackLayout Grid.Row="0"
+                             Padding="16"
+                             Spacing="8"
+                             VerticalOptions="End">
+            <Label x:Name="ResultLabel"
+                   Text="请对准产出物料条码..."
+                   FontSize="18"
+                   TextColor="White"
+                   BackgroundColor="#99000000"
+                   Padding="12,8"
+                   HorizontalOptions="Center" />
+            <Label x:Name="CountLabel"
+                   Text="已通过：0"
+                   FontSize="16"
+                   TextColor="White"
+                   BackgroundColor="#99000000"
+                   Padding="12,6"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <Entry x:Name="HardwareScanEntry"
+               Grid.Row="1"
+               Placeholder="扫码枪输入"
+               Completed="HardwareScanEntry_Completed" />
+
+        <Grid Grid.Row="2"
+              ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+              Padding="20"
+              BackgroundColor="#222">
+            <Button Text="相册识别"
+                    Grid.Column="0"
+                    Clicked="PickFromGalleryButton_Clicked" />
+
+            <Button Text="🔄"
+                    Grid.Column="1"
+                    BackgroundColor="#444"
+                    BorderColor="Black"
+                    Clicked="SwitchCameraButton_Clicked" />
+
+            <zxing:BarcodeGeneratorView
+                x:Name="barcodeGenerator"
+                Grid.Column="2"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                HeightRequest="100"
+                WidthRequest="100"
+                ForegroundColor="DarkBlue"
+                Format="QrCode"
+                Value="Sample"
+                BarcodeMargin="1" />
+
+            <Button Text="💡"
+                    Grid.Column="3"
+                    BackgroundColor="#444"
+                    BorderColor="Black"
+                    Clicked="TorchButton_Clicked" />
+
+            <Button Text="完成扫码"
+                    Grid.Column="4"
+                    Clicked="DoneButton_Clicked" />
+        </Grid>
+    </Grid>
+</ContentPage>

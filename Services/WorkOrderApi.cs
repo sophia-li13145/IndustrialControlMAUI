@@ -45,6 +45,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _deleteReportEndpoint;
         private readonly string _frameOutputQtyEndpoint;
         private readonly string _scanOutputFrameEndpoint;
+        private readonly string _validateBarcodeScanEndpoint;
         private readonly string _scanStockCheckFrameEndpoint;
         private readonly string _listFrameLoadByBatchNoEndpoint;
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
@@ -156,6 +157,8 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.frameOutputQty", "/pda/pmsWorkProcessTaskReport/getWorkProcessTaskFrameOutputQty"), servicePath);
             _scanOutputFrameEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.scanOutputFrame", "/pda/outputFrameRecord/scanOutputFrame"), servicePath);
+            _validateBarcodeScanEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.validateBarcodeScan", "/pda/pmsWorkOrder/validateBarcodeScan"), servicePath);
             _scanStockCheckFrameEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("stockCheck.scanFrameInfo", "/pda/wmsInstockCheck/scanFrameInfo"), servicePath);
             _listFrameLoadByBatchNoEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -965,6 +968,23 @@ namespace IndustrialControlMAUI.Services
         }
 
 
+
+
+        public async Task<ApiResp<ValidateBarcodeScanResp>> ValidateBarcodeScanAsync(ValidateBarcodeScanReq req, CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _validateBarcodeScanEndpoint);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+            using var res = await _http.PostAsJsonAsync(full, req, options, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<ValidateBarcodeScanResp> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+            return JsonSerializer.Deserialize<ApiResp<ValidateBarcodeScanResp>>(json, _json)
+                ?? new ApiResp<ValidateBarcodeScanResp> { success = false, message = "empty response" };
+        }
 
         public async Task<ApiResp<ScanOutputFrameResp>> ScanOutputFrameAsync(string frameNo, string materialCode, CancellationToken ct = default)
         {

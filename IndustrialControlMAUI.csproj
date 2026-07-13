@@ -352,6 +352,9 @@
 		<MauiXaml Update="Pages\Shared\DefectPickerPopup.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Pages\Shared\ContinuousBarcodeScanPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Pages\Shared\QrScanPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
