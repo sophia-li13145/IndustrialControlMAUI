@@ -351,6 +351,7 @@ public class WorkProcessTaskDetail
     public string? teamCode { get; set; }
     public string? teamName { get; set; }
     public decimal? taskReportedQty { get; set; }
+    public string? productionBatch { get; set; }
     public string? productionMachine { get; set; }
     public string? productionMachineName { get; set; }
     public string? workShop { get; set; }
@@ -666,6 +667,37 @@ public class AddWorkProcessTaskProductOutputReq
     public string? unit { get; set; }
     public string workOrderNo { get; set; } = "";
     public List<OutputFrameSelectionItem>? outputFrameList { get; set; }
+    public List<BarcodeScanRecord>? barcodeScanRecordList { get; set; }
+}
+
+public class BarcodeScanRecord
+{
+    public string barcode { get; set; } = string.Empty;
+    public string scanTime { get; set; } = string.Empty;
+}
+
+
+public class BarcodeScanFeedback
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+}
+
+public class ValidateBarcodeScanReq
+{
+    public string barcode { get; set; } = string.Empty;
+    public string? materialCode { get; set; }
+    public string productionBatch { get; set; } = string.Empty;
+    public string workOrderNo { get; set; } = string.Empty;
+}
+
+public class ValidateBarcodeScanResp
+{
+    public string? barcode { get; set; }
+    public int dbScannedCount { get; set; }
+    public string? manageGranularity { get; set; }
+    public string? materialCode { get; set; }
+    public string? materialName { get; set; }
 }
 
 
@@ -717,6 +749,7 @@ public class OutputPopupResult
     public string? Unit { get; set; }
     public DateTime? OperationTime { get; set; }
     public List<OutputFrameSelectionItem> frameNoList { get; set; } = new();
+    public List<BarcodeScanRecord> barcodeScanRecordList { get; set; } = new();
 }
 
 public class MaterialInputResult

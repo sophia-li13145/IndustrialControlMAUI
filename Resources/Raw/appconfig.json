@@ -55,6 +55,7 @@
       "pausework": "/pda/pmsWorkOrder/workProcessTaskWorkChange",
       "addMaterial": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialInput",
       "addOutput": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput",
+      "validateBarcodeScan": "/pda/pmsWorkOrder/validateBarcodeScan",
       "specialSwitch": "/pda/pmsWorkProcessTaskReport/getSpecialSwitch",
       "computeReportQuantityBySpotWeldRatio": "/pda/pmsWorkProcessTaskReport/computeReportQuantityBySpotWeldRatio",
       "autMaterialList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs",
