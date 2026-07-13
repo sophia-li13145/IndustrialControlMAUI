@@ -326,7 +326,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         private async Task<string?> ResolveAssignToAsync()
         {
-            var permissionResp = await _workapi.HasMenuPermissionAsync("QR030701", CancellationToken.None);
+            var permissionResp = await _workapi.HasMenuPermissionAsync("QR030701:workProcessTasksDispatch", CancellationToken.None);
             if (permissionResp.result == true)
                 return null;
 
