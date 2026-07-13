@@ -697,7 +697,11 @@ public class ValidateBarcodeScanResp
     public int dbScannedCount { get; set; }
     public string? manageGranularity { get; set; }
     public string? materialCode { get; set; }
+    public string? materialClassName { get; set; }
     public string? materialName { get; set; }
+    public string? materialTypeName { get; set; }
+    public decimal? planQty { get; set; }
+    public string? unit { get; set; }
 }
 
 

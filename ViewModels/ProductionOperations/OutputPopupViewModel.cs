@@ -147,6 +147,10 @@ namespace IndustrialControlMAUI.ViewModels
                 if (materialCheck is not null)
                     return materialCheck;
 
+                var quantityCheck = ValidateScannedQuantity(resp.result);
+                if (quantityCheck is not null)
+                    return quantityCheck;
+
                 AddValidatedBarcode(barcode, resp.result);
                 return new BarcodeScanFeedback { Success = true, Message = "校验通过，请继续扫码" };
             }
@@ -185,6 +189,22 @@ namespace IndustrialControlMAUI.ViewModels
             };
         }
 
+        private BarcodeScanFeedback? ValidateScannedQuantity(ValidateBarcodeScanResp scanResult)
+        {
+            var planQty = scanResult.planQty;
+            if (planQty is null || planQty <= 0) return null;
+
+            var qty = ScannedBarcodes.Count;
+            var totalScannedCount = scanResult.dbScannedCount + qty + 1;
+            if (totalScannedCount <= planQty.Value) return null;
+
+            return new BarcodeScanFeedback
+            {
+                Success = false,
+                Message = "已达到应投数量，请继续扫码"
+            };
+        }
+
         private void AddValidatedBarcode(string barcode, ValidateBarcodeScanResp scanResult)
         {
             var materialCode = scanResult.materialCode;
@@ -198,9 +218,23 @@ namespace IndustrialControlMAUI.ViewModels
                     matched = new TaskMaterialOutput
                     {
                         materialCode = materialCode,
-                        materialName = materialName
+                        materialName = materialName,
+                        materialClassName = scanResult.materialClassName,
+                        materialTypeName = scanResult.materialTypeName,
+                        unit = scanResult.unit,
+                        qty = scanResult.planQty,
+                        hasOutputCount = scanResult.dbScannedCount
                     };
                     MaterialOptions.Insert(0, matched);
+                }
+                else
+                {
+                    matched.materialName = string.IsNullOrWhiteSpace(materialName) ? matched.materialName : materialName;
+                    matched.materialClassName = string.IsNullOrWhiteSpace(scanResult.materialClassName) ? matched.materialClassName : scanResult.materialClassName;
+                    matched.materialTypeName = string.IsNullOrWhiteSpace(scanResult.materialTypeName) ? matched.materialTypeName : scanResult.materialTypeName;
+                    matched.unit = string.IsNullOrWhiteSpace(scanResult.unit) ? matched.unit : scanResult.unit;
+                    matched.qty = scanResult.planQty ?? matched.qty;
+                    matched.hasOutputCount = scanResult.dbScannedCount;
                 }
 
                 SelectedMaterial = matched;
@@ -210,7 +244,7 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 ScannedBarcodes.Add(new BarcodeScanRecord
                 {
-                    barcode = barcode,
+                    barcode = string.IsNullOrWhiteSpace(scanResult.barcode) ? barcode : scanResult.barcode!,
                     scanTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 });
             }
