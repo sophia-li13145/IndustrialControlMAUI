@@ -17,7 +17,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
     // 状态字典（值→名），用于将 auditStatus 映射为中文
     private readonly Dictionary<string, string> _auditMap = new();
-    [ObservableProperty] private bool isBusy;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanBatchApplyOutputFrameInstock))]
+    private bool isBusy;
     [ObservableProperty] private bool isPaused;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanStart))]
@@ -42,7 +44,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [ObservableProperty] private DetailTab activeTab = DetailTab.Report;
     [ObservableProperty] private bool isInputVisible = false;   // 默认隐藏投料
     [ObservableProperty] private bool isOutputVisible = false; // 默认隐藏产出
-    [ObservableProperty] private bool isFrameVisible = false; // 默认隐藏料框
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBatchApplyOutputFrameInstockVisible))]
+    [NotifyPropertyChangedFor(nameof(CanBatchApplyOutputFrameInstock))]
+    private bool isFrameVisible = false; // 默认隐藏料框
     [ObservableProperty] private bool isReportVisible = true;  // 默认显示报工
 
     public bool IsReportTab => ActiveTab == DetailTab.Report;
@@ -51,7 +56,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public bool IsFrameTab => ActiveTab == DetailTab.Frame;
 
 
-    [ObservableProperty] private WorkProcessTaskDetail? detail;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBatchApplyOutputFrameInstockVisible))]
+    [NotifyPropertyChangedFor(nameof(CanBatchApplyOutputFrameInstock))]
+    private WorkProcessTaskDetail? detail;
     [ObservableProperty] private string? queryWorkOrderAuditStatus;
     // 返修按钮显示规则：仅工单状态 1-执行中、2-入库中、4-待入库 时显示
     public bool IsReworkVisible
