@@ -83,11 +83,6 @@ public partial class ContinuousBarcodeScanPage : ContentPage
         await Navigation.PopAsync();
     }
 
-    private async void PickFromGalleryButton_Clicked(object? sender, EventArgs e)
-    {
-        await DisplayAlert("提示", "连续扫码页请使用摄像头或扫码枪扫描产出物料条码。", "好的");
-    }
-
     private void SwitchCameraButton_Clicked(object sender, EventArgs e)
     {
         var wasDetecting = barcodeView.IsDetecting;
