@@ -413,7 +413,7 @@
                                         <!-- 行7：实际值 + 两个按钮 -->
                                         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="实际值：" Style="{StaticResource FieldLabel}" />
-                                            <Entry Grid.Column="1" Placeholder="请输入" Text="{Binding inspectValue, Mode=TwoWay, Converter={StaticResource DecConv}}" Keyboard="Numeric"
+                                            <Entry Grid.Column="1" Placeholder="请输入" Text="{Binding inspectValue, Mode=TwoWay}" Keyboard="Numeric" TextChanged="OnInspectValueTextChanged"
                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
                                             <HorizontalStackLayout Grid.Column="2" Spacing="8">

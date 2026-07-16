@@ -357,7 +357,7 @@
                                 <!-- 右侧你的原 Frame 卡片，内容保持不变 -->
                                 <Frame Grid.Column="1" Style="{StaticResource Card}">
                                     <Grid
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                         ColumnDefinitions="Auto,*"
                         RowSpacing="8" ColumnSpacing="5">
 
@@ -374,8 +374,15 @@
                                             <Label Grid.Column="3" Text="{Binding inspectionMode}" Style="{StaticResource FieldValue}" />
                                         </Grid>
 
-                                        <!-- 行2：标准值、上限值、下限值 -->
+                                        <!-- 行2：规格 -->
                                         <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="规格：" Style="{StaticResource FieldLabel}" />
+                                            <Label Grid.Column="1" Text="{Binding materialSpec}" Style="{StaticResource FieldValue}" />
+                                        </Grid>
+
+                                        <!-- 行3：标准值、上限值、下限值 -->
+                                        <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="标准值：" Style="{StaticResource FieldLabel}" />
                                             <Label Grid.Column="1" Text="{Binding standardValue}" Style="{StaticResource FieldValue}" />
@@ -385,9 +392,9 @@
                                             <Label Grid.Column="5" Text="{Binding lowerLimit}" Style="{StaticResource FieldValue}" />
                                         </Grid>
 
-                                        <!-- 行3：检验结果 -->
-                                        <!-- 行3：检验结果（明细项） -->
-                                        <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行4：检验结果 -->
+                                        <!-- 行4：检验结果（明细项） -->
+                                        <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
                                                 ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="检验结果：" Style="{StaticResource FieldLabel}" />
 
@@ -417,8 +424,8 @@
                                         </Grid>
 
 
-                                        <!-- 行4：抽样数、不良数、不良率(只读) -->
-                                        <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行5：抽样数、不良数、不良率(只读) -->
+                                        <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="抽样数：" Style="{StaticResource FieldLabel}" />
                                             <Entry Grid.Column="1" Text="{Binding sampleQty, Mode=TwoWay, Converter={StaticResource DecConv}}" Keyboard="Numeric"
@@ -435,8 +442,8 @@
 
                                         </Grid>
 
-                                        <!-- 行5：检验设备 + 检验参数 -->
-                                        <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行6：检验设备 + 检验参数 -->
+                                        <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
                                             <Frame Grid.Column="1"
@@ -466,8 +473,8 @@
                                     BackgroundColor="#F3F4F6" />
                                         </Grid>
 
-                                        <!-- 行6：开始时间 + 结束时间（方案2：点击弹窗选日期+时间，可清空） -->
-                                        <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行7：开始时间 + 结束时间（方案2：点击弹窗选日期+时间，可清空） -->
+                                        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
       ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
 
                                             <Label Grid.Column="0" Text="开始时间：" Style="{StaticResource FieldLabel}" />
@@ -513,14 +520,15 @@
                                             </Frame>
                                         </Grid>
 
-                                        <!-- 行7：实际值 + 两个按钮 -->
-                                        <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行8：实际值 + 两个按钮 -->
+                                        <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="实际值：" Style="{StaticResource FieldLabel}" />
                                             <Entry Grid.Column="1"
                                    Placeholder="请输入"
-                                   Text="{Binding inspectValue, Mode=TwoWay, Converter={StaticResource DecConv}}"
+                                   Text="{Binding inspectValue, Mode=TwoWay}"
                                    Keyboard="Numeric"
+                                   TextChanged="OnInspectValueTextChanged"
                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
                                             <HorizontalStackLayout Grid.Column="2" Spacing="8">
@@ -557,8 +565,8 @@
                                             </HorizontalStackLayout>
                                         </Grid>
 
-                                        <!-- 行8：不良原因 -->
-                                        <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <!-- 行9：不良原因 -->
+                                        <Grid Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*" ColumnSpacing="10">
                                             <Label Grid.Column="0" Text="不良原因：" Style="{StaticResource FieldLabel}" />
                                             <Entry Grid.Column="1" Text="{Binding badCause, Mode=TwoWay}"
