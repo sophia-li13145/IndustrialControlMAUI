@@ -117,11 +117,7 @@ public partial class PreStartInspectionPage : ContentPage
 
     private async void OnToolScanButtonClicked(object? sender, EventArgs e)
     {
-        var code = await ScanCodeAsync();
-        if (string.IsNullOrWhiteSpace(code)) return;
-
-        ToolScanEntry.Text = code;
-        await SubmitToolScanAsync(code);
+        await OpenContinuousScanAsync(SubmitContinuousToolScanAsync);
     }
 
     private async Task SubmitToolScanAsync(string? scanText)
@@ -170,6 +166,47 @@ public partial class PreStartInspectionPage : ContentPage
         }
     }
 
+    private async Task<BarcodeScanFeedback> SubmitContinuousToolScanAsync(string scanText)
+    {
+        var code = scanText.Trim();
+        if (string.IsNullOrWhiteSpace(code)) return new BarcodeScanFeedback { Success = false };
+
+        if (!_pendingToolScanCodes.Add(code))
+            return new BarcodeScanFeedback { Success = false, Message = "正在校验该工具工装，请稍后" };
+
+        try
+        {
+            if (HasDuplicateTool(code))
+                return new BarcodeScanFeedback { Success = false, Message = "该工具工装已在列表中，请继续扫码" };
+
+            var resp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
+            {
+                workOrderNo = _detail.workOrderNo,
+                processCode = _detail.processCode,
+                resourceCode = code
+            });
+            if (!resp.success || resp.result == null)
+                return new BarcodeScanFeedback { Success = false, Message = resp.message ?? "扫描失败，请继续扫码" };
+
+            if (HasDuplicateTool(resp.result, code))
+                return new BarcodeScanFeedback { Success = false, Message = "该工具工装已在列表中，请继续扫码" };
+
+            await EnsureMaintenanceStatusDictLoadedAsync();
+            ApplyMaintenanceStatusText(resp.result);
+            _toolRows.Add(resp.result);
+            ToolScanEntry.Text = string.Empty;
+            return new BarcodeScanFeedback { Success = true, Message = "工具工装添加成功，请继续扫码" };
+        }
+        catch (Exception ex)
+        {
+            return new BarcodeScanFeedback { Success = false, Message = $"工具工装扫码异常：{ex.Message}" };
+        }
+        finally
+        {
+            _pendingToolScanCodes.Remove(code);
+        }
+    }
+
     private async void OnMaterialScanClicked(object? sender, EventArgs e)
     {
         await SubmitMaterialScanAsync(MaterialScanEntry.Text);
@@ -177,11 +214,7 @@ public partial class PreStartInspectionPage : ContentPage
 
     private async void OnMaterialScanButtonClicked(object? sender, EventArgs e)
     {
-        var code = await ScanCodeAsync();
-        if (string.IsNullOrWhiteSpace(code)) return;
-
-        MaterialScanEntry.Text = code;
-        await SubmitMaterialScanAsync(code);
+        await OpenContinuousScanAsync(SubmitContinuousMaterialScanAsync);
     }
 
     private async Task SubmitMaterialScanAsync(string? scanText)
@@ -212,6 +245,13 @@ public partial class PreStartInspectionPage : ContentPage
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(resp.result.materialCode))
+            {
+                await Shell.Current.DisplayAlert("提示", "物料编码为空，不能加入列表", "确定");
+                MaterialScanEntry.Text = string.Empty;
+                return;
+            }
+
             if (HasDuplicateMaterial(resp.result, code))
             {
                 await Shell.Current.DisplayAlert("提示", "该物料已在列表中，请勿重复添加", "确定");
@@ -221,6 +261,48 @@ public partial class PreStartInspectionPage : ContentPage
 
             _materialRows.Add(resp.result);
             MaterialScanEntry.Text = string.Empty;
+        }
+        finally
+        {
+            _pendingMaterialScanCodes.Remove(code);
+        }
+    }
+
+    private async Task<BarcodeScanFeedback> SubmitContinuousMaterialScanAsync(string scanText)
+    {
+        var code = scanText.Trim();
+        if (string.IsNullOrWhiteSpace(code)) return new BarcodeScanFeedback { Success = false };
+
+        if (!_pendingMaterialScanCodes.Add(code))
+            return new BarcodeScanFeedback { Success = false, Message = "正在校验该物料，请稍后" };
+
+        try
+        {
+            if (HasDuplicateMaterial(code))
+                return new BarcodeScanFeedback { Success = false, Message = "该物料已在列表中，请继续扫码" };
+
+            var resp = await _api.QueryPreStartInspectionMaterialAsync(new PmsPreStartInspectionQueryMaterialParam
+            {
+                workOrderNo = _detail.workOrderNo,
+                processCode = _detail.processCode,
+                materialCode = code
+            });
+            if (!resp.success || resp.result == null)
+                return new BarcodeScanFeedback { Success = false, Message = resp.message ?? "扫描失败，请继续扫码" };
+
+            if (string.IsNullOrWhiteSpace(resp.result.materialCode))
+                return new BarcodeScanFeedback { Success = false, Message = "物料编码为空，不能加入列表" };
+
+            if (HasDuplicateMaterial(resp.result, code))
+                return new BarcodeScanFeedback { Success = false, Message = "该物料已在列表中，请继续扫码" };
+
+            _materialRows.Add(resp.result);
+            MaterialScanEntry.Text = string.Empty;
+            return new BarcodeScanFeedback { Success = true, Message = "物料添加成功，请继续扫码" };
+        }
+        catch (Exception ex)
+        {
+            return new BarcodeScanFeedback { Success = false, Message = $"物料扫码异常：{ex.Message}" };
         }
         finally
         {
@@ -241,18 +323,12 @@ public partial class PreStartInspectionPage : ContentPage
 
     private static bool IsSameTool(PreStartInspectionScanResourceDto row, string scanCode)
     {
-        return HasSameValue(scanCode, row.resourceCode)
-            || HasSameValue(scanCode, row.model)
-            || HasSameValue(scanCode, row.resourceDemandId);
+        return HasSameValue(scanCode, row.resourceName);
     }
 
     private static bool IsSameTool(PreStartInspectionScanResourceDto row, PreStartInspectionScanResourceDto candidate)
     {
-        return HasSameValue(row.resourceCode, candidate.resourceCode)
-            || HasSameValue(row.resourceDemandId, candidate.resourceDemandId)
-            || (HasSameValue(row.model, candidate.model)
-                && HasSameValue(row.resourceName, candidate.resourceName)
-                && HasSameValue(row.resourceType, candidate.resourceType));
+        return HasSameValue(row.resourceName, candidate.resourceName);
     }
 
     private bool HasDuplicateMaterial(string scanCode)
@@ -267,14 +343,12 @@ public partial class PreStartInspectionPage : ContentPage
 
     private static bool IsSameMaterial(PreStartInspectionScanMaterialDto row, string scanCode)
     {
-        return HasSameValue(scanCode, row.materialCode)
-            || HasSameValue(scanCode, row.matReqNo);
+        return HasSameValue(scanCode, row.materialCode);
     }
 
     private static bool IsSameMaterial(PreStartInspectionScanMaterialDto row, PreStartInspectionScanMaterialDto candidate)
     {
-        return HasSameValue(row.materialCode, candidate.materialCode)
-            || HasSameValue(row.matReqNo, candidate.matReqNo);
+        return HasSameValue(row.materialCode, candidate.materialCode);
     }
 
     private static bool HasSameValue(string? left, string? right)
@@ -284,7 +358,7 @@ public partial class PreStartInspectionPage : ContentPage
             && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
-    private static async Task<string?> ScanCodeAsync()
+    private static async Task OpenContinuousScanAsync(Func<string, Task<BarcodeScanFeedback>> scanHandler)
     {
         var navigation = Shell.Current?.Navigation ?? Application.Current?.MainPage?.Navigation;
         if (navigation == null)
@@ -295,12 +369,10 @@ public partial class PreStartInspectionPage : ContentPage
                 await page.DisplayAlert("提示", "无法打开扫码页面", "确定");
             }
 
-            return null;
+            return;
         }
 
-        var tcs = new TaskCompletionSource<string>();
-        await navigation.PushAsync(new QrScanPage(tcs));
-        return await tcs.Task;
+        await navigation.PushAsync(new ContinuousBarcodeScanPage(scanHandler));
     }
 
     private void OnToggleToolSectionTapped(object? sender, TappedEventArgs e)
