@@ -573,8 +573,8 @@
                                    IsEnabled="{Binding Source={x:Reference Name=ThisPage}, Path=BindingContext.IsEditing}" />
                                         </Grid>
 
-                                        <!-- 行9：缺陷 + 新增 -->
-                                        <Grid Grid.Row="9" Grid.Column="0" ColumnDefinitions="Auto,*" ColumnSpacing="0" Margin="0,0,0,0">
+                                        <!-- 行10：缺陷 + 新增 -->
+                                        <Grid Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,0,0,0">
                                             <Label Text="缺陷：" Grid.Column="0" VerticalTextAlignment="Center" />
 
                                             <!-- 标签区：只读显示已选缺陷 -->
