@@ -121,4 +121,12 @@ public partial class FinishedQualityDetailPage : ContentPage
         }
     }
 
+    private void OnInspectValueTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (sender is Entry entry)
+        {
+            QualityDecimalInputHelper.RejectIfTooManyDecimalPlaces(entry, e);
+        }
+    }
+
 }

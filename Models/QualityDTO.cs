@@ -281,6 +281,8 @@ public partial class QualityItem : ObservableObject
     public string? standardValue { get; set; }
     public string? upperLimit { get; set; }
     public string? lowerLimit { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? materialSpec { get; set; }
     public string? badCause { get; set; }
     public string? defect { get; set; }
     public List<QualityAttachment>? qualityItemAttachmentList { get; set; } = new();

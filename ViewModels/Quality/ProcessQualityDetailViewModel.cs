@@ -465,6 +465,7 @@ namespace IndustrialControlMAUI.ViewModels
                     foreach (var it in Detail.orderQualityDetailList ?? new())
                     {
                         it.index = i++;
+                        it.materialSpec = Detail.orderQualityMaterial?.spec;
                         Items.Add(it);
                         AddReferenceAttachments(it);
                     }
