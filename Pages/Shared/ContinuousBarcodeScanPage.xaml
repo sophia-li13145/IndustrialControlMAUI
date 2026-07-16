@@ -38,39 +38,27 @@
                Completed="HardwareScanEntry_Completed" />
 
         <Grid Grid.Row="2"
-              ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+              ColumnDefinitions="Auto,Auto,*"
               Padding="20"
+              ColumnSpacing="16"
               BackgroundColor="#222">
-            <Button Text="相册识别"
-                    Grid.Column="0"
-                    Clicked="PickFromGalleryButton_Clicked" />
-
             <Button Text="🔄"
-                    Grid.Column="1"
+                    Grid.Column="0"
                     BackgroundColor="#444"
                     BorderColor="Black"
                     Clicked="SwitchCameraButton_Clicked" />
 
-            <zxing:BarcodeGeneratorView
-                x:Name="barcodeGenerator"
-                Grid.Column="2"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                HeightRequest="100"
-                WidthRequest="100"
-                ForegroundColor="DarkBlue"
-                Format="QrCode"
-                Value="Sample"
-                BarcodeMargin="1" />
-
             <Button Text="💡"
-                    Grid.Column="3"
+                    Grid.Column="1"
                     BackgroundColor="#444"
                     BorderColor="Black"
                     Clicked="TorchButton_Clicked" />
 
             <Button Text="完成扫码"
-                    Grid.Column="4"
+                    Grid.Column="2"
+                    FontSize="18"
+                    HeightRequest="56"
+                    HorizontalOptions="Fill"
                     Clicked="DoneButton_Clicked" />
         </Grid>
     </Grid>
