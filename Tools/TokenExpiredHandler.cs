@@ -22,7 +22,7 @@ namespace IndustrialControlMAUI.Tools
             var resp = await base.SendAsync(request, ct);
 
             // ① HTTP 层判断
-            if (resp.StatusCode == HttpStatusCode.Unauthorized || resp.StatusCode == HttpStatusCode.Forbidden)
+            if (resp.StatusCode == HttpStatusCode.Unauthorized)
             {
                 _ = _auth.LogoutAsync($"登录状态失效（HTTP {(int)resp.StatusCode}）");
                 return resp;
@@ -44,8 +44,7 @@ namespace IndustrialControlMAUI.Tools
                         if (api is not null)
                         {
                             var code = api.code?.ToString()?.ToUpperInvariant();
-                            if (code is "4001" or "401" or "40101" or "40301" or "TOKEN_EXPIRED" or "NO_AUTH"
-                                || (code?.StartsWith("401") ?? false) || (code?.Contains("EXPIRE") ?? false))
+                            if (code is "401" or "40101" or "TOKEN_EXPIRED" or "TOKEN_INVALID" or "LOGIN_EXPIRED")
                             {
                                 _ = _auth.LogoutAsync(api?.message ?? "登录状态已过期");
                             }

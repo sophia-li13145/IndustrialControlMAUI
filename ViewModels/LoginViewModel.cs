@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.Tools;
+using IndustrialControlMAUI.Services.Permissions;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -14,6 +15,8 @@ public partial class LoginViewModel : ObservableObject
 {
     private readonly IConfigLoader _cfg;
     private readonly IAppVersionService _appVersionService;
+    private readonly IPdaPermissionApi _permissionApi;
+    private readonly PdaPermissionState _permissionState;
 
     [ObservableProperty] private string userName = string.Empty;
     [ObservableProperty] private string password = string.Empty;
@@ -25,10 +28,13 @@ public partial class LoginViewModel : ObservableObject
     private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
     /// <summary>执行 LoginViewModel 初始化逻辑。</summary>
-    public LoginViewModel(IConfigLoader cfg, IAppVersionService appVersionService)
+    public LoginViewModel(IConfigLoader cfg, IAppVersionService appVersionService,
+        IPdaPermissionApi permissionApi, PdaPermissionState permissionState)
     {
         _cfg = cfg;
         _appVersionService = appVersionService;
+        _permissionApi = permissionApi;
+        _permissionState = permissionState;
 
         // 启动时加载保存的账号
         UserName = Preferences.Get("UserName", string.Empty);
@@ -104,6 +110,19 @@ public partial class LoginViewModel : ObservableObject
                 Preferences.Set("RememberPassword", false);
             }
 
+            try
+            {
+                var permissions = await _permissionApi.GetCurrentUserPermissionsAsync("PDA");
+                _permissionState.Replace(permissions);
+            }
+            catch
+            {
+                await TokenStorage.ClearAsync();
+                _permissionState.Clear();
+                await Application.Current.MainPage.DisplayAlert(
+                    "登录失败", "登录成功，但获取当前账号菜单权限失败，请重新登录。", "确定");
+                return;
+            }
             App.SwitchToLoggedInShell();
         }
         catch (OperationCanceledException)

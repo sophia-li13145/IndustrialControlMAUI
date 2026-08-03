@@ -4,6 +4,7 @@ using IndustrialControlMAUI.Pages;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.Tools;
 using IndustrialControlMAUI.ViewModels;
+using IndustrialControlMAUI.Services.Permissions;
 using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -43,6 +44,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddSingleton<LogService>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<AuthState>();
+            builder.Services.AddSingleton<PdaPermissionState>();
             builder.Services.AddTransient<TokenExpiredHandler>();
 
             // 扫码服务
@@ -253,6 +255,10 @@ namespace IndustrialControlMAUI
             builder.Services.AddHttpClient<IScheduleApi, ScheduleApi>(ConfigureBaseAddress)
           .AddHttpMessageHandler<AuthHeaderHandler>()
           .AddHttpMessageHandler<TokenExpiredHandler>();
+
+            builder.Services.AddHttpClient<IPdaPermissionApi, PdaPermissionApi>(ConfigureBaseAddress)
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .AddHttpMessageHandler<TokenExpiredHandler>();
 
             var app = builder.Build();
             App.Services = app.Services;

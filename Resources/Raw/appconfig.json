@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "V1.4_202604.8",
+  "schemaVersion": "V1.4_202608.1",
   "server": {
     "scheme": "http",
     "ipAddress": "221.216.53.191:9128"
@@ -11,7 +11,11 @@
   "apiEndpoints": {
     "login": "/pda/auth/login",
     "common": {
+      "getUserMenuPermission": "/pda/common/getUserMenuPermission",
       "hasMenuPermission": "/pda/common/hasMenuPermission"
+    },
+    "permission": {
+      "systemType": "PDA"
     },
     "inbound": {
       "list": "/pda/wmsMaterialInstock/getInStock",

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using System.Threading;
+using IndustrialControlMAUI.Services.Permissions;
 
 namespace IndustrialControlMAUI.Tools
 {
@@ -7,6 +8,9 @@ namespace IndustrialControlMAUI.Tools
     {
         private readonly SemaphoreSlim _once = new(1, 1);
         private int _loggingOut = 0;
+        private readonly PdaPermissionState _permissionState;
+
+        public AuthState(PdaPermissionState permissionState) => _permissionState = permissionState;
 
         public async Task LogoutAsync(string reason = "登录状态已过期，请重新登录")
         {
@@ -16,9 +20,7 @@ namespace IndustrialControlMAUI.Tools
             {
                 // 1) 清理登录态
                 await TokenStorage.ClearAsync();
-                Preferences.Remove("UserName");
-                Preferences.Remove("Password");
-                Preferences.Set("RememberPassword", false);
+                _permissionState.Clear();
 
                 // 2)（可选）全局通知：用于各页面收起弹窗/停止轮询
                 WeakReferenceMessenger.Default.Send(new LoggedOutMessage(reason));

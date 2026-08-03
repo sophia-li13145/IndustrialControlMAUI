@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui.Views;
 using IndustrialControlMAUI.Models;
 using IndustrialControlMAUI.ViewModels;
+using IndustrialControlMAUI.Tools;
+using IndustrialControlMAUI.Services.Permissions;
 using Microsoft.Maui.Controls;
 
 namespace IndustrialControlMAUI.Pages
@@ -8,7 +10,72 @@ namespace IndustrialControlMAUI.Pages
     public partial class HomePage : ContentPage
     {
         /// <summary>执行 HomePage 初始化逻辑。</summary>
-        public HomePage() => InitializeComponent();
+        private readonly AuthState _authState;
+        private readonly HomeViewModel _viewModel;
+        private readonly PdaPermissionState _permissionState;
+        public HomePage(AuthState authState, HomeViewModel viewModel, PdaPermissionState permissionState)
+        {
+            InitializeComponent();
+            _authState = authState;
+            _viewModel = viewModel;
+            _permissionState = permissionState;
+            BindingContext = viewModel;
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            _viewModel.ApplyPermissions();
+            ApplyCardPermissions();
+        }
+
+        private void ApplyCardPermissions()
+        {
+            var codes = new[]
+            {
+                "pda_duty", "pda_handover",
+                "pda_material_instock", "pda_wms_produce_instock", "pda_wms_material_outstock", "pda_wms_product_receive",
+                "pda_wms_mold_outstock", "pda_wms_mold_instock", "pda_wms_inventory_query", "pda_wms_inventory_check",
+                "pda_mfs_query", "pda_mfs_pack", "pda_mfs_unpack", "pda_mfs_merge", "pda_mfs_transfer", "pda_mfs_empty",
+                "pda_pms_workorder_query", "pda_pms_process_execute", "pda_pms_device_bindscan", "pda_pms_device_mold_install", "pda_pms_line_stop_record",
+                "pda_qs_inspect_query", "pda_qs_iqc_execute", "pda_qs_ipqc_execute", "pda_qs_fqc_execute", "pda_qs_oqc_execute", "pda_qs_other_execute",
+                "pda_dev_checkpoint_query", "pda_dev_checkpoint_execute", "pda_dev_maintenance_query", "pda_dev_maintenance_execute",
+                "pda_dev_repair_query", "pda_dev_repair_execute", "pda_dev_exception_report", "pda_em_manual_meter"
+            };
+
+            var cards = Descendants(this).OfType<Frame>().ToList();
+            for (var i = 0; i < cards.Count && i < codes.Length; i++)
+                cards[i].IsVisible = _permissionState.Has(codes[i]);
+
+            var groups = Descendants(this).OfType<Grid>()
+                .Where(x => x.Children.OfType<Frame>().Any()).ToList();
+            foreach (var group in groups)
+                group.IsVisible = group.Children.OfType<Frame>().Any(x => x.IsVisible);
+
+            var sectionCodes = new[]
+            {
+                new[] { "pda_duty", "pda_handover" },
+                new[] { "pda_material_instock", "pda_wms_produce_instock", "pda_wms_material_outstock", "pda_wms_product_receive", "pda_wms_mold_outstock", "pda_wms_mold_instock", "pda_wms_inventory_query", "pda_wms_inventory_check" },
+                new[] { "pda_mfs_query", "pda_mfs_pack", "pda_mfs_unpack", "pda_mfs_merge", "pda_mfs_transfer", "pda_mfs_empty" },
+                new[] { "pda_pms_workorder_query", "pda_pms_process_execute", "pda_pms_device_bindscan", "pda_pms_device_mold_install", "pda_pms_line_stop_record" },
+                new[] { "pda_qs_inspect_query", "pda_qs_iqc_execute", "pda_qs_ipqc_execute", "pda_qs_fqc_execute", "pda_qs_oqc_execute", "pda_qs_other_execute" },
+                new[] { "pda_dev_checkpoint_query", "pda_dev_checkpoint_execute", "pda_dev_maintenance_query", "pda_dev_maintenance_execute", "pda_dev_repair_query", "pda_dev_repair_execute", "pda_dev_exception_report" },
+                new[] { "pda_em_manual_meter" }
+            };
+            var headings = Descendants(this).OfType<Label>()
+                .Where(x => x.Style == (Style)Resources["SectionTitle"]).ToList();
+            for (var i = 0; i < headings.Count && i < sectionCodes.Length; i++)
+                headings[i].IsVisible = sectionCodes[i].Any(_permissionState.Has);
+        }
+
+        private static IEnumerable<VisualElement> Descendants(VisualElement root)
+        {
+            foreach (var child in root.LogicalChildren.OfType<VisualElement>())
+            {
+                yield return child;
+                foreach (var descendant in Descendants(child)) yield return descendant;
+            }
+        }
 
         // —— 最近使用 / 生产作业 示例 —— 
         async void GotoTaskExecute(object? s, TappedEventArgs e)
@@ -134,14 +201,7 @@ namespace IndustrialControlMAUI.Pages
         /// <summary>执行 OnLogoutClicked 逻辑。</summary>
         private async void OnLogoutClicked(object? sender, EventArgs e)
         {
-            await TokenStorage.ClearAsync();   // 清除 token
-            ApiClient.SetBearer(null);         // 清空请求头
-
-            // 切换到未登录的 Shell：显示 登录｜日志｜管理员
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                App.SwitchToLoggedOutShell();
-            });
+            await _authState.LogoutAsync("您已退出登录");
         }
     }
 }

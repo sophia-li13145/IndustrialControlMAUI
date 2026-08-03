@@ -1,4 +1,5 @@
 using IndustrialControlMAUI.Services;
+using IndustrialControlMAUI.Services.Permissions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Serilog;
@@ -11,16 +12,21 @@ public partial class App : Application
     private readonly IConfigLoader _configLoader;
     private readonly AppShell _shell;
     private readonly IAppVersionService _appVersionService;
+    private readonly IPdaPermissionApi _permissionApi;
+    private readonly PdaPermissionState _permissionState;
 
     public static IServiceProvider? Services { get; set; }
 
-    public App(IConfigLoader configLoader, AppShell shell, IAppVersionService appVersionService)
+    public App(IConfigLoader configLoader, AppShell shell, IAppVersionService appVersionService,
+        IPdaPermissionApi permissionApi, PdaPermissionState permissionState)
     {
         InitializeComponent();
 
         _configLoader = configLoader;
         _shell = shell;
         _appVersionService = appVersionService;
+        _permissionApi = permissionApi;
+        _permissionState = permissionState;
 
         // ===== ʼ Serilogƽ̨ȫ·=====
         InitSerilog();
@@ -81,13 +87,33 @@ public partial class App : Application
 
     private async Task InitAsync()
     {
-        var token = await TokenStorage.LoadAsync();
-        bool authed = !string.IsNullOrWhiteSpace(token);
-
         await _appVersionService.HandleStartupUpdateAsync();
-        
+        var token = await TokenStorage.LoadAsync();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            _permissionState.Clear();
+            _shell.ApplyAuth(false);
+            return;
+        }
 
-        _shell.ApplyAuth(authed);
+        try
+        {
+            var permissions = await _permissionApi.GetCurrentUserPermissionsAsync("PDA");
+            _permissionState.Replace(permissions);
+            _shell.ApplyAuth(true);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            await TokenStorage.ClearAsync();
+            _permissionState.Clear();
+            _shell.ApplyAuth(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "启动时获取菜单权限失败");
+            _permissionState.Clear();
+            _shell.ApplyAuth(false);
+        }
     }
 
     public static void SwitchToLoggedInShell()

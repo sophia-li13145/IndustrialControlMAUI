@@ -50,14 +50,14 @@
 
 
             <!-- 排班管理 -->
-            <Label Text="排班管理" Style="{StaticResource SectionTitle}"/>
+            <Label Text="排班管理" Style="{StaticResource SectionTitle}" IsVisible="{Binding ShowScheduleSection}"/>
 
             <Grid ColumnDefinitions="*,*"
                   RowDefinitions="Auto"
-                  Padding="8,0,8,24">
+                  Padding="8,0,8,24" IsVisible="{Binding ShowScheduleSection}">
 
                 <!-- 值班表 -->
-                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" IsVisible="{Binding CanDutyRoster}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#4F7CFF"
@@ -76,7 +76,7 @@
                 </Frame>
 
                 <!-- 交接班 -->
-                <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" IsVisible="{Binding CanShiftHandover}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#4CAF50"
@@ -97,14 +97,14 @@
             </Grid>
 
             <!-- 仓储作业 -->
-            <Label Text="仓储作业" Style="{StaticResource SectionTitle}"/>
+            <Label Text="仓储作业" Style="{StaticResource SectionTitle}" IsVisible="{Binding ShowWarehouseSection}"/>
 
             <Grid ColumnDefinitions="*,*"
                   RowDefinitions="Auto,Auto,Auto,Auto"
-                  Padding="8,0,8,24">
+                  Padding="8,0,8,24" IsVisible="{Binding ShowWarehouseSection}">
 
                 <!-- 物料入库 -->
-                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" IsVisible="{Binding CanMaterialInbound}">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Border HeightRequest="64" WidthRequest="64"
                                 BackgroundColor="#00ACC1"
