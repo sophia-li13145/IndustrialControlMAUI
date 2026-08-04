@@ -43,6 +43,8 @@ namespace IndustrialControlMAUI.Pages
                 "pda_dev_repair_query", "pda_dev_repair_execute", "pda_dev_exception_report", "pda_em_manual_meter"
             };
 
+            NoPermissionView.IsVisible = !codes.Any(_permissionState.Has);
+
             var cards = Descendants(this).OfType<Frame>().ToList();
             for (var i = 0; i < cards.Count && i < codes.Length; i++)
                 cards[i].IsVisible = _permissionState.Has(codes[i]);
@@ -50,7 +52,18 @@ namespace IndustrialControlMAUI.Pages
             var groups = Descendants(this).OfType<Grid>()
                 .Where(x => x.Children.OfType<Frame>().Any()).ToList();
             foreach (var group in groups)
-                group.IsVisible = group.Children.OfType<Frame>().Any(x => x.IsVisible);
+            {
+                var visibleCards = group.Children.OfType<Frame>()
+                    .Where(x => x.IsVisible)
+                    .ToList();
+
+                group.IsVisible = visibleCards.Count > 0;
+                for (var i = 0; i < visibleCards.Count; i++)
+                {
+                    Grid.SetRow(visibleCards[i], i / 2);
+                    Grid.SetColumn(visibleCards[i], i % 2);
+                }
+            }
 
             var sectionCodes = new[]
             {
