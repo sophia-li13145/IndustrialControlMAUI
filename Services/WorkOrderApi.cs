@@ -46,6 +46,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _frameOutputQtyEndpoint;
         private readonly string _scanOutputFrameEndpoint;
         private readonly string _validateBarcodeScanEndpoint;
+        private readonly string _productQuantityEndpoint;
         private readonly string _scanStockCheckFrameEndpoint;
         private readonly string _listFrameLoadByBatchNoEndpoint;
         private readonly string _deleteWorkProcessTaskMaterialInputEndpoint;
@@ -159,6 +160,8 @@ namespace IndustrialControlMAUI.Services
                     configLoader.GetApiPath("workOrder.scanOutputFrame", "/pda/outputFrameRecord/scanOutputFrame"), servicePath);
             _validateBarcodeScanEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("workOrder.validateBarcodeScan", "/pda/pmsWorkOrder/validateBarcodeScan"), servicePath);
+            _productQuantityEndpoint = ServiceUrlHelper.NormalizeRelative(
+                    configLoader.GetApiPath("workOrder.productQuantity", "/pda/pmsWorkProcessTaskReport/getProductQuantity"), servicePath);
             _scanStockCheckFrameEndpoint = ServiceUrlHelper.NormalizeRelative(
                     configLoader.GetApiPath("stockCheck.scanFrameInfo", "/pda/wmsInstockCheck/scanFrameInfo"), servicePath);
             _listFrameLoadByBatchNoEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -984,6 +987,34 @@ namespace IndustrialControlMAUI.Services
                 return new ApiResp<ValidateBarcodeScanResp> { success = false, message = $"HTTP {(int)res.StatusCode}" };
             return JsonSerializer.Deserialize<ApiResp<ValidateBarcodeScanResp>>(json, _json)
                 ?? new ApiResp<ValidateBarcodeScanResp> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<ProductQuantityResult>> GetProductQuantityAsync(
+            string processCode,
+            string routeCode,
+            string workOrderNo,
+            CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _productQuantityEndpoint);
+            var query = BuildQuery(new Dictionary<string, string?>
+            {
+                ["processCode"] = processCode,
+                ["routeCode"] = routeCode,
+                ["workOrderNo"] = workOrderNo
+            });
+            var url = $"{full}?{query}";
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<ProductQuantityResult> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            var response = JsonSerializer.Deserialize<ApiResp<ProductQuantityResult>>(json, _json)
+                ?? new ApiResp<ProductQuantityResult> { success = false, message = "empty response" };
+            // 该接口文档以 code=0 表示外层调用成功，业务成功标识位于 result.success。
+            if (!response.success && response.code == 0)
+                response.success = true;
+            return response;
         }
 
         public async Task<ApiResp<ScanOutputFrameResp>> ScanOutputFrameAsync(string frameNo, string materialCode, CancellationToken ct = default)

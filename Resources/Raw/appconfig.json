@@ -60,6 +60,7 @@
       "addMaterial": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialInput",
       "addOutput": "/pda/pmsWorkOrder/addWorkProcessTaskMaterialOutput",
       "validateBarcodeScan": "/pda/pmsWorkOrder/validateBarcodeScan",
+      "productQuantity": "/pda/pmsWorkProcessTaskReport/getProductQuantity",
       "specialSwitch": "/pda/pmsWorkProcessTaskReport/getSpecialSwitch",
       "computeReportQuantityBySpotWeldRatio": "/pda/pmsWorkProcessTaskReport/computeReportQuantityBySpotWeldRatio",
       "autMaterialList": "/pda/pmsWorkOrder/pageWorkProcessTaskMaterialInputs",

@@ -284,6 +284,54 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         [RelayCommand]
+        private async Task GetProductQuantityAsync()
+        {
+            // 连续扫码一旦写入数量，数量和获取按钮都必须保持锁定。
+            if (!IsQuantityEnabled || ScannedBarcodes.Count > 0) return;
+
+            if (_detail is null)
+            {
+                await Application.Current.MainPage.DisplayAlert("提示", "工序任务详情未加载，无法获取产出数量。", "好的");
+                return;
+            }
+
+            if (_api is null)
+            {
+                await Application.Current.MainPage.DisplayAlert("失败", "产出数量服务未初始化。", "OK");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_detail.processCode)
+                || string.IsNullOrWhiteSpace(_detail.routeCode)
+                || string.IsNullOrWhiteSpace(_detail.workOrderNo))
+            {
+                await Application.Current.MainPage.DisplayAlert("提示", "工序编码、工艺路线编码或工单号为空，无法获取产出数量。", "好的");
+                return;
+            }
+
+            try
+            {
+                var resp = await _api.GetProductQuantityAsync(
+                    _detail.processCode,
+                    _detail.routeCode,
+                    _detail.workOrderNo);
+
+                if (!resp.success || resp.result is null || !resp.result.success)
+                {
+                    await Application.Current.MainPage.DisplayAlert("提示", resp.message ?? "获取产出数量失败。", "好的");
+                    return;
+                }
+
+                QuantityText = resp.result.productQuantity.ToString();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                await Application.Current.MainPage.DisplayAlert("失败", $"获取产出数量异常：{ex.Message}", "OK");
+            }
+        }
+
+        [RelayCommand]
         private void DeleteScannedBarcode(BarcodeScanDisplayItem? item)
         {
             if (item?.Record is null) return;
