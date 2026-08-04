@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:behaviors="clr-namespace:IndustrialControlMAUI.Behaviors"
              x:Class="IndustrialControlMAUI.Pages.LineDowntimeSearchPage"
              BackgroundColor="#F5F6FA"
              Shell.NavBarIsVisible="True"
@@ -36,6 +37,9 @@
                 <CollectionView.EmptyView>
                     <Grid Padding="20"><Label Text="-- 没有更多记录了 --" TextColor="#9AA6B2" HorizontalOptions="Center" /></Grid>
                 </CollectionView.EmptyView>
+                <CollectionView.Behaviors>
+                    <behaviors:ScrollToTopOnRefreshBehavior />
+                </CollectionView.Behaviors>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Frame Margin="12,6" Padding="0" CornerRadius="12" HasShadow="False" BorderColor="#EEF0F4" BackgroundColor="White">
