@@ -3,6 +3,7 @@
     x:Class="IndustrialControlMAUI.Pages.StockCheckSearchPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:behaviors="clr-namespace:IndustrialControlMAUI.Behaviors"
     x:Name="Page"
     Shell.NavBarIsVisible="True"
     Title="库存盘点">
@@ -52,6 +53,9 @@
     ItemsSource="{Binding Orders}"
     RemainingItemsThreshold="2"
     RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                <CollectionView.Behaviors>
+                    <behaviors:ScrollToTopOnRefreshBehavior />
+                </CollectionView.Behaviors>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Frame Padding="10"
