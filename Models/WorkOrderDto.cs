@@ -379,6 +379,7 @@ public class TaskMaterialInput
     public string? id { get; set; }
     public string? materialClassName { get; set; }
     public string? materialName { get; set; }
+    public string? spec { get; set; }
     public string? materialCode { get; set; }
     public string? materialTypeName { get; set; }
     
