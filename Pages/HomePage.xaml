@@ -48,6 +48,38 @@
             Clicked="OnLogoutClicked"/>
             </Grid>
 
+            <!-- 当前账号没有任何首页菜单权限时，避免显示无说明的空白区域。 -->
+            <VerticalStackLayout x:Name="NoPermissionView"
+                                 IsVisible="False"
+                                 Margin="32,112,32,40"
+                                 Spacing="12"
+                                 HorizontalOptions="Center">
+                <Border HeightRequest="88"
+                        WidthRequest="88"
+                        Padding="22"
+                        BackgroundColor="#EAF4FF"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 44"
+                        HorizontalOptions="Center">
+                    <Image Source="permission_lock.svg"
+                           HeightRequest="44"
+                           WidthRequest="44"
+                           SemanticProperties.Description="无权限" />
+                </Border>
+                <Label Text="暂无可用权限"
+                       Margin="0,8,0,0"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="#263648"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="当前用户没有任何页面权限，请联系管理员添加权限。"
+                       MaximumWidthRequest="300"
+                       FontSize="14"
+                       LineHeight="1.45"
+                       TextColor="#7A8797"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
 
             <!-- 排班管理 -->
             <Label Text="排班管理" Style="{StaticResource SectionTitle}" IsVisible="{Binding ShowScheduleSection}"/>
