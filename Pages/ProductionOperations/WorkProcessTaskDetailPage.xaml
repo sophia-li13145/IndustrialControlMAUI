@@ -397,59 +397,64 @@
                 <Label Text="配料明细" FontAttributes="Bold" Margin="0,8,0,4"
        IsVisible="{Binding IsInputVisible}" />
 
-                <!-- 表头 -->
-                <Grid ColumnDefinitions="30,60,30,60,60,30"
-                  BackgroundColor="#F0F0F0"
-                  Padding="4"
-                  RowSpacing="1"
-                  ColumnSpacing="1"
-                  IsVisible="{Binding IsInputVisible}">
-                    <Label Text="序号" FontAttributes="Bold" />
-                    <Label Text="物料名称" Grid.Column="1" FontAttributes="Bold" />
-                    <Label Text="单位" Grid.Column="2" FontAttributes="Bold" />
-                    <Label Text="应投数量" Grid.Column="3" FontAttributes="Bold" />
-                    <Label Text="已投数量" Grid.Column="4" FontAttributes="Bold" />
-                    <Label Text="已投次数" Grid.Column="5" FontAttributes="Bold" />
-                </Grid>
+                <!-- 配料明细列较多，超出屏幕时可横向滑动查看。 -->
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Default"
+                            IsVisible="{Binding IsInputVisible}">
+                    <VerticalStackLayout WidthRequest="544" Spacing="0">
+                        <!-- 表头 -->
+                        <Grid ColumnDefinitions="30,100,180,40,65,65,50"
+                              BackgroundColor="#F0F0F0"
+                              Padding="4"
+                              RowSpacing="1"
+                              ColumnSpacing="1">
+                            <Label Text="序号" FontAttributes="Bold" />
+                            <Label Text="物料名称" Grid.Column="1" FontAttributes="Bold" />
+                            <Label Text="规格" Grid.Column="2" FontAttributes="Bold" />
+                            <Label Text="单位" Grid.Column="3" FontAttributes="Bold" />
+                            <Label Text="应投数量" Grid.Column="4" FontAttributes="Bold" />
+                            <Label Text="已投数量" Grid.Column="5" FontAttributes="Bold" />
+                            <Label Text="已投次数" Grid.Column="6" FontAttributes="Bold" />
+                        </Grid>
 
-                <!-- 数据行 -->
-                <CollectionView 
+                        <!-- 数据行 -->
+                        <CollectionView
                                 x:Name="MaterialInputView"
                                 ItemsSource="{Binding Detail.materialInputList}" 
                                 SelectionMode="Single"
-                                 SelectionChangedCommand="{Binding MaterialItemSelectedCommand}"
-    SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference MaterialInputView}}"
-                                IsVisible="{Binding IsInputVisible}"
-                                >
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid ColumnDefinitions="30,60,30,60,60,30"
-                              Padding="4"
-                              RowSpacing="1"
-                              ColumnSpacing="1"
-                              BackgroundColor="White">
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup Name="CommonStates">
-                                        <VisualState Name="Normal" />
-                                        <VisualState Name="Selected">
-                                            <VisualState.Setters>
-                                                <Setter Property="BackgroundColor" Value="#FFF6E5" />
-                                                <!-- 淡橙色高亮 -->
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                                <Label Text="{Binding ., Converter={StaticResource IndexConverter}, ConverterParameter={x:Reference MaterialInputView}}" />
-                                <Label Grid.Column="1" Text="{Binding materialName}" />
-                                <Label Grid.Column="2" Text="{Binding unit}" />
-                                <Label Grid.Column="3" Text="{Binding qty, StringFormat='{0:G29}'}" />
-                                <Label Grid.Column="4" Text="{Binding hasInputQty, StringFormat='{0:G29}'}" />
-                                <Label Grid.Column="5" Text="{Binding hasInputCount}" />
-                                
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                                SelectionChangedCommand="{Binding MaterialItemSelectedCommand}"
+                                SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference MaterialInputView}}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="30,100,180,40,65,65,50"
+                                          Padding="4"
+                                          RowSpacing="1"
+                                          ColumnSpacing="1"
+                                          BackgroundColor="White">
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup Name="CommonStates">
+                                                <VisualState Name="Normal" />
+                                                <VisualState Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="#FFF6E5" />
+                                                        <!-- 淡橙色高亮 -->
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                        <Label Text="{Binding ., Converter={StaticResource IndexConverter}, ConverterParameter={x:Reference MaterialInputView}}" />
+                                        <Label Grid.Column="1" Text="{Binding materialName}" />
+                                        <Label Grid.Column="2" Text="{Binding spec}" />
+                                        <Label Grid.Column="3" Text="{Binding unit}" />
+                                        <Label Grid.Column="4" Text="{Binding qty, StringFormat='{0:G29}'}" />
+                                        <Label Grid.Column="5" Text="{Binding hasInputQty, StringFormat='{0:G29}'}" />
+                                        <Label Grid.Column="6" Text="{Binding hasInputCount}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </ScrollView>
                 <!-- ② 新增投料按钮 -->
                 <Grid Margin="0,12,0,8" IsVisible="{Binding IsInputVisible}">
                     <Button Text="＋ 新增投料"
