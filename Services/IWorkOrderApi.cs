@@ -67,6 +67,7 @@ namespace IndustrialControlMAUI.Services
 
         Task<ApiResp<bool?>> AddWorkProcessTaskProductOutputAsync(AddWorkProcessTaskProductOutputReq req);
         Task<ApiResp<ValidateBarcodeScanResp>> ValidateBarcodeScanAsync(ValidateBarcodeScanReq req, CancellationToken ct = default);
+        Task<ApiResp<ProductQuantityResult>> GetProductQuantityAsync(string processCode, string routeCode, string workOrderNo, CancellationToken ct = default);
         Task<ApiResp<bool?>> AddWorkProcessTaskReportAsync(AddWorkProcessTaskReportReq req, CancellationToken ct = default);
         Task<ApiResp<bool?>> GetSpecialSwitchAsync(string configKey, CancellationToken ct = default);
         Task<ApiResp<List<BasMeasurementUnitDto>>> GetBasMeasurementUnitListAsync(CancellationToken ct = default);

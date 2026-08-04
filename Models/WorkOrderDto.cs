@@ -338,6 +338,7 @@ public class WorkProcessTaskDetail
     public string? materialName { get; set; }
     public string? workOrderName { get; set; }
     public string? processCode { get; set; }
+    public string? routeCode { get; set; }
     public string? processName { get; set; }
     public bool? preStartInspectionEnabled { get; set; }
     public bool? spotWeldingRatioEnabled { get; set; }
@@ -372,6 +373,12 @@ public class WorkProcessTaskDetail
 
     // 页面显示
     [System.Text.Json.Serialization.JsonIgnore] public string? AuditStatusName { get; set; }
+}
+
+public class ProductQuantityResult
+{
+    public int productQuantity { get; set; }
+    public bool success { get; set; }
 }
 
 public class TaskMaterialInput
