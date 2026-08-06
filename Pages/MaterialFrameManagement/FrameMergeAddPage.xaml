@@ -4,7 +4,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="新增合框"
              BackgroundColor="#F4F5F7">
-    <Grid Padding="12" RowDefinitions="Auto,Auto,*,Auto">
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="12" Spacing="12">
         <Frame CornerRadius="12" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
             <VerticalStackLayout Spacing="10">
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
@@ -64,7 +66,7 @@
             </VerticalStackLayout>
         </Frame>
 
-        <Frame Grid.Row="1" Margin="0,12,0,0" CornerRadius="12" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
+        <Frame CornerRadius="12" Padding="14" HasShadow="False" BorderColor="#E5E7EB" BackgroundColor="White">
             <VerticalStackLayout Spacing="10">
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Label Text="目标合框（去向，空闲）" FontAttributes="Bold" TextColor="#1F2937"/>
@@ -94,10 +96,11 @@
             </VerticalStackLayout>
         </Frame>
 
-        <Grid Grid.Row="2"/>
-        <Button Grid.Row="3" Margin="0,24,0,18" Text="确认合框" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}" BackgroundColor="{Binding ConfirmButtonColor}" TextColor="{Binding ConfirmButtonTextColor}"/>
+        <Button Margin="0,12,0,18" Text="确认合框" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}" BackgroundColor="{Binding ConfirmButtonColor}" TextColor="{Binding ConfirmButtonTextColor}"/>
+            </VerticalStackLayout>
+        </ScrollView>
 
-        <Grid Grid.RowSpan="4" IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000">
+        <Grid IsVisible="{Binding IsSourcePickerVisible}" BackgroundColor="#66000000">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12">
                 <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
                     <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
@@ -141,7 +144,7 @@
             </Frame>
         </Grid>
 
-        <Grid Grid.RowSpan="4" IsVisible="{Binding IsTargetPickerVisible}" BackgroundColor="#66000000">
+        <Grid IsVisible="{Binding IsTargetPickerVisible}" BackgroundColor="#66000000">
             <Frame VerticalOptions="End" CornerRadius="16" BackgroundColor="White" Padding="12">
                 <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10" MaximumHeightRequest="420">
                     <Grid ColumnDefinitions="*,Auto">
