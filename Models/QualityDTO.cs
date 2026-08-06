@@ -281,6 +281,10 @@ public partial class QualityItem : ObservableObject
     public string? standardValue { get; set; }
     public string? upperLimit { get; set; }
     public string? lowerLimit { get; set; }
+    public bool? isShowSpec { get; set; }
+    public string? spec { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsSpecVisible => isShowSpec == true;
     [System.Text.Json.Serialization.JsonIgnore]
     public string? materialSpec { get; set; }
     public string? badCause { get; set; }
