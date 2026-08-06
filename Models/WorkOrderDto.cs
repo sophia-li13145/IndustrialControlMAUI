@@ -366,6 +366,7 @@ public class WorkProcessTaskDetail
     public string? platPlanNo { get; set; }
     public bool? finalProcess { get; set; }
     public bool? firstProcess { get; set; }
+    public bool? allowBatchInstock { get; set; }
 
     public List<TaskMaterialInput> materialInputList { get; set; } = new();
     public List<TaskMaterialOutput> materialOutputList { get; set; } = new();

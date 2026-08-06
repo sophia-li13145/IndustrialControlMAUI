@@ -119,7 +119,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
         private set => SetProperty(ref _outputFrameCount, value);
     }
 
-    public bool IsBatchApplyOutputFrameInstockVisible => IsFrameVisible && Detail?.finalProcess == true;
+    public bool IsBatchApplyOutputFrameInstockVisible =>
+        IsFrameVisible && Detail?.finalProcess == true && Detail.allowBatchInstock != false;
 
     public bool CanBatchApplyOutputFrameInstock => IsBatchApplyOutputFrameInstockVisible && !IsBusy && SelectedOutputFrameCount > 0;
 
