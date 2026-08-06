@@ -260,6 +260,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
                 targetFrameTypeName = x.TargetFrameTypeName,
                 unloadQty = decimal.TryParse(x.UnloadQty, out var qty) ? qty : 0
             }).ToList();
+        var totalUnloadQty = validUnloadDetails.Sum(x => x.unloadQty);
 
         var req = new AddUnloadingRecordReq
         {
@@ -272,7 +273,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
                 {
                     materialCode = material.MaterialCode,
                     materialName = material.MaterialName,
-                    sourceQty = material.SourceQty,
+                    sourceQty = totalUnloadQty,
                     unloadDetailList = validUnloadDetails
                         .Select(d => new AddUnloadingDetail
                         {
