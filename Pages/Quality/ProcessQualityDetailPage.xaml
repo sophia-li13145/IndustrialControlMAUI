@@ -376,9 +376,10 @@
 
                                         <!-- 行2：规格 -->
                                         <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                              ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                              ColumnDefinitions="Auto,*" ColumnSpacing="10"
+                              IsVisible="{Binding IsSpecVisible}">
                                             <Label Grid.Column="0" Text="规格：" Style="{StaticResource FieldLabel}" />
-                                            <Label Grid.Column="1" Text="{Binding materialSpec}" Style="{StaticResource FieldValue}" />
+                                            <Label Grid.Column="1" Text="{Binding spec}" Style="{StaticResource FieldValue}" />
                                         </Grid>
 
                                         <!-- 行3：标准值、上限值、下限值 -->
