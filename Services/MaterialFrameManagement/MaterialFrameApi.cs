@@ -24,6 +24,7 @@ public class MaterialFrameApi : IMaterialFrameApi
     private readonly string _getFrameMergingDetailEndpoint;
     private readonly string _getFrameReturnDetailEndpoint;
     private readonly string _getFrameStatusListForUnloadEndpoint;
+    private readonly string _getFrameStatusListForMergingEndpoint;
     private readonly string _addUnloadingRecordEndpoint;
     private readonly string _addFrameMergingRecordEndpoint;
     private readonly string _addPouringRecordEndpoint;
@@ -78,6 +79,9 @@ public class MaterialFrameApi : IMaterialFrameApi
             servicePath);
         _getFrameStatusListForUnloadEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.getFrameStatusListForUnload", "/pda/dev/frameUseRecord/getFrameStatusListForUnload"),
+            servicePath);
+        _getFrameStatusListForMergingEndpoint = ServiceUrlHelper.NormalizeRelative(
+            configLoader.GetApiPath("materialFrame.getFrameStatusListForMerging", "/pda/dev/frameUseRecord/getFrameStatusListForMerging"),
             servicePath);
         _addUnloadingRecordEndpoint = ServiceUrlHelper.NormalizeRelative(
             configLoader.GetApiPath("materialFrame.addUnloadingRecord", "/pda/dev/frameUseRecord/addUnloadingRecord"),
@@ -541,6 +545,32 @@ public async Task<ListResp<FrameStatusItem>?> GetFrameStatusListForUnloadAsync(L
         };
 
         var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getFrameStatusListForUnloadEndpoint);
+        using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
+        {
+            Content = JsonContent.Create(reqBody)
+        };
+        using var res = await _http.SendAsync(req, ct);
+        var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+        if (!res.IsSuccessStatusCode)
+            return new ListResp<FrameUnloadAddTargetFrameItem> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+        return JsonSerializer.Deserialize<ListResp<FrameUnloadAddTargetFrameItem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+               ?? new ListResp<FrameUnloadAddTargetFrameItem>();
+    }
+
+    public async Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForMergingAsync(List<string> materialCodes, List<string> materialNames, string? frameStatus, string? frameNo = null, CancellationToken ct = default)
+    {
+        var reqBody = new
+        {
+            frameNo = string.IsNullOrWhiteSpace(frameNo) ? null : frameNo.Trim(),
+            frameStatus = string.IsNullOrWhiteSpace(frameStatus) ? null : frameStatus.Trim(),
+            frameTypeCode = string.Empty,
+            materialCodes = materialCodes ?? new List<string>(),
+            materialNames = materialNames ?? new List<string>()
+        };
+
+        var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _getFrameStatusListForMergingEndpoint);
         using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(full, UriKind.Absolute))
         {
             Content = JsonContent.Create(reqBody)

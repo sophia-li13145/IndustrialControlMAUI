@@ -93,6 +93,13 @@ public interface IMaterialFrameApi
         string? frameNo = null,
         CancellationToken ct = default);
 
+    Task<ListResp<FrameUnloadAddTargetFrameItem>?> GetFrameStatusListForMergingAsync(
+        List<string> materialCodes,
+        List<string> materialNames,
+        string? frameStatus,
+        string? frameNo = null,
+        CancellationToken ct = default);
+
     Task<BoolResp?> AddUnloadingRecordAsync(
         AddUnloadingRecordReq req,
         CancellationToken ct = default);
