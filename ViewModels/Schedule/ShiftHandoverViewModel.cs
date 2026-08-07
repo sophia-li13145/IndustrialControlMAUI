@@ -144,7 +144,7 @@ public partial class ShiftHandoverViewModel : ObservableObject
     private async Task OpenStartSheetAsync()
     {
         if (IsFormBusy) return;
-        IsStartSheetVisible = true;
+        IsStartSheetVisible = false;
         IsFormBusy = true;
         HandoverMemo = null;
         HandoverDate = "--";
@@ -162,7 +162,6 @@ public partial class ShiftHandoverViewModel : ObservableObject
             var teamsResponse = await teamsTask;
             if (infoResponse.success != true || infoResponse.result is null)
             {
-                IsStartSheetVisible = false;
                 SubmissionFailed?.Invoke(infoResponse.message ?? "交班信息加载失败");
                 return;
             }
@@ -173,7 +172,6 @@ public partial class ShiftHandoverViewModel : ObservableObject
 
             if (teamsResponse.success != true || teamsResponse.result is null)
             {
-                IsStartSheetVisible = false;
                 SubmissionFailed?.Invoke(teamsResponse.message ?? "接班班组加载失败");
                 return;
             }
@@ -183,6 +181,7 @@ public partial class ShiftHandoverViewModel : ObservableObject
                 ReceiverTeams.Add(team);
 
             SelectedReceiverTeam = ReceiverTeams.FirstOrDefault();
+            IsStartSheetVisible = true;
         }
         catch (Exception ex)
         {
