@@ -4,17 +4,23 @@
              x:Class="IndustrialControlMAUI.Pages.ShiftHandoverPage"
              Title="交接班记录" BackgroundColor="#F6F7F9" Shell.NavBarIsVisible="False">
     <Grid RowDefinitions="44,*">
-        <Grid BackgroundColor="#2F6DEA" Padding="12,0" ColumnDefinitions="32,*">
-            <Border HeightRequest="28" WidthRequest="28" BackgroundColor="#FFFFFF33"
+        <Grid BackgroundColor="#2F6DEA" Padding="12,0" ColumnDefinitions="32,*,Auto">
+            <Border HeightRequest="28" WidthRequest="28" BackgroundColor="#F5D94E" StrokeThickness="0"
                     StrokeShape="RoundRectangle 14" VerticalOptions="Center">
-                <Label Text="‹" TextColor="White" FontSize="26" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                <Grid>
+                    <Label Text="←" TextColor="White" FontSize="18" Margin="0,-2,0,0"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                </Grid>
                 <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBackTapped" /></Border.GestureRecognizers>
             </Border>
             <Label Grid.Column="1" Text="交接班记录" TextColor="White" FontSize="16"
                    FontAttributes="Bold" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="{Binding CurrentUserName, StringFormat='♙ {0}'}" TextColor="White"
+                   FontSize="11" VerticalOptions="Center" HorizontalTextAlignment="End" />
         </Grid>
 
-        <RefreshView Grid.Row="1" Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+        <RefreshView Grid.Row="1" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
             <ScrollView>
                 <VerticalStackLayout Spacing="0">
                     <Grid IsVisible="{Binding HasPendingHandover}" BackgroundColor="#FFFBE8" Padding="14,12"
@@ -65,7 +71,13 @@
                                                     <Label Text="{Binding HandoverUserName, StringFormat='♙ {0}'}" FontSize="10" TextColor="#667085" />
                                                 </VerticalStackLayout>
                                                 <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
-                                                    <Label Text="{Binding DirectionIcon}" FontSize="18" TextColor="{Binding AccentColor}" HorizontalTextAlignment="Center" />
+                                                    <Border HeightRequest="22" WidthRequest="22" Padding="0"
+                                                            BackgroundColor="{Binding DirectionBackground}" Stroke="{Binding DirectionStroke}"
+                                                            StrokeShape="RoundRectangle 11">
+                                                        <Label Text="{Binding DirectionIcon}" FontSize="14" TextColor="{Binding DirectionTextColor}"
+                                                               Margin="0,-1,0,0" HorizontalOptions="Center" VerticalOptions="Center"
+                                                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                                    </Border>
                                                     <Label Text="交接" FontSize="9" TextColor="#A7AFBD" />
                                                 </VerticalStackLayout>
                                                 <VerticalStackLayout Grid.Row="1" Grid.Column="2" Spacing="4" Margin="0,10,0,8" HorizontalOptions="End">

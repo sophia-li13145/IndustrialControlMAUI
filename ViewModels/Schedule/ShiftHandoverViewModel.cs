@@ -11,6 +11,7 @@ public partial class ShiftHandoverViewModel : ObservableObject
     private readonly IShiftHandoverApi _api;
 
     [ObservableProperty] private bool isBusy;
+    [ObservableProperty] private bool isRefreshing;
     [ObservableProperty] private bool hasPendingHandover;
     [ObservableProperty] private bool hasRecords;
     [ObservableProperty] private bool hasNoRecords = true;
@@ -45,10 +46,12 @@ public partial class ShiftHandoverViewModel : ObservableObject
     [ObservableProperty] private string detailMemo = "--";
     [ObservableProperty] private Color detailStatusColor = Color.FromArgb("#16A65A");
     [ObservableProperty] private Color detailStatusBackground = Color.FromArgb("#E9FFF2");
+    [ObservableProperty] private string currentUserName = "--";
 
     public ObservableCollection<ShiftHandoverRecordItem> Records { get; } = new();
     public ObservableCollection<ReceiverTeamOption> ReceiverTeams { get; } = new();
     public IAsyncRelayCommand LoadCommand { get; }
+    public IAsyncRelayCommand RefreshCommand { get; }
     public IAsyncRelayCommand OpenStartSheetCommand { get; }
     public IRelayCommand CloseStartSheetCommand { get; }
     public IAsyncRelayCommand SubmitHandoverCommand { get; }
@@ -62,7 +65,10 @@ public partial class ShiftHandoverViewModel : ObservableObject
     public ShiftHandoverViewModel(IShiftHandoverApi api)
     {
         _api = api;
+        var loginUserName = Preferences.Get("UserName", string.Empty)?.Trim();
+        CurrentUserName = string.IsNullOrWhiteSpace(loginUserName) ? "--" : loginUserName.Split('@')[0];
         LoadCommand = new AsyncRelayCommand(LoadAsync);
+        RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         OpenStartSheetCommand = new AsyncRelayCommand(OpenStartSheetAsync);
         CloseStartSheetCommand = new RelayCommand(() => IsStartSheetVisible = false);
         SubmitHandoverCommand = new AsyncRelayCommand(SubmitHandoverAsync);
@@ -121,6 +127,18 @@ public partial class ShiftHandoverViewModel : ObservableObject
             HasNoRecords = !HasRecords;
         }
         finally { IsBusy = false; }
+    }
+
+    private async Task RefreshAsync()
+    {
+        try
+        {
+            await LoadAsync();
+        }
+        finally
+        {
+            IsRefreshing = false;
+        }
     }
 
     private async Task OpenStartSheetAsync()
@@ -383,5 +401,8 @@ public class ShiftHandoverRecordItem
     public Color AccentColor => Color.FromArgb(IsCompleted ? "#31D67B" : "#FFC400");
     public Color StatusBackground => Color.FromArgb(IsCompleted ? "#E9FFF2" : "#FFF9DF");
     public Color StatusTextColor => Color.FromArgb(IsCompleted ? "#16A65A" : "#D49B00");
-    public string DirectionIcon => IsCompleted ? "➜" : "⊙";
+    public string DirectionIcon => "➜";
+    public Color DirectionBackground => Color.FromArgb(IsCompleted ? "#00FFFFFF" : "#F5B800");
+    public Color DirectionTextColor => Color.FromArgb(IsCompleted ? "#31D67B" : "#FFFFFF");
+    public Color DirectionStroke => Color.FromArgb(IsCompleted ? "#00FFFFFF" : "#F5B800");
 }
