@@ -162,6 +162,7 @@ public partial class ShiftHandoverViewModel : ObservableObject
             var teamsResponse = await teamsTask;
             if (infoResponse.success != true || infoResponse.result is null)
             {
+                IsStartSheetVisible = false;
                 SubmissionFailed?.Invoke(infoResponse.message ?? "交班信息加载失败");
                 return;
             }
@@ -170,12 +171,16 @@ public partial class ShiftHandoverViewModel : ObservableObject
             HandoverUserName = string.IsNullOrWhiteSpace(infoResponse.result.HandoverUserName) ? "--" : infoResponse.result.HandoverUserName;
             HandoverTeamName = string.IsNullOrWhiteSpace(infoResponse.result.TeamName) ? "--" : infoResponse.result.TeamName;
 
-            ReceiverTeams.Clear();
-            if (teamsResponse.success == true && teamsResponse.result is not null)
-                foreach (var team in teamsResponse.result)
-                    ReceiverTeams.Add(team);
-            else
+            if (teamsResponse.success != true || teamsResponse.result is null)
+            {
+                IsStartSheetVisible = false;
                 SubmissionFailed?.Invoke(teamsResponse.message ?? "接班班组加载失败");
+                return;
+            }
+
+            ReceiverTeams.Clear();
+            foreach (var team in teamsResponse.result)
+                ReceiverTeams.Add(team);
 
             SelectedReceiverTeam = ReceiverTeams.FirstOrDefault();
         }
