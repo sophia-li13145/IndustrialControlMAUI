@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace IndustrialControlMAUI.Models;
 
 public class PendingShiftHandover
@@ -25,8 +27,13 @@ public class ReceiverTeamOption
 
 public class AddShiftHandoverRequest
 {
+    [JsonPropertyName("memo")]
     public string? Memo { get; set; }
+
+    [JsonPropertyName("receiverTeamCode")]
     public string ReceiverTeamCode { get; set; } = string.Empty;
+
+    [JsonPropertyName("receiverTeamName")]
     public string? ReceiverTeamName { get; set; }
 }
 
@@ -46,6 +53,7 @@ public class ShiftHandoverDetail
 
 public class ConfirmShiftHandoverRequest
 {
+    [JsonPropertyName("handoverId")]
     public string HandoverId { get; set; } = string.Empty;
 }
 
