@@ -47,6 +47,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
     {
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListForTransferAddAsync();
+        if (await ShowApiErrorAsync(resp?.success, resp?.message)) return;
         SourceFrameList.Clear();
         var all = resp?.result ?? new List<FrameUnloadAddSourceFrameItem>();
         foreach (var frame in all.Take(PickerPageSize))
@@ -92,6 +93,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(frameNo)) return;
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListForTransferAddAsync(frameNo);
+        if (await ShowApiErrorAsync(resp?.success, resp?.message)) return;
         var picked = resp?.result?.FirstOrDefault();
         if (picked is null) return;
         ApplySourceFrame(picked);
@@ -150,6 +152,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null);
+        if (await ShowApiErrorAsync(resp?.success, resp?.message)) return;
         TargetFrameList.Clear();
         var all = resp?.result ?? new List<FrameUnloadAddTargetFrameItem>();
         foreach (var item in all.Take(PickerPageSize))
@@ -177,6 +180,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         await EnsureFrameStatusDictLoadedAsync();
         // 与“列表添加”使用同一个接口，仅额外传入扫码得到的 frameNo 进行精确筛选
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo);
+        if (await ShowApiErrorAsync(resp?.success, resp?.message)) return;
         var item = resp?.result?.FirstOrDefault();
         if (item is null) return;
 
@@ -295,7 +299,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
 
         var msg = string.IsNullOrWhiteSpace(resp?.message) ? "拆框失败，请稍后重试" : resp!.message!;
         if (Shell.Current?.CurrentPage is Page page)
-            await page.DisplayAlert("提示", msg, "确定");
+            await page.DisplayAlert("错误", msg, "确定");
     }
 
 
@@ -359,6 +363,14 @@ public partial class FrameUnloadAddViewModel : ObservableObject
             await p.DisplayAlert("提示", "请选择原料框", "确定");
     }
 
+    private static async Task<bool> ShowApiErrorAsync(bool? success, string? message)
+    {
+        if (success != false) return false;
+        if (Shell.Current?.CurrentPage is Page page)
+            await page.DisplayAlert("错误", message ?? string.Empty, "确定");
+        return true;
+    }
+
     private string ResolveFrameStatusDisplay(string? frameStatus)
     {
         var key = frameStatus?.Trim();
@@ -372,6 +384,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         if (!IsSourcePickerVisible) return;
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetMaterialFrameListForTransferAddAsync();
+        if (await ShowApiErrorAsync(resp?.success, resp?.message)) return;
         var all = resp?.result ?? new List<FrameUnloadAddSourceFrameItem>();
         if (_sourceDisplayCount >= all.Count) return;
         foreach (var frame in all.Skip(_sourceDisplayCount).Take(PickerPageSize))
@@ -391,6 +404,7 @@ public partial class FrameUnloadAddViewModel : ObservableObject
         var materialNames = SelectedSourceMaterials.Select(x => x.MaterialName).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         await EnsureFrameStatusDictLoadedAsync();
         var resp = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null);
+        if (await ShowApiErrorAsync(resp?.success, resp?.message)) return;
         var all = resp?.result ?? new List<FrameUnloadAddTargetFrameItem>();
         if (_targetDisplayCount >= all.Count) return;
         foreach (var item in all.Skip(_targetDisplayCount).Take(PickerPageSize))

@@ -26,16 +26,16 @@ public partial class FramePourAddViewModel : ObservableObject
     public bool HasSelectedSource => SelectedSource is not null;
     public bool HasSelectedTarget => SelectedTarget is not null;
     public FramePourAddViewModel(IMaterialFrameApi api) => _api = api;
-    [RelayCommand] private async Task OpenSourcePickerAsync() { await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(); var all = (r?.result ?? new()).Select(MapSource).ToList(); SourceFrameList.Clear(); foreach (var m in all.Take(PickerPageSize)) { m.IsSelected = string.Equals(m.id, SelectedSource?.id, StringComparison.OrdinalIgnoreCase); m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus); SourceFrameList.Add(m); } _sourceDisplayCount = SourceFrameList.Count; IsSourcePickerVisible = true; }
+    [RelayCommand] private async Task OpenSourcePickerAsync() { await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(); if (await ShowApiErrorAsync(r?.success, r?.message)) return; var all = (r?.result ?? new()).Select(MapSource).ToList(); SourceFrameList.Clear(); foreach (var m in all.Take(PickerPageSize)) { m.IsSelected = string.Equals(m.id, SelectedSource?.id, StringComparison.OrdinalIgnoreCase); m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus); SourceFrameList.Add(m); } _sourceDisplayCount = SourceFrameList.Count; IsSourcePickerVisible = true; }
     [RelayCommand] private void PickSource(FramePourAddSourceFrameItem? i) { if (i is null) return; SelectedSource = i; foreach (var x in SourceFrameList) x.IsSelected = ReferenceEquals(x, i); OnPropertyChanged(nameof(HasSelectedSource)); Refresh(); }
     [RelayCommand] private void ConfirmSource() { IsSourcePickerVisible = false; Refresh(); }
-    [RelayCommand] private async Task OpenTargetPickerAsync() { if (SelectedSource is null) { await ShowSelectSourceTipAsync(); return; } await EnsureFrameStatusDictLoadedAsync(); var materialCodes = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var materialNames = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var r = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null); var all = (r?.result ?? new()).Select(MapTarget).ToList(); TargetFrameList.Clear(); foreach (var m in all.Take(PickerPageSize)) { m.IsSelected = string.Equals(m.id, SelectedTarget?.id, StringComparison.OrdinalIgnoreCase); m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus); TargetFrameList.Add(m); } _targetDisplayCount = TargetFrameList.Count; IsTargetPickerVisible = true; }
+    [RelayCommand] private async Task OpenTargetPickerAsync() { if (SelectedSource is null) { await ShowSelectSourceTipAsync(); return; } await EnsureFrameStatusDictLoadedAsync(); var materialCodes = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var materialNames = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var r = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null); if (await ShowApiErrorAsync(r?.success, r?.message)) return; var all = (r?.result ?? new()).Select(MapTarget).ToList(); TargetFrameList.Clear(); foreach (var m in all.Take(PickerPageSize)) { m.IsSelected = string.Equals(m.id, SelectedTarget?.id, StringComparison.OrdinalIgnoreCase); m.frameStatusDisplay = ResolveFrameStatusDisplay(m.frameStatus); TargetFrameList.Add(m); } _targetDisplayCount = TargetFrameList.Count; IsTargetPickerVisible = true; }
     [RelayCommand] private void PickTarget(FramePourAddTargetFrameItem? i) { if (i is null) return; SelectedTarget = i; foreach (var x in TargetFrameList) x.IsSelected = ReferenceEquals(x, i); OnPropertyChanged(nameof(HasSelectedTarget)); Refresh(); }
     [RelayCommand] private void ConfirmTarget() { IsTargetPickerVisible = false; Refresh(); }
     [RelayCommand] private void ClearSource() { SelectedSource = null; foreach (var x in SourceFrameList) x.IsSelected = false; OnPropertyChanged(nameof(HasSelectedSource)); Refresh(); }
     [RelayCommand] private void ClearTarget() { SelectedTarget = null; foreach (var x in TargetFrameList) x.IsSelected = false; OnPropertyChanged(nameof(HasSelectedTarget)); Refresh(); }
-    public async Task ScanAndPickSourceFrameAsync(INavigation nav) { var tcs = new TaskCompletionSource<string>(); await nav.PushAsync(new QrScanPage(tcs)); var frameNo = (await tcs.Task)?.Trim(); if (string.IsNullOrWhiteSpace(frameNo)) return; await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(frameNo); var source = r?.result?.Select(MapSource).FirstOrDefault(); if (source is null) return; source.frameStatusDisplay = ResolveFrameStatusDisplay(source.frameStatus); SelectedSource = source; OnPropertyChanged(nameof(HasSelectedSource)); Refresh(); }
-    public async Task ScanAndPickTargetFrameAsync(INavigation nav) { if (SelectedSource is null) { await ShowSelectSourceTipAsync(); return; } var tcs = new TaskCompletionSource<string>(); await nav.PushAsync(new QrScanPage(tcs)); var frameNo = (await tcs.Task)?.Trim(); if (string.IsNullOrWhiteSpace(frameNo)) return; await EnsureFrameStatusDictLoadedAsync(); var materialCodes = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var materialNames = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var r = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo); var target = r?.result?.Select(MapTarget).FirstOrDefault(); if (target is null) return; target.frameStatusDisplay = ResolveFrameStatusDisplay(target.frameStatus); SelectedTarget = target; OnPropertyChanged(nameof(HasSelectedTarget)); Refresh(); }
+    public async Task ScanAndPickSourceFrameAsync(INavigation nav) { var tcs = new TaskCompletionSource<string>(); await nav.PushAsync(new QrScanPage(tcs)); var frameNo = (await tcs.Task)?.Trim(); if (string.IsNullOrWhiteSpace(frameNo)) return; await EnsureFrameStatusDictLoadedAsync(); var r = await _api.GetMaterialFrameListForTransferAddAsync(frameNo); if (await ShowApiErrorAsync(r?.success, r?.message)) return; var source = r?.result?.Select(MapSource).FirstOrDefault(); if (source is null) return; source.frameStatusDisplay = ResolveFrameStatusDisplay(source.frameStatus); SelectedSource = source; OnPropertyChanged(nameof(HasSelectedSource)); Refresh(); }
+    public async Task ScanAndPickTargetFrameAsync(INavigation nav) { if (SelectedSource is null) { await ShowSelectSourceTipAsync(); return; } var tcs = new TaskCompletionSource<string>(); await nav.PushAsync(new QrScanPage(tcs)); var frameNo = (await tcs.Task)?.Trim(); if (string.IsNullOrWhiteSpace(frameNo)) return; await EnsureFrameStatusDictLoadedAsync(); var materialCodes = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var materialNames = (SelectedSource?.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList(); var r = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, frameNo); if (await ShowApiErrorAsync(r?.success, r?.message)) return; var target = r?.result?.Select(MapTarget).FirstOrDefault(); if (target is null) return; target.frameStatusDisplay = ResolveFrameStatusDisplay(target.frameStatus); SelectedTarget = target; OnPropertyChanged(nameof(HasSelectedTarget)); Refresh(); }
     [RelayCommand]
     private async Task ConfirmAsync()
     {
@@ -62,7 +62,7 @@ public partial class FramePourAddViewModel : ObservableObject
 
         var msg = string.IsNullOrWhiteSpace(resp?.message) ? "倒框失败，请稍后重试" : resp!.message!;
         if (Shell.Current?.CurrentPage is Page p)
-            await p.DisplayAlert("提示", msg, "确定");
+            await p.DisplayAlert("错误", msg, "确定");
     }
     private void Refresh()
     {
@@ -92,6 +92,14 @@ public partial class FramePourAddViewModel : ObservableObject
             await p.DisplayAlert("提示", "请选择原料框", "确定");
     }
 
+    private static async Task<bool> ShowApiErrorAsync(bool? success, string? message)
+    {
+        if (success != false) return false;
+        if (Shell.Current?.CurrentPage is Page page)
+            await page.DisplayAlert("错误", message ?? string.Empty, "确定");
+        return true;
+    }
+
     private string ResolveFrameStatusDisplay(string? frameStatus)
     {
         var key = frameStatus?.Trim();
@@ -108,6 +116,7 @@ public partial class FramePourAddViewModel : ObservableObject
         if (!IsSourcePickerVisible) return;
         await EnsureFrameStatusDictLoadedAsync();
         var r = await _api.GetMaterialFrameListForTransferAddAsync();
+        if (await ShowApiErrorAsync(r?.success, r?.message)) return;
         var all = (r?.result ?? new()).ToList();
         if (_sourceDisplayCount >= all.Count) return;
         foreach (var x in all.Skip(_sourceDisplayCount).Take(PickerPageSize))
@@ -128,6 +137,7 @@ public partial class FramePourAddViewModel : ObservableObject
         var materialCodes = (SelectedSource.loadDetailList ?? new()).Select(x => x.materialCode ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var materialNames = (SelectedSource.loadDetailList ?? new()).Select(x => x.materialName ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var r = await _api.GetFrameStatusListForTransferAddAsync(materialCodes, materialNames, null);
+        if (await ShowApiErrorAsync(r?.success, r?.message)) return;
         var all = (r?.result ?? new()).ToList();
         if (_targetDisplayCount >= all.Count) return;
         foreach (var x in all.Skip(_targetDisplayCount).Take(PickerPageSize))
