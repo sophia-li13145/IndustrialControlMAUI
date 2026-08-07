@@ -55,6 +55,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<ViewModels.LoginViewModel>();
             builder.Services.AddTransient<ViewModels.HomeViewModel>();
             builder.Services.AddTransient<DutyRosterViewModel>();
+            builder.Services.AddTransient<ShiftHandoverViewModel>();
             builder.Services.AddTransient<ViewModels.AdminViewModel>();
             builder.Services.AddTransient<ViewModels.LogsViewModel>();
             builder.Services.AddTransient<ViewModels.InboundMaterialSearchViewModel>();
@@ -215,6 +216,10 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<AuthHeaderHandler>();
 
             builder.Services.AddHttpClient<IWorkOrderApi, WorkOrderApi>(ConfigureBaseAddress)
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .AddHttpMessageHandler<TokenExpiredHandler>();
+
+            builder.Services.AddHttpClient<IShiftHandoverApi, ShiftHandoverApi>(ConfigureBaseAddress)
                 .AddHttpMessageHandler<AuthHeaderHandler>()
                 .AddHttpMessageHandler<TokenExpiredHandler>();
 
