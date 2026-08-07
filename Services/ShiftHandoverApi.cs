@@ -65,21 +65,21 @@ public class ShiftHandoverApi : IShiftHandoverApi
     public Task<ApiResp<List<ReceiverTeamOption>>> GetReceiverTeamOptionsAsync(CancellationToken ct = default)
         => GetAsync<List<ReceiverTeamOption>>(_receiverTeamsEndpoint, ct);
 
-    public async Task<ApiResp<bool>> AddAsync(AddShiftHandoverRequest request, CancellationToken ct = default)
+    public async Task<ApiResp<bool?>> AddAsync(AddShiftHandoverRequest request, CancellationToken ct = default)
     {
         var fullUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _addEndpoint);
         using var response = await _http.PostAsJsonAsync(new Uri(fullUrl, UriKind.Absolute), request, JsonOptions, ct);
-        return await ReadResponseAsync<bool>(response, ct);
+        return await ReadResponseAsync<bool?>(response, ct);
     }
 
     public Task<ApiResp<ShiftHandoverDetail>> GetDetailAsync(string id, CancellationToken ct = default)
         => GetAsync<ShiftHandoverDetail>($"{_detailEndpoint}?id={Uri.EscapeDataString(id)}", ct);
 
-    public async Task<ApiResp<bool>> ConfirmHandoverAsync(ConfirmShiftHandoverRequest request, CancellationToken ct = default)
+    public async Task<ApiResp<bool?>> ConfirmHandoverAsync(ConfirmShiftHandoverRequest request, CancellationToken ct = default)
     {
         var fullUrl = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _confirmEndpoint);
         using var response = await _http.PostAsJsonAsync(new Uri(fullUrl, UriKind.Absolute), request, JsonOptions, ct);
-        return await ReadResponseAsync<bool>(response, ct);
+        return await ReadResponseAsync<bool?>(response, ct);
     }
 
     private async Task<ApiResp<T>> GetAsync<T>(string endpoint, CancellationToken ct)
