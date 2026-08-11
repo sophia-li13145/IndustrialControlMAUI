@@ -82,6 +82,8 @@ namespace IndustrialControlMAUI.Services
         private readonly string _lineDowntimeAddEndpoint;
         private readonly string _lineDowntimeDetailEndpoint;
         private readonly string _lineDowntimeEditEndpoint;
+        private readonly string _loginUserWorkstationEndpoint;
+        private readonly string _workstationPageEndpoint;
 
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
@@ -118,6 +120,10 @@ namespace IndustrialControlMAUI.Services
                 configLoader.GetApiPath("workOrder.ProcessList", "/pda/pmsWorkOrder/PmsProcessInfoList"), servicePath);
             _workProcessTaskDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.ProcessDetail", "/pda/pmsWorkOrder/getWorkProcessTaskDetail"), servicePath);
+            _loginUserWorkstationEndpoint = ServiceUrlHelper.NormalizeRelative(
+                configLoader.GetApiPath("workOrder.loginUserWorkstation", "/pda/pmsWorkOrder/getWorkstationByLoginUser"), servicePath);
+            _workstationPageEndpoint = ServiceUrlHelper.NormalizeRelative(
+                configLoader.GetApiPath("workOrder.workstationPage", "/pda/pmsWorkOrder/pageWorkStationList"), servicePath);
             _shiftEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.shift", "/pda/pmsWorkOrder/getClassesListByWorkShopLine"), servicePath);
             _deviceEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -416,6 +422,7 @@ namespace IndustrialControlMAUI.Services
     string? platPlanNo = null,
     string? schemeNo = null,
     string? assignTo = null,
+    string? workstationCode = null,
     bool? searchCount = null,      // 是否计算总记录数（可选）
     int pageNo = 1,
     int pageSize = 50,
@@ -460,6 +467,9 @@ namespace IndustrialControlMAUI.Services
                 }
             }
 
+            // 工位接口接收逗号分隔的单个字符串；未绑定工位时也要显式传空值。
+            pairs.Add(new KeyValuePair<string, string>("workstationCode", workstationCode?.Trim() ?? string.Empty));
+
             // 生成 querystring（key 重复）
             string BuildQueryMulti(IEnumerable<KeyValuePair<string, string>> kvs)
                 => string.Join("&", kvs.Select(kv =>
@@ -478,6 +488,24 @@ namespace IndustrialControlMAUI.Services
             return JsonSerializer.Deserialize<PageResp<ProcessTask>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 ?? new PageResp<ProcessTask>();
+        }
+
+        public async Task<ApiResp<LoginUserWorkstation>> GetWorkstationByLoginUserAsync(CancellationToken ct = default)
+        {
+            using var res = await _http.GetAsync(_loginUserWorkstationEndpoint, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            return JsonSerializer.Deserialize<ApiResp<LoginUserWorkstation>>(json, _json)
+                ?? new ApiResp<LoginUserWorkstation> { success = false, message = "empty response" };
+        }
+
+        public async Task<PageResp<WorkstationInfo>?> PageWorkstationListAsync(int pageNo, int pageSize, string? workstationCode = null, CancellationToken ct = default)
+        {
+            var query = $"?pageNo={pageNo}&pageSize={pageSize}&searchCount=true";
+            if (!string.IsNullOrWhiteSpace(workstationCode))
+                query += "&workstationCode=" + Uri.EscapeDataString(workstationCode.Trim());
+            using var res = await _http.GetAsync(_workstationPageEndpoint + query, ct);
+            var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+            return JsonSerializer.Deserialize<PageResp<WorkstationInfo>>(json, _json);
         }
 
 

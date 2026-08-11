@@ -222,6 +222,26 @@ public sealed class PageResult<T>
     public List<T>? records { get; set; }
 }
 
+public sealed class WorkstationInfo
+{
+    public string? sourceDeptFullName { get; set; }
+    public string? workshopsCode { get; set; }
+    public string? workshopsName { get; set; }
+    public string? workstationCode { get; set; }
+    public string? workstationName { get; set; }
+}
+
+public sealed class LoginUserWorkstation
+{
+    public string? userId { get; set; }
+    public string? username { get; set; }
+    public string? realname { get; set; }
+    public string? workstationCode { get; set; }
+    public string? workshopsCode { get; set; }
+    public string? workshopsName { get; set; }
+    public string? sourceDeptFullName { get; set; }
+}
+
 public class ProcessTask
 {
     public string? Id { get; set; }
