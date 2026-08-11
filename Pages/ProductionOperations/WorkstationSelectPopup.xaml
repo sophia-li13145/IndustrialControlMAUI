@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="IndustrialControlMAUI.Pages.WorkstationSelectPopup"
+               CanBeDismissedByTappingOutsideOfPopup="False">
+    <Border BackgroundColor="White" Stroke="#D0D5DD" StrokeShape="RoundRectangle 10"
+            Padding="14" WidthRequest="330">
+        <Grid RowDefinitions="Auto,Auto,Auto,320,Auto,Auto" RowSpacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="选择工位" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="全部" Padding="12,4" Clicked="OnSelectAllClicked" />
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="SearchEntry" Placeholder="输入工位编号模糊搜索" ReturnType="Search"
+                       Completed="OnSearchClicked" />
+                <Button Grid.Column="1" Text="查询" Clicked="OnSearchClicked" />
+            </Grid>
+
+            <Label Grid.Row="2" Text="{Binding SelectionSummary}" TextColor="#1677FF" FontSize="13" />
+
+            <Grid Grid.Row="3">
+                <CollectionView ItemsSource="{Binding Items}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Label Text="暂无工位数据" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="34,*" Padding="4,10">
+                                <Label Text="☐" FontSize="20" TextColor="#1677FF" HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Text" Value="☑" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Grid.Column="1" Text="{Binding Name}" FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnItemTapped" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            </Grid>
+
+            <Grid Grid.Row="4" ColumnDefinitions="*,Auto,Auto,*" ColumnSpacing="8">
+                <Button Grid.Column="1" Text="上一页" IsEnabled="{Binding CanGoPrevious}" Clicked="OnPreviousClicked" />
+                <Label Grid.Column="2" Text="{Binding PageText}" VerticalOptions="Center" />
+                <Button Grid.Column="3" Text="下一页" IsEnabled="{Binding CanGoNext}" Clicked="OnNextClicked" HorizontalOptions="Start" />
+            </Grid>
+
+            <Grid Grid.Row="5" ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Text="取消" BackgroundColor="#E5E7EB" TextColor="#344054" Clicked="OnCancelClicked" />
+                <Button Grid.Column="1" Text="确定" Clicked="OnConfirmClicked" />
+            </Grid>
+        </Grid>
+    </Border>
+</toolkit:Popup>

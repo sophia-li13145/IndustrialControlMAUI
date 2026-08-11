@@ -40,10 +40,10 @@
 
             </Grid>
 
-            <!-- 第二行：时间 + 状态 + 工序 -->
-            <Grid ColumnDefinitions="80,80,80,80"
-      ColumnSpacing="8"
-      VerticalOptions="Center">
+            <!-- 第二行：开始时间 + 结束时间 + 状态，三项等宽铺满 -->
+            <Grid ColumnDefinitions="*,*,*"
+                  ColumnSpacing="8"
+                  VerticalOptions="Center">
 
                 <!-- 开始日期 -->
                 <DatePicker Grid.Column="0"
@@ -61,10 +61,10 @@
 
                 <!-- 状态 -->
                 <Grid Grid.Column="2"
-      WidthRequest="80"
-      HeightRequest="40"
-      RowDefinitions="38,2"
-      VerticalOptions="Center">
+                      HeightRequest="40"
+                      RowDefinitions="38,2"
+                      VerticalOptions="Center"
+                      HorizontalOptions="Fill">
 
                     <Grid Grid.Row="0"
           BackgroundColor="White"
@@ -91,16 +91,30 @@
              VerticalOptions="End" />
                 </Grid>
 
-                <!-- 工序 -->
-                <Picker Grid.Column="3"
-            Title="工序"
-            HeightRequest="40"
-            WidthRequest="80"
-            ItemsSource="{Binding ProcessOptions}"
-            ItemDisplayBinding="{Binding Text}"
-            SelectedItem="{Binding SelectedProcessOption}"
-            BackgroundColor="Transparent"
-            TextColor="#333333" />
+            </Grid>
+
+            <!-- 第三行：工序 + 工位，两项等宽铺满 -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Picker Grid.Column="0"
+                        Title="工序"
+                        HeightRequest="40"
+                        HorizontalOptions="Fill"
+                        ItemsSource="{Binding ProcessOptions}"
+                        ItemDisplayBinding="{Binding Text}"
+                        SelectedItem="{Binding SelectedProcessOption}"
+                        BackgroundColor="Transparent"
+                        TextColor="#333333" />
+
+                <Grid Grid.Column="1" HeightRequest="40" BackgroundColor="White"
+                      HorizontalOptions="Fill">
+                    <Label Text="{Binding SelectedWorkstationSummary}" TextColor="#333333"
+                           VerticalOptions="Center" HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
+                    <BoxView HeightRequest="2" BackgroundColor="#BDBDBD" VerticalOptions="End" />
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnWorkstationFilterClicked" />
+                    </Grid.GestureRecognizers>
+                </Grid>
             </Grid>
         </VerticalStackLayout>
 
