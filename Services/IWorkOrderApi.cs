@@ -36,11 +36,14 @@ namespace IndustrialControlMAUI.Services
          string? platPlanNo = null,
          string? schemeNo = null,
          string? assignTo = null,
+         IEnumerable<string>? workstationCodeList = null,
          bool? searchCount = null,      // 是否计算总记录数（可选）
          int pageNo = 1,
          int pageSize = 50,
          CancellationToken ct = default);
         Task<ApiResp<List<FieldDict>>> GetWorkProcessTaskDictListAsync(CancellationToken ct = default);
+        Task<ApiResp<LoginUserWorkstation>> GetWorkstationByLoginUserAsync(CancellationToken ct = default);
+        Task<PageResp<WorkstationInfo>?> PageWorkstationListAsync(int pageNo, int pageSize, string? workstationCode = null, CancellationToken ct = default);
         Task<ApiResp<List<ProcessInfo>>> GetProcessInfoListAsync(CancellationToken ct = default);
         Task<ApiResp<WorkProcessTaskDetail>> GetWorkProcessTaskDetailAsync(string id, CancellationToken ct = default);
         Task<ApiResp<PreStartInspectionScanResourceDto>> QueryPreStartInspectionResourceAsync(PmsPreStartInspectionQueryResourceParam req, CancellationToken ct = default);
