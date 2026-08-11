@@ -9,6 +9,7 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
     private readonly ProcessTaskSearchViewModel _vm;
     private string? _entryMode;
     private bool _isStatusPopupOpening;
+    private bool _isWorkstationPopupOpening;
 
     public ProcessTaskSearchPage(ProcessTaskSearchViewModel vm)
     {
@@ -87,5 +88,18 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
         {
             _isStatusPopupOpening = false;
         }
+    }
+
+    private async void OnWorkstationFilterClicked(object sender, TappedEventArgs e)
+    {
+        if (_isWorkstationPopupOpening) return;
+        try
+        {
+            _isWorkstationPopupOpening = true;
+            var result = await this.ShowPopupAsync(new WorkstationSelectPopup(_vm.WorkOrderApi, _vm.SelectedWorkstations));
+            if (result is IReadOnlyCollection<IndustrialControlMAUI.Models.WorkstationInfo> selected)
+                _vm.SetSelectedWorkstations(selected);
+        }
+        finally { _isWorkstationPopupOpening = false; }
     }
 }

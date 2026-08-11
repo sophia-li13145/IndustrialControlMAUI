@@ -18,6 +18,7 @@ namespace IndustrialControlMAUI.ViewModels
         // 进入页面前如果下拉尚未加载，先把“上一次的值”暂存，等列表准备好后再应用
         private string? _pendingLastProcessValue;
         private readonly IWorkOrderApi _workapi;
+        public IWorkOrderApi WorkOrderApi => _workapi;
 
         /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
@@ -33,6 +34,8 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isStatusDropdownOpen;
         public ObservableCollection<StatusOption> ProcessOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedProcessOption;
+        [ObservableProperty] private string selectedWorkstationSummary = "全部工位";
+        private readonly Dictionary<string, WorkstationInfo> _selectedWorkstations = new(StringComparer.OrdinalIgnoreCase);
 
         readonly Dictionary<string, string> _statusMap = new();      // 状态：值→中文
         readonly Dictionary<string, string> _orderstatusMap = new();    // 工序：code→name
@@ -82,6 +85,7 @@ namespace IndustrialControlMAUI.ViewModels
         {
             try
             {
+                await LoadLoginUserWorkstationAsync();
                 // 1) 状态下拉
                 var bundle = await _workapi.GetWorkProcessTaskDictListAsync();
                 var auditField = bundle?.result?.FirstOrDefault(x =>
@@ -180,6 +184,50 @@ namespace IndustrialControlMAUI.ViewModels
 
                 throw;
             }
+        }
+
+        private async Task LoadLoginUserWorkstationAsync()
+        {
+            var response = await _workapi.GetWorkstationByLoginUserAsync();
+            var code = response.result?.workstationCode?.Trim();
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                SetSelectedWorkstations(Array.Empty<WorkstationInfo>());
+                return;
+            }
+
+            SetSelectedWorkstations(new[]
+            {
+                new WorkstationInfo
+                {
+                    workstationCode = code,
+                    workstationName = code,
+                    workshopsCode = response.result?.workshopsCode,
+                    workshopsName = response.result?.workshopsName,
+                    sourceDeptFullName = response.result?.sourceDeptFullName
+                }
+            });
+        }
+
+        public IReadOnlyCollection<WorkstationInfo> SelectedWorkstations => _selectedWorkstations.Values.ToArray();
+
+        public void SetSelectedWorkstations(IEnumerable<WorkstationInfo> workstations)
+        {
+            _selectedWorkstations.Clear();
+            foreach (var item in workstations)
+            {
+                var code = item.workstationCode?.Trim();
+                if (!string.IsNullOrWhiteSpace(code))
+                    _selectedWorkstations[code] = item;
+            }
+
+            SelectedWorkstationSummary = _selectedWorkstations.Count switch
+            {
+                0 => "全部工位",
+                1 => _selectedWorkstations.Values.First().workstationName
+                     ?? _selectedWorkstations.Keys.First(),
+                _ => $"已选{_selectedWorkstations.Count}个"
+            };
         }
 
         private void AddDefaultStatusOption(string value, string text)
@@ -303,6 +351,7 @@ namespace IndustrialControlMAUI.ViewModels
                 createdTimeStart: byOrderNo ? null : StartDate.Date,
                 createdTimeEnd: byOrderNo ? null : EndDate.Date.AddDays(1).AddSeconds(-1),
                 assignTo: assignTo,
+                workstationCodeList: _selectedWorkstations.Count == 0 ? null : _selectedWorkstations.Keys,
                 pageNo: pageNo,
                 pageSize: PageSize,
                 ct: CancellationToken.None);
@@ -370,6 +419,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             UpdateSelectedStatusSummary();
             Orders.Clear();
+            SetSelectedWorkstations(Array.Empty<WorkstationInfo>());
         }
 
         private void OnStatusOptionPropertyChanged(object? sender, PropertyChangedEventArgs e)
