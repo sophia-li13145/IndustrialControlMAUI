@@ -35,10 +35,8 @@
                                         </DataTrigger>
                                     </Label.Triggers>
                                 </Label>
-                                <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                    <Label Text="{Binding Name}" FontAttributes="Bold" />
-                                    <Label Text="{Binding Code}" FontSize="12" TextColor="#667085" />
-                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding Name}" FontAttributes="Bold"
+                                       VerticalOptions="Center" />
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnItemTapped" />
                                 </Grid.GestureRecognizers>

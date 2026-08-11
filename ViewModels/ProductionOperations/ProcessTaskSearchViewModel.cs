@@ -204,7 +204,6 @@ namespace IndustrialControlMAUI.ViewModels
                 new WorkstationInfo
                 {
                     workstationCode = code,
-                    workstationName = code,
                     workshopsCode = response.result?.workshopsCode,
                     workshopsName = response.result?.workshopsName,
                     sourceDeptFullName = response.result?.sourceDeptFullName
@@ -231,8 +230,7 @@ namespace IndustrialControlMAUI.ViewModels
             SelectedWorkstationSummary = _selectedWorkstations.Count switch
             {
                 0 => "全部工位",
-                1 => _selectedWorkstations.Values.First().workstationName
-                     ?? _selectedWorkstations.Keys.First(),
+                1 => _selectedWorkstations.Values.First().workshopsName ?? string.Empty,
                 _ => $"已选{_selectedWorkstations.Count}个"
             };
         }

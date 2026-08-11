@@ -84,14 +84,14 @@ public partial class WorkstationSelectPopupModel : ObservableObject
         item.IsSelected = !item.IsSelected;
         if (item.IsSelected) _selected[item.Code] = item.Source; else _selected.Remove(item.Code);
         if (_selected.Count == 0)
-            _selected["ALL"] = new WorkstationInfo { workstationCode = "ALL", workstationName = "全部工位" };
+            _selected["ALL"] = new WorkstationInfo { workstationCode = "ALL", workshopsName = "全部工位" };
         UpdateSelectionSummary();
     }
 
     public void ClearSelection()
     {
         _selected.Clear();
-        _selected["ALL"] = new WorkstationInfo { workstationCode = "ALL", workstationName = "全部工位" };
+        _selected["ALL"] = new WorkstationInfo { workstationCode = "ALL", workshopsName = "全部工位" };
         foreach (var item in Items) item.IsSelected = false;
         UpdateSelectionSummary();
     }
@@ -107,7 +107,7 @@ public partial class WorkstationSelectionItem : ObservableObject
 {
     public WorkstationInfo Source { get; }
     public string Code => Source.workstationCode ?? "";
-    public string Name => Source.workstationName ?? Code;
+    public string Name => Source.workshopsName ?? string.Empty;
     [ObservableProperty] private bool isSelected;
     public WorkstationSelectionItem(WorkstationInfo source, bool selected) { Source = source; isSelected = selected; }
 }
