@@ -36,6 +36,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private StatusOption? selectedProcessOption;
         [ObservableProperty] private string selectedWorkstationSummary = "全部工位";
         private readonly Dictionary<string, WorkstationInfo> _selectedWorkstations = new(StringComparer.OrdinalIgnoreCase);
+        private string _workstationCode = string.Empty;
 
         readonly Dictionary<string, string> _statusMap = new();      // 状态：值→中文
         readonly Dictionary<string, string> _orderstatusMap = new();    // 工序：code→name
@@ -192,7 +193,9 @@ namespace IndustrialControlMAUI.ViewModels
             var code = response.result?.workstationCode?.Trim();
             if (string.IsNullOrWhiteSpace(code))
             {
-                SetSelectedWorkstations(Array.Empty<WorkstationInfo>());
+                _selectedWorkstations.Clear();
+                _workstationCode = string.Empty;
+                SelectedWorkstationSummary = "全部工位";
                 return;
             }
 
@@ -220,6 +223,10 @@ namespace IndustrialControlMAUI.ViewModels
                 if (!string.IsNullOrWhiteSpace(code))
                     _selectedWorkstations[code] = item;
             }
+
+            _workstationCode = _selectedWorkstations.ContainsKey("ALL")
+                ? "ALL"
+                : string.Join(",", _selectedWorkstations.Keys);
 
             SelectedWorkstationSummary = _selectedWorkstations.Count switch
             {
@@ -351,7 +358,7 @@ namespace IndustrialControlMAUI.ViewModels
                 createdTimeStart: byOrderNo ? null : StartDate.Date,
                 createdTimeEnd: byOrderNo ? null : EndDate.Date.AddDays(1).AddSeconds(-1),
                 assignTo: assignTo,
-                workstationCodeList: _selectedWorkstations.Count == 0 ? null : _selectedWorkstations.Keys,
+                workstationCode: _workstationCode,
                 pageNo: pageNo,
                 pageSize: PageSize,
                 ct: CancellationToken.None);
@@ -419,7 +426,9 @@ namespace IndustrialControlMAUI.ViewModels
 
             UpdateSelectedStatusSummary();
             Orders.Clear();
-            SetSelectedWorkstations(Array.Empty<WorkstationInfo>());
+            _selectedWorkstations.Clear();
+            _workstationCode = string.Empty;
+            SelectedWorkstationSummary = "全部工位";
         }
 
         private void OnStatusOptionPropertyChanged(object? sender, PropertyChangedEventArgs e)

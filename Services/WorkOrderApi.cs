@@ -422,7 +422,7 @@ namespace IndustrialControlMAUI.Services
     string? platPlanNo = null,
     string? schemeNo = null,
     string? assignTo = null,
-    IEnumerable<string>? workstationCodeList = null,
+    string? workstationCode = null,
     bool? searchCount = null,      // 是否计算总记录数（可选）
     int pageNo = 1,
     int pageSize = 50,
@@ -467,11 +467,8 @@ namespace IndustrialControlMAUI.Services
                 }
             }
 
-            if (workstationCodeList != null)
-            {
-                foreach (var code in workstationCodeList.Where(x => !string.IsNullOrWhiteSpace(x)))
-                    pairs.Add(new KeyValuePair<string, string>("workstationCodeList", code.Trim()));
-            }
+            // 工位接口接收逗号分隔的单个字符串；未绑定工位时也要显式传空值。
+            pairs.Add(new KeyValuePair<string, string>("workstationCode", workstationCode?.Trim() ?? string.Empty));
 
             // 生成 querystring（key 重复）
             string BuildQueryMulti(IEnumerable<KeyValuePair<string, string>> kvs)

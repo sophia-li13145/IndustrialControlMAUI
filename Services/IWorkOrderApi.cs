@@ -36,7 +36,7 @@ namespace IndustrialControlMAUI.Services
          string? platPlanNo = null,
          string? schemeNo = null,
          string? assignTo = null,
-         IEnumerable<string>? workstationCodeList = null,
+         string? workstationCode = null,
          bool? searchCount = null,      // 是否计算总记录数（可选）
          int pageNo = 1,
          int pageSize = 50,
