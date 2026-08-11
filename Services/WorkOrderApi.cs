@@ -492,10 +492,22 @@ namespace IndustrialControlMAUI.Services
 
         public async Task<ApiResp<LoginUserWorkstation>> GetWorkstationByLoginUserAsync(CancellationToken ct = default)
         {
-            using var res = await _http.GetAsync(_loginUserWorkstationEndpoint, ct);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _loginUserWorkstationEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
-            return JsonSerializer.Deserialize<ApiResp<LoginUserWorkstation>>(json, _json)
-                ?? new ApiResp<LoginUserWorkstation> { success = false, message = "empty response" };
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<LoginUserWorkstation> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            try
+            {
+                return JsonSerializer.Deserialize<ApiResp<LoginUserWorkstation>>(json, _json)
+                    ?? new ApiResp<LoginUserWorkstation> { success = false, message = "响应为空" };
+            }
+            catch (JsonException)
+            {
+                return new ApiResp<LoginUserWorkstation> { success = false, message = "登录人工位接口返回了无效数据" };
+            }
         }
 
         public async Task<PageResp<WorkstationInfo>?> PageWorkstationListAsync(int pageNo, int pageSize, string? workstationCode = null, CancellationToken ct = default)
@@ -503,9 +515,22 @@ namespace IndustrialControlMAUI.Services
             var query = $"?pageNo={pageNo}&pageSize={pageSize}&searchCount=true";
             if (!string.IsNullOrWhiteSpace(workstationCode))
                 query += "&workstationCode=" + Uri.EscapeDataString(workstationCode.Trim());
-            using var res = await _http.GetAsync(_workstationPageEndpoint + query, ct);
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _workstationPageEndpoint + query);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            using var res = await _http.SendAsync(req, ct);
             var json = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
-            return JsonSerializer.Deserialize<PageResp<WorkstationInfo>>(json, _json);
+            if (!res.IsSuccessStatusCode)
+                return new PageResp<WorkstationInfo> { success = false, message = $"HTTP {(int)res.StatusCode}" };
+
+            try
+            {
+                return JsonSerializer.Deserialize<PageResp<WorkstationInfo>>(json, _json)
+                    ?? new PageResp<WorkstationInfo> { success = false, message = "响应为空" };
+            }
+            catch (JsonException)
+            {
+                return new PageResp<WorkstationInfo> { success = false, message = "工位分页接口返回了无效数据" };
+            }
         }
 
 
