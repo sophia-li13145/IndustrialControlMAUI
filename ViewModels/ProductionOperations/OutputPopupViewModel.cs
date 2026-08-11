@@ -316,7 +316,7 @@ namespace IndustrialControlMAUI.ViewModels
                     _detail.routeCode,
                     _detail.workOrderNo);
 
-                if (!resp.success || resp.result is null || !resp.result.success)
+                if (!resp.success || resp.result is null)
                 {
                     await Application.Current.MainPage.DisplayAlert("提示", resp.message ?? "获取产出数量失败。", "好的");
                     return;

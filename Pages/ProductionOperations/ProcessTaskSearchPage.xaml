@@ -116,6 +116,15 @@
                     </Grid.GestureRecognizers>
                 </Grid>
             </Grid>
+
+            <Grid HeightRequest="40" BackgroundColor="White">
+                <Label Text="{Binding SelectedWorkstationSummary}" TextColor="#333333"
+                       VerticalOptions="Center" HorizontalOptions="Center" LineBreakMode="TailTruncation" />
+                <BoxView HeightRequest="2" BackgroundColor="#BDBDBD" VerticalOptions="End" />
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnWorkstationFilterClicked" />
+                </Grid.GestureRecognizers>
+            </Grid>
         </VerticalStackLayout>
 
         <!-- 列表（自身可滚动，外面不要再套 ScrollView） -->
