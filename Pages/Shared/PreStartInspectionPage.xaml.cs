@@ -131,7 +131,7 @@ public partial class PreStartInspectionPage : ContentPage
         {
             if (HasDuplicateTool(code))
             {
-                await Shell.Current.DisplayAlert("提示", "该工具工装已在列表中，请勿重复添加", "确定");
+                await Shell.Current.DisplayAlert("提示", "该生产资源已在列表中，请勿重复添加", "确定");
                 ToolScanEntry.Text = string.Empty;
                 return;
             }
@@ -150,7 +150,7 @@ public partial class PreStartInspectionPage : ContentPage
 
             if (HasDuplicateTool(resp.result, code))
             {
-                await Shell.Current.DisplayAlert("提示", "该工具工装已在列表中，请勿重复添加", "确定");
+                await Shell.Current.DisplayAlert("提示", "该生产资源已在列表中，请勿重复添加", "确定");
                 ToolScanEntry.Text = string.Empty;
                 return;
             }
@@ -172,12 +172,12 @@ public partial class PreStartInspectionPage : ContentPage
         if (string.IsNullOrWhiteSpace(code)) return new BarcodeScanFeedback { Success = false };
 
         if (!_pendingToolScanCodes.Add(code))
-            return new BarcodeScanFeedback { Success = false, Message = "正在校验该工具工装，请稍后" };
+            return new BarcodeScanFeedback { Success = false, Message = "正在校验该生产资源，请稍后" };
 
         try
         {
             if (HasDuplicateTool(code))
-                return new BarcodeScanFeedback { Success = false, Message = "该工具工装已在列表中，请继续扫码" };
+                return new BarcodeScanFeedback { Success = false, Message = "该生产资源已在列表中，请继续扫码" };
 
             var resp = await _api.QueryPreStartInspectionResourceAsync(new PmsPreStartInspectionQueryResourceParam
             {
@@ -189,17 +189,17 @@ public partial class PreStartInspectionPage : ContentPage
                 return new BarcodeScanFeedback { Success = false, Message = resp.message ?? "扫描失败，请继续扫码" };
 
             if (HasDuplicateTool(resp.result, code))
-                return new BarcodeScanFeedback { Success = false, Message = "该工具工装已在列表中，请继续扫码" };
+                return new BarcodeScanFeedback { Success = false, Message = "该生产资源已在列表中，请继续扫码" };
 
             await EnsureMaintenanceStatusDictLoadedAsync();
             ApplyMaintenanceStatusText(resp.result);
             _toolRows.Add(resp.result);
             ToolScanEntry.Text = string.Empty;
-            return new BarcodeScanFeedback { Success = true, Message = "工具工装添加成功，请继续扫码" };
+            return new BarcodeScanFeedback { Success = true, Message = "生产资源添加成功，请继续扫码" };
         }
         catch (Exception ex)
         {
-            return new BarcodeScanFeedback { Success = false, Message = $"工具工装扫码异常：{ex.Message}" };
+            return new BarcodeScanFeedback { Success = false, Message = $"生产资源扫码异常：{ex.Message}" };
         }
         finally
         {
