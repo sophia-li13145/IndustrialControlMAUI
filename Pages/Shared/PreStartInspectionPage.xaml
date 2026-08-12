@@ -86,7 +86,7 @@
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnToggleToolSectionTapped"/>
                         </Grid.GestureRecognizers>
-                        <Label Text="工具工装:" Style="{StaticResource SectionTitleStyle}"/>
+                        <Label Text="生产资源:" Style="{StaticResource SectionTitleStyle}"/>
                         <Label Grid.Column="1" Text="◱" TextColor="#22C55E" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
                         <Label x:Name="ToolHeaderToggleLabel" Grid.Column="3" Text="收起 向上" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center"/>
                     </Grid>
@@ -112,7 +112,7 @@
                     </Grid>
                     <CollectionView x:Name="ToolList" Grid.Row="4" SelectionMode="None">
                         <CollectionView.EmptyView>
-                            <Label Text="暂无工具工装" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Label Text="暂无生产资源" TextColor="#9CA3AF" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
