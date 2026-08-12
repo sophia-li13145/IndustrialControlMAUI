@@ -299,6 +299,7 @@ public class EquipmentApi : IEquipmentApi
              string? createdTimeEnd,
              string? inspectStatus,
              bool searchCount,
+             string? workstationCode = null,
              CancellationToken ct = default)
         {
             var p = new Dictionary<string, string>
@@ -311,6 +312,7 @@ public class EquipmentApi : IEquipmentApi
             if (!string.IsNullOrWhiteSpace(createdTimeBegin)) p["createdTimeStart"] = createdTimeBegin;
             if (!string.IsNullOrWhiteSpace(createdTimeEnd)) p["createdTimeEnd"] = createdTimeEnd;
             if (!string.IsNullOrWhiteSpace(inspectStatus)) p["inspectStatus"] = inspectStatus;
+            if (!string.IsNullOrWhiteSpace(workstationCode)) p["workstationCode"] = workstationCode.Trim();
 
             return await GetPageAsync<InspectionRecordDto>(_pageEndpoint, p, ct);
         }
