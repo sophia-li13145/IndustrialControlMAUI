@@ -95,35 +95,37 @@
 
             <!-- 第三行：工序 + 工位，两项等宽铺满 -->
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <Picker Grid.Column="0"
-                        Title="工序"
-                        HeightRequest="40"
-                        HorizontalOptions="Fill"
-                        ItemsSource="{Binding ProcessOptions}"
-                        ItemDisplayBinding="{Binding Text}"
-                        SelectedItem="{Binding SelectedProcessOption}"
-                        BackgroundColor="Transparent"
-                        TextColor="#333333" />
+                <Grid Grid.Column="0" HeightRequest="40" BackgroundColor="White"
+                      HorizontalOptions="Fill">
+                    <Label Text="{Binding SelectedProcessOption.Text}"
+                           TextColor="#333333"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           LineBreakMode="TailTruncation" />
+                    <BoxView HeightRequest="2"
+                             Margin="2,0"
+                             BackgroundColor="#BDBDBD"
+                             VerticalOptions="End" />
+                    <!-- 保留原生单选行为，仅由统一的标签和下划线负责展示。 -->
+                    <Picker Title="工序"
+                            ItemsSource="{Binding ProcessOptions}"
+                            ItemDisplayBinding="{Binding Text}"
+                            SelectedItem="{Binding SelectedProcessOption}"
+                            Opacity="0" />
+                </Grid>
 
                 <Grid Grid.Column="1" HeightRequest="40" BackgroundColor="White"
                       HorizontalOptions="Fill">
                     <Label Text="{Binding SelectedWorkstationSummary}" TextColor="#333333"
                            VerticalOptions="Center" HorizontalOptions="Center"
                            HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" />
-                    <BoxView HeightRequest="2" BackgroundColor="#BDBDBD" VerticalOptions="End" />
+                    <BoxView HeightRequest="2" Margin="2,0"
+                             BackgroundColor="#BDBDBD" VerticalOptions="End" />
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnWorkstationFilterClicked" />
                     </Grid.GestureRecognizers>
                 </Grid>
-            </Grid>
-
-            <Grid HeightRequest="40" BackgroundColor="White">
-                <Label Text="{Binding SelectedWorkstationSummary}" TextColor="#333333"
-                       VerticalOptions="Center" HorizontalOptions="Center" LineBreakMode="TailTruncation" />
-                <BoxView HeightRequest="2" BackgroundColor="#BDBDBD" VerticalOptions="End" />
-                <Grid.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnWorkstationFilterClicked" />
-                </Grid.GestureRecognizers>
             </Grid>
         </VerticalStackLayout>
 
