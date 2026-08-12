@@ -16,6 +16,7 @@ namespace IndustrialControlMAUI.Services
          string? createdTimeEnd,
          string? inspectStatus,
          bool searchCount,
+         string? workstationCode = null,
          CancellationToken ct = default);
 
         Task<DictInspection> GetInspectionDictsAsync(CancellationToken ct = default);

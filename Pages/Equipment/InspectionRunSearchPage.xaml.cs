@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Views;
 using IndustrialControlMAUI.Services;
 using IndustrialControlMAUI.ViewModels;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ namespace IndustrialControlMAUI.Pages;
 public partial class InspectionRunSearchPage : ContentPage
 {
     private readonly InspectionRunSearchViewModel _vm;
+    private bool _isWorkstationPopupOpening;
 
     /// <summary>执行 InspectionRunSearchPage 初始化逻辑。</summary>
     public InspectionRunSearchPage(InspectionRunSearchViewModel vm)
@@ -54,6 +56,24 @@ public partial class InspectionRunSearchPage : ContentPage
             // 使用扫码结果查询
             if (vm.SearchCommand.CanExecute(null))
                 vm.SearchCommand.Execute(null);
+        }
+    }
+
+    private async void OnWorkstationFilterClicked(object sender, TappedEventArgs e)
+    {
+        if (_isWorkstationPopupOpening) return;
+
+        try
+        {
+            _isWorkstationPopupOpening = true;
+            var popup = new WorkstationSelectPopup(_vm.WorkOrderApi, _vm.SelectedWorkstations);
+            var result = await this.ShowPopupAsync(popup);
+            if (result is IReadOnlyCollection<IndustrialControlMAUI.Models.WorkstationInfo> selected)
+                _vm.SetSelectedWorkstations(selected);
+        }
+        finally
+        {
+            _isWorkstationPopupOpening = false;
         }
     }
 }
