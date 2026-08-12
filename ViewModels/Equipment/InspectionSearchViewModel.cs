@@ -11,6 +11,8 @@ namespace IndustrialControlMAUI.ViewModels
     public partial class InspectionSearchViewModel : ObservableObject
     {
         private readonly IEquipmentApi _equipmentapi;
+        private readonly IWorkOrderApi _workOrderApi;
+        public IWorkOrderApi WorkOrderApi => _workOrderApi;
         /// <summary>执行 new 逻辑。</summary>
         [ObservableProperty] private bool isBusy;
         [ObservableProperty] private string? keyword;
@@ -24,6 +26,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> inspectStatusDict = new();
         public ObservableCollection<StatusOption> StatusOptions { get; } = new();
         [ObservableProperty] private StatusOption? selectedStatusOption;
+        [ObservableProperty] private string selectedWorkstationSummary = "全部工位";
+        private readonly Dictionary<string, WorkstationInfo> _selectedWorkstations = new(StringComparer.OrdinalIgnoreCase);
+        private string _workstationCode = string.Empty;
 
         private bool _dictsLoaded = false;
 
@@ -34,13 +39,65 @@ namespace IndustrialControlMAUI.ViewModels
         public IRelayCommand ClearCommand { get; }
 
         /// <summary>执行 InspectionSearchViewModel 初始化逻辑。</summary>
-        public InspectionSearchViewModel(IEquipmentApi equipmentapi)
+        public InspectionSearchViewModel(IEquipmentApi equipmentapi, IWorkOrderApi workOrderApi)
         {
             _equipmentapi = equipmentapi;
+            _workOrderApi = workOrderApi;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
-            _ = EnsureDictsLoadedAsync();   // fire-and-forget
+            _ = InitializeFiltersAsync();   // fire-and-forget
            
+        }
+
+        private async Task InitializeFiltersAsync()
+        {
+            await Task.WhenAll(EnsureDictsLoadedAsync(), LoadLoginUserWorkstationAsync());
+        }
+
+        private async Task LoadLoginUserWorkstationAsync()
+        {
+            var response = await _workOrderApi.GetWorkstationByLoginUserAsync();
+            var code = response.result?.workstationCode?.Trim();
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                SetSelectedWorkstations(Array.Empty<WorkstationInfo>());
+                return;
+            }
+
+            SetSelectedWorkstations(new[]
+            {
+                new WorkstationInfo
+                {
+                    workstationCode = code,
+                    workshopsCode = response.result?.workshopsCode,
+                    workshopsName = response.result?.workshopsName,
+                    sourceDeptFullName = response.result?.sourceDeptFullName
+                }
+            });
+        }
+
+        public IReadOnlyCollection<WorkstationInfo> SelectedWorkstations => _selectedWorkstations.Values.ToArray();
+
+        public void SetSelectedWorkstations(IEnumerable<WorkstationInfo> workstations)
+        {
+            _selectedWorkstations.Clear();
+            foreach (var item in workstations)
+            {
+                var code = item.workstationCode?.Trim();
+                if (!string.IsNullOrWhiteSpace(code))
+                    _selectedWorkstations[code] = item;
+            }
+
+            _workstationCode = _selectedWorkstations.ContainsKey("ALL")
+                ? "ALL"
+                : string.Join(",", _selectedWorkstations.Keys);
+
+            SelectedWorkstationSummary = _selectedWorkstations.Count switch
+            {
+                0 => "全部工位",
+                1 => _selectedWorkstations.Values.First().workshopsName ?? string.Empty,
+                _ => $"已选{_selectedWorkstations.Count}个"
+            };
         }
         /// <summary>执行 EnsureDictsLoadedAsync 逻辑。</summary>
         private async Task EnsureDictsLoadedAsync()
@@ -147,6 +204,7 @@ namespace IndustrialControlMAUI.ViewModels
                 createdTimeBegin: createdTimeBegin,
                 createdTimeEnd: createdTimeEnd,
                 inspectStatus: inspectStatus,
+                workstationCode: _workstationCode,
                 searchCount: searchCount);
 
             var records = resp?.result?.records ?? new List<InspectionRecordDto>();
@@ -190,6 +248,7 @@ namespace IndustrialControlMAUI.ViewModels
             PageIndex = 1;
             HasMore = true;
             SelectedStatusOption = StatusOptions.FirstOrDefault();
+            SetSelectedWorkstations(Array.Empty<WorkstationInfo>());
             Orders.Clear();
         }
 
