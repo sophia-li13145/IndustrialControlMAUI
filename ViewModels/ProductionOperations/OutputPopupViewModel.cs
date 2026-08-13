@@ -34,13 +34,25 @@ namespace IndustrialControlMAUI.ViewModels
 
         public OutputPopupViewModel(IWorkOrderApi? api = null) => _api = api;
 
-        public void Init(
+        public async Task InitAsync(
             IEnumerable<TaskMaterialOutput> materialOutputList,
             TaskMaterialOutput? presetMaterialCode = null,
             WorkProcessTaskDetail? detail = null)
         {
             _detail = detail;
-            ShowBatchBarcodeScanButton = detail?.finalProcess == true;
+            ShowBatchBarcodeScanButton = false;
+            if (_api is not null)
+            {
+                try
+                {
+                    var switchStatus = await _api.GetProduceScanButtonSwitchStatusAsync();
+                    ShowBatchBarcodeScanButton = switchStatus.result == true && detail?.finalProcess == true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"获取产出扫描按钮开关状态失败：{ex}");
+                }
+            }
             MaterialOptions.Clear();
             SelectedFrames.Clear();
             ScannedBarcodes.Clear();

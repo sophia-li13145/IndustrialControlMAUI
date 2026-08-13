@@ -36,7 +36,7 @@ public partial class OutputPopupPage : ContentPage
                 : new OutputPopupViewModel();
 
         // 2) 初始化 VM 并绑定
-        vm.Init(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial, detail);
+        await vm.InitAsync(materialOutputList ?? Enumerable.Empty<TaskMaterialOutput>(), presetMaterial, detail);
         vm.SetResultTcs(tcs);
 
         // 3) 打开弹窗并等待结果

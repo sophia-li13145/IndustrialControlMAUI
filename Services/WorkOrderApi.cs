@@ -25,6 +25,7 @@ namespace IndustrialControlMAUI.Services
         private readonly string _workProcessTaskDictEndpoint;
         private readonly string _processInfoListEndpoint;
         private readonly string _workProcessTaskDetailEndpoint;
+        private readonly string _produceScanButtonSwitchStatusEndpoint;
         private readonly string _shiftEndpoint;
         private readonly string _deviceEndpoint;
         private readonly string _updateTeamEndpoint;
@@ -120,6 +121,8 @@ namespace IndustrialControlMAUI.Services
                 configLoader.GetApiPath("workOrder.ProcessList", "/pda/pmsWorkOrder/PmsProcessInfoList"), servicePath);
             _workProcessTaskDetailEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.ProcessDetail", "/pda/pmsWorkOrder/getWorkProcessTaskDetail"), servicePath);
+            _produceScanButtonSwitchStatusEndpoint = ServiceUrlHelper.NormalizeRelative(
+                configLoader.GetApiPath("workOrder.produceScanButtonSwitchStatus", "/pda/pmsWorkOrder/getProduceScanBtnSwitchStatus"), servicePath);
             _loginUserWorkstationEndpoint = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("workOrder.loginUserWorkstation", "/pda/pmsWorkOrder/getWorkstationByLoginUser"), servicePath);
             _workstationPageEndpoint = ServiceUrlHelper.NormalizeRelative(
@@ -584,6 +587,17 @@ namespace IndustrialControlMAUI.Services
             await using var stream = await resp.Content.ReadAsStreamAsync(ct);
             var data = await JsonSerializer.DeserializeAsync<ApiResp<WorkProcessTaskDetail>>(stream, _json, ct);
             return data ?? new ApiResp<WorkProcessTaskDetail> { success = false, message = "empty response" };
+        }
+
+        public async Task<ApiResp<bool?>> GetProduceScanButtonSwitchStatusAsync(CancellationToken ct = default)
+        {
+            var full = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _produceScanButtonSwitchStatusEndpoint);
+            using var req = new HttpRequestMessage(HttpMethod.Get, new Uri(full, UriKind.Absolute));
+            var resp = await _http.SendAsync(req, ct);
+            resp.EnsureSuccessStatusCode();
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<ApiResp<bool?>>(stream, _json, ct);
+            return data ?? new ApiResp<bool?> { success = false, message = "empty response" };
         }
 
         public async Task<ApiResp<List<ShiftInfo>>> GetShiftOptionsAsync(

@@ -46,6 +46,7 @@ namespace IndustrialControlMAUI.Services
         Task<PageResp<WorkstationInfo>?> PageWorkstationListAsync(int pageNo, int pageSize, string? workstationCode = null, CancellationToken ct = default);
         Task<ApiResp<List<ProcessInfo>>> GetProcessInfoListAsync(CancellationToken ct = default);
         Task<ApiResp<WorkProcessTaskDetail>> GetWorkProcessTaskDetailAsync(string id, CancellationToken ct = default);
+        Task<ApiResp<bool?>> GetProduceScanButtonSwitchStatusAsync(CancellationToken ct = default);
         Task<ApiResp<PreStartInspectionScanResourceDto>> QueryPreStartInspectionResourceAsync(PmsPreStartInspectionQueryResourceParam req, CancellationToken ct = default);
         Task<ApiResp<PreStartInspectionScanMaterialDto>> QueryPreStartInspectionMaterialAsync(PmsPreStartInspectionQueryMaterialParam req, CancellationToken ct = default);
         Task<ApiResp<bool?>> ConfirmPreStartInspectionScansAsync(PmsPreStartInspectionConfirmScansParam req, CancellationToken ct = default);
