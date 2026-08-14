@@ -6,6 +6,11 @@ internal static class QualityDecimalInputHelper
 
     public static bool RejectIfTooManyDecimalPlaces(Entry entry, TextChangedEventArgs e)
     {
+        if (entry.BindingContext is IndustrialControlMAUI.Models.QualityItem { IsTextStandardValue: true })
+        {
+            return false;
+        }
+
         if (!HasTooManyDecimalPlaces(e.NewTextValue))
         {
             return false;
