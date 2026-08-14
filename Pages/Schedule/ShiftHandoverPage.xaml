@@ -142,10 +142,10 @@
 
                             <Label Grid.Row="2" Text="接班班组  ⚙" FontSize="11" TextColor="#667085" VerticalOptions="Center" />
                             <Border Grid.Row="2" Grid.Column="1" BackgroundColor="White" Stroke="#ABCFFF"
-                                    StrokeShape="RoundRectangle 7" Padding="8,0" MinimumWidthRequest="136" HeightRequest="34">
+                                    StrokeShape="RoundRectangle 7" Padding="8,0" MinimumWidthRequest="136" HeightRequest="44">
                                 <Picker ItemsSource="{Binding ReceiverTeams}" SelectedItem="{Binding SelectedReceiverTeam}"
                                         ItemDisplayBinding="{Binding TeamName}" FontSize="12" TextColor="#1262E3"
-                                        Title="请选择接班班组" />
+                                        Title="请选择接班班组" VerticalOptions="Center" />
                             </Border>
                         </Grid>
                     </Border>
