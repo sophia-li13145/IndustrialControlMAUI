@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="IndustrialControlMAUI.Pages.TodoTaskPage"
+             x:Name="Page"
+             BackgroundColor="#F5F6F8"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="56,Auto,*">
+        <Grid BackgroundColor="#1688F8" Padding="18,0" ColumnDefinitions="*,Auto">
+            <Label Text="联创云工软平台"
+                   VerticalOptions="Center"
+                   TextColor="White"
+                   FontSize="19"
+                   FontAttributes="Bold" />
+            <Button Grid.Column="1"
+                    Text="退出登录"
+                    TextColor="White"
+                    BackgroundColor="#58A9FA"
+                    CornerRadius="16"
+                    Padding="14,5"
+                    FontSize="13"
+                    VerticalOptions="Center"
+                    Clicked="OnLogoutClicked" />
+        </Grid>
+
+        <Grid Grid.Row="1" Padding="14,12,14,8" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Border BackgroundColor="White" Stroke="#E2E6EC" StrokeShape="RoundRectangle 9" Padding="12,0">
+                <Entry Placeholder="请输入任务单号"
+                       Text="{Binding TaskNo}"
+                       ReturnType="Search"
+                       ReturnCommand="{Binding SearchCommand}" />
+            </Border>
+            <Button Grid.Column="1" Text="查询" Command="{Binding SearchCommand}"
+                    BackgroundColor="#1688F8" TextColor="White" CornerRadius="9" />
+        </Grid>
+
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <Grid>
+                <CollectionView ItemsSource="{Binding Tasks}"
+                                SelectionMode="None"
+                                RemainingItemsThreshold="2"
+                                RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.Header>
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="#D83B3B"
+                               HorizontalTextAlignment="Center"
+                               Margin="16,6,16,10" />
+                    </CollectionView.Header>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="14,0" Padding="18,16"
+                                    BackgroundColor="White" Stroke="#ECEEF2"
+                                    StrokeShape="RoundRectangle 14">
+                                <Border.Shadow>
+                                    <Shadow Brush="#18000000" Offset="0,2" Radius="7" Opacity="0.5" />
+                                </Border.Shadow>
+                                <Grid RowDefinitions="Auto,1,Auto,Auto" ColumnDefinitions="Auto,*,Auto"
+                                      RowSpacing="13" ColumnSpacing="6">
+                                    <Label Text="单号：" TextColor="#63738B" FontAttributes="Bold" />
+                                    <Label Grid.Column="1" Text="{Binding taskNo}" TextColor="#263A55"
+                                           FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                                    <Border Grid.Column="2" Padding="10,4"
+                                            BackgroundColor="{Binding StatusBackgroundColor}"
+                                            Stroke="{Binding StatusColor}" StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 3">
+                                        <Label Text="{Binding statusName}" TextColor="{Binding StatusColor}"
+                                               FontSize="12" FontAttributes="Bold" />
+                                    </Border>
+                                    <BoxView Grid.Row="1" Grid.ColumnSpan="3" Color="#EEF0F3" HeightRequest="1" />
+                                    <Label Grid.Row="2" Text="任务名称：" TextColor="#63738B" />
+                                    <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding taskName}"
+                                           TextColor="#263A55" LineBreakMode="TailTruncation" />
+                                    <VerticalStackLayout Grid.Row="3" Grid.ColumnSpan="3" Spacing="10">
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="任务类型：" TextColor="#63738B" />
+                                            <Label Text="{Binding taskTypeName}" TextColor="#263A55" />
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="创建日期：" TextColor="#63738B" />
+                                            <Label Text="{Binding createdTime}" TextColor="#263A55" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference Page}, Path=BindingContext.OpenTaskCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.Footer>
+                        <ActivityIndicator IsRunning="{Binding IsLoadingMore}" Margin="0,12,0,18" />
+                    </CollectionView.Footer>
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout Margin="30,100" Spacing="12" HorizontalOptions="Center">
+                            <Label Text="✓" FontSize="44" TextColor="#B8C2CF" HorizontalTextAlignment="Center" />
+                            <Label Text="暂无待办事项" TextColor="#8B98A8" FontSize="15" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="#1688F8"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+            </Grid>
+        </RefreshView>
+    </Grid>
+</ContentPage>
