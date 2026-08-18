@@ -23,7 +23,7 @@
                     Clicked="OnLogoutClicked" />
         </Grid>
 
-        <Grid Grid.Row="1" Padding="14,12,14,8" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <Grid Grid.Row="1" Padding="14,12,14,2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
             <Border BackgroundColor="White" Stroke="#E2E6EC" StrokeShape="RoundRectangle 9" Padding="12,0">
                 <Entry Placeholder="请输入任务单号"
                        Text="{Binding TaskNo}"
@@ -47,9 +47,10 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.Header>
                         <Label Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding HasError}"
                                TextColor="#D83B3B"
                                HorizontalTextAlignment="Center"
-                               Margin="16,6,16,10" />
+                               Margin="16,2,16,4" />
                     </CollectionView.Header>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>

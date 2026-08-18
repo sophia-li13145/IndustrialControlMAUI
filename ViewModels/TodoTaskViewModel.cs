@@ -24,6 +24,7 @@ public partial class TodoTaskViewModel : ObservableObject
     [ObservableProperty] private string? errorMessage;
 
     public bool IsEmpty => !IsBusy && Tasks.Count == 0 && string.IsNullOrWhiteSpace(ErrorMessage);
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     public TodoTaskViewModel(ITodoTaskApi api) => _api = api;
 
@@ -31,6 +32,8 @@ public partial class TodoTaskViewModel : ObservableObject
     {
         if (Shell.Current is AppShell shell) shell.UpdateTodoCount(value);
     }
+
+    partial void OnErrorMessageChanged(string? value) => OnPropertyChanged(nameof(HasError));
 
     [RelayCommand]
     public async Task RefreshAsync()
