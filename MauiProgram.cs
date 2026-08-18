@@ -54,6 +54,7 @@ namespace IndustrialControlMAUI
             // ===== 注册 ViewModels =====
             builder.Services.AddTransient<ViewModels.LoginViewModel>();
             builder.Services.AddTransient<ViewModels.HomeViewModel>();
+            builder.Services.AddTransient<ViewModels.TodoTaskViewModel>();
             builder.Services.AddTransient<DutyRosterViewModel>();
             builder.Services.AddTransient<ShiftHandoverViewModel>();
             builder.Services.AddTransient<ViewModels.AdminViewModel>();
@@ -132,6 +133,7 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<Pages.DutyRosterPage>();
             builder.Services.AddTransient<Pages.ShiftHandoverPage>();
             builder.Services.AddTransient<Pages.HomePage>();
+            builder.Services.AddTransient<Pages.TodoTaskPage>();
             builder.Services.AddTransient<Pages.AdminPage>();
             builder.Services.AddTransient<Pages.LogsPage>();
 
@@ -216,6 +218,10 @@ namespace IndustrialControlMAUI
             builder.Services.AddTransient<AuthHeaderHandler>();
 
             builder.Services.AddHttpClient<IWorkOrderApi, WorkOrderApi>(ConfigureBaseAddress)
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .AddHttpMessageHandler<TokenExpiredHandler>();
+
+            builder.Services.AddHttpClient<ITodoTaskApi, TodoTaskApi>(ConfigureBaseAddress)
                 .AddHttpMessageHandler<AuthHeaderHandler>()
                 .AddHttpMessageHandler<TokenExpiredHandler>();
 

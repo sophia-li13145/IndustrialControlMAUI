@@ -5,6 +5,7 @@ namespace IndustrialControlMAUI;
 public partial class AppShell : Shell
 {
     private readonly IServiceProvider _sp;
+    private Tab? _todoTab;
     public const string RouteHome = "//Home";
     public const string RouteLogin = "//Login";
     public AppShell(IServiceProvider sp)
@@ -104,12 +105,30 @@ public partial class AppShell : Shell
     private void BuildTabs(bool authed)
     {
         Items.Clear();
+        _todoTab = null;
 
         var bar = new TabBar();
         var startTab = CreateStartTab(authed);
 
         // 先添加启动页，避免 Shell 在添加第一个 Tab（日志）后保持选中日志页。
         bar.Items.Add(startTab);
+
+        if (authed)
+        {
+            _todoTab = new Tab
+            {
+                Title = "待办",
+                Items =
+                {
+                    new ShellContent
+                    {
+                        Route = "Todo",
+                        ContentTemplate = new DataTemplate(() => _sp.GetRequiredService<Pages.TodoTaskPage>())
+                    }
+                }
+            };
+            bar.Items.Add(_todoTab);
+        }
 
         // 公共：日志
         bar.Items.Add(new Tab
@@ -144,6 +163,11 @@ public partial class AppShell : Shell
         bar.CurrentItem = startTab;
         CurrentItem = bar;
     }
+
+    public void UpdateTodoCount(long count) => MainThread.BeginInvokeOnMainThread(() =>
+    {
+        if (_todoTab is not null) _todoTab.Title = count > 0 ? $"待办 ({count})" : "待办";
+    });
 
     private Tab CreateStartTab(bool authed)
     {
