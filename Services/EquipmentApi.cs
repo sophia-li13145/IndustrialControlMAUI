@@ -438,11 +438,16 @@ public class EquipmentApi : IEquipmentApi
                 string.Equals(f.field, "maintainType", StringComparison.OrdinalIgnoreCase))
                 ?.dictItems ?? new List<DictItem>();
 
+            var description = all.FirstOrDefault(f =>
+                string.Equals(f.field, "description", StringComparison.OrdinalIgnoreCase))
+                ?.dictItems ?? new List<DictItem>();
+
             return new DictRepair
             {
                 AuditStatus = auditStatus,
                 Urgent = urgent,
-                MaintainType = maintainType
+                MaintainType = maintainType,
+                Description = description
             };
         }
 
