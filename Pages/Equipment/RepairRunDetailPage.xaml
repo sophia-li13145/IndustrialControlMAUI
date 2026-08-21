@@ -131,7 +131,7 @@
                         <Label Grid.Row="5" Grid.Column="0" Text="异常现象：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.maintainReportDomain.phenomena}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="6" Grid.Column="0" Text="异常描述：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.maintainReportDomain.description}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.DescriptionText}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="7" Grid.Column="0" Text="备注：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Detail.maintainReportDomain.memo}" Style="{StaticResource FieldValue}" />
                     </Grid>

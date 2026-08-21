@@ -204,7 +204,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                     if (Detail.maintainReportDomain is not null)
                     {
-                        Detail.maintainReportDomain.description = FormatDescription(
+                        Detail.DescriptionText = FormatDescription(
                             Detail.maintainReportDomain.description,
                             descriptionMap);
                     }

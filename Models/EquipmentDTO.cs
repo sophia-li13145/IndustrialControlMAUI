@@ -695,6 +695,7 @@ public partial class RepairDetailDto : ObservableObject
     [ObservableProperty] private string? maintainTypeText;
     [ObservableProperty] private string? mainRepairUserText;
     [ObservableProperty] private string? assitRepairUsersText;
+    [ObservableProperty] private string? descriptionText;
 
     public string? factoryCode { get; set; }
     public string? factoryName { get; set; }
@@ -704,7 +705,9 @@ public partial class RepairDetailDto : ObservableObject
     public string? mainRepairUser { get; set; }
     public string? assitRepairUsers { get; set; }
 
-    [ObservableProperty] private string? expectedRepairDate;
+    [ObservableProperty]
+    [property: JsonPropertyName("expectedRepairDate")]
+    private string? expectedRepairDate;
     public string? acceptanceOpinion { get; set; }
     public string? acceptor { get; set; }
     public string? completedRepairDate { get; set; }
@@ -1373,6 +1376,4 @@ public class BuildExceptAttachment
     public string? id { get; set; }
     public string? memo { get; set; }
 }
-
-
 
