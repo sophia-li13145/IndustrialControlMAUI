@@ -204,6 +204,7 @@ namespace IndustrialControlMAUI.ViewModels
 
                     if (Detail.maintainReportDomain is not null)
                     {
+                        Detail.ExpectedRepairDate = Detail.maintainReportDomain.expectedRepairDate;
                         Detail.DescriptionText = FormatDescription(
                             Detail.maintainReportDomain.description,
                             descriptionMap);
