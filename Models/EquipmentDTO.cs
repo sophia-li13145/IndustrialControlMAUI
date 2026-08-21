@@ -675,6 +675,8 @@ public class DictRepair
     public List<DictItem> Urgent { get; set; } = new();
 
     public List<DictItem> MaintainType { get; set; } = new();
+
+    public List<DictItem> Description { get; set; } = new();
 }
 
 
@@ -693,6 +695,7 @@ public partial class RepairDetailDto : ObservableObject
     [ObservableProperty] private string? maintainTypeText;
     [ObservableProperty] private string? mainRepairUserText;
     [ObservableProperty] private string? assitRepairUsersText;
+    [ObservableProperty] private string? descriptionText;
 
     public string? factoryCode { get; set; }
     public string? factoryName { get; set; }
@@ -1371,7 +1374,3 @@ public class BuildExceptAttachment
     public string? id { get; set; }
     public string? memo { get; set; }
 }
-
-
-
-
