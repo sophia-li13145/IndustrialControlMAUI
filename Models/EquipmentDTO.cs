@@ -675,6 +675,8 @@ public class DictRepair
     public List<DictItem> Urgent { get; set; } = new();
 
     public List<DictItem> MaintainType { get; set; } = new();
+
+    public List<DictItem> Description { get; set; } = new();
 }
 
 
@@ -1371,7 +1373,6 @@ public class BuildExceptAttachment
     public string? id { get; set; }
     public string? memo { get; set; }
 }
-
 
 
 

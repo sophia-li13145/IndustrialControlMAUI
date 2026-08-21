@@ -47,6 +47,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private List<DictItem> repairStatusDict = new();
         [ObservableProperty] private List<DictItem> urgentDict = new();
         [ObservableProperty] private List<DictItem> repairTypeDict = new();
+        [ObservableProperty] private List<DictItem> descriptionDict = new();
 
         /// <summary>执行 RepairDetailViewModel 初始化逻辑。</summary>
         public RepairDetailViewModel(IEquipmentApi api, IAttachmentApi attachmentApi, IAuthApi authapi)
@@ -69,6 +70,7 @@ namespace IndustrialControlMAUI.ViewModels
                 RepairStatusDict = dicts.AuditStatus;
                 UrgentDict = dicts.Urgent;
                 RepairTypeDict = dicts.MaintainType;
+                DescriptionDict = dicts.Description;
                  _dictsLoaded = true;
             }
             catch (Exception ex)
@@ -126,6 +128,15 @@ namespace IndustrialControlMAUI.ViewModels
            v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
            StringComparer.OrdinalIgnoreCase
        ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var descriptionMap = DescriptionDict?
+           .Where(d => !string.IsNullOrWhiteSpace(d.dictItemValue))
+           .GroupBy(d => d.dictItemValue!, StringComparer.OrdinalIgnoreCase)
+           .Select(g => g.First())
+           .ToDictionary(
+           k => k.dictItemValue!,
+           v => string.IsNullOrWhiteSpace(v.dictItemName) ? v.dictItemValue! : v.dictItemName!,
+           StringComparer.OrdinalIgnoreCase
+       ) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             if (IsBusy || string.IsNullOrWhiteSpace(_id)) return;
             IsBusy = true;
             try
@@ -146,13 +157,18 @@ namespace IndustrialControlMAUI.ViewModels
                     Detail.MaintainTypeText = typeMap.TryGetValue(Detail.maintainType ?? "", out var sName)
                             ? sName
                             : Detail.maintainType;
+                    if (Detail.maintainReportDomain is not null)
+                    {
+                        Detail.maintainReportDomain.description = FormatDescription(
+                            Detail.maintainReportDomain.description,
+                            descriptionMap);
+                    }
                     Detail.MainRepairUserText = AllUsers.Where(x => x.username == Detail.mainRepairUser).FirstOrDefault()?.realname;
                     var assiUsers = Detail.assitRepairUsers?.Split(',').ToList();
                     if (assiUsers != null)
                         Detail.AssitRepairUsersText = string.Join(",", AllUsers.Where(x => assiUsers.Contains(x.username)).Select(x => x.realname).ToList());
                     Detail.RepairStartTime = Detail.RepairStartTime;
                     Detail.RepairEndTime = Detail.RepairEndTime;
-                    Detail.ExpectedRepairDate = Detail.maintainReportDomain?.expectedRepairDate;
                 });
                 //异常图片
                 ErrorAttachments.Clear();
@@ -239,6 +255,19 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        /// <summary>将逗号分隔的异常描述编码转换为字典名称并重新拼接。</summary>
+        private static string? FormatDescription(string? description, Dictionary<string, string> descriptionMap)
+        {
+            if (string.IsNullOrWhiteSpace(description)) return description;
+
+            var names = description
+                .Split(new[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(value => descriptionMap.TryGetValue(value, out var name) ? name : value)
+                .Where(value => !string.IsNullOrWhiteSpace(value));
+
+            return string.Join(",", names);
         }
         /// <summary>执行 LoadPreviewThumbnailsAsync 逻辑。</summary>
         private async Task LoadPreviewThumbnailsAsync()
