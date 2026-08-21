@@ -123,7 +123,7 @@
                         <Label Grid.Row="3" Grid.Column="0" Text="紧急程度：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="3" Grid.Column="1" Text="{Binding Detail.UrgentText}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="3" Grid.Column="2" Text="期望修复日期：" Style="{StaticResource FieldLabel}" />
-                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding Detail.ExpectedRepairDate}" Style="{StaticResource FieldValue}" />
+                        <Label Grid.Row="3" Grid.Column="3" Text="{Binding Detail.maintainReportDomain.expectedRepairDate}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="4" Grid.Column="0" Text="指派给：" Style="{StaticResource FieldLabel}" />
                         <Label Grid.Row="4" Grid.Column="1" Text="{Binding Detail.assignToName}" Style="{StaticResource FieldValue}" />
                         <Label Grid.Row="4" Grid.Column="2" Text="维修内修：" Style="{StaticResource FieldLabel}" />

@@ -1376,4 +1376,3 @@ public class BuildExceptAttachment
     public string? id { get; set; }
     public string? memo { get; set; }
 }
-
