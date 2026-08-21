@@ -705,7 +705,9 @@ public partial class RepairDetailDto : ObservableObject
     public string? mainRepairUser { get; set; }
     public string? assitRepairUsers { get; set; }
 
-    [ObservableProperty] private string? expectedRepairDate;
+    [ObservableProperty]
+    [property: JsonPropertyName("expectedRepairDate")]
+    private string? expectedRepairDate;
     public string? acceptanceOpinion { get; set; }
     public string? acceptor { get; set; }
     public string? completedRepairDate { get; set; }
