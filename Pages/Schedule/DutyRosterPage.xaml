@@ -106,10 +106,15 @@
                                                 <DataTemplate>
                                                     <VerticalStackLayout Spacing="6">
                                                         <Label Text="{Binding TeamName, StringFormat='▥ {0}'}" FontSize="12" TextColor="#7A8699" />
-                                                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding MemberList}" Spacing="14">
+                                                        <FlexLayout BindableLayout.ItemsSource="{Binding MemberList}"
+                                                                    Direction="Row"
+                                                                    Wrap="Wrap"
+                                                                    AlignItems="Start">
                                                             <BindableLayout.ItemTemplate>
                                                                 <DataTemplate>
-                                                                    <Grid WidthRequest="46">
+                                                                    <Grid FlexLayout.Basis="16.666667%"
+                                                                          Padding="2,0"
+                                                                          HorizontalOptions="Fill">
                                                                         <VerticalStackLayout HorizontalOptions="Center" Spacing="3">
                                                                             <Border HeightRequest="34" WidthRequest="34" BackgroundColor="#EEF5FF" Stroke="#BBD6FF" StrokeShape="RoundRectangle 17">
                                                                                 <Label Text="{Binding DisplayName}" FontSize="16" FontAttributes="Bold" TextColor="#1262E3" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
@@ -123,7 +128,7 @@
                                                                     </Grid>
                                                                 </DataTemplate>
                                                             </BindableLayout.ItemTemplate>
-                                                        </HorizontalStackLayout>
+                                                        </FlexLayout>
                                                         <Border BackgroundColor="#F8FAFD" Stroke="#F8FAFD" StrokeShape="RoundRectangle 4" Padding="8,5" IsVisible="{Binding EmptyText, Converter={StaticResource NullToBoolConverter}}">
                                                             <Label Text="{Binding EmptyText}" FontSize="11" TextColor="#98A2B3" HorizontalTextAlignment="Center" />
                                                         </Border>
