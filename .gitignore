@@ -16,22 +16,16 @@ obj/
 .idea/
 *.sln.iml
 
-## MAUI 平台输出
-# Android
+## Android 编译/发布产物
 *.apk
 *.aab
-platforms/android/
-**/bin/Debug/
-**/bin/Release/
 
-# iOS / MacCatalyst
+## iOS / MacCatalyst 编译/发布产物
 *.app
 *.ipa
 *.dSYM
-platforms/ios/
-platforms/maccatalyst/
 
-# Windows
+## Windows 编译/发布产物
 *.appx
 *.appxbundle
 *.msix
@@ -53,9 +47,7 @@ AppPackages/
 ## NuGet
 *.nupkg
 *.snupkg
-# 包缓存目录
 packages/
-# NuGet 本地源
 .nuget/
 
 ## 发布/打包文件
@@ -67,8 +59,8 @@ appsettings.Development.json
 appsettings.Local.json
 local.settings.json
 
-## 其他
-# macOS
+## macOS
 .DS_Store
-# Windows 缩略图
+
+## Windows 缩略图
 Thumbs.db
