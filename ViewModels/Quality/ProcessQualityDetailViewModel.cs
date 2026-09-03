@@ -109,6 +109,9 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isEditing = true;
         public bool IsProcessQualityTypeVisible => Detail?.enableProcessQuality == true;
         public bool IsUnqualifiedMaterialRequired => (Detail?.totalUnqualified ?? 0m) > 0m;
+
+        /// <summary>数采质检结果开关：开=true 展示检验设备/参数/时间/自动检验/查看明细；关=false(默认)隐藏。</summary>
+        [ObservableProperty] private bool isQualityResultVisible;
         public bool IsReworkVisible =>
             !string.IsNullOrWhiteSpace(Detail?.orderNumber)
             && (Detail?.workOrderStatus is "1" or "2" or "4");
@@ -450,6 +453,18 @@ namespace IndustrialControlMAUI.ViewModels
                 // —— 只在这里手动触发一次计算，保证初值显示一致 ——
                 Detail?.Recalc();
                 IsEditing = !IsCompletedStatus(Detail?.inspectStatus);
+
+                // 数采质检结果开关：控制检验设备/参数/时间/自动检验/查看明细的可见性（默认关）
+                try
+                {
+                    var sw = await _workOrderApi.GetSpecialSwitchAsync("qs_data_collection_quality_result_switch", _cts.Token);
+                    IsQualityResultVisible = sw?.success == true && sw?.result == true;
+                }
+                catch (Exception ex)
+                {
+                    IsQualityResultVisible = false; // 接口异常时按默认关处理
+                    await ShowTip($"获取数采质检结果开关失败：{ex.Message}, ProcessQualityDetailViewModel");
+                }
 
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();

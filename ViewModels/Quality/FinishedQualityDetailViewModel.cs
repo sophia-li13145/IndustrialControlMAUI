@@ -18,6 +18,7 @@ namespace IndustrialControlMAUI.ViewModels
         private readonly IQualityApi _api;
         private readonly IAuthApi _authApi;
         private readonly IAttachmentApi _attachmentApi;
+        private readonly IWorkOrderApi _workOrderApi;
         private readonly CancellationTokenSource _cts = new();
         private const string Folder = "quality";
         private const string LocationFile = "table";
@@ -71,6 +72,9 @@ namespace IndustrialControlMAUI.ViewModels
 
         // 可编辑开关（如需控制 Entry/Picker 的 IsEnabled）
         [ObservableProperty] private bool isEditing = true;
+
+        /// <summary>数采质检结果开关：开=true 展示检验设备/参数/时间/自动检验/查看明细；关=false(默认)隐藏。</summary>
+        [ObservableProperty] private bool isQualityResultVisible;
         public bool IsReworkVisible =>
             !string.IsNullOrWhiteSpace(Detail?.orderNumber)
             && (Detail?.workOrderStatus is "1" or "2" or "4");
@@ -83,7 +87,7 @@ namespace IndustrialControlMAUI.ViewModels
         public IReadOnlyList<string> InspectResultTextList { get; } = new[] { "合格", "不合格" };
 
         /// <summary>执行 FinishedQualityDetailViewModel 初始化逻辑。</summary>
-        public FinishedQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi)
+        public FinishedQualityDetailViewModel(IQualityApi api, IAuthApi authApi, IAttachmentApi attachmentApi, IWorkOrderApi workOrderApi)
         {
             _api = api;
             _authApi = authApi;
@@ -95,6 +99,7 @@ namespace IndustrialControlMAUI.ViewModels
             InspectorSuggestions = new ObservableCollection<UserInfoDto>();
             AllUsers = new List<UserInfoDto>();
             _attachmentApi = attachmentApi;
+            _workOrderApi = workOrderApi;
             ImageAttachments.CollectionChanged += (_, _) => RefreshExceptionPhotoTip();
         }
 
@@ -396,6 +401,18 @@ namespace IndustrialControlMAUI.ViewModels
                 Detail?.Recalc();
 
                 IsEditing = !_forceReadOnly && !IsCompletedStatus(Detail?.inspectStatus);
+
+                // 数采质检结果开关：控制检验设备/参数/时间/自动检验/查看明细的可见性（默认关）
+                try
+                {
+                    var sw = await _workOrderApi.GetSpecialSwitchAsync("qs_data_collection_quality_result_switch", _cts.Token);
+                    IsQualityResultVisible = sw?.success == true && sw?.result == true;
+                }
+                catch (Exception ex)
+                {
+                    IsQualityResultVisible = false; // 接口异常时按默认关处理
+                    await ShowTip($"获取数采质检结果开关失败：{ex.Message}, FinishedQualityDetailViewModel");
+                }
 
                 await LoadInspectorsAsync();
                 await LoadInspectDevicesAsync();

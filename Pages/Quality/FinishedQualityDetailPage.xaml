@@ -408,7 +408,8 @@
 
                                         <!-- 行5：检验设备 + 检验参数 -->
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
-                              ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+                              ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10"
+                              IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsQualityResultVisible}">
                                             <Label Grid.Column="0" Text="检验设备：" Style="{StaticResource FieldLabel}" />
                                             <Frame Grid.Column="1"
                                                    Padding="12,0"
@@ -439,7 +440,8 @@
 
                                         <!-- 行6：开始时间 + 结束时间（方案2：点击弹窗选日期+时间，可清空） -->
                                         <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
-      ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+      ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10"
+      IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsQualityResultVisible}">
 
                                             <Label Grid.Column="0" Text="开始时间：" Style="{StaticResource FieldLabel}" />
 
@@ -495,8 +497,9 @@
                                    TextChanged="OnInspectValueTextChanged"
                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}" />
 
-                                            <HorizontalStackLayout Grid.Column="2" Spacing="8">
-                                                <Button Text="自动检验"
+                                            <HorizontalStackLayout Grid.Column="2" Spacing="8"
+                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsQualityResultVisible}">
+                                        <Button Text="自动检验"
                                         BackgroundColor="#22C55E"
                                         TextColor="White"
                                         CornerRadius="6"
