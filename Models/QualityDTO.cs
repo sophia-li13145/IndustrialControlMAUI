@@ -307,6 +307,7 @@ public partial class QualityItem : ObservableObject
     public string? materialSpec { get; set; }
     public string? badCause { get; set; }
     public string? defect { get; set; }
+    public string? defectDescription { get; set; }
     public List<QualityAttachment>? qualityItemAttachmentList { get; set; } = new();
 
     private string? _inspectResult;

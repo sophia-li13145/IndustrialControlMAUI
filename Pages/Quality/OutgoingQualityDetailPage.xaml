@@ -304,7 +304,7 @@
                                 <!-- 右侧你的原 Frame 卡片，内容保持不变 -->
                                 <Frame Grid.Column="1" Style="{StaticResource Card}">
                                     <Grid
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                         ColumnDefinitions="Auto,*"
                         RowSpacing="8" ColumnSpacing="5">
 
@@ -558,6 +558,17 @@
                                                     IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsEditing}"/>
                                             </HorizontalStackLayout>
 
+                                        </Grid>
+
+                                        <!-- 行10：缺陷描述 -->
+                                        <Grid Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2"
+                              ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                            <Label Grid.Column="0" Text="缺陷描述：" Style="{StaticResource FieldLabel}" />
+                                            <Entry Grid.Column="1"
+                                   Placeholder="请输入（最多50字）"
+                                   Text="{Binding defectDescription, Mode=TwoWay}"
+                                   MaxLength="50"
+                                   IsEnabled="{Binding Source={x:Reference Name=ThisPage}, Path=BindingContext.IsEditing}" />
                                         </Grid>
                                     </Grid>
                                 </Frame>
