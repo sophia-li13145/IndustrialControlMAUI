@@ -12,11 +12,6 @@ namespace IndustrialControlMAUI.ViewModels
 {
     public partial class ProcessTaskSearchViewModel : ObservableObject
     {
-        private const string PrefKey_LastProcessValue = "ProcessTaskSearch.LastProcessValue";
-        private const string PrefKey_LastProcessText = "ProcessTaskSearch.LastProcessText";
-
-        // 进入页面前如果下拉尚未加载，先把“上一次的值”暂存，等列表准备好后再应用
-        private string? _pendingLastProcessValue;
         private readonly IWorkOrderApi _workapi;
         public IWorkOrderApi WorkOrderApi => _workapi;
 
@@ -56,10 +51,6 @@ namespace IndustrialControlMAUI.ViewModels
         public ProcessTaskSearchViewModel(IWorkOrderApi workapi)
         {
             _workapi = workapi;
-            // 读取上次选择（Value 优先，没有则用 Text）
-            var lastVal = Preferences.Get(PrefKey_LastProcessValue, null);
-            var lastText = Preferences.Get(PrefKey_LastProcessText, null);
-            _pendingLastProcessValue = lastVal ?? lastText;
             SearchCommand = new AsyncRelayCommand(SearchAsync);
             ClearCommand = new RelayCommand(ClearFilters);
             ToggleStatusDropdownCommand = new RelayCommand(() => IsStatusDropdownOpen = !IsStatusDropdownOpen);
@@ -259,32 +250,48 @@ namespace IndustrialControlMAUI.ViewModels
             if (!_orderstatusMap.ContainsKey("2")) _orderstatusMap["2"] = "入库中";
             if (!_orderstatusMap.ContainsKey("3")) _orderstatusMap["3"] = "已完成";
         }
-        /// <summary>执行 ApplyLastProcessSelectionIfAny 逻辑。</summary>
+        /// <summary>字典加载完成后将工序默认选中为“全部”项；不恢复历史选择（不再持久化）。</summary>
         private void ApplyLastProcessSelectionIfAny()
         {
             if (ProcessOptions.Count == 0) return;
-
-            if (!string.IsNullOrWhiteSpace(_pendingLastProcessValue))
-            {
-                var hit = ProcessOptions.FirstOrDefault(x =>
-                    string.Equals(x.Value, _pendingLastProcessValue, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(x.Text, _pendingLastProcessValue, StringComparison.OrdinalIgnoreCase));
-
-                if (hit != null)
-                    SelectedProcessOption = hit;
-            }
-
-            // 若仍未命中，则默认选第一项
+            // 每次进入都回到默认“全部”，与工单 Keyword 一致
             SelectedProcessOption ??= ProcessOptions.FirstOrDefault();
         }
 
-        // ★ 当用户改变工序下拉时，立刻持久化
-        /// <summary>执行 OnSelectedProcessOptionChanged 逻辑。</summary>
-        partial void OnSelectedProcessOptionChanged(StatusOption? oldValue, StatusOption? newValue)
+        /// <summary>
+        /// 根据扫码得到的工序编码/名称匹配工序下拉选项并选中。
+        /// 返回 true 表示匹配成功并已选中；false 表示未匹配到（已提示）。
+        /// </summary>
+        public async Task<bool> TrySelectProcessByScanAsync(string? processCode, string? processName)
         {
-            if (newValue == null) return;
-            Preferences.Set(PrefKey_LastProcessValue, newValue.Value ?? string.Empty);
-            Preferences.Set(PrefKey_LastProcessText, newValue.Text ?? string.Empty);
+            await EnsureDictsLoadedAsync();   // 确保工序下拉已加载完成
+
+            if (string.IsNullOrWhiteSpace(processCode) && string.IsNullOrWhiteSpace(processName))
+                return false;
+
+            var matched = ProcessOptions.FirstOrDefault(x =>
+                (!string.IsNullOrWhiteSpace(processCode) && string.Equals(x.Value, processCode, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrWhiteSpace(processName) && string.Equals(x.Text, processName, StringComparison.OrdinalIgnoreCase)));
+
+            if (matched is null)
+            {
+                var label = processCode ?? processName ?? string.Empty;
+                await ShowTip($"扫码得到的工序（{label}）在当前工序列表中不存在，无法筛选。");
+                return false;
+            }
+
+            SelectedProcessOption = matched;  // 触发 UI 刷新
+            return true;
+        }
+
+        /// <summary>
+        /// 将工序筛选重置为默认（“全部”项，Value == null）。
+        /// </summary>
+        public void ResetProcessToDefault()
+        {
+            // 默认项为 Value == null 的“全部”项（通常位于 ProcessOptions 第一项）
+            var def = ProcessOptions.FirstOrDefault(x => x.Value == null) ?? ProcessOptions.FirstOrDefault();
+            SelectedProcessOption = def;
         }
 
         /// <summary>执行 SearchAsync 逻辑。</summary>
