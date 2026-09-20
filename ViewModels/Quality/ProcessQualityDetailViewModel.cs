@@ -463,7 +463,12 @@ namespace IndustrialControlMAUI.ViewModels
 
                 CanAudit = false;
                 if (Detail is not null) Detail.auditStatus = status;
-                await ShowTip($"{actionName}成功");
+                IsEditing = false;
+
+                // 审核完成后关闭当前输入焦点（收起软键盘），并直接返回列表页。
+                Shell.Current?.CurrentPage?.Unfocus();
+                await Shell.Current.GoToAsync("..");
+                return;
             }
             catch (Exception ex)
             {
