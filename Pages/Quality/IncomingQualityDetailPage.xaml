@@ -497,11 +497,11 @@
                                         <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
                               ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                                             <HorizontalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
-                                                <Label Text="实际值：" Style="{StaticResource FieldLabel}" />
                                                 <Label Text="*"
                                                        TextColor="#DC2626"
                                                        FontAttributes="Bold"
                                                        IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsInspectValueRequired}" />
+                                                <Label Text="实际值：" Style="{StaticResource FieldLabel}" />
                                             </HorizontalStackLayout>
                                             <Entry Grid.Column="1"
                                    Placeholder="请输入"
