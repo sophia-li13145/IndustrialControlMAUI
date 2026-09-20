@@ -498,7 +498,7 @@ namespace IndustrialControlMAUI.ViewModels
                     .FirstOrDefault(o =>
                         string.Equals(o.Value, Detail.inspectResult, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(o.Text, Detail.inspectResult, StringComparison.OrdinalIgnoreCase));
-                AutoSetUnqualifiedOverallResult();
+                AutoSetOverallInspectResult();
                
                 MarkClean();
                 IsInspectorDropdownOpen = false;
@@ -545,7 +545,7 @@ namespace IndustrialControlMAUI.ViewModels
 
             if (e.PropertyName == nameof(QualityItem.inspectResult))
             {
-                AutoSetUnqualifiedOverallResult();
+                AutoSetOverallInspectResult();
             }
 
             if (e.PropertyName == nameof(QualityItem.selectedInspectDevice))
@@ -555,26 +555,36 @@ namespace IndustrialControlMAUI.ViewModels
         }
 
         /// <summary>
-        /// 明细中任一检验结果为不合格时，自动将质检单结果设为不合格。
-        /// 主结果仍通过下拉框保持可编辑，用户可在自动校验后手动调整。
+        /// 根据明细检验结果自动更新质检单结果：任一项不合格则为不合格，全部合格则为合格。
+        /// 明细尚未全部填写时不改变主结果；主结果仍可在自动校验后手动调整。
         /// </summary>
-        private void AutoSetUnqualifiedOverallResult()
+        private void AutoSetOverallInspectResult()
         {
-            if (!IsEditing || !Items.Any(item =>
-                    string.Equals(item.inspectResult, "不合格", StringComparison.OrdinalIgnoreCase)))
+            if (!IsEditing || Items.Count == 0)
             {
                 return;
             }
 
-            var unqualifiedOption = InspectResultOptions.FirstOrDefault(option =>
-                string.Equals(option.Value, "不合格", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(option.Text, "不合格", StringComparison.OrdinalIgnoreCase));
-
-            if (unqualifiedOption is not null && !ReferenceEquals(SelectedInspectResult, unqualifiedOption))
+            var hasUnqualifiedItem = Items.Any(item => IsInspectResult(item.inspectResult, "不合格"));
+            var areAllItemsQualified = Items.All(item => IsInspectResult(item.inspectResult, "合格"));
+            var automaticResult = hasUnqualifiedItem ? "不合格" : areAllItemsQualified ? "合格" : null;
+            if (automaticResult is null)
             {
-                SelectedInspectResult = unqualifiedOption;
+                return;
+            }
+
+            var resultOption = InspectResultOptions.FirstOrDefault(option =>
+                IsInspectResult(option.Value, automaticResult)
+                || IsInspectResult(option.Text, automaticResult));
+
+            if (resultOption is not null && !ReferenceEquals(SelectedInspectResult, resultOption))
+            {
+                SelectedInspectResult = resultOption;
             }
         }
+
+        private static bool IsInspectResult(string? value, string expected)
+            => string.Equals(value?.Trim(), expected, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>执行 LoadInspectParamsAsync 逻辑。</summary>
         private async Task LoadInspectParamsAsync(QualityItem item)
