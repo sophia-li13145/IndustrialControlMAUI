@@ -26,7 +26,7 @@ public partial class ProcessQualitySearchPage : ContentPage
             if (!vm.IsBusy)
                 _ = vm.SearchAsync();   // 进入页面后自动刷新
 
-             QualityNoEntry?.Focus();
+            // 返回列表时不主动聚焦查询框，避免软键盘再次自动弹出。
         }
     }
 
