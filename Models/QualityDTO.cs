@@ -28,6 +28,9 @@ namespace IndustrialControlMAUI.Models;
         public string? inspectTime { get; set; }
         public string? inspectionObject { get; set; }
         public string? inspectionSchemeName { get; set; }
+        public string? auditStatus { get; set; }
+        public bool qualityAuditEnabled { get; set; }
+        public bool hasAuditPermission { get; set; }
 }
 
 /// <summary>
@@ -82,6 +85,55 @@ public class QualityOrderItem
     public DateTime? CreatedTime { get; set; }
 
     public DateTime? InspectTime { get; set; }
+
+    public string? AuditStatus { get; set; }
+    public bool QualityAuditEnabled { get; set; }
+    public bool HasAuditPermission { get; set; }
+
+    public bool ShowAuditStyle => QualityAuditEnabled && AuditStatus is "1" or "2" or "3";
+
+    public string AuditStatusText => AuditStatus switch
+    {
+        "1" => "审核中",
+        "2" => "审核通过",
+        "3" => "审核驳回",
+        "0" => "未提交",
+        _ => "无需审核"
+    };
+
+    public string? DisplayStatusText => QualityAuditEnabled ? AuditStatusText : InspectStatusText;
+
+    public Brush CardBackground => AuditStatus switch
+    {
+        "1" when QualityAuditEnabled => CreateGradient("#B9E6FF", "#FFFFFF"),
+        "2" when QualityAuditEnabled => CreateGradient("#C9F7D8", "#FFFFFF"),
+        "3" when QualityAuditEnabled => CreateGradient("#FFE0B2", "#FFFFFF"),
+        _ => new SolidColorBrush(Colors.White)
+    };
+
+    public Color AuditAccentColor => AuditStatus switch
+    {
+        _ when !QualityAuditEnabled => Color.FromArgb("#111827"),
+        "2" => Color.FromArgb("#20A05A"),
+        "3" => Color.FromArgb("#ED7D18"),
+        _ => Color.FromArgb("#1597E5")
+    };
+
+    private static LinearGradientBrush CreateGradient(string start, string end) => new(
+        new GradientStopCollection
+        {
+            new GradientStop(Color.FromArgb(start), 0),
+            new GradientStop(Color.FromArgb(end), 1)
+        },
+        new Point(0, 0),
+        new Point(1, 0));
+}
+
+public sealed class QualityAuditRequest
+{
+    public string id { get; set; } = string.Empty;
+    public string auditStatus { get; set; } = string.Empty;
+    public string auditOpinion { get; set; } = string.Empty;
 }
 
 public class DictQuality
