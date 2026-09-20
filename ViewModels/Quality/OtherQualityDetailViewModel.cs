@@ -517,6 +517,7 @@ namespace IndustrialControlMAUI.ViewModels
                     .FirstOrDefault(o =>
                         string.Equals(o.Value, Detail.inspectResult, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(o.Text, Detail.inspectResult, StringComparison.OrdinalIgnoreCase));
+                AutoSetUnqualifiedOverallResult();
                
                 MarkClean();
                 IsInspectorDropdownOpen = false;
@@ -559,9 +560,36 @@ namespace IndustrialControlMAUI.ViewModels
         {
             if (sender is not QualityItem item) return;
 
+            if (e.PropertyName == nameof(QualityItem.inspectResult))
+            {
+                AutoSetUnqualifiedOverallResult();
+            }
+
             if (e.PropertyName == nameof(QualityItem.selectedInspectDevice))
             {
                 await LoadInspectParamsAsync(item);
+            }
+        }
+
+        /// <summary>
+        /// 明细中任一检验结果为不合格时，自动将质检单结果设为不合格。
+        /// 主结果仍通过下拉框保持可编辑，用户可在自动校验后手动调整。
+        /// </summary>
+        private void AutoSetUnqualifiedOverallResult()
+        {
+            if (!IsEditing || !Items.Any(item =>
+                    string.Equals(item.inspectResult, "不合格", StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            var unqualifiedOption = InspectResultOptions.FirstOrDefault(option =>
+                string.Equals(option.Value, "不合格", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(option.Text, "不合格", StringComparison.OrdinalIgnoreCase));
+
+            if (unqualifiedOption is not null && !ReferenceEquals(SelectedInspectResult, unqualifiedOption))
+            {
+                SelectedInspectResult = unqualifiedOption;
             }
         }
 
