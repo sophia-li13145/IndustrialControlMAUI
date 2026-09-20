@@ -26,6 +26,7 @@ public class QualityApi : IQualityApi
         private readonly string _inspectParamPath;
         private readonly string _autoInspectPath;
         private readonly string _inspectDetailPagePath;
+        private readonly string _auditPath;
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -77,6 +78,8 @@ public class QualityApi : IQualityApi
             _inspectDetailPagePath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.inspectDetailPage", "/pda/qsOrderQuality/pageQueryInspectionDetail"),
                 servicePath);
+            _auditPath = ServiceUrlHelper.NormalizeRelative(
+                configLoader.GetApiPath("quality.audit", "/pda/qsOrderQuality/audit"), servicePath);
         }
         private static string BuildQuery(IDictionary<string, string> p)
             => string.Join("&", p.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
@@ -344,6 +347,24 @@ public class QualityApi : IQualityApi
         public async Task<ApiResp<bool?>> ExecuteCompleteInspectionAsync(QualityDetailDto payload, CancellationToken ct = default)
         {
             var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _executeCompletePath);
+            var json = JsonSerializer.Serialize(payload, _json);
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var body = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, code = (int)res.StatusCode, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(body, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "Empty body" };
+        }
+
+        public async Task<ApiResp<bool?>> AuditAsync(QualityAuditRequest payload, CancellationToken ct = default)
+        {
+            var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _auditPath);
             var json = JsonSerializer.Serialize(payload, _json);
             using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
             {
