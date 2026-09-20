@@ -420,8 +420,11 @@ namespace IndustrialControlMAUI.ViewModels
         /// </summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
-            CanAudit = query.TryGetValue("hasAuditPermission", out var permission) &&
-                       bool.TryParse(permission?.ToString(), out var allowed) && allowed;
+            var hasPermission = query.TryGetValue("hasAuditPermission", out var permission) &&
+                                bool.TryParse(permission?.ToString(), out var allowed) && allowed;
+            var isPendingAudit = query.TryGetValue("auditStatus", out var auditStatus) &&
+                                 string.Equals(auditStatus?.ToString(), "1", StringComparison.Ordinal);
+            CanAudit = hasPermission && isPendingAudit;
             if (query.TryGetValue("id", out var v))
             {
                 _id = v?.ToString();
