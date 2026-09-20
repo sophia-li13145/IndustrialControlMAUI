@@ -101,8 +101,6 @@ public class QualityOrderItem
         _ => "无需审核"
     };
 
-    public string? DisplayStatusText => QualityAuditEnabled ? AuditStatusText : InspectStatusText;
-
     public Brush CardBackground => AuditStatus switch
     {
         "1" when QualityAuditEnabled => CreateGradient("#B9E6FF", "#FFFFFF"),
