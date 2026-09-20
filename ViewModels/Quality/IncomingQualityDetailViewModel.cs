@@ -24,6 +24,7 @@ namespace IndustrialControlMAUI.ViewModels
         private const string Folder = "quality";
         private const string LocationFile = "table";
         private const string LocationImage = "main";
+        private const string InspectValueRequiredSwitchKey = "qs_quality_inspect_value_required_switch";
         private string? _cleanSnapshot;
         private bool _lastSaveSucceeded;
         // ===== 上传限制 =====
@@ -77,6 +78,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         /// <summary>数采质检结果开关：开=true 展示检验设备/参数/时间/自动检验/查看明细；关=false(默认)隐藏。</summary>
         [ObservableProperty] private bool isQualityResultVisible;
+        [ObservableProperty] private bool isInspectValueRequired;
 
         // 导航入参
         private string? _id;
@@ -396,6 +398,17 @@ namespace IndustrialControlMAUI.ViewModels
                 {
                     IsQualityResultVisible = false; // 接口异常时按默认关处理
                     await ShowTip($"获取数采质检结果开关失败：{ex.Message}, IncomingQualityDetailViewModel");
+                }
+
+                try
+                {
+                    var inspectValueSwitch = await _workOrderApi.GetSpecialSwitchAsync(InspectValueRequiredSwitchKey, _cts.Token);
+                    IsInspectValueRequired = inspectValueSwitch?.success == true && inspectValueSwitch?.result == true;
+                }
+                catch (Exception ex)
+                {
+                    IsInspectValueRequired = false;
+                    await ShowTip($"获取质检实际值必填开关失败：{ex.Message}");
                 }
 
                 await LoadInspectResultOptionsAsync();
@@ -745,6 +758,11 @@ namespace IndustrialControlMAUI.ViewModels
             {
                 IsBusy = true;
                 PreparePayloadFromUi();
+                if (!QualityInspectValueValidator.TryValidate(Items, IsInspectValueRequired, out var inspectValueError))
+                {
+                    await ShowTip(inspectValueError);
+                    return;
+                }
                 if (!ValidateQuantitySummary(out var errorMessage))
                 {
                     await ShowTip(errorMessage);
