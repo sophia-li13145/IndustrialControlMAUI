@@ -28,6 +28,7 @@ namespace IndustrialControlMAUI.Services
         
         Task<ApiResp<bool?>> ExecuteSaveAsync(QualityDetailDto payload, CancellationToken ct = default);
         Task<ApiResp<bool?>> ExecuteCompleteInspectionAsync(QualityDetailDto payload, CancellationToken ct = default);
+        Task<ApiResp<bool?>> AuditAsync(QualityAuditRequest payload, CancellationToken ct = default);
         Task<ApiResp<DefectPage>> GetDefectPageAsync(
     int pageNo, int pageSize,
     string? defectCode = null,
