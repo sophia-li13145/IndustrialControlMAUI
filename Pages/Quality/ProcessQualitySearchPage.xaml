@@ -76,7 +76,7 @@
                               Background="{Binding CardBackground}">
                             <Label Grid.Row="1" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="2"
                                    Text="{Binding AuditStatusText}" IsVisible="{Binding ShowAuditStyle}"
-                                   TextColor="{Binding AuditAccentColor}" Opacity="0.9"
+                                   TextColor="{Binding AuditAccentColor}" Opacity="0.7"
                                    FontSize="46" FontAttributes="Bold"
                                    HorizontalOptions="End" VerticalOptions="Center" />
                             <!-- 右上角蓝点 -->
