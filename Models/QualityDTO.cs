@@ -94,7 +94,7 @@ public class QualityOrderItem
 
     public string AuditStatusText => AuditStatus switch
     {
-        "1" => "审核中",
+        "1" => "待审核",
         "2" => "审核通过",
         "3" => "审核驳回",
         "0" => "未提交",
