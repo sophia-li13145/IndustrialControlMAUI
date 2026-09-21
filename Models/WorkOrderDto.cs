@@ -387,6 +387,8 @@ public class WorkProcessTaskDetail
     public bool? finalProcess { get; set; }
     public bool? firstProcess { get; set; }
     public bool? allowBatchInstock { get; set; }
+    public bool isShowMaterialFrame { get; set; }
+    public bool isShowReportExtraFields { get; set; }
 
     public List<TaskMaterialInput> materialInputList { get; set; } = new();
     public List<TaskMaterialOutput> materialOutputList { get; set; } = new();

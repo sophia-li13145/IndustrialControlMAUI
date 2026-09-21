@@ -34,8 +34,17 @@
                                 IsEnabled="{Binding IsQuantityEnabled}" />
                     </Grid>
 
-                    <Label Grid.Row="2" Text="料框：" VerticalTextAlignment="Start" />
-                    <Grid Grid.Row="2" Grid.Column="1" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
+                    <Label Grid.Row="2"
+                           Text="料框："
+                           VerticalTextAlignment="Start"
+                           IsVisible="{Binding IsShowMaterialFrame}" />
+                    <Grid Grid.Row="2"
+                          Grid.Column="1"
+                          RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="*,Auto"
+                          RowSpacing="4"
+                          ColumnSpacing="8"
+                          IsVisible="{Binding IsShowMaterialFrame}">
                         <Border Grid.Row="0"
                                 Grid.Column="0"
                                 Stroke="#2D6AE3"

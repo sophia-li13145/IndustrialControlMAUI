@@ -202,7 +202,12 @@
       InputTransparent="True"
                         
                        />
-                    <Grid  ColumnDefinitions="*,*,*,*">
+                    <Grid ColumnDefinitions="*,*,*,*">
+                        <Grid.Triggers>
+                            <DataTrigger TargetType="Grid" Binding="{Binding IsShowMaterialFrame}" Value="False">
+                                <Setter Property="ColumnDefinitions" Value="*,*,*,0" />
+                            </DataTrigger>
+                        </Grid.Triggers>
                     <!-- 白色滑块：默认在左列；上边留更大间距以露出更多紫色；带轻微阴影 -->
                         <Border x:Name="Knob"
                                   Grid.Column="0"
@@ -311,7 +316,7 @@
                             </Grid.GestureRecognizers>
                         </Grid>
                         <!-- 料框（选中→紫字；未选中→白字） -->
-                        <Grid Grid.Column="3">
+                        <Grid Grid.Column="3" IsVisible="{Binding IsShowMaterialFrame}">
                             <Label Text="料框"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"
