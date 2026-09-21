@@ -54,6 +54,7 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     public bool IsInputTab => ActiveTab == DetailTab.Input;
     public bool IsOutputTab => ActiveTab == DetailTab.Output;
     public bool IsFrameTab => ActiveTab == DetailTab.Frame;
+    public bool IsShowMaterialFrame => Detail?.isShowMaterialFrame == true;
 
 
     [ObservableProperty]
@@ -230,6 +231,10 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     partial void OnStateChanged(TaskRunState value) => NotifyAllCanExec();
     partial void OnDetailChanged(WorkProcessTaskDetail? value)
     {
+        if (!IsShowMaterialFrame && ActiveTab == DetailTab.Frame)
+            ActiveTab = DetailTab.Report;
+
+        OnPropertyChanged(nameof(IsShowMaterialFrame));
         OnPropertyChanged(nameof(IsReworkVisible));
         OnPropertyChanged(nameof(CanRework));
         (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
@@ -548,6 +553,8 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
     [RelayCommand]
     public void ShowFrame()
     {
+        if (!IsShowMaterialFrame) return;
+
         Debug.WriteLine("切换到料框");
         ActiveTab = DetailTab.Frame;
 
@@ -568,7 +575,9 @@ public partial class WorkProcessTaskDetailViewModel : ObservableObject, IQueryAt
 
             await LoadAuditDictAsync();
             await LoadDetailAsync(id);
-            ActiveTab = tabToRestore; // 同一任务刷新保留当前 Tab；进入新任务默认报工。
+            ActiveTab = tabToRestore == DetailTab.Frame && !IsShowMaterialFrame
+                ? DetailTab.Report
+                : tabToRestore; // 同一任务刷新保留当前 Tab；进入新任务默认报工。
             CurrentLoginUserName = Preferences.Get("UserName", string.Empty);
             CurrentUserName = CurrentLoginUserName.Split('@')[0]; // 页面显示名
             await LoadReportRecordsAsync();

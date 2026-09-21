@@ -30,6 +30,7 @@ namespace IndustrialControlMAUI.ViewModels
         [ObservableProperty] private bool isQuantityEnabled = true;
         [ObservableProperty] private bool showBatchBarcodeScanButton;
         [ObservableProperty] private string frameHint = "提示：料框非必填，最多选择5个";
+        public bool IsShowMaterialFrame => _detail?.isShowMaterialFrame == true;
         private TaskCompletionSource<OutputPopupResult?>? _tcs;
 
         public OutputPopupViewModel(IWorkOrderApi? api = null) => _api = api;
@@ -367,6 +368,8 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand]
         private async Task ScanFrameAsync()
         {
+            if (!IsShowMaterialFrame) return;
+
             if (SelectedMaterial is null)
             {
                 await Application.Current.MainPage.DisplayAlert("提示", "请先选择产出物料。", "好的");
