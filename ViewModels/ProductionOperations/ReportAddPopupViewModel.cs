@@ -41,7 +41,11 @@ public partial class ReportAddPopupViewModel : ObservableObject
 
     public bool IsNotBusy => !IsBusy;
     public bool IsReportQtyEditable => true;
-    public bool IsShowReportExtraFields => _detail?.isShowReportExtraFields == true;
+    /// <summary>
+    /// The task flag suppresses the optional report fields when enabled.
+    /// Keep the existing report form when the flag is disabled or omitted.
+    /// </summary>
+    public bool AreReportExtraFieldsVisible => _detail?.isShowReportExtraFields != true;
 
     public string SpotWeldingRatioLabel => IsSpotWeldingRatioRequired ? "*点焊比例：" : "点焊比例：";
 
