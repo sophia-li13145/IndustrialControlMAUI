@@ -28,6 +28,9 @@
             <Style x:Key="SuccessBtn" TargetType="Button" BasedOn="{StaticResource PrimaryBtn}">
                 <Setter Property="BackgroundColor" Value="#27AE60" />
             </Style>
+            <Style x:Key="BtnRed" BasedOn="{StaticResource PrimaryBtn}" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#FF0000" />
+            </Style>
             <Style x:Key="SectionTitle" TargetType="Label">
                 <Setter Property="FontAttributes" Value="Bold" />
                 <Setter Property="TextColor" Value="#1F2937" />
@@ -74,17 +77,25 @@
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
 
         <!-- 顶部蓝条 -->
-        <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <Grid Grid.Row="0"  HeightRequest="56" Padding="12" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
             <Label Text="质检单基础信息"
                    VerticalOptions="Start"
                    TextColor="Black"
                    FontSize="14"
                    FontAttributes="Bold" />
             <Button Grid.Column="1"
+                    Text="审批通过"
+                    Style="{StaticResource SuccessBtn}"
+                    Command="{Binding ApproveCommand}" IsVisible="{Binding CanAudit}" />
+            <Button Grid.Column="2"
+                    Text="驳回"
+                    Style="{StaticResource BtnRed}"
+                    Command="{Binding RejectCommand}" IsVisible="{Binding CanAudit}" />
+            <Button Grid.Column="3"
                     Text="保存"
                     Style="{StaticResource PrimaryBtn}"
                     Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" />
-            <Button Grid.Column="2"
+            <Button Grid.Column="4"
                     Text="完成质检"
                     Style="{StaticResource SuccessBtn}"
                     Command="{Binding CompleteCommand}" IsVisible="{Binding IsEditing}" />

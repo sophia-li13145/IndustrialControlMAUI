@@ -27,6 +27,7 @@ public class QualityApi : IQualityApi
         private readonly string _autoInspectPath;
         private readonly string _inspectDetailPagePath;
         private readonly string _auditPath;
+        private readonly string _completeFlowTaskPath;
 
         private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
@@ -80,6 +81,8 @@ public class QualityApi : IQualityApi
                 servicePath);
             _auditPath = ServiceUrlHelper.NormalizeRelative(
                 configLoader.GetApiPath("quality.audit", "/pda/qsOrderQuality/audit"), servicePath);
+            _completeFlowTaskPath = ServiceUrlHelper.NormalizeRelative(
+                configLoader.GetApiPath("quality.completeFlowTask", "/pda/flowTaskCenter/completeTask"), servicePath);
         }
         private static string BuildQuery(IDictionary<string, string> p)
             => string.Join("&", p.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
@@ -379,6 +382,24 @@ public class QualityApi : IQualityApi
             return JsonSerializer.Deserialize<ApiResp<bool?>>(body, _json)
                    ?? new ApiResp<bool?> { success = false, message = "Empty body" };
         }
+        public async Task<ApiResp<bool?>> CompleteFlowTaskAsync(QualityFlowTaskRequest payload, CancellationToken ct = default)
+        {
+            var url = ServiceUrlHelper.BuildFullUrl(_http.BaseAddress, _completeFlowTaskPath);
+            var json = JsonSerializer.Serialize(payload, _json);
+            using var req = new HttpRequestMessage(HttpMethod.Post, new Uri(url, UriKind.Absolute))
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+            };
+            using var res = await _http.SendAsync(req, ct);
+            var body = await ResponseGuard.ReadAsStringAndCheckAsync(res, _auth, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return new ApiResp<bool?> { success = false, code = (int)res.StatusCode, message = $"HTTP {(int)res.StatusCode}" };
+
+            return JsonSerializer.Deserialize<ApiResp<bool?>>(body, _json)
+                   ?? new ApiResp<bool?> { success = false, message = "Empty body" };
+        }
+
         public async Task<ApiResp<DefectPage>> GetDefectPageAsync(
                  int pageNo, int pageSize,
                  string? defectCode = null,

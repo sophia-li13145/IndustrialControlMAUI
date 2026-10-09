@@ -39,6 +39,7 @@ namespace IndustrialControlMAUI.ViewModels
 
         [ObservableProperty] private bool isExceptionPhotoTipVisible;
         [ObservableProperty] private bool isBusy;
+        [ObservableProperty] private bool canAudit;
         [ObservableProperty] private QualityDetailDto? detail;
         [ObservableProperty] private string dataSourceDisplay = string.Empty;
         [ObservableProperty]
@@ -363,6 +364,11 @@ namespace IndustrialControlMAUI.ViewModels
         /// </summary>
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
+            var hasPermission = query.TryGetValue("hasAuditPermission", out var permission) &&
+                                bool.TryParse(permission?.ToString(), out var allowed) && allowed;
+            var isPendingAudit = query.TryGetValue("auditStatus", out var auditStatus) &&
+                                 string.Equals(auditStatus?.ToString(), "1", StringComparison.Ordinal);
+            CanAudit = hasPermission && isPendingAudit;
             if (query.TryGetValue("id", out var v))
             {
                 _id = v?.ToString();
@@ -373,6 +379,61 @@ namespace IndustrialControlMAUI.ViewModels
                     || string.Equals(ro?.ToString(), "true", StringComparison.OrdinalIgnoreCase));
 
             _ = LoadAsync();
+        }
+
+        [RelayCommand]
+        private Task ApproveAsync() => AuditAsync("2", "审批通过");
+
+        [RelayCommand]
+        private Task RejectAsync() => AuditAsync("3", "审核驳回");
+
+        private async Task AuditAsync(string status, string actionName)
+        {
+            if (IsBusy || !CanAudit || string.IsNullOrWhiteSpace(_id)) return;
+            var taskId = Detail?.taskId;
+            if (string.IsNullOrWhiteSpace(taskId))
+            {
+                await ShowTip("未获取到流程任务 ID，请重新加载详情后再审核。");
+                return;
+            }
+
+            var confirmed = await (Shell.Current?.DisplayAlert("确认", $"确定要{actionName}吗？", "确定", "取消")
+                                   ?? Task.FromResult(false));
+            if (!confirmed) return;
+
+            IsBusy = true;
+            try
+            {
+                var response = await _api.CompleteFlowTaskAsync(new QualityFlowTaskRequest
+                {
+                    taskId = taskId,
+                    action = status == "2" ? "APPROVE" : "REJECT_PREVIOUS",
+                    comment = string.Empty,
+                    variables = new Dictionary<string, object>()
+                }, _cts.Token);
+                if (response?.success != true)
+                {
+                    await ShowTip(string.IsNullOrWhiteSpace(response?.message) ? $"{actionName}失败" : response.message!);
+                    return;
+                }
+
+                CanAudit = false;
+                if (Detail is not null) Detail.auditStatus = status;
+                IsEditing = false;
+
+                // 审核完成后关闭当前输入焦点（收起软键盘），并直接返回列表页。
+                Shell.Current?.CurrentPage?.Unfocus();
+                await Shell.Current.GoToAsync("..");
+                return;
+            }
+            catch (Exception ex)
+            {
+                await ShowTip($"{actionName}异常：{ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         /// <summary>执行 LoadAsync 逻辑。</summary>

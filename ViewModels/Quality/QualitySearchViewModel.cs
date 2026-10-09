@@ -163,6 +163,9 @@ namespace IndustrialControlMAUI.ViewModels
                     QualityNo = t.qualityNo,
                     InspectStatus = t.inspectStatus,
                     InspectStatusText = t.inspectStatusName,
+                    AuditStatus = t.auditStatus,
+                    QualityAuditEnabled = t.qualityAuditEnabled,
+                    HasAuditPermission = t.hasAuditPermission,
                     InspectResult = t.inspectResult,
                     MaterialName = t.materialName,
                     QualityType = t.qualityType,
@@ -202,15 +205,15 @@ namespace IndustrialControlMAUI.ViewModels
         {
             if (item is null) return;
             if(item.QualityType == "IQC")
-            await Shell.Current.GoToAsync(nameof(IncomingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(IncomingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
             else if (item.QualityType == "IPQC")
-            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}");
             else if (item.QualityType == "FQC")
-            await Shell.Current.GoToAsync(nameof(FinishedQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(FinishedQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
             else if (item.QualityType == "OQC")
-            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
             else 
-            await Shell.Current.GoToAsync(nameof(OtherQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(OtherQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
         }
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）

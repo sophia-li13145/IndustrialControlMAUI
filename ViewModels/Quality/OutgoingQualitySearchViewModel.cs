@@ -163,6 +163,9 @@ namespace IndustrialControlMAUI.ViewModels
                     QualityNo = t.qualityNo,
                     InspectStatus = t.inspectStatus,
                     InspectStatusText = t.inspectStatusName,
+                    AuditStatus = t.auditStatus,
+                    QualityAuditEnabled = t.qualityAuditEnabled,
+                    HasAuditPermission = t.hasAuditPermission,
                     MaterialName = t.materialName,
                     OrderNumber = t.orderNumber,
                     ProcessName = t.processName,
@@ -197,7 +200,7 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task GoDetailAsync(QualityOrderItem? item)
         {
             if (item is null) return;
-            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}");
+            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}");
         }
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）

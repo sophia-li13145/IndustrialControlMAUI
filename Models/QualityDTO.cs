@@ -134,6 +134,14 @@ public sealed class QualityAuditRequest
     public string auditOpinion { get; set; } = string.Empty;
 }
 
+public sealed class QualityFlowTaskRequest
+{
+    public string action { get; set; } = string.Empty;
+    public string comment { get; set; } = string.Empty;
+    public string taskId { get; set; } = string.Empty;
+    public Dictionary<string, object> variables { get; set; } = new();
+}
+
 public class DictQuality
 {
     public List<DictItem> InspectStatus { get; set; } = new();
@@ -146,6 +154,7 @@ public class DictQuality
 
 public class QualityDetailDto : ObservableObject
 {
+    public string? taskId { get; set; }
     public decimal? arrivalQty { get; set; }
     public decimal? concessionAcceptQty { get; set; }
     public string id { get; set; } = "";
