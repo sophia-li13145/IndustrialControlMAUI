@@ -23,6 +23,11 @@ public partial class ProcessTaskSearchPage : ContentPage, IQueryAttributable
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        var userName = Preferences.Get("UserName", string.Empty);
+        var suffixIndex = userName.LastIndexOf('@');
+        var hideWorkstationFilter = suffixIndex >= 0
+            && userName[(suffixIndex + 1)..].ToLowerInvariant() == "gxjlqcdz";
+        WorkstationFilter.IsVisible = !hideWorkstationFilter;
         _leavingForScan = false;   // 扫码返回后复位
         _vm.SetEntryMode(_entryMode);
         OrderEntry.Focus();

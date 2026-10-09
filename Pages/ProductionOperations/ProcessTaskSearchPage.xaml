@@ -115,7 +115,7 @@
                             Opacity="0" />
                 </Grid>
 
-                <Grid Grid.Column="1" HeightRequest="40" BackgroundColor="White"
+                <Grid x:Name="WorkstationFilter" Grid.Column="1" HeightRequest="40" BackgroundColor="White"
                       HorizontalOptions="Fill">
                     <Label Text="{Binding SelectedWorkstationSummary}" TextColor="#333333"
                            VerticalOptions="Center" HorizontalOptions="Center"
