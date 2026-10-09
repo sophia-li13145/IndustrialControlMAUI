@@ -68,6 +68,9 @@ namespace IndustrialControlMAUI.ViewModels
                     if (Detail != null)
                         Detail.inspectResult = value?.Value ?? value?.Text;
                     RefreshExceptionPhotoTip();
+                    // 检验结果变化后，刷新返修按钮的启用状态
+                    OnPropertyChanged(nameof(CanRework));
+                    (ReworkCommand as IRelayCommand)?.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -81,6 +84,7 @@ namespace IndustrialControlMAUI.ViewModels
         public bool IsReworkVisible =>
             !string.IsNullOrWhiteSpace(Detail?.orderNumber)
             && (Detail?.workOrderStatus is "1" or "2" or "4");
+        // 返修按钮保持可点；是否允许返修由 ReworkAsync 内部校验，非“不合格”时弹窗提示
         public bool CanRework => !IsBusy && IsReworkVisible;
 
         // 导航入参
@@ -914,6 +918,13 @@ namespace IndustrialControlMAUI.ViewModels
         [RelayCommand(CanExecute = nameof(CanRework))]
         private async Task ReworkAsync()
         {
+            // 仅检验结果为“不合格”时允许返修，否则提示并阻断跳转
+            if (!IsUnqualifiedResult)
+            {
+                await ShowTip("检验结果为“不合格”时才可进行返修。");
+                return;
+            }
+
             var workOrderNo = Detail?.orderNumber;
             if (string.IsNullOrWhiteSpace(workOrderNo))
             {
