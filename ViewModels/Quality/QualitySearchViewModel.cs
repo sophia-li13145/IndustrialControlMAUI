@@ -204,16 +204,17 @@ namespace IndustrialControlMAUI.ViewModels
         private async Task GoDetailAsync(QualityOrderItem? item)
         {
             if (item is null) return;
+            // 质检单查询入口不提供审核操作，各类详情页均隐藏审核按钮。
             if(item.QualityType == "IQC")
-            await Shell.Current.GoToAsync(nameof(IncomingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(IncomingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission=false&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
             else if (item.QualityType == "IPQC")
-            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}");
+            await Shell.Current.GoToAsync(nameof(ProcessQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission=false&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}");
             else if (item.QualityType == "FQC")
-            await Shell.Current.GoToAsync(nameof(FinishedQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(FinishedQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission=false&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
             else if (item.QualityType == "OQC")
-            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(OutgoingQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission=false&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
             else 
-            await Shell.Current.GoToAsync(nameof(OtherQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission={item.HasAuditPermission.ToString().ToLowerInvariant()}&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
+            await Shell.Current.GoToAsync(nameof(OtherQualityDetailPage) + $"?id={Uri.EscapeDataString(item.Id)}&hasAuditPermission=false&auditStatus={Uri.EscapeDataString(item.AuditStatus ?? string.Empty)}&readonly=1");
         }
         /// <summary>
         /// 安全解析日期字符串（空或格式不对返回 null）
