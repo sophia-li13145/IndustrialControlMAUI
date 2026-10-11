@@ -97,8 +97,29 @@ public partial class FrameEmptyAddFrameItem : ObservableObject
 {
     public string? id { get; set; }
     public string? frameNo { get; set; }
-    public string? frameStatus { get; set; }
-    public string? frameStatusDisplay { get; set; }
+
+    private string? _frameStatus;
+    public string? frameStatus
+    {
+        get => _frameStatus;
+        set
+        {
+            if (SetProperty(ref _frameStatus, value))
+                OnPropertyChanged(nameof(FrameStatusDisplayText));
+        }
+    }
+
+    private string? _frameStatusDisplay;
+    public string? frameStatusDisplay
+    {
+        get => _frameStatusDisplay;
+        set
+        {
+            if (SetProperty(ref _frameStatusDisplay, value))
+                OnPropertyChanged(nameof(FrameStatusDisplayText));
+        }
+    }
+
     [ObservableProperty] public bool isSelected;
 
     public string FrameStatusDisplayText => (string.IsNullOrWhiteSpace(frameStatusDisplay) ? frameStatus : frameStatusDisplay) ?? "-";
