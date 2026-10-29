@@ -331,7 +331,8 @@ public class EquipmentApi : IEquipmentApi
 
             return new DictInspection
             {
-                InspectStatus = inspectStatus
+                InspectStatus = inspectStatus,
+                InspectResult = inspectResult
             };
         }
 

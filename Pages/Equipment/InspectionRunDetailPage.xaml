@@ -292,11 +292,9 @@ ColumnDefinitions="Auto,*" ColumnSpacing="10">
 
                                             <Picker x:Name="RowResultPicker"
         Grid.Column="1"
-        ItemsSource="{Binding BindingContext.InspectResultTextList,
-                              Source={RelativeSource AncestorType={x:Type ContentPage}}}"
-        SelectedItem="{Binding inspectResult, Mode=TwoWay}"
-        IsEnabled="{Binding BindingContext.IsEditing,
-                            Source={RelativeSource AncestorType={x:Type ContentPage}}}">
+        ItemsSource="{Binding Source={x:Reference ThisPage}, Path=BindingContext.InspectResultTextList}"
+        SelectedItem="{Binding inspectResultText, Mode=TwoWay}"
+        IsEnabled="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IsEditing}">
                                                 <!-- 默认底色 -->
                                                 <Picker.BackgroundColor>#F3F4F6</Picker.BackgroundColor>
 

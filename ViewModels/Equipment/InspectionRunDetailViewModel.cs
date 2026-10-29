@@ -191,7 +191,8 @@ namespace IndustrialControlMAUI.ViewModels
                         var dictItem = dicts?.InspectResult?
                     .FirstOrDefault(x => x.dictItemValue == it.inspectResult);
 
-                        it.inspectResultText = dictItem?.dictItemName;
+                        // 字典匹配不到时兜底用原始值，保证 Picker 能回显
+                        it.inspectResultText = dictItem?.dictItemName ?? it.inspectResult;
                         Items.Add(it);
                     }
                 });
@@ -594,22 +595,16 @@ namespace IndustrialControlMAUI.ViewModels
         private void PreparePayloadFromUi()
         {
             if (Detail is null) return;
-            // ① 先把界面上的中文结果（upkeepResultText）转换成字典值（upkeepResult）
-            if (dicts?.InspectResult != null && dicts.InspectResult.Count > 0)
+            // ① 先把界面上的中文结果（inspectResultText）转换成字典值（inspectResult）
+            foreach (var it in Items)
             {
-                foreach (var it in Items)
-                {
-                    if (!string.IsNullOrWhiteSpace(it.inspectResultText))
-                    {
-                        var d = dicts.InspectResult
-                            .FirstOrDefault(x => x.dictItemName == it.inspectResultText);
+                if (string.IsNullOrWhiteSpace(it.inspectResultText)) continue;
 
-                        if (d != null)
-                        {
-                            it.inspectResult = d.dictItemValue;
-                        }
-                    }
-                }
+                var d = dicts?.InspectResult?
+                    .FirstOrDefault(x => x.dictItemName == it.inspectResultText);
+
+                // 字典匹配不到名称时直接用界面文本，避免用户改过的结果没被提交
+                it.inspectResult = d?.dictItemValue ?? it.inspectResultText;
             }
 
             var allAttachments = Attachments
